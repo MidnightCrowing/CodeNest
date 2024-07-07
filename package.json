@@ -1,0 +1,117 @@
+{
+  "name": "codenest",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.5.0",
+  "description": "模仿JetBrains Toolbox做的一个多项目管理工具",
+  "author": "MidnightCrowing",
+  "homepage": "https://github.com/MidnightCrowing/CodeNest",
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "dev": "concurrently --kill-others \"pnpm dev:vue\" \"pnpm dev:electron\"",
+    "dev:vue": "vite",
+    "dev:electron": "pnpm tsc:electron && electron .",
+    "build": "pnpm build:vue && pnpm build:electron",
+    "build:vue": "pnpm type-check && pnpm build:vue-only",
+    "build:vue-only": "vite build",
+    "build:electron": "pnpm tsc:electron && electron-builder",
+    "tsc:electron": "tsc -p tsconfig/tsconfig.electron.json",
+    "postinstall": "electron-builder install-app-deps",
+    "preview": "vite preview",
+    "test": "vitest",
+    "type-check": "vue-tsc --build --force",
+    "lint": "eslint",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "linguist-js": "^2.7.1",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.31",
+    "vue-i18n": "^9.13.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "2.22.2",
+    "@intlify/unplugin-vue-i18n": "^4.0.0",
+    "@rushstack/eslint-patch": "^1.10.3",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.14.10",
+    "@unocss/preset-attributify": "^0.61.3",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/tsconfig": "^0.5.1",
+    "concurrently": "^8.2.2",
+    "electron": "31.2.0",
+    "electron-builder": "^24.13.3",
+    "eslint": "^9.7.0",
+    "eslint-plugin-format": "^0.1.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-vue": "^9.27.0",
+    "fs-extra": "^11.2.0",
+    "jsdom": "^24.1.0",
+    "lint-staged": "^15.2.7",
+    "sass": "^1.77.8",
+    "simple-git-hooks": "^2.11.1",
+    "terser": "^5.31.2",
+    "typescript": "~5.5.3",
+    "unocss": "^0.61.3",
+    "unplugin-auto-import": "^0.18.0",
+    "vite": "^5.3.3",
+    "vitest": "^2.0.2",
+    "vue-tsc": "^2.0.26"
+  },
+  "build": {
+    "appId": "MidnightCrowing.codenest",
+    "productName": "CodeNest",
+    "copyright": "Copyright © year ${author}",
+    "directories": {
+      "output": "build"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "extraResources": [
+      {
+        "from": "./src/data",
+        "to": "./data"
+      }
+    ]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}
