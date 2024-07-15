@@ -1,0 +1,8 @@
+side_panel:
+  project: Projects
+  favorites: Favorites
+kinds:
+  all: All
+  mine: Mine
+  fork: Fork
+  clone: Clone

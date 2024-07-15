@@ -1,4 +1,4 @@
-import { defineConfig, presetAttributify, presetUno } from 'unocss'
+import { defineConfig, presetAttributify, presetUno, transformerDirectives } from 'unocss'
 
 export default defineConfig({
   presets: [
@@ -15,4 +15,7 @@ export default defineConfig({
     'text-medium': 'text-[12px] lh-[15px]',
     'text-small': 'text-[11px] lh-[14px]',
   },
+  transformers: [
+    transformerDirectives(),
+  ],
 })

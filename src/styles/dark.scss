@@ -1,0 +1,23 @@
+body {
+  /* 背景色 */
+  --bg-1: rgb(30 31 34);
+  --bg-2: rgb(43 45 48);
+  --bg-3: rgb(60 63 65);
+
+  /* 边框颜色 */
+  --border: rgb(81 81 81);
+
+  /* 文本颜色 */
+  --text-color: rgb(223 225 229);
+
+  /* 按钮颜色 */
+  --button-bg: var(--bg-2);
+  --button-bg-disabled: rgb(60 63 65);
+  --button-border: rgb(94 96 96);
+  --button-border-disabled: rgb(100 100 100);
+  --button-border-default: rgb(76 112 140);
+  --button-default-1: rgb(46 67 110);
+  --button-default-2: rgb(177 186 196 / 12%);
+  --button-hover: rgb(59 66 75 / 70%);
+  --button-active: rgb(177 186 196 / 20%);
+}

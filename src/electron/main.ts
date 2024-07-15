@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 import { app, BrowserWindow, Menu } from 'electron'
 
+import { performAsyncTask } from './asyncTask.js'
+
 // 是否是生产环境
 const isPackaged = app.isPackaged
 
@@ -14,6 +16,12 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 650,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#2b2d30',
+      symbolColor: '#dfe1e5',
+      height: 40,
+    },
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -39,5 +47,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  performAsyncTask()
+
   createWindow()
 })

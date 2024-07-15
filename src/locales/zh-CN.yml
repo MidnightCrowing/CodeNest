@@ -1,0 +1,8 @@
+side_panel:
+  project: 项目
+  favorites: 收藏夹
+kinds:
+  all: All
+  mine: Mine
+  fork: Fork
+  clone: Clone
