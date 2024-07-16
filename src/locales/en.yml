@@ -1,8 +1,9 @@
 side_panel:
   project: Projects
-  favorites: Favorites
-kinds:
-  all: All
-  mine: Mine
-  fork: Fork
-  clone: Clone
+  languages: Languages
+  kinds:
+    all: All
+    mine: Mine
+    fork: Fork
+    clone: Clone
+    test: Test

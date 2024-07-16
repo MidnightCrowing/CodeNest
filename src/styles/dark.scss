@@ -1,16 +1,28 @@
 body {
-  /* 背景色 */
+  // #region background color
   --bg-1: rgb(30 31 34);
   --bg-2: rgb(43 45 48);
   --bg-3: rgb(60 63 65);
+  // #endregion
 
-  /* 边框颜色 */
-  --border: rgb(81 81 81);
+  // #region border color
+  --border: rgba(81 81 81 / 40%);
+  // #endregion
 
-  /* 文本颜色 */
-  --text-color: rgb(223 225 229);
+  // #region test color
+  --text-color-1: rgb(223 225 229);
+  --text-color-2: rgb(141 150 160);
 
-  /* 按钮颜色 */
+  // Inline help, shortcuts
+  --text-info-panel: rgb(140 140 140);
+
+  // Additional information in lists (paths, counters), placeholder
+  --text-info-input: rgb(120 120 120);
+
+  --text-selection: rgb(131 131 145 / 34%);
+  // #endregion
+
+  // #region button color
   --button-bg: var(--bg-2);
   --button-bg-disabled: rgb(60 63 65);
   --button-border: rgb(94 96 96);
@@ -20,4 +32,15 @@ body {
   --button-default-2: rgb(177 186 196 / 12%);
   --button-hover: rgb(59 66 75 / 70%);
   --button-active: rgb(177 186 196 / 20%);
+  // #endregion
+
+  // #region window header
+  --window-focus-in: var(--bg-2);
+  --window-focus-out: rgb(60 63 65);
+  // #endregion
+
+  // #region scrollbar
+  --scrollbar-thumb: rgb(255 255 255 / 15%);
+  --scrollbar-thumb-hover: rgb(255 255 255 / 25%);
+  // #endregion
 }

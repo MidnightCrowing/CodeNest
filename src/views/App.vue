@@ -48,7 +48,11 @@ html,
 #app {
   --uno: "m-0 p-0";
   --uno: "w-full h-full";
-  --uno: "color-$text-color bg-$bg-1";
+  --uno: "color-$text-color-1 bg-$bg-1";
   --uno: "overflow-hidden";
+
+  ::selection {
+    --uno: "bg-$text-selection";
+  }
 }
 </style>

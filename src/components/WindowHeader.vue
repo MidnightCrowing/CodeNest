@@ -10,6 +10,7 @@
   -webkit-app-region: drag;
   --uno: "h-40px w-full";
   --uno: "flex flex-row items-center";
-  --uno: "bg-$bg-2";
+  --uno: "bg-$window-focus-in";
+  --uno: "select-none";
 }
 </style>

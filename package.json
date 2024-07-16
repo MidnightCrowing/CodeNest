@@ -39,6 +39,7 @@
     "@types/jsdom": "^21.1.7",
     "@types/node": "^20.14.10",
     "@unocss/preset-attributify": "^0.61.3",
+    "@unocss/preset-mini": "^0.61.3",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/tsconfig": "^0.5.1",
     "concurrently": "^8.2.2",
