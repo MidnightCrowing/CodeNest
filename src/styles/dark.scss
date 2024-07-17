@@ -1,46 +1,67 @@
 body {
   // #region background color
-  --bg-1: rgb(30 31 34);
-  --bg-2: rgb(43 45 48);
-  --bg-3: rgb(60 63 65);
+  --bg-1: var(--gray-3);
+  --bg-2: var(--gray-4);
   // #endregion
 
   // #region border color
-  --border: rgba(81 81 81 / 40%);
+  --border-line: var(--gray-1);
+  --border-1: var(--gray-2);
+  --border-2: var(--blue-1);
+  // --border-disabled: rgb(60 63 65);
   // #endregion
 
-  // #region test color
-  --text-color-1: rgb(223 225 229);
-  --text-color-2: rgb(141 150 160);
+  // #region text color
+  // only used on special place
+  --text-color-1: var(--white-1);
+
+  // default color
+  --text-color-2: var(--white-2);
+
+  // use in unimportant title
+  --text-color-3: var(--white-3);
 
   // Inline help, shortcuts
-  --text-info-panel: rgb(140 140 140);
+  --text-info-panel: var(--white-4);
 
   // Additional information in lists (paths, counters), placeholder
-  --text-info-input: rgb(120 120 120);
+  --text-info-input: var(--white-5);
 
-  --text-selection: rgb(131 131 145 / 34%);
+  --text-selection: rgb(131 131 145 / 30%);
+
+  // 光标颜色
+  --caret-color: rgb(187 187 187 / 80%);
+  // #endregion
+
+  // #region hover color
+  --hover-1: var(--gray-1-50);
+  // #endregion
+
+  // #region active color
+  --active-1: var(--gray-1-30);
+  --active-2: var(--blue-1-80);
+  // #endregion
+
+  // #region select color
+  --select-2: var(--blue-1);
+
+  // use in list and drop-down options
+  --select-3: var(--blue-2);
   // #endregion
 
   // #region button color
-  --button-bg: var(--bg-2);
-  --button-bg-disabled: rgb(60 63 65);
-  --button-border: rgb(94 96 96);
-  --button-border-disabled: rgb(100 100 100);
-  --button-border-default: rgb(76 112 140);
-  --button-default-1: rgb(46 67 110);
-  --button-default-2: rgb(177 186 196 / 12%);
-  --button-hover: rgb(59 66 75 / 70%);
-  --button-active: rgb(177 186 196 / 20%);
+  --button-bg-1: var(--bg-1);
+  --button-bg-2: var(--blue-1);
+  // --button-bg-disabled: rgb(60 63 65);
   // #endregion
 
   // #region window header
-  --window-focus-in: var(--bg-2);
+  --window-focus-in: var(--bg-1);
   --window-focus-out: rgb(60 63 65);
   // #endregion
 
   // #region scrollbar
-  --scrollbar-thumb: rgb(255 255 255 / 15%);
-  --scrollbar-thumb-hover: rgb(255 255 255 / 25%);
+  --scrollbar-thumb: var(--white-1-15);
+  --scrollbar-thumb-hover: var(--white-1-25);
   // #endregion
 }

@@ -9,14 +9,14 @@ const activatedItem = inject<ActivatedItem>('activatedItem')
 const updateLanguage = inject<(language: Language) => void>('updateActivatedItem', () => {})
 
 function handleKindItemClick(language: Language) {
-  updateLanguage(language)
+  updateLanguage(`l-${language}`)
 }
 </script>
 
 <template>
   <div
     class="language-item"
-    :class="{ active: activatedItem === languageItem.language }"
+    :class="{ active: activatedItem === `l-${languageItem.language}` }"
     @click="handleKindItemClick(languageItem.language)"
   >
     <span
@@ -54,13 +54,13 @@ function handleKindItemClick(language: Language) {
 <style scoped lang="scss">
 .language-item {
   --uno: "h-20px mx-8px pl-2px pr-20px py-6px rounded-4px";
-  --uno: "bg-$button-bg border-$button-border";
-  --uno: "hover:bg-$button-hover active:bg-$button-active";
+  --uno: "bg-$button-bg-1";
+  --uno: "hover:bg-$hover-1 active:bg-$active-1";
   --uno: "flex flex-row items-center justify-between";
   --uno: "text-default cursor-pointer";
 
   &.active {
-    --uno: "bg-$button-default-1 border-$button-border-default";
+    --uno: "bg-$select-3";
   }
 }
 </style>

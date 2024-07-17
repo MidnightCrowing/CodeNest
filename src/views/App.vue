@@ -2,16 +2,22 @@
 import { onMounted, ref } from 'vue'
 
 import WindowHeader from '~/components/WindowHeader.vue'
+import { Theme } from '~/constants/theme'
 
 import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
 import SidePanel from './SidePanel/SidePanel.vue'
 
-// 当前主题状态
-const currentTheme = ref('dark')
+import('~/styles/main.scss')
+const currentTheme: Ref<Theme> = ref(Theme.dark)
 
 // 应用主题的函数
-function applyTheme(theme: string) {
-  if (theme === 'dark') {
+function applyTheme(theme: Theme) {
+  const appElement = document.getElementById('app')
+  if (appElement) {
+    appElement.className = theme
+  }
+
+  if (theme === Theme.dark) {
     import('~/styles/dark.scss')
   }
   else {
@@ -35,7 +41,7 @@ onMounted(() => {
   <WindowHeader />
   <div
     flex="~ row items-stretch"
-    h-full
+    h="[calc(100%-40px)]"
   >
     <SidePanel w-225px />
     <ProjectOverview grow />
@@ -48,11 +54,8 @@ html,
 #app {
   --uno: "m-0 p-0";
   --uno: "w-full h-full";
-  --uno: "color-$text-color-1 bg-$bg-1";
+  --uno: "color-$text-color-2 bg-$bg-2";
   --uno: "overflow-hidden";
-
-  ::selection {
-    --uno: "bg-$text-selection";
-  }
+  --uno: "caret-$caret-color selection:bg-$text-selection";
 }
 </style>

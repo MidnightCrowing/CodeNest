@@ -7,3 +7,5 @@ side_panel:
     fork: Fork
     clone: Clone
     test: Test
+header:
+  add_item: 添加项目

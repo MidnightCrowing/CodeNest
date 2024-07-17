@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import KindButton from '~/components/KindButton.vue'
+
 import type { KindItem } from '../types'
 import { Kind } from '../types'
-import KindButton from './KindButton.vue'
 
 const { t } = useI18n()
 
@@ -19,19 +20,24 @@ const kindGroup2: KindItem[] = [
 </script>
 
 <template>
-  <div class="flex-col">
+  <header
+    text="14px" lh="20px"
+    color="$text-color-3"
+    p="x-16px t-16px b-4px"
+  >
+    {{ t('side_panel.project') }}
+  </header>
+  <main>
     <KindButton
       v-for="kindItem in kindGroup1"
       :key="kindItem.kind"
       :kind-item="kindItem"
     />
-
     <hr hr m="x-16px">
-
     <KindButton
       v-for="kindItem in kindGroup2"
       :key="kindItem.kind"
       :kind-item="kindItem"
     />
-  </div>
+  </main>
 </template>

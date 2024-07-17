@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import LanguageButton from '~/components/LanguageButton.vue'
+
 import type { LanguageItem } from '../types'
-import LanguageButton from './LanguageButton.vue'
 
 const { t } = useI18n()
 
@@ -23,14 +24,16 @@ const languageGroup: LanguageItem[] = [
 <template>
   <header
     text="12px" lh="18px"
-    color="$text-color-2"
+    color="$text-color-3"
     p="x-16px y-6px"
   >
     {{ t('side_panel.languages') }}
   </header>
-  <LanguageButton
-    v-for="languageItem in languageGroup"
-    :key="languageItem.language"
-    :language-item="languageItem"
-  />
+  <main>
+    <LanguageButton
+      v-for="languageItem in languageGroup"
+      :key="languageItem.language"
+      :language-item="languageItem"
+    />
+  </main>
 </template>

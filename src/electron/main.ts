@@ -8,8 +8,12 @@ import { performAsyncTask } from './asyncTask.js'
 
 const devUrl = 'http://localhost:5173/'
 const maxRetries = 5
-let retryCount = 0
+const windowWidth = 800
+const windowHeight = 650
+
 let mainWindow: BrowserWindow
+let retryCount = 0
+let isOpenDevTools = false
 
 // 检查是否为生产环境
 const isPackaged = app.isPackaged
@@ -20,8 +24,8 @@ Menu.setApplicationMenu(null)
 // 创建窗口
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 650,
+    width: windowWidth,
+    height: windowHeight,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000',
@@ -36,11 +40,6 @@ function createWindow() {
 
   // 设置窗口标题
   mainWindow.setTitle('CodeNest')
-
-  // 开发环境下, 打开开发者工具
-  // if (!isPackaged) {
-  //   mainWindow.webContents.openDevTools();
-  // }
 
   // 是否是生产环境
   if (!isPackaged) {
@@ -73,19 +72,35 @@ function loadURLWithRetry(url: string) {
 }
 
 // 注册全局快捷键
-function setGlobalShortcut(url: string) {
+function setGlobalShortcut() {
+  // F5: 重新加载url
   globalShortcut.register('F5', () => {
-    // eslint-disable-next-line no-console
-    console.info('F5 pressed, reloading URL')
-    retryCount = 0 // 重置重试计数
-    loadURLWithRetry(url)
+    retryCount = 0
+    loadURLWithRetry(devUrl)
+  })
+
+  // F6: 重置窗口大小
+  globalShortcut.register('F6', () => {
+    mainWindow.setSize(windowWidth, windowHeight)
+  })
+
+  // F12: 打开开发者工具
+  globalShortcut.register('F12', () => {
+    if (!isOpenDevTools) {
+      mainWindow.webContents.openDevTools()
+      isOpenDevTools = true
+    }
+    else {
+      mainWindow.webContents.closeDevTools()
+      isOpenDevTools = false
+    }
   })
 }
 
 // 应用启动时的操作
 app.whenReady().then(async () => {
   performAsyncTask()
-  setGlobalShortcut(devUrl)
+  setGlobalShortcut()
   createWindow()
 })
 
