@@ -10,10 +10,10 @@ const { t } = useI18n()
   <header
     m="20px"
     flex="~ row justify-between items-center"
-    gap="7px"
+    gap="15px"
   >
     <SearchBar grow />
-    <button button>
+    <button button-solid>
       {{ t('header.add_item') }}
     </button>
   </header>

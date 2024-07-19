@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { ActivatedItem, Kind, KindItem } from '../views/SidePanel/types'
-import { KindMark } from '../views/SidePanel/types'
+import type { ProjectKind } from '~/constants/projectKind'
+
+import { KindMark } from '../constants'
+import type { ActivatedItem, KindItem } from '../types'
 
 defineProps<{
   kindItem: KindItem
@@ -9,13 +11,13 @@ defineProps<{
 const activatedItem = inject<ActivatedItem>('activatedItem')
 const updateKind = inject<(kindMark: KindMark) => void>('updateActivatedItem', () => {})
 
-function handleKindItemClick(kind: Kind) {
+function handleKindItemClick(kind: ProjectKind) {
   updateKind({
-    'all': KindMark.all,
-    'mine': KindMark.mine,
-    'fork': KindMark.fork,
-    'clone': KindMark.clone,
-    'test': KindMark.test,
+    'all': KindMark.ALL,
+    'mine': KindMark.MINE,
+    'fork': KindMark.FORK,
+    'clone': KindMark.CLONE,
+    'test': KindMark.TEST,
   }[kind])
 }
 </script>
@@ -43,7 +45,7 @@ function handleKindItemClick(kind: Kind) {
   --uno: "bg-$button-bg-1";
   --uno: "hover:bg-$hover-1 active:bg-$active-1";
   --uno: "flex flex-row items-center justify-between";
-  --uno: "text-default cursor-pointer";
+  --uno: "cursor-pointer";
 
   &.active {
     --uno: "bg-$select-3";

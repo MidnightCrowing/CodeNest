@@ -1,31 +1,30 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import KindButton from '~/components/KindButton.vue'
-
+import { Kind } from '../constants'
 import type { KindItem } from '../types'
-import { Kind } from '../types'
+import KindButton from './KindButton.vue'
 
 const { t } = useI18n()
 
 const kindGroup1: KindItem[] = [
-  { kind: Kind.all, i18nKey: t('side_panel.kinds.all') },
-  { kind: Kind.mine, i18nKey: t('side_panel.kinds.mine') },
-  { kind: Kind.fork, i18nKey: t('side_panel.kinds.fork') },
-  { kind: Kind.clone, i18nKey: t('side_panel.kinds.clone') },
+  { kind: Kind.ALL, i18nKey: t('side_panel.kinds.all') },
+  { kind: Kind.MINE, i18nKey: t('side_panel.kinds.mine') },
+  { kind: Kind.FORK, i18nKey: t('side_panel.kinds.fork') },
+  { kind: Kind.CLONE, i18nKey: t('side_panel.kinds.clone') },
 ]
 const kindGroup2: KindItem[] = [
-  { kind: Kind.test, i18nKey: t('side_panel.kinds.test') },
+  { kind: Kind.TEST, i18nKey: t('side_panel.kinds.test') },
 ]
 </script>
 
 <template>
   <header
     text="14px" lh="20px"
-    color="$text-color-3"
+    color="$text-color-4"
     p="x-16px t-16px b-4px"
   >
-    {{ t('side_panel.project') }}
+    {{ t('side_panel.projects') }}
   </header>
   <main>
     <KindButton

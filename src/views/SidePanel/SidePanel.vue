@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import KindGroup from './components/KindGroup.vue'
 import LanguagesGroup from './components/LanguagesGroup.vue'
+import { KindMark } from './constants'
 import type { ActivatedItem, ItemMark } from './types'
-import { KindMark } from './types'
 
-const activatedItem: ActivatedItem = ref(KindMark.all)
+const activatedItem: ActivatedItem = ref(KindMark.ALL)
 
 function updateActivatedItem(itemMark: ItemMark) {
   if (activatedItem.value !== itemMark)

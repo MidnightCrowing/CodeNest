@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import type { ActivatedItem, Language, LanguageItem } from '../types'
+import { Shape } from '~/components/LanguageCard/constants'
+import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
+import type { ProjectLanguage, ProjectLanguageInfo } from '~/constants/types'
+
+import type { ActivatedItem } from '../types'
 
 defineProps<{
-  languageItem: LanguageItem
+  languageItem: ProjectLanguageInfo
 }>()
 
 const activatedItem = inject<ActivatedItem>('activatedItem')
-const updateLanguage = inject<(language: Language) => void>('updateActivatedItem', () => {})
+const updateLanguage = inject<(language: ProjectLanguage) => void>('updateActivatedItem', () => {})
 
-function handleKindItemClick(language: Language) {
+function handleKindItemClick(language: ProjectLanguage) {
   updateLanguage(`l-${language}`)
 }
 </script>
@@ -24,16 +28,12 @@ function handleKindItemClick(language: Language) {
       overflow="hidden"
     >
       <span
-        h="20px" w="min-w-16px max-w-20px"
-        m="x-8px"
+        h="20px" w="min-w-16px max-w-20px" m="x-8px"
         flex="~ justify-center items-center"
       >
-        <div
-          h="10px" w="10px"
-          border="solid 1px #ffffff26" rounded="8px"
-          :style="{ backgroundColor: languageItem.color }"
-        />
+        <LanguageCard :language-color="languageItem.color" :shape="Shape.VERTICAL_BAR" />
       </span>
+
       <span
         block overflow="hidden" text-ellipsis whitespace-nowrap
         :title="languageItem.language"
@@ -41,6 +41,7 @@ function handleKindItemClick(language: Language) {
         {{ languageItem.language }}
       </span>
     </span>
+
     <span
       h="17px" m="l-8px" p="x-8px" rounded="16px"
       bg="#afc8e14d"
@@ -57,7 +58,7 @@ function handleKindItemClick(language: Language) {
   --uno: "bg-$button-bg-1";
   --uno: "hover:bg-$hover-1 active:bg-$active-1";
   --uno: "flex flex-row items-center justify-between";
-  --uno: "text-default cursor-pointer";
+  --uno: "cursor-pointer";
 
   &.active {
     --uno: "bg-$select-3";

@@ -2,7 +2,7 @@ import * as path from 'node:path'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, globalShortcut, Menu } from 'electron'
+import { app, BrowserWindow, globalShortcut, Menu, shell } from 'electron'
 
 import { performAsyncTask } from './asyncTask.js'
 
@@ -50,6 +50,14 @@ function createWindow() {
     const __dirname = dirname(__filename)
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)
   }
+
+  // 拦截新的窗口请求
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // 在系统默认浏览器中打开 URL
+    shell.openExternal(url)
+    // 阻止 Electron 打开新窗口
+    return { action: 'deny' }
+  })
 }
 
 // 带重试的加载URL函数
@@ -102,6 +110,14 @@ app.whenReady().then(async () => {
   performAsyncTask()
   setGlobalShortcut()
   createWindow()
+})
+
+// 拦截所有链接，并在默认浏览器中打开
+app.on('web-contents-created', (e, contents) => {
+  contents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    shell.openExternal(url)
+  })
 })
 
 // 应用退出时的操作

@@ -1,5 +1,5 @@
 side_panel:
-  project: Projects
+  projects: Projects
   languages: Languages
   kinds:
     all: All
@@ -9,3 +9,4 @@ side_panel:
     test: Test
 header:
   add_item: 添加项目
+  search_project: 搜索项目

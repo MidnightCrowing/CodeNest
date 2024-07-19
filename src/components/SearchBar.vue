@@ -1,26 +1,43 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+const searchText = ref('')
+
+function clearInput() {
+  searchText.value = ''
+}
 </script>
-<!-- flex="~ row items-center" -->
 
 <template>
-  <span
-    relative h="26px" overflow-hidden
-  >
+  <span relative h="26px" overflow-hidden>
     <span
+      w="15px" h="15px"
       m="x-3px y-auto" absolute top-0 bottom-0 left-0
       pointer-events-none
-      i-custom:search dark:i-custom:search_dark
+      i-custom="search dark:search_dark"
     />
     <input
-      bg-transparent color="$text-color-2"
-      border-none outline-none shadow-none
-      h-full w="[calc(100%-50px)]" p="x-25px"
-      placeholder="请输入文字"
+      v-model="searchText"
+      :placeholder="t('header.search_project')"
+      spellcheck="false"
     >
     <span
+      v-if="searchText"
+      w="15px" h="15px"
       m="x-3px y-auto" absolute top-0 bottom-0 right-0
       cursor-pointer
-      dark:i-custom:closeSmall
+      i-custom="close-small dark:close-small_dark"
+      hover:i-custom="close-small-hovered dark:close-small-hovered_dark"
+      @click="clearInput"
     />
   </span>
 </template>
+
+<style scoped lang="scss">
+input {
+  --uno: "bg-transparent color-$text-color-2 placeholder-$text-color-3";
+  --uno: "border-none outline-none shadow-none";
+  --uno: "h-full w-[calc(100%-46px)] px-23px";
+}
+</style>

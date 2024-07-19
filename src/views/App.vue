@@ -43,7 +43,7 @@ onMounted(() => {
     flex="~ row items-stretch"
     h="[calc(100%-40px)]"
   >
-    <SidePanel w-225px />
+    <SidePanel w="225px" min="w-225px" max="w-225px" />
     <ProjectOverview grow />
   </div>
 </template>
@@ -55,7 +55,7 @@ html,
   --uno: "m-0 p-0";
   --uno: "w-full h-full";
   --uno: "color-$text-color-2 bg-$bg-2";
-  --uno: "overflow-hidden";
+  --uno: "text-default overflow-hidden";
   --uno: "caret-$caret-color selection:bg-$text-selection";
 }
 </style>

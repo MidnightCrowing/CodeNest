@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import LanguageButton from '~/components/LanguageButton.vue'
+import type { ProjectLanguageInfo } from '~/constants/types'
 
-import type { LanguageItem } from '../types'
+import LanguageButton from './LanguageButton.vue'
 
 const { t } = useI18n()
 
-const languageGroup: LanguageItem[] = [
+const languagesGroup: ProjectLanguageInfo[] = [
   { language: 'JavaScript', color: '#f1e05a' },
   { language: 'HTML', color: '#e34c26' },
   { language: 'Java', color: '#b07219' },
@@ -31,7 +31,7 @@ const languageGroup: LanguageItem[] = [
   </header>
   <main>
     <LanguageButton
-      v-for="languageItem in languageGroup"
+      v-for="languageItem in languagesGroup"
       :key="languageItem.language"
       :language-item="languageItem"
     />

@@ -1,67 +1,65 @@
 body {
-  // #region background color
+  // region background color
   --bg-1: var(--gray-3);
   --bg-2: var(--gray-4);
-  // #endregion
+  // endregion
 
-  // #region border color
+  // region border color
   --border-line: var(--gray-1);
   --border-1: var(--gray-2);
   --border-2: var(--blue-1);
   // --border-disabled: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region text color
+  // region text color
   // only used on special place
   --text-color-1: var(--white-1);
 
   // default color
   --text-color-2: var(--white-2);
 
-  // use in unimportant title
+  // Additional information in lists (paths, counters), placeholder
   --text-color-3: var(--white-3);
 
   // Inline help, shortcuts
-  --text-info-panel: var(--white-4);
-
-  // Additional information in lists (paths, counters), placeholder
-  --text-info-input: var(--white-5);
+  --text-color-4: var(--white-4);
 
   --text-selection: rgb(131 131 145 / 30%);
 
   // 光标颜色
   --caret-color: rgb(187 187 187 / 80%);
-  // #endregion
+  // endregion
 
-  // #region hover color
+  // region hover color
   --hover-1: var(--gray-1-50);
-  // #endregion
+  --hover-2: var(--gray-1-80);
+  // endregion
 
-  // #region active color
+  // region active color
   --active-1: var(--gray-1-30);
   --active-2: var(--blue-1-80);
-  // #endregion
+  // endregion
 
-  // #region select color
+  // region select color
   --select-2: var(--blue-1);
 
   // use in list and drop-down options
   --select-3: var(--blue-2);
-  // #endregion
+  // endregion
 
-  // #region button color
+  // region button color
   --button-bg-1: var(--bg-1);
   --button-bg-2: var(--blue-1);
   // --button-bg-disabled: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region window header
+  // region window header
   --window-focus-in: var(--bg-1);
   --window-focus-out: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region scrollbar
+  // region scrollbar
   --scrollbar-thumb: var(--white-1-15);
   --scrollbar-thumb-hover: var(--white-1-25);
-  // #endregion
+  // endregion
 }

@@ -3,8 +3,8 @@ import { createI18n } from 'vue-i18n'
 
 export const i18n = createI18n({
   legacy: false,
-  // locale: 'zh-CN',
-  locale: 'en',
+  locale: 'zh-CN',
+  // locale: 'en',
   fallbackLocale: 'en',
   globalInjection: true,
   messages,
