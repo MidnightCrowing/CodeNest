@@ -33,15 +33,15 @@ function projectButtonClicked() {
     @mousedown="projectButtonClick(projectItem.path)"
     @mouseup="projectButtonClicked()"
   >
-    <div flex="~ col justify-between" text-small>
+    <div flex="~ col justify-between" max-w="100%" text-small>
       <div flex="~ col" gap="5px">
-        <span text-default>{{ projectItem.name }}</span>
+        <span class="text title">{{ projectItem.name }}</span>
 
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
-          text="$text-color-3"
+          class="text info kind"
         >
-          {{ kind === ProjectKind.fork ? 'Forked from' : 'Cloned from' }}
+          {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <template v-if="kindFrom && kindUrl">
             <a :href="kindUrl" target="_blank">{{ kindFrom }}</a>
           </template>
@@ -53,7 +53,7 @@ function projectButtonClicked() {
           </template>
         </span>
 
-        <span text="$text-color-3">{{ projectItem.path }}</span>
+        <span class="text info">{{ projectItem.path }}</span>
       </div>
 
       <div flex="~ row" gap="15px">
@@ -61,6 +61,7 @@ function projectButtonClicked() {
           :language="projectItem.language"
           :languages-group="projectItem.languagesGroup"
         />
+
         <LicenseButton
           :license="projectItem.license"
         />
@@ -74,10 +75,31 @@ function projectButtonClicked() {
   --uno: "h-90px rounded-5px p-10px";
   --uno: "flex flex-row";
   --uno: "hover:bg-$hover-1";
+  // --uno: "overflow-hidden";
   --uno: "cursor-pointer";
 
   &.active {
     --uno: "active:bg-$active-1";
+  }
+}
+
+.text {
+  --uno: "whitespace-nowrap text-ellipsis overflow-hidden";
+}
+
+.title {
+  --uno: "text-default m-b-2px";
+}
+
+.info {
+  --uno: "text-$text-color-3";
+}
+
+.kind {
+  --uno: "text-$text-color-3";
+
+  & a {
+    --uno: "text-$text-color-3 hover:text-$text-hover";
   }
 }
 </style>

@@ -44,7 +44,7 @@ onMounted(() => {
     h="[calc(100%-40px)]"
   >
     <SidePanel w="225px" min="w-225px" max="w-225px" />
-    <ProjectOverview grow />
+    <ProjectOverview grow max="w-[calc(100%-225px)]" />
   </div>
 </template>
 

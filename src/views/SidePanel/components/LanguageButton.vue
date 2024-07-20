@@ -20,8 +20,8 @@ function handleKindItemClick(language: ProjectLanguage) {
 <template>
   <div
     class="language-item"
-    :class="{ active: activatedItem === `l-${languageItem.language}` }"
-    @click="handleKindItemClick(languageItem.language)"
+    :class="{ active: activatedItem === `l-${languageItem.text}` }"
+    @click="handleKindItemClick(languageItem.text)"
   >
     <span
       flex="~ row justify-start items-center"
@@ -36,9 +36,9 @@ function handleKindItemClick(language: ProjectLanguage) {
 
       <span
         block overflow="hidden" text-ellipsis whitespace-nowrap
-        :title="languageItem.language"
+        :title="languageItem.text"
       >
-        {{ languageItem.language }}
+        {{ languageItem.text }}
       </span>
     </span>
 

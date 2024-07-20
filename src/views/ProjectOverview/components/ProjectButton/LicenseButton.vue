@@ -20,6 +20,10 @@ function licenseButtonHovered() {
     @mouseenter="licenseButtonHover(license)"
     @mouseleave="licenseButtonHovered"
   >
+    <div
+      m="t-1px r-5px" w="13px" h="13px"
+      i-custom="license dark:license_dark"
+    />
     {{ license }}
   </InfoButton>
 </template>

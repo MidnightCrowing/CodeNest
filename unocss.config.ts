@@ -27,7 +27,7 @@ export default defineConfig({
     }),
   ],
   shortcuts: {
-    // region text
+    // #region text
     'head-0': 'text-[25px] font-bold',
     'head-1': 'text-[22px] font-bold',
     'head-2': 'text-[18px] font-bold',
@@ -36,9 +36,9 @@ export default defineConfig({
     'text-paragraph': 'text-[13px] lh-[19px]',
     'text-medium': 'text-[12px] lh-[15px]',
     'text-small': 'text-[11px] lh-[14px]',
-    // endregion
+    // #endregion
 
-    // region button
+    // #region button
     'btn-border': 'border-0',
     'btn-radius': 'rounded-[4px]',
     'btn-text': 'text-[13px] lh-[25px]',
@@ -53,14 +53,14 @@ export default defineConfig({
 
     'button': 'btn-base btn-bg btn-color btn-outline',
     'button-solid': 'btn-base btn-bg-solid btn-color-solid',
-    // endregion
+    // #endregion
 
-    // region hr
+    // #region hr
     'hr': 'border-0 h-1px bg-$border-line',
-    // endregion
+    // #endregion
   },
 
-  // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
+  // #region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
   variants: [
     (matcher) => {
       const matches = matcher.match(
@@ -117,7 +117,7 @@ export default defineConfig({
       },
     ],
   ],
-  // endregion
+  // #endregion
 
   transformers: [
     transformerDirectives(),

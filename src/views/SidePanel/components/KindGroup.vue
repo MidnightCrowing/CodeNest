@@ -21,7 +21,7 @@ const kindGroup2: KindItem[] = [
 <template>
   <header
     text="14px" lh="20px"
-    color="$text-color-4"
+    color="$text-color-3"
     p="x-16px t-16px b-4px"
   >
     {{ t('side_panel.projects') }}

@@ -1,17 +1,32 @@
 body {
-  // region background color
+  // #region background color
   --bg-1: var(--gray-3);
   --bg-2: var(--gray-4);
-  // endregion
+  // #endregion
 
-  // region border color
+  // #region border color
   --border-line: var(--gray-1);
   --border-1: var(--gray-2);
   --border-2: var(--blue-1);
   // --border-disabled: rgb(60 63 65);
-  // endregion
+  // #endregion
 
-  // region text color
+  // #region shadows
+  // The shadows of the card, button, and other slightly elevated components
+  --shadow-1: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+
+  // The shadows of the top bar, header, elevated fixed buttons/cards and other components that are in the a fixed or sticky position
+  --shadow-2: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+
+  // The shadows of the popover, dropdown
+  --shadow-3: 0 20px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+
+  // Only used in the dialog
+  --shadow-4: 0 34px 50px -20px rgb(0 0 0 / 0.14), 0 32px 45px -12px rgb(0 0 0 / 0.1),
+    0 30px 40px -8px rgb(0 0 0 / 0.12);
+  // #endregion
+
+  // #region text color
   // only used on special place
   --text-color-1: var(--white-1);
 
@@ -24,42 +39,45 @@ body {
   // Inline help, shortcuts
   --text-color-4: var(--white-4);
 
+  // link hover
+  --text-hover: var(--blue-1);
+
   --text-selection: rgb(131 131 145 / 30%);
 
   // 光标颜色
   --caret-color: rgb(187 187 187 / 80%);
-  // endregion
+  // #endregion
 
-  // region hover color
+  // #region hover color
   --hover-1: var(--gray-1-50);
   --hover-2: var(--gray-1-80);
-  // endregion
+  // #endregion
 
-  // region active color
+  // #region active color
   --active-1: var(--gray-1-30);
   --active-2: var(--blue-1-80);
-  // endregion
+  // #endregion
 
-  // region select color
+  // #region select color
   --select-2: var(--blue-1);
 
   // use in list and drop-down options
   --select-3: var(--blue-2);
-  // endregion
+  // #endregion
 
-  // region button color
+  // #region button color
   --button-bg-1: var(--bg-1);
   --button-bg-2: var(--blue-1);
   // --button-bg-disabled: rgb(60 63 65);
-  // endregion
+  // #endregion
 
-  // region window header
+  // #region window header
   --window-focus-in: var(--bg-1);
   --window-focus-out: rgb(60 63 65);
-  // endregion
+  // #endregion
 
-  // region scrollbar
+  // #region scrollbar
   --scrollbar-thumb: var(--white-1-15);
   --scrollbar-thumb-hover: var(--white-1-25);
-  // endregion
+  // #endregion
 }

@@ -8,16 +8,16 @@ import LanguageButton from './LanguageButton.vue'
 const { t } = useI18n()
 
 const languagesGroup: ProjectLanguageInfo[] = [
-  { language: 'JavaScript', color: '#f1e05a' },
-  { language: 'HTML', color: '#e34c26' },
-  { language: 'Java', color: '#b07219' },
-  { language: 'Python', color: '#3572a5' },
-  { language: 'TypeScript', color: '#3178c6' },
-  { language: 'Jupyter Notebook', color: '#da5b0b' },
-  { language: 'C#', color: '#178600' },
-  { language: 'CSS', color: '#563d7c' },
-  { language: 'Ruby', color: '#701516' },
-  { language: 'C++', color: '#f34b7d' },
+  { text: 'JavaScript', color: '#f1e05a' },
+  { text: 'HTML', color: '#e34c26' },
+  { text: 'Java', color: '#b07219' },
+  { text: 'Python', color: '#3572a5' },
+  { text: 'TypeScript', color: '#3178c6' },
+  { text: 'Jupyter Notebook', color: '#da5b0b' },
+  { text: 'C#', color: '#178600' },
+  { text: 'CSS', color: '#563d7c' },
+  { text: 'Ruby', color: '#701516' },
+  { text: 'C++', color: '#f34b7d' },
 ]
 </script>
 
@@ -32,7 +32,7 @@ const languagesGroup: ProjectLanguageInfo[] = [
   <main>
     <LanguageButton
       v-for="languageItem in languagesGroup"
-      :key="languageItem.language"
+      :key="languageItem.text"
       :language-item="languageItem"
     />
   </main>
