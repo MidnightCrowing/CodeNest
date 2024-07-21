@@ -10,3 +10,63 @@ side_panel:
 header:
   add_item: 添加项目
   search_project: 搜索项目
+license:
+  info:
+    commercial_use: 商业用途
+    distribution: 分发
+    modification: 修改
+    patent_use: 专利授权
+    private_use: 私用
+    disclose_source: 公开源码
+    license_and_copyright_notice: 放置许可协议与版权信息
+    network_use_is_distribution: 使用网络分发
+    same_license: 使用相同协议
+    same_license_library: 使用相同协议(library)
+    same_license_file: 使用相同协议(file)
+    state_changes: 声明变更
+    liability: 承担责任
+    trademark_use: 使用商标
+  mit:
+    description_url: https://choosealicense.cc/licenses/mit/
+  apache_2_0:
+    description_url: https://choosealicense.cc/licenses/apache-2.0/
+  bsd_2_clause:
+    description_url: https://choosealicense.cc/licenses/bsd-2-clause/
+  bsd_3_clause:
+    description_url: https://choosealicense.cc/licenses/bsd-3-clause/
+  gplv2:
+    description_url: https://choosealicense.cc/licenses/gpl-2.0/
+  gplv3:
+    description_url: https://choosealicense.cc/licenses/gpl-3.0/
+  lgplv2_1:
+    description_url: https://choosealicense.cc/licenses/lgpl-2.1/
+  lgplv3:
+    description_url: https://choosealicense.cc/licenses/lgpl-3.0/
+  agplv3:
+    description_url: https://choosealicense.cc/licenses/agpl-3.0/
+  mpl_2_0:
+    description_url: https://choosealicense.cc/licenses/mpl-2.0/
+  cc0_1_0:
+    description_url: https://choosealicense.cc/licenses/cc0-1.0/
+  unlicense:
+    description_url: https://choosealicense.cc/licenses/unlicense/
+  wtfpl:
+    description_url: https://choosealicense.cc/licenses/wtfpl/
+  zlib:
+    description_url: https://choosealicense.cc/licenses/zlib/
+  isc:
+    description_url: https://choosealicense.cc/licenses/isc/
+  artistic_2_0:
+    description_url: https://choosealicense.cc/licenses/artistic-2.0/
+  afl_3_0:
+    description_url: https://choosealicense.cc/licenses/afl-3.0/
+  osl_3_0:
+    description_url: https://choosealicense.cc/licenses/osl-3.0/
+  eupl_1_1:
+    description_url: https://choosealicense.cc/licenses/eupl-1.1/
+  open_font_1_1:
+    description_url: https://choosealicense.cc/licenses/ofl-1.1/
+  ms_pl:
+    description_url: https://choosealicense.cc/licenses/ms-pl/
+  ms_rl:
+    description_url: https://choosealicense.cc/licenses/ms-rl/

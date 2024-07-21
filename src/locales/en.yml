@@ -10,3 +10,71 @@ side_panel:
 header:
   add_item: Add item
   search_project: Search Project
+license:
+  info:
+    commercial_use: Commercial use
+    distribution: Distribution
+    modification: Modification
+    patent_use: Patent use
+    private_use: Private use
+    disclose_source: Disclose source
+    license_and_copyright_notice: License and copyright notice
+    license_and_copyright_notice_for_source: License and copyright notice for source
+    network_use_is_distribution: Network use is distribution
+    same_license: Same license
+    same_license_library: Same license (library)
+    same_license_file: Same license (file)
+    state_changes: State changes
+    liability: Liability
+    trademark_use: Trademark use
+    warranty: Warranty
+  mit:
+    description_url: https://choosealicense.com/licenses/mit/
+  apache_2_0:
+    description_url: https://choosealicense.com/licenses/apache-2.0/
+  bsd_2_clause:
+    description_url: https://choosealicense.com/licenses/bsd-2-clause/
+  bsd_3_clause:
+    description_url: https://choosealicense.com/licenses/bsd-3-clause/
+  gplv2:
+    description_url: https://choosealicense.com/licenses/gpl-2.0/
+  gplv3:
+    description_url: https://choosealicense.com/licenses/gpl-3.0/
+  lgplv2_1:
+    description_url: https://choosealicense.com/licenses/lgpl-2.1/
+  lgplv3:
+    description_url: https://choosealicense.com/licenses/lgpl-3.0/
+  agplv3:
+    description_url: https://choosealicense.com/licenses/agpl-3.0/
+  mpl_2_0:
+    description_url: https://choosealicense.com/licenses/mpl-2.0/
+  eclipse_2_0:
+    description_url: https://choosealicense.com/licenses/epl-2.0/
+  boost_1_0:
+    description_url: https://choosealicense.com/licenses/bsl-1.0/
+  cc0_1_0:
+    description_url: https://choosealicense.com/licenses/cc0-1.0/
+  unlicense:
+    description_url: https://choosealicense.com/licenses/unlicense/
+  wtfpl:
+    description_url: https://choosealicense.com/licenses/wtfpl/
+  zlib:
+    description_url: https://choosealicense.com/licenses/zlib/
+  isc:
+    description_url: https://choosealicense.com/licenses/isc/
+  artistic_2_0:
+    description_url: https://choosealicense.com/licenses/artistic-2.0/
+  afl_3_0:
+    description_url: https://choosealicense.com/licenses/afl-3.0/
+  osl_3_0:
+    description_url: https://choosealicense.com/licenses/osl-3.0/
+  eupl_1_1:
+    description_url: https://choosealicense.com/licenses/eupl-1.1/
+  eupl_1_2:
+    description_url: https://choosealicense.com/licenses/eupl-1.2/
+  open_font_1_1:
+    description_url: https://choosealicense.com/licenses/ofl-1.1/
+  ms_pl:
+    description_url: https://choosealicense.com/licenses/ms-pl/
+  ms_rl:
+    description_url: https://choosealicense.com/licenses/ms-rl/

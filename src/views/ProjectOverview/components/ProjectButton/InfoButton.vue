@@ -1,9 +1,3 @@
-<script setup lang="ts">
-defineProps<{
-  use: boolean
-}>()
-</script>
-
 <template>
   <span
     p="x-10px y-5px" rounded="4px"
