@@ -70,3 +70,8 @@ license:
     description_url: https://choosealicense.cc/licenses/ms-pl/
   ms_rl:
     description_url: https://choosealicense.cc/licenses/ms-rl/
+license_pop:
+  permissions: 允许
+  limitations: 禁止
+  conditions: 要求
+  no_description_desc: 没有描述

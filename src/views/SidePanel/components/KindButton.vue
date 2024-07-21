@@ -42,8 +42,7 @@ function handleKindItemClick(kind: ProjectKind) {
 <style scoped lang="scss">
 .kind-item {
   --uno: "h-20px mx-8px px-20px py-6px rounded-4px";
-  --uno: "bg-$button-bg-1";
-  --uno: "hover:bg-$hover-1 active:bg-$active-1";
+  --uno: "bg-$button-bg-1 hover:bg-$hover-1 active:bg-$active-1";
   --uno: "flex flex-row items-center justify-between";
   --uno: "cursor-pointer";
 

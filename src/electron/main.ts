@@ -54,7 +54,8 @@ function createWindow() {
   // 拦截新的窗口请求
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     // 在系统默认浏览器中打开 URL
-    shell.openExternal(url)
+    if (url !== devUrl)
+      shell.openExternal(url)
     // 阻止 Electron 打开新窗口
     return { action: 'deny' }
   })

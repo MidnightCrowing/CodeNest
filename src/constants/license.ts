@@ -1,6 +1,6 @@
-import { useI18n } from 'vue-i18n'
+import { i18n } from '~/utils/i18n'
 
-const { t } = useI18n()
+export const { t } = i18n.global
 
 export enum License {
   MIT = 'MIT License',

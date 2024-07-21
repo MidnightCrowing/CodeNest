@@ -27,18 +27,19 @@ function hidePop() {
 <template>
   <div
     relative
+    @click="showPop"
+    @mouseleave="hidePop"
+    @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
+    @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
   >
     <template v-if="showPopComponent">
       <LanguagePop
         :languages-group="languagesGroup"
-        left="-5px" top="-2px"
+        left="-5px"
       />
     </template>
 
-    <InfoButton
-      @mouseenter="showPop"
-      @mouseleave="hidePop"
-    >
+    <InfoButton>
       <LanguageCard
         :language-color="language.color"
         m="r-5px"

@@ -78,3 +78,8 @@ license:
     description_url: https://choosealicense.com/licenses/ms-pl/
   ms_rl:
     description_url: https://choosealicense.com/licenses/ms-rl/
+license_pop:
+  permissions: Permissions
+  limitations: Limitations
+  conditions: Conditions
+  no_description_desc: Not has description

@@ -15,14 +15,15 @@ function percentConversion(num: number) {
 <template>
   <div
     absolute translate-y="-100%"
-    bg="$bg-1" shadow="shadow-1"
+    bg="$bg-1" shadow="$shadow-1"
     p="x-10px y-5px" rounded="5px"
+    cursor-default
   >
     <div h="8px" m="t-5px b-10px">
       <span
         inline-block w-full h-full
         rounded="8px" overflow-hidden
-        flex row gap="1px"
+        flex="~ row" gap="1px"
       >
         <span
           v-for="languageItem in languagesGroup"
@@ -35,7 +36,8 @@ function percentConversion(num: number) {
 
     <ul
       m="x-3px y-5px" p-0
-      grid gap="8px"
+      grid gap="8px" grid-cols="[1fr_1fr_1fr]"
+      list-none
     >
       <li
         v-for="languageItem in languagesGroup"
@@ -56,9 +58,3 @@ function percentConversion(num: number) {
     </ul>
   </div>
 </template>
-
-<style scoped lang="scss">
-ul {
-  grid-template-columns: 1fr 1fr 1fr;
-}
-</style>

@@ -45,7 +45,7 @@ export default defineConfig({
     'btn-min-w': 'min-w-[72px]',
     'btn-padding': 'px-[14px]',
     'btn-bg': 'bg-$button-bg-1',
-    'btn-bg-solid': 'bg-$button-bg-2 active:bg-$active-2',
+    'btn-bg-solid': 'bg-$button-bg-2 active:bg-$active-3',
     'btn-color': 'color-$text-color-2',
     'btn-color-solid': 'color-$text-color-1',
     'btn-outline': 'outline outline-[2px] outline-$border-1 active:outline-$border-2',

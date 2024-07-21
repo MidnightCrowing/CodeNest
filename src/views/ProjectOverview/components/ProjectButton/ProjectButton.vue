@@ -75,7 +75,6 @@ function projectButtonClicked() {
   --uno: "h-90px rounded-5px p-10px";
   --uno: "flex flex-row";
   --uno: "hover:bg-$hover-1";
-  // --uno: "overflow-hidden";
   --uno: "cursor-pointer";
 
   &.active {
