@@ -4,8 +4,7 @@ import { onMounted, ref } from 'vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import { Theme } from '~/constants/theme'
 
-import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
-import SidePanel from './SidePanel/SidePanel.vue'
+import NewProject from './NewProject/NewProject.vue'
 
 import('~/styles/main.scss')
 const currentTheme: Ref<Theme> = ref(Theme.dark)
@@ -39,13 +38,8 @@ onMounted(() => {
 
 <template>
   <WindowHeader />
-  <div
-    flex="~ row items-stretch"
-    h="[calc(100%-40px)]"
-  >
-    <SidePanel w="225px" min="w-225px" max="w-225px" />
-    <ProjectOverview grow max="w-[calc(100%-225px)]" />
-  </div>
+  <!-- <Home /> -->
+  <NewProject />
 </template>
 
 <style lang="scss">

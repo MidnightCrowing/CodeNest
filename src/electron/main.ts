@@ -25,7 +25,9 @@ Menu.setApplicationMenu(null)
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: windowWidth,
+    minWidth: windowWidth,
     height: windowHeight,
+    minHeight: windowHeight,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000',

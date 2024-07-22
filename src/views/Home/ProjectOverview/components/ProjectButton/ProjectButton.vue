@@ -76,6 +76,7 @@ function projectButtonClicked() {
   --uno: "flex flex-row";
   --uno: "hover:bg-$hover-1";
   --uno: "cursor-pointer";
+  --uno: "overflow-hidden";
 
   &.active {
     --uno: "active:bg-$active-1";
@@ -83,7 +84,7 @@ function projectButtonClicked() {
 }
 
 .text {
-  --uno: "whitespace-nowrap text-ellipsis overflow-hidden";
+  --uno: "truncate";
 }
 
 .title {

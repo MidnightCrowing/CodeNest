@@ -35,7 +35,7 @@ function handleKindItemClick(language: ProjectLanguage) {
       </span>
 
       <span
-        block overflow="hidden" text-ellipsis whitespace-nowrap
+        block truncate
         :title="languageItem.text"
       >
         {{ languageItem.text }}

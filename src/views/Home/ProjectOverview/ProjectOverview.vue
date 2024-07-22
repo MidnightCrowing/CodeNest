@@ -299,8 +299,8 @@ main {
   --uno: "mx-15px my-5px py-5px pr-3px";
 
   // 滚动条设置
-  --uno: "overflow-y-auto";
-  --uno: "scrollbar:w-8px ";
+  --uno: "overflow-y-auto overflow-x-hidden";
+  --uno: "scrollbar:w-8px";
   // --uno: "scrollbar-thumb:rounded-5px";
   --uno: "scrollbar-track:bg-transparent";
   --uno: "scrollbar-corner:bg-transparent";
