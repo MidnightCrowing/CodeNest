@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import LanguagePop from '~/components/LanguagePop/LanguagePop.vue'
+import LicensePop from '~/components/LicensePop/LicensePop.vue'
 import { License } from '~/constants/license'
 import { ProjectKind } from '~/constants/projectKind'
 
@@ -284,6 +286,9 @@ const projectItems: ProjectItem[] = [
         :key="projectItem"
         :project-item="projectItem"
       />
+
+      <LanguagePop />
+      <LicensePop />
     </main>
   </div>
 </template>

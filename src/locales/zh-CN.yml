@@ -74,4 +74,5 @@ license_pop:
   permissions: 允许
   limitations: 禁止
   conditions: 要求
+  description_from: 信息来源
   no_description_desc: 没有描述

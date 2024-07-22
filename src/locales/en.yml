@@ -82,4 +82,5 @@ license_pop:
   permissions: Permissions
   limitations: Limitations
   conditions: Conditions
+  description_from: Description from
   no_description_desc: Not has description

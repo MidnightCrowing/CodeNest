@@ -1,44 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
-import type { ProjectLanguageInfo } from '~/constants/types'
+import { hidePop, showPop } from '~/components/LanguagePop/LanguagePopProvider'
+import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/types'
 
-import type { languagesGroupItem } from '../../types'
 import InfoButton from './InfoButton.vue'
-import LanguagePop from './LanguagePop.vue'
 
 defineProps<{
   language: ProjectLanguageInfo
   languagesGroup: languagesGroupItem[]
 }>()
 
-const showPopComponent = ref(false)
+function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem[]) {
+  const target = event.target as HTMLElement
+  const rect = target.getBoundingClientRect()
 
-function showPop() {
-  showPopComponent.value = true
-}
+  const top = rect.top + window.scrollY - 3
+  const left = rect.left + window.scrollX - 5
 
-function hidePop() {
-  showPopComponent.value = false
+  showPop(languagesGroup, top, left)
 }
 </script>
 
 <template>
   <div
     relative
-    @click="showPop"
+    @click="handleClick($event, languagesGroup)"
     @mouseleave="hidePop"
     @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
     @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
   >
-    <template v-if="showPopComponent">
-      <LanguagePop
-        :languages-group="languagesGroup"
-        left="-5px"
-      />
-    </template>
-
     <InfoButton>
       <LanguageCard
         :language-color="language.color"

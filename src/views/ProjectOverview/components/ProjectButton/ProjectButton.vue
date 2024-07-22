@@ -43,10 +43,10 @@ function projectButtonClicked() {
         >
           {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <template v-if="kindFrom && kindUrl">
-            <a :href="kindUrl" target="_blank">{{ kindFrom }}</a>
+            <a :href="kindUrl" target="_blank">{{ kindFrom }}<span /></a>
           </template>
           <template v-else-if="kindUrl">
-            <a :href="kindUrl" target="_blank">{{ kindUrl }}</a>
+            <a :href="kindUrl" target="_blank">{{ kindUrl }}<span /></a>
           </template>
           <template v-else>
             <span>{{ kindFrom }}</span>
@@ -98,7 +98,13 @@ function projectButtonClicked() {
   --uno: "text-$text-color-3";
 
   & a {
-    --uno: "text-$text-color-3 hover:text-$text-hover";
+    --uno: "text-$text-color-3 hover:text-$text-link-hover-1";
+    --uno: "fill-$text-color-3 hover:fill-$text-link-hover-1";
+
+    & span {
+      --uno: "i-custom-external-link-arrow?mask";
+      --uno: "w-13px h-13px";
+    }
   }
 }
 </style>

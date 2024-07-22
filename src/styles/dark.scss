@@ -39,9 +39,14 @@ body {
   // Inline help, shortcuts
   --text-color-4: var(--white-4);
 
-  // link hover
-  --text-hover: var(--blue-1);
+  // link
+  --text-link: var(--blue-1);
 
+  // link hover
+  --text-link-hover-1: var(--blue-1);
+  --text-link-hover-2: var(--blue-1-80);
+
+  // selection
   --text-selection: rgb(131 131 145 / 30%);
 
   // 光标颜色

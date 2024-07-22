@@ -1,23 +1,49 @@
 <script setup lang="ts">
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
 
-import type { languagesGroupItem } from '../../types'
+import { languagesGroup, position, visible as visibleSign } from './LanguagePopProvider'
 
-defineProps<{
-  languagesGroup: languagesGroupItem[]
-}>()
+const popElementRef = ref<HTMLElement | null>(null)
+const popVisible = ref(false)
 
 function percentConversion(num: number) {
   return `${(num * 100).toFixed(2)}%`
 }
+
+function handleMouseEnter() {
+  popVisible.value = true
+}
+
+function handleMouseLeave() {
+  setTimeout(() => {
+    if (!popElementRef.value?.matches(':hover')) {
+      popVisible.value = false
+    }
+  }, 100)
+}
+
+watch(visibleSign, (newVal: boolean) => {
+  if (!newVal) {
+    setTimeout(() => {
+      if (!popElementRef.value?.matches(':hover')) {
+        popVisible.value = false
+      }
+    }, 100)
+  }
+  else {
+    popVisible.value = true
+  }
+})
 </script>
 
 <template>
   <div
-    absolute translate-y="-100%"
-    bg="$bg-1" shadow="$shadow-1"
-    p="x-10px y-5px" rounded="5px"
-    cursor-default
+    v-if="popVisible"
+    ref="popElementRef"
+    class="languagePop"
+    :style="{ top: `${position.top}px`, left: `${position.left}px` }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div h="8px" m="t-5px b-10px">
       <span
@@ -36,7 +62,7 @@ function percentConversion(num: number) {
 
     <ul
       m="x-3px y-5px" p-0
-      grid gap="8px" grid-cols="[1fr_1fr_1fr]"
+      grid gap="8px" grid-cols="3"
       list-none
     >
       <li
@@ -58,3 +84,13 @@ function percentConversion(num: number) {
     </ul>
   </div>
 </template>
+
+<style scoped lang="scss">
+.languagePop {
+  --uno: "absolute";
+  --uno: "translate-y--100%";
+  --uno: "bg-$bg-1 shadow-$shadow-1";
+  --uno: "px-10px py-5px rounded-5px";
+  --uno: "cursor-default";
+}
+</style>

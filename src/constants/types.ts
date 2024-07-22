@@ -5,3 +5,7 @@ export interface ProjectLanguageInfo {
   text: ProjectLanguage
   color: Color
 }
+
+export interface languagesGroupItem extends ProjectLanguageInfo {
+  percentage: number
+}
