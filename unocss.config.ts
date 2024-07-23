@@ -9,6 +9,8 @@ import {
   transformerDirectives,
 } from 'unocss'
 
+import styles from './src/styles/unocssStyle'
+
 export default defineConfig({
   presets: [
     presetUno(),
@@ -16,7 +18,7 @@ export default defineConfig({
     presetTypography(),
     presetIcons({
       extraProperties: {
-        'display': 'inline-block',
+        display: 'inline-block',
         'vertical-align': 'middle',
         // 'width': '1.2em',
         // 'height': '1.2em',
@@ -26,41 +28,9 @@ export default defineConfig({
       },
     }),
   ],
-  shortcuts: {
-    // #region text
-    'head-0': 'text-[25px] font-bold',
-    'head-1': 'text-[22px] font-bold',
-    'head-2': 'text-[18px] font-bold',
-    'head-3': 'text-[16px] font-bold lh-[20px]',
-    'text-default': 'text-[13px] lh-[16px]',
-    'text-paragraph': 'text-[13px] lh-[19px]',
-    'text-medium': 'text-[12px] lh-[15px]',
-    'text-small': 'text-[11px] lh-[14px]',
-    // #endregion
+  shortcuts: styles.shortcuts,
 
-    // #region button
-    'btn-border': 'border-0',
-    'btn-radius': 'rounded-[4px]',
-    'btn-text': 'text-[13px] lh-[25px]',
-    'btn-min-w': 'min-w-[72px]',
-    'btn-padding': 'px-[14px]',
-    'btn-bg': 'bg-$button-bg-1',
-    'btn-bg-solid': 'bg-$button-bg-2 active:bg-$active-3',
-    'btn-color': 'color-$text-color-2',
-    'btn-color-solid': 'color-$text-color-1',
-    'btn-outline': 'outline outline-[2px] outline-$border-1 active:outline-$border-2',
-    'btn-base': 'btn-border btn-radius btn-text btn-min-w btn-padding',
-
-    'button': 'btn-base btn-bg btn-color btn-outline',
-    'button-solid': 'btn-base btn-bg-solid btn-color-solid',
-    // #endregion
-
-    // #region hr
-    'hr': 'border-0 h-1px bg-$border-line',
-    // #endregion
-  },
-
-  // #region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
+  // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
   variants: [
     (matcher) => {
       const matches = matcher.match(
@@ -117,9 +87,7 @@ export default defineConfig({
       },
     ],
   ],
-  // #endregion
+  // endregion
 
-  transformers: [
-    transformerDirectives(),
-  ],
+  transformers: [transformerDirectives()],
 })

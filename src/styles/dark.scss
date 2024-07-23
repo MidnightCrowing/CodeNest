@@ -1,17 +1,17 @@
 body {
-  // #region background color
+  // region background color
   --bg-1: var(--gray-3);
   --bg-2: var(--gray-4);
-  // #endregion
+  // endregion
 
-  // #region border color
+  // region border color
   --border-line: var(--gray-1);
   --border-1: var(--gray-2);
   --border-2: var(--blue-1);
   // --border-disabled: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region shadows
+  // region shadows
   // The shadows of the card, button, and other slightly elevated components
   --shadow-1: 0 4px 6px -1px rgb(0 0 0 / 0.18), 0 2px 4px -2px rgb(0 0 0 / 0.14);
 
@@ -24,9 +24,9 @@ body {
   // Only used in the dialog
   --shadow-4: 0 34px 50px -20px rgb(0 0 0 / 0.24), 0 32px 45px -12px rgb(0 0 0 / 0.2),
     0 30px 40px -8px rgb(0 0 0 / 0.22);
-  // #endregion
+  // endregion
 
-  // #region text color
+  // region text color
   // only used on special place
   --text-color-1: var(--white-1);
 
@@ -51,39 +51,39 @@ body {
 
   // 光标颜色
   --caret-color: rgb(187 187 187 / 80%);
-  // #endregion
+  // endregion
 
-  // #region hover color
+  // region hover color
   --hover-1: var(--gray-1-50);
   --hover-2: var(--gray-1-80);
-  // #endregion
+  // endregion
 
-  // #region active color
+  // region active color
   --active-1: var(--gray-1-30);
   --active-2: var(--gray-1-50);
   --active-3: var(--blue-1-80);
-  // #endregion
+  // endregion
 
-  // #region select color
+  // region select color
   --select-2: var(--blue-1);
 
   // use in list and drop-down options
   --select-3: var(--blue-2);
-  // #endregion
+  // endregion
 
-  // #region button color
+  // region button color
   --button-bg-1: var(--bg-1);
   --button-bg-2: var(--blue-1);
   // --button-bg-disabled: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region window header
+  // region window header
   --window-focus-in: var(--bg-1);
   --window-focus-out: rgb(60 63 65);
-  // #endregion
+  // endregion
 
-  // #region scrollbar
+  // region scrollbar
   --scrollbar-thumb: var(--white-1-15);
   --scrollbar-thumb-hover: var(--white-1-25);
-  // #endregion
+  // endregion
 }

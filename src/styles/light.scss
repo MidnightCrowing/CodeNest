@@ -1,5 +1,5 @@
 body {
-  // #region shadows
+  // region shadows
   // The shadows of the card, button, and other slightly elevated components
   --shadow-1: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
 
@@ -12,5 +12,5 @@ body {
   // Only used in the dialog
   --shadow-4: 0 34px 50px -20px rgb(0 0 0 / 0.14), 0 32px 45px -12px rgb(0 0 0 / 0.1),
     0 30px 40px -8px rgb(0 0 0 / 0.12);
-  // #endregion
+  // endregion
 }
