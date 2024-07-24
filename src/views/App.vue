@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import { Theme } from '~/constants/theme'
 
+// import Home from './Home/Home.vue'
 import NewProject from './NewProject/NewProject.vue'
 
 import('~/styles/main.scss')
@@ -38,7 +39,7 @@ onMounted(() => {
 
 <template>
   <WindowHeader />
-  <!-- <Home /> -->
+  <!--  <Home /> -->
   <NewProject />
 </template>
 
