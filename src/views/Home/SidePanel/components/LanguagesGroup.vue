@@ -23,7 +23,7 @@ const languagesGroup: ProjectLanguageInfo[] = [
 
 <template>
   <header
-    text="12px" lh="18px"
+    head-2-thin
     color="$text-color-3"
     p="x-16px y-6px"
   >

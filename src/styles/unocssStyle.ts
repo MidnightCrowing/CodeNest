@@ -1,12 +1,13 @@
 // region 文本样式
 const textStyle = {
-  'head-0': 'text-25px font-bold',
-  'head-1': 'text-22px font-bold',
-  'head-2': 'text-18px font-bold',
-  'head-3': 'text-16px font-bold lh-20px',
+  'head-1': 'text-14px lh-20px font-bold',
+  'head-2': 'text-12px lh-18px font-bold',
+  'head-1-thin': 'text-14px lh-20px',
+  'head-2-thin': 'text-12px lh-18px',
+  // 'head-3': 'text-16px font-bold lh-20px',
   'text-default': 'text-13px lh-16px',
-  'text-paragraph': 'text-13px lh-19px',
-  'text-medium': 'text-12px lh-15px',
+  // 'text-paragraph': 'text-13px lh-19px',
+  // 'text-medium': 'text-12px lh-15px',
   'text-small': 'text-11px lh-14px',
 }
 // endregion
@@ -48,7 +49,7 @@ const btn2Expand = `
 `
 
 const buttonStyle = {
-  button: `${btnBase} ${btn1Expand}`,
+  'button': `${btnBase} ${btn1Expand}`,
   'button-solid': `${btnBase} ${btn2Expand}`,
 }
 // endregion
@@ -73,13 +74,13 @@ const inputBase = `
   ${inputBaseStyle.outline}
 `
 const inputStyle = {
-  input: `${inputBase}`,
+  'input': `${inputBase}`,
 }
 // endregion
 
 // region 分隔线样式
 const hrStyle = {
-  hr: 'border-0 h-1px bg-$border-line',
+  'hr': 'border-0 h-1px bg-$border-line',
 }
 // endregion
 

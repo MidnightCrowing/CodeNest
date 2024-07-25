@@ -20,7 +20,7 @@ const kindGroup2: KindItem[] = [
 
 <template>
   <header
-    text="14px" lh="20px"
+    head-1-thin
     color="$text-color-3"
     p="x-16px t-16px b-4px"
   >
