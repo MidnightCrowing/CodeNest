@@ -18,7 +18,3 @@ const { t } = useI18n()
     </button>
   </header>
 </template>
-
-<style scoped lang="scss">
-
-</style>
