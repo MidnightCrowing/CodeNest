@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PathInput from '~/components/PathInput/PathInput.vue'
 </script>
 
 <template>
@@ -7,7 +8,7 @@
       <span self-center>名称:</span>
       <input input w="200px">
       <span self-center>位置:</span>
-      <input input grow>
+      <PathInput grow />
     </div>
   </div>
 </template>
