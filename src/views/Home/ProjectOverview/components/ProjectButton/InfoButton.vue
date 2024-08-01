@@ -4,7 +4,6 @@
     hover:bg="$hover-2" active:bg="$active-2"
     flex="~ row items-center"
     text-gray-400 hover:text="$text-color-2"
-    fill-gray-400 hover:fill="$text-color-2"
     cursor-default truncate
     @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
     @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
