@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Color } from '../../constants/types'
+import type { Color } from '~/constants/types'
+
 import { Shape } from './constants'
 
 defineProps<{

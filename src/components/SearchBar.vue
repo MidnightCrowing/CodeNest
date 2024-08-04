@@ -15,7 +15,7 @@ function clearInput() {
       w="15px" h="15px"
       m="x-3px y-auto" absolute top-0 bottom-0 left-0
       pointer-events-none
-      i-custom="search dark:search_dark"
+      icon="search"
     />
     <input
       v-model="searchText"
@@ -27,8 +27,7 @@ function clearInput() {
       w="15px" h="15px"
       m="x-3px y-auto" absolute top-0 bottom-0 right-0
       cursor-pointer
-      i-custom="close-small dark:close-small_dark"
-      hover:i-custom="close-small-hovered dark:close-small-hovered_dark"
+      icon="close-small hover:close-small-hovered"
       @click="clearInput"
     />
   </span>

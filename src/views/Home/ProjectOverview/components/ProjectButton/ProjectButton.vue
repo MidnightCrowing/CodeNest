@@ -98,12 +98,12 @@ function projectButtonClicked() {
 .kind {
   --uno: "text-$text-color-3";
 
-  & a {
+  a {
     --uno: "text-$text-color-3 hover:text-$text-link-hover-1";
     --uno: "fill-$text-color-3 hover:fill-$text-link-hover-1";
 
-    & span {
-      --uno: "i-custom-external-link-arrow?mask";
+    span {
+      --uno: "icon-external-link-arrow?mask";
       --uno: "w-13px h-13px";
     }
   }

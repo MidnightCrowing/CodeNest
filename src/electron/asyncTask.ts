@@ -31,7 +31,7 @@ async function a() {
 }
 
 export async function performAsyncTask() {
-  a()
+  await a()
 //   // 模拟异步操作，例如读取文件、网络请求等
 //   return new Promise((resolve) => {
 //     setTimeout(() => {

@@ -28,7 +28,10 @@ export default defineConfig({
       },
     }),
   ],
-  shortcuts: styles.shortcuts,
+  shortcuts: [
+    styles.shortcuts,
+    [/^icon-(.*)$/, ([, icon]) => `i-custom-${icon} dark:i-custom-${icon}_dark`],
+  ],
 
   // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
   variants: [

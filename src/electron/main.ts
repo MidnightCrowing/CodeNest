@@ -51,13 +51,16 @@ function createWindow() {
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = dirname(__filename)
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)
+      .then(() => {})
   }
 
   // 拦截新的窗口请求
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     // 在系统默认浏览器中打开 URL
-    if (url !== devUrl)
+    if (url !== devUrl) {
       shell.openExternal(url)
+        .then(() => {})
+    }
     // 阻止 Electron 打开新窗口
     return { action: 'deny' }
   })
@@ -110,7 +113,7 @@ function setGlobalShortcut() {
 
 // 应用启动时的操作
 app.whenReady().then(async () => {
-  performAsyncTask()
+  await performAsyncTask()
   setGlobalShortcut()
   createWindow()
 })
@@ -120,6 +123,7 @@ app.on('web-contents-created', (e, contents) => {
   contents.on('will-navigate', (event, url) => {
     event.preventDefault()
     shell.openExternal(url)
+      .then(() => {})
   })
 })
 
