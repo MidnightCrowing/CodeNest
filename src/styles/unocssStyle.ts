@@ -1,7 +1,7 @@
-import type { StylesType } from '~/styles/types'
+import type { StylesType } from './types'
 
 // region 文本样式
-const textStyle = {
+const textStyles = {
   'head-1': 'text-14px lh-20px font-bold',
   'head-2': 'text-12px lh-18px font-bold',
   'head-1-thin': 'text-14px lh-20px',
@@ -47,7 +47,7 @@ const btn2Expand = `
   ${btn2ExpandStyle.color}
 `
 
-const buttonStyle = {
+const buttonStyles = {
   'button-base': `${btnBase}`,
   'button': `${btnBase} ${btn1Expand}`,
   'button-solid': `${btnBase} ${btn2Expand}`,
@@ -73,7 +73,7 @@ const inputBase = `
   ${inputBaseStyle.radius}
   ${inputBaseStyle.size}
 `
-const inputStyle = {
+const inputStyles = {
   'input': `${inputBase}`,
 }
 // endregion
@@ -103,24 +103,24 @@ const checkBoxBase = `
   ${checkBoxBaseStyle.radius}
   ${checkBoxBaseStyle.size}
 `
-const checkBoxStyle = {
+const checkBoxStyles = {
   'check-box': `${checkBoxBase}`,
 }
 // endregion
 
 // region 分隔线样式
-const hrStyle = {
+const hrStyles = {
   'hr': 'border-0 h-1px bg-$border-line',
 }
 // endregion
 
 // Unocss 配置
 const shortcuts: StylesType = {
-  ...textStyle,
-  ...buttonStyle,
-  ...inputStyle,
-  ...checkBoxStyle,
-  ...hrStyle,
+  ...textStyles,
+  ...buttonStyles,
+  ...inputStyles,
+  ...checkBoxStyles,
+  ...hrStyles,
 }
 
 export default {
