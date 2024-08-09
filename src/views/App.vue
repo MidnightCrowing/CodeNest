@@ -5,7 +5,7 @@ import { applyTheme, currentTheme } from '~/utils/theme'
 import Home from './Home/Home.vue'
 import NewProject from './NewProject/NewProject.vue'
 
-const view: Ref<string> = ref('home')
+const view: Ref<string> = ref('NewProject')
 
 // 在组件挂载时应用默认主题
 onMounted(() => {

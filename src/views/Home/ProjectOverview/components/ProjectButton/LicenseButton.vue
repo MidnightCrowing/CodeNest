@@ -30,7 +30,7 @@ function handleClick(event: MouseEvent, license: License) {
     <InfoButton>
       <div
         m="t-1px r-5px" w="13px" h="13px"
-        icon="license?mask"
+        i-mode="license?mask"
       />
       {{ license }}
     </InfoButton>

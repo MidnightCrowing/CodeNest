@@ -84,3 +84,7 @@ license_pop:
   conditions: Conditions
   description_from: Description from
   no_description_desc: Not has description
+new_project:
+  name: Name
+  location: Location
+  project_from: Project from

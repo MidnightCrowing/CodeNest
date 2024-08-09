@@ -4,10 +4,7 @@ const textStyle = {
   'head-2': 'text-12px lh-18px font-bold',
   'head-1-thin': 'text-14px lh-20px',
   'head-2-thin': 'text-12px lh-18px',
-  // 'head-3': 'text-16px font-bold lh-20px',
   'text-default': 'text-13px lh-16px',
-  // 'text-paragraph': 'text-13px lh-19px',
-  // 'text-medium': 'text-12px lh-15px',
   'text-small': 'text-11px lh-14px',
 }
 // endregion
@@ -15,17 +12,17 @@ const textStyle = {
 // region 按钮样式
 const btnBaseStyle = {
   border: 'border-0',
-  radius: 'rounded-4px',
-  text: 'text-13px lh-25px',
-  size: 'min-w-72px',
   boxModel: 'px-14px',
+  radius: 'rounded-4px',
+  size: 'min-w-72px',
+  text: 'text-13px lh-25px',
 }
 const btnBase = `
   ${btnBaseStyle.border} 
-  ${btnBaseStyle.radius} 
-  ${btnBaseStyle.text} 
-  ${btnBaseStyle.size} 
   ${btnBaseStyle.boxModel}
+  ${btnBaseStyle.radius} 
+  ${btnBaseStyle.size} 
+  ${btnBaseStyle.text} 
 `
 
 const btn1ExpandStyle = {
@@ -49,6 +46,7 @@ const btn2Expand = `
 `
 
 const buttonStyle = {
+  'button-base': `${btnBase}`,
   'button': `${btnBase} ${btn1Expand}`,
   'button-solid': `${btnBase} ${btn2Expand}`,
 }
@@ -57,24 +55,54 @@ const buttonStyle = {
 // region 输入框样式
 const inputBaseStyle = {
   bg: 'bg-transparent',
-  color: 'color-$text-color-2 placeholder-$text-color-3',
-  boxModel: 'm-2px px-6px py-5px',
-  size: 'min-w-64px',
   border: 'border-0',
-  radius: 'rounded-3px',
+  boxModel: 'm-2px px-6px py-5px',
+  color: 'color-$text-color-2 placeholder-$text-color-3',
   outline: 'outline-solid outline-2px outline-$border-line focus:outline-$active-3',
+  radius: 'rounded-3px',
+  size: 'min-w-64px',
 }
 const inputBase = `
   ${inputBaseStyle.bg}
-  ${inputBaseStyle.color}
-  ${inputBaseStyle.boxModel}
-  ${inputBaseStyle.size}
   ${inputBaseStyle.border}
-  ${inputBaseStyle.radius}
+  ${inputBaseStyle.boxModel}
+  ${inputBaseStyle.color}
   ${inputBaseStyle.outline}
+  ${inputBaseStyle.radius}
+  ${inputBaseStyle.size}
 `
 const inputStyle = {
   'input': `${inputBase}`,
+}
+// endregion
+
+// region 复选框样式
+const checkBoxBaseStyle = {
+  align: 'align-middle',
+  appearance: 'appearance-none',
+  bg: 'bg-transparent checked:!bg-$active-3',
+  border: 'border-solid border-2px border-$border-1 focus:border-$border-2 checked:border-transparent',
+  boxModel: 'm-0',
+  icon: 'checked:i-mode-checkbox-checked',
+  outline: 'outline-solid outline-2px outline-transparent checked:focus:outline-$active-3',
+  outlineOffset: 'outline-offset-1px',
+  radius: 'rounded-4px',
+  size: '!w-20px !h-20px',
+}
+const checkBoxBase = `
+  ${checkBoxBaseStyle.align}
+  ${checkBoxBaseStyle.appearance}
+  ${checkBoxBaseStyle.bg}
+  ${checkBoxBaseStyle.border}
+  ${checkBoxBaseStyle.boxModel}
+  ${checkBoxBaseStyle.icon}
+  ${checkBoxBaseStyle.outline}
+  ${checkBoxBaseStyle.outlineOffset}
+  ${checkBoxBaseStyle.radius}
+  ${checkBoxBaseStyle.size}
+`
+const checkBoxStyle = {
+  'check-box': `${checkBoxBase}`,
 }
 // endregion
 
@@ -89,6 +117,7 @@ const shortcuts = {
   ...textStyle,
   ...buttonStyle,
   ...inputStyle,
+  ...checkBoxStyle,
   ...hrStyle,
 }
 

@@ -58,7 +58,7 @@ watch(visibleSign, (newVal: boolean) => {
           <h3>{{ t('license_pop.permissions') }}</h3>
           <ul>
             <li v-for="permission in licenseDescription.permissions" :key="permission">
-              <span icon="license-permission" />
+              <span i-static="license-permission" />
               {{ permission }}
             </li>
           </ul>
@@ -68,7 +68,7 @@ watch(visibleSign, (newVal: boolean) => {
           <h3>{{ t('license_pop.limitations') }}</h3>
           <ul>
             <li v-for="limitation in licenseDescription.limitations" :key="limitation">
-              <span icon="license-limitation" />
+              <span i-static="license-limitation" />
               {{ limitation }}
             </li>
           </ul>
@@ -78,7 +78,7 @@ watch(visibleSign, (newVal: boolean) => {
           <h3>{{ t('license_pop.conditions') }}</h3>
           <ul>
             <li v-for="condition in licenseDescription.conditions" :key="condition">
-              <span icon="license-condition" />
+              <span i-static="license-condition" />
               {{ condition }}
             </li>
           </ul>
@@ -93,7 +93,7 @@ watch(visibleSign, (newVal: boolean) => {
         >
           {{ t('license_pop.description_from') }}
           <span
-            icon="external-link-arrow?mask"
+            i-static="external-link-arrow?mask"
             w="13px" h="13px"
             absolute top="2px"
           />

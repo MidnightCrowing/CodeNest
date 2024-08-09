@@ -10,7 +10,7 @@ defineProps<{
   languagesGroup: languagesGroupItem[]
 }>()
 
-function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem[]) {
+function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem) {
   const target = event.target as HTMLElement
   const rect = target.getBoundingClientRect()
 

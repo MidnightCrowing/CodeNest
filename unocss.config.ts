@@ -18,10 +18,10 @@ export default defineConfig({
     presetTypography(),
     presetIcons({
       extraProperties: {
-        display: 'inline-block',
+        'display': 'inline-block',
         'vertical-align': 'middle',
-        // 'width': '1.2em',
-        // 'height': '1.2em',
+        'width': '1em',
+        'height': '1em',
       },
       collections: {
         custom: FileSystemIconLoader('./src/assets/icons'),
@@ -30,7 +30,16 @@ export default defineConfig({
   ],
   shortcuts: [
     styles.shortcuts,
-    [/^icon-(.*)$/, ([, icon]) => `i-custom-${icon} dark:i-custom-${icon}_dark`],
+    // 图标, 随暗色模式改变
+    [/^i-mode-(.*?)(\?mask)?$/, ([, icon, mask]) =>
+      mask
+        ? `i-custom-${icon}${mask} dark:i-custom-${icon}_dark${mask}`
+        : `i-custom-${icon} dark:i-custom-${icon}_dark`],
+    // 图标, 不随暗色模式改变
+    [/^i-static-(.*?)(\?mask)?$/, ([, icon, mask]) =>
+      mask
+        ? `i-custom-${icon}${mask}`
+        : `i-custom-${icon}`],
   ],
 
   // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295

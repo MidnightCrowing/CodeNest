@@ -76,3 +76,7 @@ license_pop:
   conditions: 要求
   description_from: 信息来源
   no_description_desc: 没有描述
+new_project:
+  name: 名称
+  location: 位置
+  project_from: 项目来源

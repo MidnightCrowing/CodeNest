@@ -8,5 +8,8 @@
   },
   "include": [
     "../src/electron/**/*.ts"
+  ],
+  "exclude": [
+    "../src/electron/preload.ts"
   ]
 }

@@ -1,0 +1,3 @@
+<template>
+  <input input>
+</template>

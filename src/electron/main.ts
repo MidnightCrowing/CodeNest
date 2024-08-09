@@ -1,10 +1,12 @@
 import * as path from 'node:path'
-import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, globalShortcut, Menu, shell } from 'electron'
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, shell } from 'electron'
 
 import { performAsyncTask } from './asyncTask.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const devUrl = 'http://localhost:5173/'
 const maxRetries = 5
@@ -35,8 +37,12 @@ function createWindow() {
       height: 40,
     },
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
+      // nodeIntegration: true,
+      // contextIsolation: false,
+      contextIsolation: true, // 启用上下文隔离
+      nodeIntegration: false, // 禁用 Node.js 集成（如果不需要）
+      sandbox: true, // 启用沙箱
     },
   })
 
@@ -48,8 +54,6 @@ function createWindow() {
     loadURLWithRetry(devUrl)
   }
   else {
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = dirname(__filename)
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)
       .then(() => {})
   }
@@ -65,6 +69,14 @@ function createWindow() {
     return { action: 'deny' }
   })
 }
+
+// 注册处理程序
+ipcMain.handle('open-folder-dialog', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory'],
+  })
+  return result.filePaths
+})
 
 // 带重试的加载URL函数
 function loadURLWithRetry(url: string) {
@@ -99,7 +111,7 @@ function setGlobalShortcut() {
   })
 
   // F12: 打开开发者工具
-  globalShortcut.register('F12', () => {
+  globalShortcut.register('F11', () => {
     if (!isOpenDevTools) {
       mainWindow.webContents.openDevTools()
       isOpenDevTools = true
