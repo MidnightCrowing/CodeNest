@@ -110,7 +110,7 @@ function setGlobalShortcut() {
     mainWindow.setSize(windowWidth, windowHeight)
   })
 
-  // F12: 打开开发者工具
+  // F11: 打开开发者工具
   globalShortcut.register('F11', () => {
     if (!isOpenDevTools) {
       mainWindow.webContents.openDevTools()
