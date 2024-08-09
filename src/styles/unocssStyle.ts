@@ -1,3 +1,5 @@
+import type { StylesType } from '~/styles/types'
+
 // region 文本样式
 const textStyle = {
   'head-1': 'text-14px lh-20px font-bold',
@@ -113,7 +115,7 @@ const hrStyle = {
 // endregion
 
 // Unocss 配置
-const shortcuts = {
+const shortcuts: StylesType = {
   ...textStyle,
   ...buttonStyle,
   ...inputStyle,
