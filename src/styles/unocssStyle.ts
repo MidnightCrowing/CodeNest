@@ -87,7 +87,7 @@ const checkBoxBaseStyle = {
   outline: 'outline-solid outline-2px outline-transparent checked:focus:outline-$active-3',
   outlineOffset: 'outline-offset-1px',
   radius: 'rounded-4px',
-  size: '!w-20px !h-20px',
+  size: '!size-20px',
 }
 const checkBoxBase = `
   ${checkBoxBaseStyle.align}

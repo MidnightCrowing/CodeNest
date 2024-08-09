@@ -19,7 +19,7 @@ const kindSelected: Ref<ProjectKind> = ref(ProjectKind.MINE)
 
 <template>
   <div
-    h-full w-full
+    size-full
     bg="$bg-1"
   >
     <ConfigItem>

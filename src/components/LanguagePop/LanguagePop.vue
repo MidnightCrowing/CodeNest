@@ -47,7 +47,7 @@ watch(visibleSign, (newVal: boolean) => {
   >
     <div h="8px" m="t-5px b-10px">
       <span
-        inline-block w-full h-full
+        inline-block size-full
         rounded="8px" overflow-hidden
         flex="~ row" gap="1px"
       >

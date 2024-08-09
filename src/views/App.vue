@@ -24,7 +24,7 @@ body,
 html,
 #app {
   --uno: "m-0 p-0";
-  --uno: "w-full h-full";
+  --uno: "size-full";
   --uno: "color-$text-color-2 bg-$bg-2";
   --uno: "text-default overflow-hidden";
   --uno: "caret-$caret-color selection:bg-$text-selection";
