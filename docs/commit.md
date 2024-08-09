@@ -1,3 +1,5 @@
+内容复制自: https://github.com/BewlyBewly/BewlyBewly/blob/9d9177d20dfb48b07bce2ae38bb5864d09d44f06/docs/CONTRIBUTING-cmn_CN.md
+
 - `feat`：新功能
 - `fix`：修复 Bug
 - `docs`：文档更新
