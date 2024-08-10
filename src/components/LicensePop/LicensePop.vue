@@ -128,9 +128,6 @@ ul {
 }
 
 .description_from_link {
-  --uno: "text-$text-link hover:text-$text-link-hover-2";
-  --uno: "fill-$text-link hover:fill-$text-link-hover-2";
-  --uno: "no-underline";
-  --uno: "relative";
+  --uno: "relative text-link";
 }
 </style>

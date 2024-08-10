@@ -9,5 +9,5 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <span self-center> {{ t(title) }}: </span>
+  <span self-center text-nowrap> {{ t(title) }}: </span>
 </template>

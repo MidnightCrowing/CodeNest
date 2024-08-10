@@ -1,6 +1,28 @@
 import type { StylesType } from './types'
 
 // region 文本样式
+const textHelpStyle = {
+  fill: 'fill-$text-color-4',
+  text: 'text-$text-color-4',
+}
+const textHelp = `
+  ${textHelpStyle.fill}
+  ${textHelpStyle.text} 
+`
+
+const textLinkBaseStyle = {
+  cursor: 'cursor-pointer',
+  fill: 'fill-$text-link hover:fill-$text-link-hover',
+  text: 'text-$text-link hover:text-$text-link-hover',
+  textDecoration: 'no-underline',
+}
+const textLinkBase = `
+  ${textLinkBaseStyle.cursor} 
+  ${textLinkBaseStyle.fill}
+  ${textLinkBaseStyle.text} 
+  ${textLinkBaseStyle.textDecoration} 
+`
+
 const textStyles = {
   'head-1': 'text-14px lh-20px font-bold',
   'head-2': 'text-12px lh-18px font-bold',
@@ -8,6 +30,8 @@ const textStyles = {
   'head-2-thin': 'text-12px lh-18px',
   'text-default': 'text-13px lh-16px',
   'text-small': 'text-11px lh-14px',
+  'text-help': `${textHelp}`,
+  'text-link': `${textLinkBase}`,
 }
 // endregion
 

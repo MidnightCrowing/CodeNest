@@ -90,8 +90,7 @@ new_project:
   location: Location
   kind_component:
     project_from: Project from
-    mine_component:
-      test_desc: Test project
-    fork_component:
-      project_url: Project url
-      project_name: Project name
+    test_desc: Test project
+    project_url: Project url
+    project_name: Project name
+    fill_in: Fill in

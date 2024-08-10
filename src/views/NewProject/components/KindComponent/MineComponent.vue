@@ -3,11 +3,6 @@ import { useI18n } from 'vue-i18n'
 
 import CheckBox from '~/components/CheckBox.vue'
 
-interface Settings {
-  checkboxSetting: boolean
-  textSetting: string
-}
-
 const props = defineProps({
   value: {
     type: Object as () => Settings,
@@ -17,8 +12,16 @@ const props = defineProps({
     }),
   },
 })
+
 const emit = defineEmits(['update:value'])
+
 const { t } = useI18n()
+
+interface Settings {
+  checkboxSetting: boolean
+  textSetting: string
+}
+
 const internalValue = ref({ ...props.value })
 
 watch(internalValue, (newValue) => {
@@ -30,8 +33,7 @@ watch(internalValue, (newValue) => {
   <div col-start="2">
     <CheckBox
       v-model="internalValue.checkboxSetting"
-      :title="t('new_project.kind_component.mine_component.test_desc')"
+      :title="t('new_project.kind_component.test_desc')"
     />
-    <!--    <input v-model="internalValue.textSetting" placeholder="Enter text"> -->
   </div>
 </template>

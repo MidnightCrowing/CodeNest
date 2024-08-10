@@ -4,8 +4,7 @@ import { ProjectKind } from '~/constants/projectKind'
 
 import ConfigItem from '../ConfigItem.vue'
 import ConfigItemTitle from '../ConfigItemTitle.vue'
-import CloneComponent from './CloneComponent.vue'
-import ForkComponent from './ForkComponent.vue'
+import ForkAndCloneComponent from './ForkAndCloneComponent.vue'
 import MineComponent from './MineComponent.vue'
 
 const kindButtons: { label: string, key: ProjectKind }[] = [
@@ -21,9 +20,8 @@ const currentComponent = computed(() => {
     case ProjectKind.MINE:
       return MineComponent
     case ProjectKind.FORK:
-      return ForkComponent
     case ProjectKind.CLONE:
-      return CloneComponent
+      return ForkAndCloneComponent
     default:
       return null
   }

@@ -99,11 +99,10 @@ function projectButtonClicked() {
   --uno: "text-$text-color-3";
 
   a {
-    --uno: "text-$text-color-3 hover:text-$text-link-hover-1";
-    --uno: "fill-$text-color-3 hover:fill-$text-link-hover-1";
+    --uno: "text-link text-$text-color-3 fill-$text-color-3";
 
     span {
-      --uno: "icon-external-link-arrow?mask";
+      --uno: "i-static-external-link-arrow?mask";
       --uno: "w-13px h-13px";
     }
   }
