@@ -50,7 +50,7 @@ function submitSettings() {
     </KeepAlive>
   </ConfigItem>
 
-  <button @click="submitSettings">
+  <button button-solid @click="submitSettings">
     提交
   </button>
 </template>

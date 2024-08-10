@@ -11,8 +11,8 @@ defineProps<{
 
 <template>
   <!--  <div class="custom-checkbox" @click="toggleCheck" /> -->
-  <span>
+  <label flex="~ items-center" gap="x-5px">
     <input type="checkbox" check-box>
     {{ title }}
-  </span>
+  </label>
 </template>

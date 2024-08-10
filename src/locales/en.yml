@@ -92,3 +92,6 @@ new_project:
     project_from: Project from
     mine_component:
       test_desc: Test project
+    fork_component:
+      project_url: Project url
+      project_name: Project name

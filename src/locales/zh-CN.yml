@@ -84,3 +84,6 @@ new_project:
     project_from: 项目来源
     mine_component:
       test_desc: 测试项目
+    fork_component:
+      project_url: 项目url
+      project_name: 项目名称

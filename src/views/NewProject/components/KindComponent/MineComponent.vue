@@ -27,7 +27,7 @@ watch(internalValue, (newValue) => {
 </script>
 
 <template>
-  <div>
+  <div col-start="2">
     <CheckBox
       v-model="internalValue.checkboxSetting"
       :title="t('new_project.kind_component.mine_component.test_desc')"
