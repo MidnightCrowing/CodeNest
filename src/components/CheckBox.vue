@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineProps<{
+  title: string
+}>()
 // const isChecked = ref(false)
 //
 // function toggleCheck() {
@@ -9,10 +12,7 @@
 <template>
   <!--  <div class="custom-checkbox" @click="toggleCheck" /> -->
   <span>
-    <input
-      type="checkbox"
-      check-box
-    >
-    123
+    <input type="checkbox" check-box>
+    {{ title }}
   </span>
 </template>

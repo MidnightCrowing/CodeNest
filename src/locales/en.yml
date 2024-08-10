@@ -1,15 +1,3 @@
-side_panel:
-  projects: Projects
-  languages: Languages
-  kinds:
-    all: All
-    mine: Mine
-    fork: Fork
-    clone: Clone
-    test: Test
-header:
-  add_item: Add item
-  search_project: Search Project
 license:
   info:
     commercial_use: Commercial use
@@ -84,7 +72,23 @@ license_pop:
   conditions: Conditions
   description_from: Description from
   no_description_desc: Not has description
+home:
+  side_panel:
+    projects: Projects
+    languages: Languages
+    kinds:
+      all: All
+      mine: Mine
+      fork: Fork
+      clone: Clone
+      test: Test
+  header:
+    add_item: Add item
+    search_project: Search Project
 new_project:
   name: Name
   location: Location
-  project_from: Project from
+  kind_component:
+    project_from: Project from
+    mine_component:
+      test_desc: Test project

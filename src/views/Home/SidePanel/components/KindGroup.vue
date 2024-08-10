@@ -8,13 +8,13 @@ import KindButton from './KindButton.vue'
 const { t } = useI18n()
 
 const kindGroup1: KindItem[] = [
-  { kind: Kind.ALL, i18nKey: t('side_panel.kinds.all') },
-  { kind: Kind.MINE, i18nKey: t('side_panel.kinds.mine') },
-  { kind: Kind.FORK, i18nKey: t('side_panel.kinds.fork') },
-  { kind: Kind.CLONE, i18nKey: t('side_panel.kinds.clone') },
+  { kind: Kind.ALL, i18nKey: t('home.side_panel.kinds.all') },
+  { kind: Kind.MINE, i18nKey: t('home.side_panel.kinds.mine') },
+  { kind: Kind.FORK, i18nKey: t('home.side_panel.kinds.fork') },
+  { kind: Kind.CLONE, i18nKey: t('home.side_panel.kinds.clone') },
 ]
 const kindGroup2: KindItem[] = [
-  { kind: Kind.TEST, i18nKey: t('side_panel.kinds.test') },
+  { kind: Kind.TEST, i18nKey: t('home.side_panel.kinds.test') },
 ]
 </script>
 
@@ -24,7 +24,7 @@ const kindGroup2: KindItem[] = [
     color="$text-color-3"
     p="x-16px t-16px b-4px"
   >
-    {{ t('side_panel.projects') }}
+    {{ t('home.side_panel.projects') }}
   </header>
   <main>
     <KindButton

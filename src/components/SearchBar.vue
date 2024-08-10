@@ -19,7 +19,7 @@ function clearInput() {
     />
     <input
       v-model="searchText"
-      :placeholder="t('header.search_project')"
+      :placeholder="t('home.header.search_project')"
       spellcheck="false"
     >
     <span

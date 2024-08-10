@@ -14,7 +14,7 @@ const { t } = useI18n()
   >
     <SearchBar grow />
     <button button-solid>
-      {{ t('header.add_item') }}
+      {{ t('home.header.add_item') }}
     </button>
   </header>
 </template>

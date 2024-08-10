@@ -27,7 +27,7 @@ const languagesGroup: ProjectLanguageInfo[] = [
     color="$text-color-3"
     p="x-16px y-6px"
   >
-    {{ t('side_panel.languages') }}
+    {{ t('home.side_panel.languages') }}
   </header>
   <main>
     <LanguageButton
