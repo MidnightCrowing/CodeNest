@@ -34,6 +34,7 @@ watch(internalValue, (newValue) => {
     <CheckBox
       v-model="internalValue.checkboxSetting"
       :title="t('new_project.kind_component.test_desc')"
+      w-fit
     />
   </div>
 </template>
