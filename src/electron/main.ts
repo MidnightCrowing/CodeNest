@@ -1,7 +1,9 @@
+import './ipcHandler.js'
+
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, shell } from 'electron'
+import { app, BrowserWindow, globalShortcut, Menu, shell } from 'electron'
 
 import { performAsyncTask } from './asyncTask.js'
 
@@ -69,14 +71,6 @@ function createWindow() {
     return { action: 'deny' }
   })
 }
-
-// 注册处理程序
-ipcMain.handle('open-folder-dialog', async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-  })
-  return result.filePaths
-})
 
 // 带重试的加载URL函数
 function loadURLWithRetry(url: string) {
