@@ -31,9 +31,8 @@ function handleChange() {
     <select v-model="internalValue" @change="handleChange">
       <option v-for="option in options" :key="option.value" :value="option.value">
         <!--        <span v-if="option.icon" :class="option.icon" /> -->
-        <span i-static="license-condition" />
-        {{ option.text }}
-        <span v-if="option.note">({{ option.note }})</span>
+        <!--        {{ option.text }} -->
+        <!--        <span v-if="option.note">({{ option.note }})</span> -->
       </option>
     </select>
   </div>
