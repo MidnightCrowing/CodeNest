@@ -10,10 +10,10 @@ import { performAsyncTask } from './asyncTask.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const devUrl = 'http://localhost:5173/'
-const maxRetries = 5
-const windowWidth = 800
-const windowHeight = 650
+const DEV_URL = 'http://localhost:5173/'
+const MAX_RETRIES = 5
+const WINDOW_WIDTH = 800
+const WINDOW_HEIGHT = 650
 
 let mainWindow: BrowserWindow
 let retryCount = 0
@@ -28,10 +28,10 @@ Menu.setApplicationMenu(null)
 // 创建窗口
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: windowWidth,
-    minWidth: windowWidth,
-    height: windowHeight,
-    minHeight: windowHeight,
+    width: WINDOW_WIDTH,
+    minWidth: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    minHeight: WINDOW_HEIGHT,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000',
@@ -53,7 +53,7 @@ function createWindow() {
 
   // 是否是生产环境
   if (!isPackaged) {
-    loadURLWithRetry(devUrl)
+    loadURLWithRetry(DEV_URL)
   }
   else {
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)
@@ -63,7 +63,7 @@ function createWindow() {
   // 拦截新的窗口请求
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     // 在系统默认浏览器中打开 URL
-    if (url !== devUrl) {
+    if (url !== DEV_URL) {
       shell.openExternal(url)
         .then(() => {})
     }
@@ -77,16 +77,16 @@ function loadURLWithRetry(url: string) {
   mainWindow.loadURL(url).catch((error: { message: any }) => {
     // eslint-disable-next-line no-console
     console.info(`Failed to load URL: ${url} with error: ${error.message}`)
-    if (retryCount < maxRetries) {
+    if (retryCount < MAX_RETRIES) {
     // eslint-disable-next-line no-console
-      console.debug(`Retrying to load URL. Attempt ${retryCount + 1} of ${maxRetries}...`)
+      console.debug(`Retrying to load URL. Attempt ${retryCount + 1} of ${MAX_RETRIES}...`)
       setTimeout(() => {
         retryCount += 1
         loadURLWithRetry(url)
       }, 1000) // 等待 1 秒后重试
     }
     else {
-      console.error(`Failed to load URL after ${maxRetries} attempts.`)
+      console.error(`Failed to load URL after ${MAX_RETRIES} attempts.`)
     }
   })
 }
@@ -96,12 +96,12 @@ function setGlobalShortcut() {
   // F5: 重新加载url
   globalShortcut.register('F5', () => {
     retryCount = 0
-    loadURLWithRetry(devUrl)
+    loadURLWithRetry(DEV_URL)
   })
 
   // F6: 重置窗口大小
   globalShortcut.register('F6', () => {
-    mainWindow.setSize(windowWidth, windowHeight)
+    mainWindow.setSize(WINDOW_WIDTH, WINDOW_HEIGHT)
   })
 
   // F11: 打开开发者工具
