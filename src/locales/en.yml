@@ -94,3 +94,5 @@ new_project:
     project_url: Project url
     project_name: Project name
     fill_in: Fill in
+  main_lang_component:
+    main_lang: Main language

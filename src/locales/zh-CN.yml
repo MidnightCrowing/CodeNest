@@ -86,3 +86,5 @@ new_project:
     project_url: 项目url
     project_name: 项目名称
     fill_in: 填入
+  main_lang_component:
+    main_lang: 主要语言

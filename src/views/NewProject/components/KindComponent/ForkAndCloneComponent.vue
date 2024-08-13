@@ -2,8 +2,8 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import Input from '~/components/Input.vue'
-import ConfigItemTitle from '~/views/NewProject/components/ConfigItemTitle.vue'
+import Input from '~/components/common/Input.vue'
+import ConfigItemTitle from '~/views/NewProject/components/common/ConfigItemTitle.vue'
 
 const { t } = useI18n()
 

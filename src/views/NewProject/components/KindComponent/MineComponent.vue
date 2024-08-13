@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import CheckBox from '~/components/CheckBox.vue'
+import CheckBox from '~/components/common/CheckBox.vue'
 
 const props = defineProps({
   value: {

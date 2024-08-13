@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ButtonGroup from '~/components/ButtonGroup.vue'
+import ButtonGroup from '~/components/common/ButtonGroup.vue'
 import { ProjectKind } from '~/constants/projectKind'
 
-import ConfigItem from '../ConfigItem.vue'
-import ConfigItemTitle from '../ConfigItemTitle.vue'
+import ConfigItem from '../common/ConfigItem.vue'
+import ConfigItemTitle from '../common/ConfigItemTitle.vue'
 import ForkAndCloneComponent from './ForkAndCloneComponent.vue'
 import MineComponent from './MineComponent.vue'
 
@@ -26,10 +26,6 @@ const currentComponent = computed(() => {
       return null
   }
 })
-
-function submitSettings() {
-  // 在这里处理或提交所有的设置项
-}
 </script>
 
 <template>
@@ -47,12 +43,4 @@ function submitSettings() {
       />
     </KeepAlive>
   </ConfigItem>
-
-  <button button-solid @click="submitSettings">
-    提交
-  </button>
 </template>
-
-<style scoped lang="scss">
-
-</style>

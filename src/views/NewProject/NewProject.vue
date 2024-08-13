@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import Input from '~/components/Input.vue'
-import PathInput from '~/components/PathInput.vue'
+import Input from '~/components/common/Input.vue'
+import PathInput from '~/components/common/PathInput.vue'
 
-import ConfigItem from './components/ConfigItem.vue'
-import ConfigItemTitle from './components/ConfigItemTitle.vue'
-import Hr from './components/Hr.vue'
+import ConfigItem from './components/common/ConfigItem.vue'
+import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
+import MainLanguageComponent from './components/MainLanguageComponent/MainLanguageComponent.vue'
 </script>
 
 <template>
   <div
     size-full
     bg="$bg-1"
+    flex="~ col" gap="y-15px"
   >
     <ConfigItem>
       <ConfigItemTitle title="new_project.name" />
@@ -20,9 +21,9 @@ import KindComponent from './components/KindComponent/KindComponent.vue'
       <PathInput grow />
     </configitem>
 
-    <Hr />
-
     <KindComponent />
+
+    <MainLanguageComponent />
   </div>
 </template>
 

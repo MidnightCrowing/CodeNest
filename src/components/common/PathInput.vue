@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '~/components/Input.vue'
+import Input from '~/components/common/Input.vue'
 
 const folderPath: Ref<string> = ref('')
 
