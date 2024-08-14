@@ -12,7 +12,7 @@ defineProps<{
 <template>
   <!--  <div class="custom-checkbox" @click="toggleCheck" /> -->
   <label flex="~ items-center" gap="x-5px">
-    <input type="checkbox" check-box>
+    <input type="checkbox" check-box-default>
     {{ title }}
   </label>
 </template>

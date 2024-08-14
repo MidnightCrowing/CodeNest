@@ -35,7 +35,7 @@ function clearInput() {
 
 <style scoped lang="scss">
 input {
-  --uno: "bg-transparent color-$text-color-2 placeholder-$text-color-3";
+  --uno: "bg-transparent placeholder-text-comment";
   --uno: "border-none outline-none shadow-none";
   --uno: "h-full w-[calc(100%-46px)] px-23px";
 }

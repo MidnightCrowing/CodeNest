@@ -1,18 +1,17 @@
 <script setup lang="ts">
-defineProps({
-  modelValue: {
-    type: String,
-    default: '',
-  },
-})
+defineProps<{
+  modelValue: string
+}>()
 
-defineEmits(['update:modelValue'])
+defineEmits<{
+  (event: 'update:modelValue', value: string): void
+}>()
 </script>
 
 <template>
   <input
     :value="modelValue"
-    input
+    input-default
     @input="$emit('update:modelValue', $event.target.value)"
   >
 </template>

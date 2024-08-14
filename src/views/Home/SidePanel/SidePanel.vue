@@ -18,7 +18,7 @@ provide('updateActivatedItem', updateActivatedItem)
 <template>
   <div class="side-panel">
     <KindGroup />
-    <hr hr m="x-16px">
+    <hr hr-default m="x-16px">
     <LanguagesGroup />
   </div>
 </template>

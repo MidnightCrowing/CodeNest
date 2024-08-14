@@ -92,14 +92,14 @@ function projectButtonClicked() {
 }
 
 .info {
-  --uno: "text-$text-color-3";
+  --uno: "text-comment";
 }
 
 .kind {
-  --uno: "text-$text-color-3";
+  --uno: "text-comment";
 
   a {
-    --uno: "text-link text-$text-color-3 fill-$text-color-3";
+    --uno: "text-comment text-link";
 
     span {
       --uno: "i-static-external-link-arrow?mask";

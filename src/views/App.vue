@@ -25,8 +25,8 @@ html,
 #app {
   --uno: "m-0 p-0";
   --uno: "size-full";
-  --uno: "color-$text-color-2 bg-$bg-2";
-  --uno: "text-default overflow-hidden";
+  --uno: "bg-$bg-2 text-default";
   --uno: "caret-$caret-color selection:bg-$text-selection";
+  --uno: "overflow-hidden";
 }
 </style>

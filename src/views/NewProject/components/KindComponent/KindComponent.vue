@@ -7,10 +7,10 @@ import ConfigItemTitle from '../common/ConfigItemTitle.vue'
 import ForkAndCloneComponent from './ForkAndCloneComponent.vue'
 import MineComponent from './MineComponent.vue'
 
-const kindButtons: { label: string, key: ProjectKind }[] = [
-  { label: 'Mine', key: ProjectKind.MINE },
-  { label: 'Fork', key: ProjectKind.FORK },
-  { label: 'Clone', key: ProjectKind.CLONE },
+const kindButtons: { label: string, index: ProjectKind }[] = [
+  { label: 'Mine', index: ProjectKind.MINE },
+  { label: 'Fork', index: ProjectKind.FORK },
+  { label: 'Clone', index: ProjectKind.CLONE },
 ]
 const kindSelected: Ref<ProjectKind> = ref(ProjectKind.MINE)
 const selectedValue = ref('')

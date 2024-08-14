@@ -3,24 +3,20 @@ import { useI18n } from 'vue-i18n'
 
 import CheckBox from '~/components/common/CheckBox.vue'
 
-const props = defineProps({
-  value: {
-    type: Object as () => Settings,
-    default: () => ({
-      checkboxSetting: false,
-      textSetting: '',
-    }),
-  },
-})
-
-const emit = defineEmits(['update:value'])
-
-const { t } = useI18n()
-
 interface Settings {
   checkboxSetting: boolean
   textSetting: string
 }
+
+const props = defineProps<{
+  value: Settings
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:value', value: Settings): void
+}>()
+
+const { t } = useI18n()
 
 const internalValue = ref({ ...props.value })
 

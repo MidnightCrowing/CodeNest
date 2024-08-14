@@ -77,7 +77,7 @@ watch(visibleSign, (newVal: boolean) => {
         <span mr="5px">
           {{ languageItem.text }}
         </span>
-        <span ml-auto text="$text-color-3">
+        <span ml-auto text-comment>
           {{ percentConversion(languageItem.percentage) }}
         </span>
       </li>

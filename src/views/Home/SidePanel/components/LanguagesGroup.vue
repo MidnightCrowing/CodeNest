@@ -23,8 +23,7 @@ const languagesGroup: ProjectLanguageInfo[] = [
 
 <template>
   <header
-    head-2-thin
-    color="$text-color-3"
+    head-2-thin text-comment
     p="x-16px y-6px"
   >
     {{ t('home.side_panel.languages') }}

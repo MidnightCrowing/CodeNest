@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Aaa from '~/components/common/aaa.vue'
 import Input from '~/components/common/Input.vue'
 import PathInput from '~/components/common/PathInput.vue'
 
@@ -24,6 +25,8 @@ import MainLanguageComponent from './components/MainLanguageComponent/MainLangua
     <KindComponent />
 
     <MainLanguageComponent />
+
+    <Aaa />
   </div>
 </template>
 

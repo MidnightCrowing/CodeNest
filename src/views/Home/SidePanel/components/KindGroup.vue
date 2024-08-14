@@ -20,8 +20,7 @@ const kindGroup2: KindItem[] = [
 
 <template>
   <header
-    head-1-thin
-    color="$text-color-3"
+    head-1-thin text-comment
     p="x-16px t-16px b-4px"
   >
     {{ t('home.side_panel.projects') }}
@@ -32,7 +31,7 @@ const kindGroup2: KindItem[] = [
       :key="kindItem.kind"
       :kind-item="kindItem"
     />
-    <hr hr m="x-16px">
+    <hr hr-default m="x-16px">
     <KindButton
       v-for="kindItem in kindGroup2"
       :key="kindItem.kind"

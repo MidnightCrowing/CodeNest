@@ -1,15 +1,15 @@
 <script setup lang="ts">
 defineProps<{
   modelValue: string
-  buttons: { label: string, key: string }[]
+  buttons: { label: string, index: string }[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', key: string): void
+  (e: 'update:modelValue', index: string): void
 }>()
 
-function handleClick(key: string) {
-  emit('update:modelValue', key)
+function handleClick(index: string) {
+  emit('update:modelValue', index)
 }
 </script>
 
@@ -21,14 +21,14 @@ function handleClick(key: string) {
     w-fit
   >
     <button
-      v-for="(button, key) in buttons"
-      :key="key"
-      :class="{ active: modelValue === button.key }"
+      v-for="(button, index) in buttons"
+      :key="index"
+      :class="{ active: modelValue === button.index }"
       button-base
       bg="transparent hover:$hover-0" text="$text-color-2"
       rounded-4px
       z-0
-      @click="handleClick(button.key)"
+      @click="handleClick(button.index)"
     >
       {{ button.label }}
     </button>

@@ -279,7 +279,7 @@ const projectItems: ProjectItem[] = [
 <template>
   <div bg="$bg-2">
     <Header />
-    <hr hr m="x-16px">
+    <hr hr-default m="x-16px">
     <main>
       <ProjectButton
         v-for="projectItem in projectItems"
