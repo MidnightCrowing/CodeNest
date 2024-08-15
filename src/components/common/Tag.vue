@@ -33,7 +33,7 @@ function removeTag() {
     p="x-6px y-5px"
     border="2px solid $border-1" rounded="5px"
     bg="$active-1"
-    cursor-default
+    truncate cursor-default
     @click="toggleSelect"
   >
     <span v-if="icon" :class="icon" />

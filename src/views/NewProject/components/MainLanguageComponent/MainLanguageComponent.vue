@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DropDownList from '~/components/common/Drop-downList.vue'
+import DropDownList from '~/components/common/Drop-downList-old.vue'
 import ConfigItem from '~/views/NewProject/components/common/ConfigItem.vue'
 import ConfigItemTitle from '~/views/NewProject/components/common/ConfigItemTitle.vue'
 

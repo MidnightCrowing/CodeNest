@@ -8,7 +8,7 @@
 <style scoped lang="scss">
 .window-header {
   -webkit-app-region: drag;
-  --uno: "h-40px w-full";
+  --uno: "min-h-40px max-h-40px w-full";
   --uno: "flex flex-row items-center";
   --uno: "bg-$window-focus-in";
   --uno: "select-none";

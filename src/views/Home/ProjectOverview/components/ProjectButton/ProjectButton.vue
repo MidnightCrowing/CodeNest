@@ -33,7 +33,7 @@ function projectButtonClicked() {
     @mousedown="projectButtonClick(projectItem.path)"
     @mouseup="projectButtonClicked()"
   >
-    <div flex="~ col justify-between" max-w="100%" text-small>
+    <div flex="~ col justify-between" w="100%" text-small>
       <div flex="~ col" gap="5px">
         <span class="text title">{{ projectItem.name }}</span>
 

@@ -34,9 +34,8 @@ function fillProjectName() {
   <div
     v-if="repositoryPath && projectNameInput !== repositoryPath"
     col-start="2"
-    hidden
     flex
-    max-w="500px"
+    overflow-hidden
   >
     <span text-help truncate>{{ repositoryPath }}</span>
     <span text-link m="l-2px" text-nowrap @click="fillProjectName">

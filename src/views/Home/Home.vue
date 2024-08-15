@@ -6,9 +6,9 @@ import SidePanel from './SidePanel/SidePanel.vue'
 <template>
   <div
     flex="~ row items-stretch"
-    h="[calc(100%-40px)]"
+    overflow-hidden
   >
-    <SidePanel w="225px" min="w-225px" max="w-225px" />
-    <ProjectOverview grow max="w-[calc(100%-225px)]" />
+    <SidePanel min-w="225px" max-w="225px" />
+    <ProjectOverview grow flex="~ col" overflow-hidden />
   </div>
 </template>

@@ -25,10 +25,10 @@ function handleKindItemClick(language: ProjectLanguage) {
   >
     <span
       flex="~ row justify-start items-center"
-      overflow="hidden"
+      overflow-hidden
     >
       <span
-        h="20px" w="min-w-16px max-w-20px" m="x-8px"
+        h="20px" min-w="16px" max-w="20px" m="x-8px"
         flex="~ justify-center items-center"
       >
         <LanguageCard :language-color="languageItem.color" :shape="Shape.VERTICAL_BAR" />

@@ -295,7 +295,6 @@ const projectItems: ProjectItem[] = [
 
 <style scoped lang="scss">
 main {
-  --uno: "h-[calc(100%-90px)]";
   --uno: "mx-15px my-5px py-5px pr-3px";
 
   // 滚动条设置

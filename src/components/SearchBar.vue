@@ -37,6 +37,6 @@ function clearInput() {
 input {
   --uno: "bg-transparent placeholder-text-comment";
   --uno: "border-none outline-none shadow-none";
-  --uno: "h-full w-[calc(100%-46px)] px-23px";
+  --uno: "size-full box-border px-23px";
 }
 </style>
