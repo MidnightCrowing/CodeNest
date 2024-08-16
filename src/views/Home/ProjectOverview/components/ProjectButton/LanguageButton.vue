@@ -2,7 +2,7 @@
 import { Shape } from '~/components/LanguageCard/constants'
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
 import { hidePop, showPop } from '~/components/LanguagePop/LanguagePopProvider'
-import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/types'
+import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/projectLanguage'
 
 import InfoButton from './InfoButton.vue'
 

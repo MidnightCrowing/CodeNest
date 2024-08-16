@@ -30,7 +30,7 @@ const currentComponent = computed(() => {
 
 <template>
   <ConfigItem>
-    <ConfigItemTitle title="new_project.kind_component.project_from" />
+    <ConfigItemTitle title="new_project.kind_component.project_source" />
     <ButtonGroup
       v-model="kindSelected"
       :buttons="kindButtons"

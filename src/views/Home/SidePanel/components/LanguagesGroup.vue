@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import type { ProjectLanguageInfo } from '~/constants/types'
+import type { ProjectLanguageInfo } from '~/constants/projectLanguage'
 
 import LanguageButton from './LanguageButton.vue'
 

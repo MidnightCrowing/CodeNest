@@ -1,4 +1,4 @@
-import type { languagesGroupItem } from '~/constants/types'
+import type { languagesGroupItem } from '~/constants/projectLanguage'
 
 export const visible = ref(false)
 export const position = reactive({ top: 0, left: 0 })

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import type { Color } from '~/constants/types'
-
 import { Shape } from './constants'
 
 defineProps<{
-  languageColor: Color
+  languageColor: string
   shape?: Shape
 }>()
 

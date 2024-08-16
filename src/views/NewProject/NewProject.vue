@@ -4,8 +4,9 @@ import PathInput from '~/components/common/PathInput.vue'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
+import DefaultOpenComponent from './components/DefaultOpenComponent.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
-import MainLanguageComponent from './components/MainLanguageComponent/MainLanguageComponent.vue'
+import MainLanguageComponent from './components/MainLanguageComponent.vue'
 </script>
 
 <template>
@@ -24,6 +25,8 @@ import MainLanguageComponent from './components/MainLanguageComponent/MainLangua
     <KindComponent />
 
     <MainLanguageComponent />
+
+    <DefaultOpenComponent />
   </div>
 </template>
 

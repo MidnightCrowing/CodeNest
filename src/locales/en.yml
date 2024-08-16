@@ -89,10 +89,10 @@ new_project:
   name: Name
   location: Location
   kind_component:
-    project_from: Project from
+    project_source: Project source
     test_desc: Test project
     project_url: Project url
     project_name: Project name
     fill_in: Fill in
-  main_lang_component:
-    main_lang: Main language
+  main_lang_project: Main language of the project
+  default_opening_method: Default opening method

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 interface Option {
-  value: any
-  text: string
-  icon?: string
-  note?: string
-  group?: string
+  value: string
+  label: string
+  iconClass?: string
+  description?: string
+  category?: string
 }
 
 const props = defineProps<{
@@ -20,20 +20,20 @@ const selectBox = ref<HTMLElement | null>(null)
 const selectedOption = computed(() => {
   // 确保 options 和 modelValue 不为空
   if (!props.options || !selectedValue.value)
-    return undefined
-  return props.options.find(option => option.value === selectedValue.value)
+    return { value: '', label: '<None>' }
+  return props.options.find(option => option.value === selectedValue.value) || { value: '', label: '<None>' }
 })
 
 // 分组选项
 const groupedOptions = computed(() => {
   // 确保 options 不为空
-  if (!props.options)
+  if (!props.options || props.options.length === 0)
     return { ungrouped: [], groupedByCategory: {} }
 
-  const ungrouped = props.options.filter(option => !option.group)
-  const grouped = props.options.filter(option => option.group)
+  const ungrouped = props.options.filter(option => !option.category)
+  const grouped = props.options.filter(option => option.category)
   const groupedByCategory: Record<string, Option[]> = grouped.reduce((acc, option) => {
-    const group = option.group || 'Other'
+    const group = option.category || 'Other'
     if (!acc[group])
       acc[group] = []
     acc[group].push(option)
@@ -43,15 +43,25 @@ const groupedOptions = computed(() => {
   return { ungrouped, groupedByCategory }
 })
 
+// 选项描述或类别
+const optionDescriptionOrCategory = computed(() => {
+  return selectedOption.value?.description || selectedOption.value?.category || ''
+})
+
 // 切换下拉框的显示状态
 function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
 // 选择一个选项并发出值
-function selectOption(option: Option) {
-  selectedValue.value = option.value
-  emit('update:modelValue', option.value)
+function selectOption(option: Option | string) {
+  if (typeof option === 'string') {
+    selectedValue.value = option
+  }
+  else {
+    selectedValue.value = option.value
+  }
+  emit('update:modelValue', selectedValue.value)
   isOpen.value = false
 }
 
@@ -88,9 +98,16 @@ onBeforeUnmount(() => {
       cursor-default
       @click="toggleDropdown"
     >
-      <span v-if="selectedOption?.icon" class="option-icon" :class="selectedOption?.icon" />
-      <span class="option-text" h="16px">{{ selectedOption?.text || '' }}</span>
-      <span v-if="selectedOption?.note" class="option-note">{{ selectedOption?.note }}</span>
+      <span
+        v-if="selectedOption?.iconClass"
+        class="option-icon" :class="selectedOption?.iconClass"
+      />
+      <span class="option-label" h="16px">
+        {{ selectedOption?.label || '' }}
+      </span>
+      <span v-if="optionDescriptionOrCategory" class="option-description">
+        {{ optionDescriptionOrCategory }}
+      </span>
     </div>
     <span
       absolute top-9px right-7px
@@ -110,25 +127,31 @@ onBeforeUnmount(() => {
         cursor-default
         overflow-auto scrollbar-thin
       >
-        <!-- 未分组项 -->
+        <!-- 当没有传入 options 或 options 为空时，显示 <None> -->
         <li
-          v-for="option in groupedOptions.ungrouped"
-          :key="option.value"
+          v-if="!props.options || props.options.length === 0"
           class="option-item"
-          bg="hover:$select-3"
-          p="x-6px"
-          @click="selectOption(option)"
+          @click="selectOption('<None>')"
         >
-          <span class="option-icon" :class="option.icon" />
-          <span class="option-text">{{ option.text }}</span>
-          <span v-if="option.note" class="option-note">{{ option.note }}</span>
+          &lt;None&gt;
         </li>
 
+        <!-- 未分组项 -->
+        <template v-if="groupedOptions.ungrouped.length > 0">
+          <li
+            v-for="option in groupedOptions.ungrouped"
+            :key="option.value"
+            class="option-item"
+            @click="selectOption(option)"
+          >
+            <span class="option-icon" :class="option.iconClass" />
+            <span class="option-label">{{ option.label }}</span>
+            <span v-if="option.description" class="option-description">{{ option.description }}</span>
+          </li>
+        </template>
+
         <!-- 按组显示的项 -->
-        <template
-          v-for="(group, groupName) in groupedOptions.groupedByCategory"
-          :key="groupName"
-        >
+        <template v-for="(group, groupName) in groupedOptions.groupedByCategory" :key="groupName">
           <li head-2 text-comment m="t-2px l-2px" p="3px">
             {{ groupName }}
           </li>
@@ -136,13 +159,11 @@ onBeforeUnmount(() => {
             v-for="option in group"
             :key="option.value"
             class="option-item"
-            bg="hover:$select-3"
-            p="x-6px"
             @click="selectOption(option)"
           >
-            <span class="option-icon" :class="option.icon" />
-            <span class="option-text">{{ option.text }}</span>
-            <span v-if="option.note" class="option-note">{{ option.note }}</span>
+            <span class="option-icon" :class="option.iconClass" />
+            <span class="option-label">{{ option.label }}</span>
+            <span v-if="option.description" class="option-description">{{ option.description }}</span>
           </li>
         </template>
       </ul>
@@ -153,23 +174,26 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .option-item {
   --uno: "py-5px";
-  --uno: "flex items-center gap-0.25rem";
+  --uno: "flex items-center";
+
+  ul & {
+    --uno: "px-6px";
+    --uno: "hover:bg-$select-3";
+  }
 
   .option-icon {
+    --uno: "mr-0.25rem";
     --uno: "size-min-13px";
   }
 
-  .option-text {
+  .option-label {
+    --uno: "max-w-70%";
     --uno: "truncate";
   }
 
-  .option-note {
-    --uno: "text-comment text-nowrap truncate";
-    --uno: "max-w-30%";
-  }
-
-  .option-note {
-    --uno: "text-comment text-nowrap truncate";
+  .option-description {
+    --uno: "ml-0.5rem";
+    --uno: "text-comment text-nowrap truncate whitespace-pre";
   }
 }
 </style>

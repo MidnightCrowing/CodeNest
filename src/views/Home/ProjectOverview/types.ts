@@ -1,6 +1,6 @@
 import type { License } from '~/constants/license'
 import type { ProjectKind } from '~/constants/projectKind'
-import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/types'
+import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/projectLanguage'
 
 interface KindInfo {
   kind: ProjectKind

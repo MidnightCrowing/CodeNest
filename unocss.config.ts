@@ -9,6 +9,7 @@ import {
   transformerDirectives,
 } from 'unocss'
 
+import { appIconClasses } from './src/constants/appOptions'
 import styles from './src/styles/unocssStyle'
 
 export default defineConfig({
@@ -40,6 +41,10 @@ export default defineConfig({
       mask
         ? `i-custom-${icon}${mask}`
         : `i-custom-${icon}`],
+  ],
+
+  safelist: [
+    ...appIconClasses,
   ],
 
   // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Shape } from '~/components/LanguageCard/constants'
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
-import type { ProjectLanguage, ProjectLanguageInfo } from '~/constants/types'
+import type { ProjectLanguage, ProjectLanguageInfo } from '~/constants/projectLanguage'
 
 import type { ActivatedItem } from '../types'
 
