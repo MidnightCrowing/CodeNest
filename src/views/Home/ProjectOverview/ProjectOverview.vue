@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Hr from '~/components/common/Hr.vue'
 import LanguagePop from '~/components/LanguagePop/LanguagePop.vue'
 import LicensePop from '~/components/LicensePop/LicensePop.vue'
 import { License } from '~/constants/license'
@@ -279,7 +280,7 @@ const projectItems: ProjectItem[] = [
 <template>
   <div bg="$bg-2">
     <Header />
-    <hr hr-default m="x-16px">
+    <Hr />
     <main>
       <ProjectButton
         v-for="projectItem in projectItems"

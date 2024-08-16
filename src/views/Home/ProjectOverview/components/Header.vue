@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import ButtonSolid from '~/components/common/ButtonSolid.vue'
 import SearchBar from '~/components/SearchBar.vue'
 
 const { t } = useI18n()
@@ -13,8 +14,8 @@ const { t } = useI18n()
     gap="15px"
   >
     <SearchBar grow />
-    <button button-solid>
+    <ButtonSolid>
       {{ t('home.header.add_item') }}
-    </button>
+    </ButtonSolid>
   </header>
 </template>

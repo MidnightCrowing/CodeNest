@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ButtonBase from './ButtonBase.vue'
+
 defineProps<{
   modelValue: string
   buttons: { label: string, index: string }[]
@@ -20,18 +22,17 @@ function handleClick(index: string) {
     outline="~ 2px $border-1"
     w-fit
   >
-    <button
+    <ButtonBase
       v-for="(button, index) in buttons"
       :key="index"
       :class="{ active: modelValue === button.index }"
-      button-base
       bg="transparent hover:$hover-0" text="$text-color-2"
       rounded-4px
       z-0
       @click="handleClick(button.index)"
     >
       {{ button.label }}
-    </button>
+    </ButtonBase>
   </div>
 </template>
 

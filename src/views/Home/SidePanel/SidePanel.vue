@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Hr from '~/components/common/Hr.vue'
+
 import KindGroup from './components/KindGroup.vue'
 import LanguagesGroup from './components/LanguagesGroup.vue'
 import { KindMark } from './constants'
@@ -18,7 +20,7 @@ provide('updateActivatedItem', updateActivatedItem)
 <template>
   <div class="side-panel">
     <KindGroup />
-    <hr hr-default m="x-16px">
+    <Hr />
     <LanguagesGroup />
   </div>
 </template>

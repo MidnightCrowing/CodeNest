@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
       tabindex="0"
       min-w-full max-w-full m="2px" p="l-6px r-27px" box-border
       rounded="3px"
-      outline="solid 2px $border-line focus:$active-3"
+      outline="~ 2px $border-line focus:$active-3"
       bg="$active-2"
       cursor-default
       @click="toggleDropdown"

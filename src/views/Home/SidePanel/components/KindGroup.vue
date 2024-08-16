@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import Hr from '~/components/common/Hr.vue'
+
 import { Kind } from '../constants'
 import type { KindItem } from '../types'
 import KindButton from './KindButton.vue'
@@ -31,7 +33,7 @@ const kindGroup2: KindItem[] = [
       :key="kindItem.kind"
       :kind-item="kindItem"
     />
-    <hr hr-default m="x-16px">
+    <Hr />
     <KindButton
       v-for="kindItem in kindGroup2"
       :key="kindItem.kind"

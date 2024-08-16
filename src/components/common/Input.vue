@@ -16,7 +16,7 @@ defineEmits<{
     border-0 rounded="3px"
     m="2px" p="x-6px y-5px"
     min-w-64px
-    outline="solid 2px $border-line focus:$active-3"
+    outline="~ 2px $border-line focus:$active-3"
     @input="$emit('update:modelValue', $event.target.value)"
   >
 </template>

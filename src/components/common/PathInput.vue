@@ -15,7 +15,7 @@ async function openFolder() {
   <span relative>
     <Input
       v-model="folderPath"
-      w-full box-border p="r-27px"
+      w-full box-border pr="27px"
     />
     <span
       absolute
