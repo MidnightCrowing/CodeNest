@@ -1,7 +1,4 @@
 <script setup lang="ts">
-const emit = defineEmits(['update:modelValue'])
-const modelValue = ref('')
-
 interface Option {
   value: any
   text: string
@@ -10,27 +7,31 @@ interface Option {
   group?: string
 }
 
-const options = [
-  { value: 'option1', text: '选项 1', icon: 'i-static-jetbrains-goland', note: '注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1', group: 'jetbrains' },
-  { value: 'option2', text: '选项 2', icon: 'i-static-visual-studio', note: '注释 2', group: 'jetbrains' },
-  { value: 'option3', text: '选项 3', group: 'jetbrains' },
-  { value: 'option4', text: '选项 4', note: '注释 4', group: 'minecraft' },
-  { value: 'option5', text: '选项 5' },
-]
-
-// 控制下拉框显示状态
-const isOpen = ref(false)
+const props = defineProps<{
+  options: Option[]
+  modelValue: any
+}>()
+const emit = defineEmits(['update:modelValue'])
+const selectedValue = ref(props.modelValue)
+const isOpen = ref(false) // 控制下拉框显示状态
 const selectBox = ref<HTMLElement | null>(null)
 
-// 计算属性，用于查找当前选中的选项
-const selectedOption = computed(() =>
-  options.find(option => option.value === modelValue.value),
-)
+// 查找当前选中的选项
+const selectedOption = computed(() => {
+  // 确保 options 和 modelValue 不为空
+  if (!props.options || !selectedValue.value)
+    return undefined
+  return props.options.find(option => option.value === selectedValue.value)
+})
 
 // 分组选项
 const groupedOptions = computed(() => {
-  const ungrouped = options.filter(option => !option.group)
-  const grouped = options.filter(option => option.group)
+  // 确保 options 不为空
+  if (!props.options)
+    return { ungrouped: [], groupedByCategory: {} }
+
+  const ungrouped = props.options.filter(option => !option.group)
+  const grouped = props.options.filter(option => option.group)
   const groupedByCategory: Record<string, Option[]> = grouped.reduce((acc, option) => {
     const group = option.group || 'Other'
     if (!acc[group])
@@ -49,7 +50,7 @@ function toggleDropdown() {
 
 // 选择一个选项并发出值
 function selectOption(option: Option) {
-  modelValue.value = option.value
+  selectedValue.value = option.value
   emit('update:modelValue', option.value)
   isOpen.value = false
 }
@@ -107,6 +108,7 @@ onBeforeUnmount(() => {
         absolute top-26px
         list-none
         cursor-default
+        overflow-auto scrollbar-thin
       >
         <!-- 未分组项 -->
         <li

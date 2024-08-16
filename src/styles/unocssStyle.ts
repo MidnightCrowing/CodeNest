@@ -65,9 +65,45 @@ const textStyles = {
 }
 // endregion
 
+// region 滚动条样式
+const scrollbarBaseStyles = {
+  track: 'scrollbar-track:bg-transparent',
+  corner: 'scrollbar-corner:bg-transparent',
+  thumb: 'scrollbar-thumb:bg-$scrollbar-thumb',
+  thumbHover: 'hover:scrollbar-thumb:bg-$scrollbar-thumb-hover',
+}
+const scrollbarBase = `
+  ${scrollbarBaseStyles.track}
+  ${scrollbarBaseStyles.corner}
+  ${scrollbarBaseStyles.thumb}
+  ${scrollbarBaseStyles.thumbHover}
+`
+
+const scrollbarDefaultExpandStyles = {
+  width: 'scrollbar:w-8px',
+  // rounded: 'scrollbar-thumb:rounded-4px',
+}
+const scrollbarDefaultExpand = `
+  ${scrollbarDefaultExpandStyles.width}
+`
+
+const scrollbarThinExpandStyles = {
+  width: 'scrollbar:w-5px',
+}
+const scrollbarThinExpand = `
+  ${scrollbarThinExpandStyles.width}
+`
+
+const scrollbarStyle = {
+  'scrollbar-default': `${scrollbarBase} ${scrollbarDefaultExpand}`,
+  'scrollbar-thin': `${scrollbarBase} ${scrollbarThinExpand}`,
+}
+// endregion
+
 // Unocss 配置
 const shortcuts: StylesType = {
   ...textStyles,
+  ...scrollbarStyle,
 }
 
 export default {
