@@ -108,30 +108,6 @@ const buttonStyles = {
 }
 // endregion
 
-// region 输入框样式
-const inputBaseStyle = {
-  bg: 'bg-transparent',
-  border: 'border-0',
-  boxModel: 'm-2px px-6px py-5px',
-  color: 'color-$text-color-2 placeholder-text-comment',
-  outline: 'outline-solid outline-2px outline-$border-line focus:outline-$active-3',
-  radius: 'rounded-3px',
-  size: 'min-w-64px',
-}
-const inputBase = `
-  ${inputBaseStyle.bg}
-  ${inputBaseStyle.border}
-  ${inputBaseStyle.boxModel}
-  ${inputBaseStyle.color}
-  ${inputBaseStyle.outline}
-  ${inputBaseStyle.radius}
-  ${inputBaseStyle.size}
-`
-const inputStyles = {
-  'input-default': `${inputBase}`,
-}
-// endregion
-
 // region 复选框样式
 const checkBoxBaseStyle = {
   align: 'align-middle',
@@ -173,7 +149,6 @@ const hrStyles = {
 const shortcuts: StylesType = {
   ...textStyles,
   ...buttonStyles,
-  ...inputStyles,
   ...checkBoxStyles,
   ...hrStyles,
 }

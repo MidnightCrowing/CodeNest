@@ -82,7 +82,7 @@ watch(() => props.modelValue, () => {
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: solid 1px #ccc;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -92,7 +92,7 @@ watch(() => props.modelValue, () => {
   top: 100%;
   left: 0;
   width: 100%;
-  border: 1px solid #ccc;
+  border: solid 1px #ccc;
   border-radius: 4px;
   background-color: white;
   z-index: 10;

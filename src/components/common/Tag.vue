@@ -31,7 +31,7 @@ function removeTag() {
     inline-flex gap="0.25rem"
     items-center
     p="x-6px y-5px"
-    border="2px solid $border-1" rounded="5px"
+    border="solid 2px $border-1" rounded="5px"
     bg="$active-1"
     truncate cursor-default
     @click="toggleSelect"

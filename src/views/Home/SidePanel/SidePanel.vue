@@ -27,7 +27,6 @@ provide('updateActivatedItem', updateActivatedItem)
 .side-panel {
   --uno: "bg-$bg-1";
   --uno: "py-8px";
-  --uno: "relative top-1px";
 
   // 滚动条设置
   --uno: "overflow-y-auto";

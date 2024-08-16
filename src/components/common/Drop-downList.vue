@@ -10,7 +10,7 @@ interface Option {
 }
 
 const options = [
-  { value: 'option1', text: '选项 1', icon: 'i-static-jetbrains-goland', note: '注释 1' },
+  { value: 'option1', text: '选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1', icon: 'i-static-jetbrains-goland', note: '注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1' },
   { value: 'option2', text: '选项 2', icon: 'i-static-visual-studio', note: '注释 2' },
   { value: 'option3', text: '选项 3' },
 ]
@@ -57,22 +57,21 @@ onBeforeUnmount(() => {
     ref="selectBox"
     relative
     flex="~ items-center"
-    style="width: 500px;"
+    min-w="72px"
   >
     <div
+      class="option-item"
       tabindex="0"
-      w-full
-      m="2px" p="x-6px y-5px"
+      min-w-full max-w-full m="2px" p="l-6px r-27px" box-border
       rounded="3px"
       outline="solid 2px $border-line focus:$active-3"
       bg="$active-2"
-      flex="~ items-center" gap="0.25rem"
       cursor-default
       @click="toggleDropdown"
     >
-      <span :class="selectedOption?.icon" />
-      <span h="16px">{{ selectedOption?.text || '' }}</span>
-      <span v-if="selectedOption?.note" text-comment>{{ selectedOption.note }}</span>
+      <span v-if="selectedOption?.icon" class="option-icon" :class="selectedOption?.icon" />
+      <span class="option-text" h="16px">{{ selectedOption?.text || '' }}</span>
+      <span v-if="selectedOption?.note" class="option-note">{{ selectedOption.note }}</span>
     </div>
     <span
       absolute top-9px right-7px
@@ -83,26 +82,47 @@ onBeforeUnmount(() => {
     <template v-if="isOpen">
       <ul
         bg="$bg-1"
-        w-full
+        w-full max-h="600px"
         p-0 m="y-5px"
         flex="~ col"
-        border="2px solid $border-1"
+        border="solid 2px $border-1"
         absolute top-26px
         list-none
+        cursor-default
       >
         <li
           v-for="option in options"
           :key="option.value"
+          class="option-item"
           bg="hover:$select-3"
-          p="x-6px y-5px"
-          flex gap="0.25rem"
+          p="x-6px"
           @click="selectOption(option)"
         >
-          <span :class="option.icon" size="13px" />
-          <span>{{ option.text }}</span>
-          <span v-if="option.note" text-comment>{{ option.note }}</span>
+          <span class="option-icon" :class="option.icon" />
+          <span class="option-text">{{ option.text }}</span>
+          <span v-if="option.note" class="option-note">{{ option.note }}</span>
         </li>
       </ul>
     </template>
   </div>
 </template>
+
+<style scoped lang="scss">
+.option-item {
+  --uno: "py-5px";
+  --uno: "flex items-center gap-0.25rem";
+
+  .option-icon {
+    --uno: "size-min-13px";
+  }
+
+  .option-text {
+    --uno: "truncate";
+  }
+
+  .option-note {
+    --uno: "text-comment text-nowrap truncate";
+    --uno: "max-w-30%";
+  }
+}
+</style>
