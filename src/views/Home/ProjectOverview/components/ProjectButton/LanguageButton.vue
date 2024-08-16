@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Shape } from '~/components/LanguageCard/constants'
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
 import { hidePop, showPop } from '~/components/LanguagePop/LanguagePopProvider'
 import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/types'
@@ -32,6 +33,7 @@ function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem) {
     <InfoButton>
       <LanguageCard
         :language-color="language.color"
+        :shape="Shape.CIRCLE"
         m="r-5px"
       />
       {{ language.text }}

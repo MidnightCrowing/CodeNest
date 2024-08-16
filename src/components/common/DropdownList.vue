@@ -7,12 +7,15 @@ interface Option {
   text: string
   icon?: string
   note?: string
+  group?: string
 }
 
 const options = [
-  { value: 'option1', text: '选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1选项 1', icon: 'i-static-jetbrains-goland', note: '注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1' },
-  { value: 'option2', text: '选项 2', icon: 'i-static-visual-studio', note: '注释 2' },
-  { value: 'option3', text: '选项 3' },
+  { value: 'option1', text: '选项 1', icon: 'i-static-jetbrains-goland', note: '注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1注释 1', group: 'jetbrains' },
+  { value: 'option2', text: '选项 2', icon: 'i-static-visual-studio', note: '注释 2', group: 'jetbrains' },
+  { value: 'option3', text: '选项 3', group: 'jetbrains' },
+  { value: 'option4', text: '选项 4', note: '注释 4', group: 'minecraft' },
+  { value: 'option5', text: '选项 5' },
 ]
 
 // 控制下拉框显示状态
@@ -23,6 +26,21 @@ const selectBox = ref<HTMLElement | null>(null)
 const selectedOption = computed(() =>
   options.find(option => option.value === modelValue.value),
 )
+
+// 分组选项
+const groupedOptions = computed(() => {
+  const ungrouped = options.filter(option => !option.group)
+  const grouped = options.filter(option => option.group)
+  const groupedByCategory: Record<string, Option[]> = grouped.reduce((acc, option) => {
+    const group = option.group || 'Other'
+    if (!acc[group])
+      acc[group] = []
+    acc[group].push(option)
+    return acc
+  }, {} as Record<string, Option[]>)
+
+  return { ungrouped, groupedByCategory }
+})
 
 // 切换下拉框的显示状态
 function toggleDropdown() {
@@ -71,7 +89,7 @@ onBeforeUnmount(() => {
     >
       <span v-if="selectedOption?.icon" class="option-icon" :class="selectedOption?.icon" />
       <span class="option-text" h="16px">{{ selectedOption?.text || '' }}</span>
-      <span v-if="selectedOption?.note" class="option-note">{{ selectedOption.note }}</span>
+      <span v-if="selectedOption?.note" class="option-note">{{ selectedOption?.note }}</span>
     </div>
     <span
       absolute top-9px right-7px
@@ -90,8 +108,9 @@ onBeforeUnmount(() => {
         list-none
         cursor-default
       >
+        <!-- 未分组项 -->
         <li
-          v-for="option in options"
+          v-for="option in groupedOptions.ungrouped"
           :key="option.value"
           class="option-item"
           bg="hover:$select-3"
@@ -102,6 +121,28 @@ onBeforeUnmount(() => {
           <span class="option-text">{{ option.text }}</span>
           <span v-if="option.note" class="option-note">{{ option.note }}</span>
         </li>
+
+        <!-- 按组显示的项 -->
+        <template
+          v-for="(group, groupName) in groupedOptions.groupedByCategory"
+          :key="groupName"
+        >
+          <li head-2 text-comment m="t-2px l-2px" p="3px">
+            {{ groupName }}
+          </li>
+          <li
+            v-for="option in group"
+            :key="option.value"
+            class="option-item"
+            bg="hover:$select-3"
+            p="x-6px"
+            @click="selectOption(option)"
+          >
+            <span class="option-icon" :class="option.icon" />
+            <span class="option-text">{{ option.text }}</span>
+            <span v-if="option.note" class="option-note">{{ option.note }}</span>
+          </li>
+        </template>
       </ul>
     </template>
   </div>
@@ -123,6 +164,10 @@ onBeforeUnmount(() => {
   .option-note {
     --uno: "text-comment text-nowrap truncate";
     --uno: "max-w-30%";
+  }
+
+  .option-note {
+    --uno: "text-comment text-nowrap truncate";
   }
 }
 </style>

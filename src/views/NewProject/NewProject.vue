@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Aaa from '~/components/common/Drop-downList.vue'
+import Aaa from '~/components/common/DropdownList.vue'
 import Input from '~/components/common/Input.vue'
 import PathInput from '~/components/common/PathInput.vue'
 

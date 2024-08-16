@@ -85,7 +85,7 @@ watch(visibleSign, (newVal: boolean) => {
         </div>
       </div>
 
-      <div mb="10px">
+      <div m="b-10px">
         <a
           class="description_from_link"
           :href="licenseDescription.fromUrl"

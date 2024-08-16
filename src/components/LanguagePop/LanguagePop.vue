@@ -74,7 +74,7 @@ watch(visibleSign, (newVal: boolean) => {
           :language-color="languageItem.color"
           m="r-2" h="6px" w="6px"
         />
-        <span mr="5px">
+        <span m="r-5px">
           {{ languageItem.text }}
         </span>
         <span ml-auto text-comment>
