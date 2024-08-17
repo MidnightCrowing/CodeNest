@@ -47,7 +47,11 @@ watch(visibleSign, (newVal: boolean) => {
   <div
     v-if="popVisible"
     ref="popElementRef"
-    class="licensePop"
+    absolute
+    translate-y="-100%"
+    bg="$bg-1" shadow="$shadow-1"
+    p="x-20px y-5px" rounded="5px"
+    cursor-default
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -55,30 +59,45 @@ watch(visibleSign, (newVal: boolean) => {
     <template v-if="hasLicenseDescription">
       <div flex="~ row items-start" gap="20px">
         <div v-if="hasPermissions">
-          <h3>{{ t('license_pop.permissions') }}</h3>
-          <ul>
+          <h3 mb-0>
+            {{ t('license_pop.permissions') }}
+          </h3>
+          <ul
+            m="t-10px" pl-0
+            list-none whitespace-nowrap
+          >
             <li v-for="permission in licenseDescription.permissions" :key="permission">
-              <span i-static="license-permission" />
+              <span size="1rem" i-static="license-permission" />
               {{ permission }}
             </li>
           </ul>
         </div>
 
         <div v-if="hasLimitations">
-          <h3>{{ t('license_pop.limitations') }}</h3>
-          <ul>
+          <h3 mb-0>
+            {{ t('license_pop.limitations') }}
+          </h3>
+          <ul
+            m="t-10px" pl-0
+            list-none whitespace-nowrap
+          >
             <li v-for="limitation in licenseDescription.limitations" :key="limitation">
-              <span i-static="license-limitation" />
+              <span size="1rem" i-static="license-limitation" />
               {{ limitation }}
             </li>
           </ul>
         </div>
 
         <div v-if="hasConditions">
-          <h3>{{ t('license_pop.conditions') }}</h3>
-          <ul>
+          <h3 mb-0>
+            {{ t('license_pop.conditions') }}
+          </h3>
+          <ul
+            m="t-10px" pl-0
+            list-none whitespace-nowrap
+          >
             <li v-for="condition in licenseDescription.conditions" :key="condition">
-              <span i-static="license-condition" />
+              <span size="1rem" i-static="license-condition" />
               {{ condition }}
             </li>
           </ul>
@@ -87,7 +106,7 @@ watch(visibleSign, (newVal: boolean) => {
 
       <div m="b-10px">
         <a
-          class="description_from_link"
+          relative text-link
           :href="licenseDescription.fromUrl"
           target="_blank"
         >
@@ -108,26 +127,3 @@ watch(visibleSign, (newVal: boolean) => {
     </template>
   </div>
 </template>
-
-<style scoped lang="scss">
-.licensePop {
-  --uno: "absolute";
-  --uno: "translate-y--100%";
-  --uno: "bg-$bg-1 shadow-$shadow-1";
-  --uno: "px-20px py-5px rounded-5px";
-  --uno: "cursor-default";
-}
-
-h3 {
-  --uno: "mb-0";
-}
-
-ul {
-  --uno: "mt-10px pl-0";
-  --uno: "list-none whitespace-nowrap";
-}
-
-.description_from_link {
-  --uno: "relative text-link";
-}
-</style>

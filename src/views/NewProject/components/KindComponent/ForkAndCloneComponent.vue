@@ -8,31 +8,31 @@ import ConfigItemTitle from '~/views/NewProject/components/common/ConfigItemTitl
 const { t } = useI18n()
 
 // 用于获取输入框的内容
-const projectUrlInput = ref('')
-const projectNameInput = ref('')
+const projectUrlInputValue = ref('')
+const projectNameInputValue = ref('')
 // 用于存储匹配结果
 const repositoryPath = ref('')
 
 // 监听 URL 输入框内容的变化
-watch(projectUrlInput, (newValue) => {
+watch(projectUrlInputValue, (newValue) => {
   const match = newValue.match(/github\.com\/([^/]+\/[^/]+)/)
   repositoryPath.value = match ? match[1] : ''
 })
 
 function fillProjectName() {
-  projectNameInput.value = repositoryPath.value
+  projectNameInputValue.value = repositoryPath.value
 }
 </script>
 
 <template>
   <ConfigItemTitle title="new_project.kind_component.project_url" />
-  <Input v-model="projectUrlInput" />
+  <Input v-model="projectUrlInputValue" />
 
   <ConfigItemTitle title="new_project.kind_component.project_name" />
-  <Input v-model="projectNameInput" />
+  <Input v-model="projectNameInputValue" />
 
   <div
-    v-if="repositoryPath && projectNameInput !== repositoryPath"
+    v-if="repositoryPath && projectNameInputValue !== repositoryPath"
     col-start="2"
     flex
     overflow-hidden

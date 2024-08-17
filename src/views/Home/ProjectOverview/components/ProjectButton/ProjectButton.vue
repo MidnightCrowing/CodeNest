@@ -30,16 +30,23 @@ function projectButtonClicked() {
   <div
     ref="projectButton"
     class="project-button"
+    bg="hover:$hover-1"
+    h="90px"
+    rounded="5px"
+    p="10px"
+    flex="~ row"
+    cursor-pointer
+    overflow-hidden
     @mousedown="projectButtonClick(projectItem.path)"
     @mouseup="projectButtonClicked()"
   >
     <div flex="~ col justify-between" w="100%" text-small>
       <div flex="~ col" gap="5px">
-        <span class="text title">{{ projectItem.name }}</span>
+        <span truncate text-default m-b-2px>{{ projectItem.name }}</span>
 
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
-          class="text info kind"
+          class="project-kind"
         >
           {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <template v-if="kindFrom && kindUrl">
@@ -53,7 +60,7 @@ function projectButtonClicked() {
           </template>
         </span>
 
-        <span class="text info">{{ projectItem.path }}</span>
+        <span truncate text-comment>{{ projectItem.path }}</span>
       </div>
 
       <div flex="~ row" gap="15px">
@@ -72,38 +79,20 @@ function projectButtonClicked() {
 
 <style scoped lang="scss">
 .project-button {
-  --uno: "h-90px rounded-5px p-10px";
-  --uno: "flex flex-row";
-  --uno: "hover:bg-$hover-1";
-  --uno: "cursor-pointer";
-  --uno: "overflow-hidden";
-
   &.active {
     --uno: "active:bg-$active-1";
   }
-}
 
-.text {
-  --uno: "truncate";
-}
+  .project-kind {
+    --uno: "truncate text-comment";
 
-.title {
-  --uno: "text-default m-b-2px";
-}
+    a {
+      --uno: "text-comment text-link";
 
-.info {
-  --uno: "text-comment";
-}
-
-.kind {
-  --uno: "text-comment";
-
-  a {
-    --uno: "text-comment text-link";
-
-    span {
-      --uno: "i-static-external-link-arrow?mask";
-      --uno: "w-13px h-13px";
+      span {
+        --uno: "i-static-external-link-arrow?mask";
+        --uno: "size-13px";
+      }
     }
   }
 }

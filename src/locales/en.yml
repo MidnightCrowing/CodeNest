@@ -87,7 +87,7 @@ home:
     search_project: Search Project
 new_project:
   name: Name
-  location: Location
+  directory: Directory
   kind_component:
     project_source: Project source
     test_desc: Test project

@@ -111,6 +111,7 @@ onBeforeUnmount(() => {
     </div>
     <span
       absolute top-9px right-7px
+      size="13px"
       i-static="inlay-drop-triangle"
       @click="toggleDropdown"
     />
@@ -120,6 +121,7 @@ onBeforeUnmount(() => {
         bg="$bg-1"
         w-full max-h="600px"
         p-0 m="y-5px"
+        z="1"
         flex="~ col"
         border="solid 2px $border-1"
         absolute top-26px

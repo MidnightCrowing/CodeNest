@@ -26,8 +26,7 @@ function handleClick(index: string) {
       v-for="(button, index) in buttons"
       :key="index"
       :class="{ active: modelValue === button.index }"
-      bg="transparent hover:$hover-0" text="$text-color-2"
-      rounded-4px
+      bg="transparent hover:$hover-0"
       z-0
       @click="handleClick(button.index)"
     >

@@ -1,34 +1,50 @@
 <script setup lang="ts">
-import Input from '~/components/common/Input.vue'
-import PathInput from '~/components/common/PathInput.vue'
+import Button from '~/components/common/Button.vue'
+import ButtonSolid from '~/components/common/ButtonSolid.vue'
 
-import ConfigItem from './components/common/ConfigItem.vue'
-import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
 import DefaultOpenComponent from './components/DefaultOpenComponent.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
 import MainLanguageComponent from './components/MainLanguageComponent.vue'
+import ProjectInfoComponent from './components/ProjectInfoComponent.vue'
+
+const view = inject('view') as Ref<string>
+
+function changeView() {
+  if (view)
+    view.value = 'home'
+}
 </script>
 
 <template>
   <div
     size-full
     bg="$bg-1"
-    flex="~ col" gap="y-15px"
+    flex="~ col"
   >
-    <ConfigItem>
-      <ConfigItemTitle title="new_project.name" />
-      <Input w="200px" />
-      <ConfigItemTitle title="new_project.location" />
-      <PathInput grow />
-    </configitem>
+    <div
+      grow
+      flex="~ col" gap="y-15px"
+      overflow-auto scrollbar-default
+    >
+      <ProjectInfoComponent />
 
-    <KindComponent />
+      <KindComponent />
 
-    <MainLanguageComponent />
+      <MainLanguageComponent />
 
-    <DefaultOpenComponent />
+      <DefaultOpenComponent />
+    </div>
+
+    <div
+      bg="$bg-1"
+      p="8px"
+      flex="~ row-reverse" gap="8px"
+      border-t="solid 2px $border-line"
+    >
+      <Button @click="changeView">
+        取消
+      </Button>
+      <ButtonSolid>添加</ButtonSolid>
+    </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-</style>

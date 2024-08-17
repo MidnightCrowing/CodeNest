@@ -5,8 +5,8 @@ import LicensePop from '~/components/LicensePop/LicensePop.vue'
 import { License } from '~/constants/license'
 import { ProjectKind } from '~/constants/projectKind'
 
-import Header from './components/Header.vue'
 import ProjectButton from './components/ProjectButton/ProjectButton.vue'
+import ProjectOverviewHeader from './components/ProjectOverviewHeader.vue'
 import type { ProjectItem } from './types'
 
 const projectItems: ProjectItem[] = [
@@ -279,7 +279,7 @@ const projectItems: ProjectItem[] = [
 
 <template>
   <div bg="$bg-2">
-    <Header />
+    <ProjectOverviewHeader />
     <Hr />
     <main>
       <ProjectButton
@@ -297,14 +297,6 @@ const projectItems: ProjectItem[] = [
 <style scoped lang="scss">
 main {
   --uno: "mx-15px my-5px py-5px pr-3px";
-
-  // 滚动条设置
-  --uno: "overflow-y-auto overflow-x-hidden";
-  --uno: "scrollbar:w-8px";
-  // --uno: "scrollbar-thumb:rounded-5px";
-  --uno: "scrollbar-track:bg-transparent";
-  --uno: "scrollbar-corner:bg-transparent";
-  --uno: "scrollbar-thumb:bg-$scrollbar-thumb";
-  --uno: "hover:scrollbar-thumb:bg-$scrollbar-thumb-hover";
+  --uno: "overflow-y-auto overflow-x-hidden scrollbar-default";
 }
 </style>

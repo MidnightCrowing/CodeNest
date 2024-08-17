@@ -12,15 +12,19 @@ function clearInput() {
 <template>
   <span relative h="26px" overflow-hidden>
     <span
-      w="15px" h="15px"
-      m="x-3px y-auto" absolute top-0 bottom-0 left-0
+      size="15px"
+      m="x-3px y-auto"
+      absolute top-0 bottom-0 left-0
       pointer-events-none
       i-mode="search"
     />
     <input
       v-model="searchText"
-      :placeholder="t('home.header.search_project')"
       spellcheck="false"
+      :placeholder="t('home.header.search_project')"
+      bg-transparent color="$text-color-2 placeholder:text-comment"
+      border-none outline-none shadow-none
+      size-full box-border px-23px
     >
     <span
       v-if="searchText"
@@ -32,11 +36,3 @@ function clearInput() {
     />
   </span>
 </template>
-
-<style scoped lang="scss">
-input {
-  --uno: "bg-transparent placeholder-text-comment";
-  --uno: "border-none outline-none shadow-none";
-  --uno: "size-full box-border px-23px";
-}
-</style>

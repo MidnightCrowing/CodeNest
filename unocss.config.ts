@@ -21,8 +21,8 @@ export default defineConfig({
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
-        'width': '1em',
-        'height': '1em',
+        // 'width': '1em',
+        // 'height': '1em',
       },
       collections: {
         custom: FileSystemIconLoader('./src/assets/icons'),

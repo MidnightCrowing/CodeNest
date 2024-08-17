@@ -29,14 +29,6 @@ provide('updateActivatedItem', updateActivatedItem)
 .side-panel {
   --uno: "bg-$bg-1";
   --uno: "py-8px";
-
-  // 滚动条设置
-  --uno: "overflow-y-auto";
-  --uno: "scrollbar:w-5px ";
-  // --uno: "scrollbar-thumb:rounded-5px";
-  --uno: "scrollbar-track:bg-transparent";
-  --uno: "scrollbar-corner:bg-transparent";
-  --uno: "scrollbar-thumb:bg-$scrollbar-thumb";
-  --uno: "hover:scrollbar-thumb:bg-$scrollbar-thumb-hover";
+  --uno: "overflow-y-auto scrollbar-thin";
 }
 </style>

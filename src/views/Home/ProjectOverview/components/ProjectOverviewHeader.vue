@@ -5,6 +5,13 @@ import ButtonSolid from '~/components/common/ButtonSolid.vue'
 import SearchBar from '~/components/SearchBar.vue'
 
 const { t } = useI18n()
+
+const view = inject('view') as Ref<string>
+
+function changeView() {
+  if (view)
+    view.value = 'NewView'
+}
 </script>
 
 <template>
@@ -14,7 +21,7 @@ const { t } = useI18n()
     gap="15px"
   >
     <SearchBar grow />
-    <ButtonSolid>
+    <ButtonSolid @click="changeView">
       {{ t('home.header.add_item') }}
     </ButtonSolid>
   </header>

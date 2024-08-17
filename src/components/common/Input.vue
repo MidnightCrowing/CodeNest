@@ -12,7 +12,7 @@ defineEmits<{
   <input
     :value="modelValue"
     bg-transparent
-    color="$text-color-2" placeholder-text-comment
+    color="$text-color-2 placeholder:text-comment"
     border-0 rounded="3px"
     m="2px" p="x-6px y-5px"
     min-w-64px
