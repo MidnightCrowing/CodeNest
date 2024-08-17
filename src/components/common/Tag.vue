@@ -30,8 +30,7 @@ function removeTag() {
     :class="[{ 'select-able': selectAble, 'selected': isSelected }]"
     inline-flex gap="0.25rem"
     items-center
-    p="x-6px y-5px"
-    border="solid 2px $border-1" rounded="5px"
+    p="x-6px y-5px" b="solid 2px $border-1" rounded="5px"
     bg="$active-1"
     truncate cursor-default
     @click="toggleSelect"
@@ -43,8 +42,8 @@ function removeTag() {
     </span>
     <button
       v-if="deleteAble"
+      b-none
       cursor-pointer
-      border-none
       i-mode="close-small hover:close-small-hovered"
       @click.stop="removeTag"
     />
@@ -57,7 +56,7 @@ function removeTag() {
 
   &.selected {
     --uno: "bg-$active-2";
-    --uno: "border-$white-3";
+    --uno: "b-$white-3";
   }
 }
 </style>

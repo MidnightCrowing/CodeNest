@@ -120,10 +120,9 @@ onBeforeUnmount(() => {
       <ul
         bg="$bg-1"
         w-full max-h="600px"
-        p-0 m="y-5px"
+        m="y-5px" b="solid 2px $border-1" p-0
         z="1"
         flex="~ col"
-        border="solid 2px $border-1"
         absolute top-26px
         list-none
         cursor-default
@@ -147,8 +146,12 @@ onBeforeUnmount(() => {
             @click="selectOption(option)"
           >
             <span class="option-icon" :class="option.iconClass" />
-            <span class="option-label">{{ option.label }}</span>
-            <span v-if="option.description" class="option-description">{{ option.description }}</span>
+            <span class="option-label">
+              {{ option.label }}
+            </span>
+            <span v-if="option.description" class="option-description">
+              {{ option.description }}
+            </span>
           </li>
         </template>
 
@@ -164,8 +167,12 @@ onBeforeUnmount(() => {
             @click="selectOption(option)"
           >
             <span class="option-icon" :class="option.iconClass" />
-            <span class="option-label">{{ option.label }}</span>
-            <span v-if="option.description" class="option-description">{{ option.description }}</span>
+            <span class="option-label">
+              {{ option.label }}
+            </span>
+            <span v-if="option.description" class="option-description">
+              {{ option.description }}
+            </span>
           </li>
         </template>
       </ul>

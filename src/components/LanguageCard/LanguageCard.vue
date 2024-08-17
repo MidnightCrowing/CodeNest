@@ -21,7 +21,7 @@ function addAlphaToColor(color: string, alpha: number) {
   <template v-if="shape === Shape.VERTICAL_BAR">
     <div
       h="18px" w="2px"
-      border="solid 1px #ffffff26" rounded="1px"
+      b="solid 1px #ffffff26" rounded="1px"
       :style="{ backgroundColor: languageColor }"
     />
   </template>
@@ -29,7 +29,7 @@ function addAlphaToColor(color: string, alpha: number) {
   <template v-else-if="shape === Shape.BLOCK">
     <div
       size="10px"
-      border="solid 2px" rounded="2px"
+      b="solid 2px" rounded="2px"
       :style="{ backgroundColor: addAlphaToColor(languageColor, 0.5),
                 borderColor: languageColor }"
     />
@@ -38,7 +38,7 @@ function addAlphaToColor(color: string, alpha: number) {
   <template v-else>
     <div
       size="10px"
-      border="solid 1px #ffffff26" rounded="8px"
+      b="solid 1px #ffffff26" rounded="8px"
       :style="{ backgroundColor: languageColor }"
     />
   </template>

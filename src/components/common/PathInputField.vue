@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '~/components/common/Input.vue'
+import InputField from '~/components/common/InputField.vue'
 
 const props = defineProps<{
   modelValue: string
@@ -24,7 +24,7 @@ async function openFolder() {
 
 <template>
   <span relative>
-    <Input
+    <InputField
       v-model="folderPath"
       w-full box-border pr="27px"
     />

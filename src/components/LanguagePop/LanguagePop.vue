@@ -62,7 +62,7 @@ watch(visibleSign, (newVal: boolean) => {
 
     <ul
       m="x-3px y-5px" p-0
-      grid gap="8px" grid-cols="2"
+      grid="~ cols-2" gap="8px"
       list-none
     >
       <li

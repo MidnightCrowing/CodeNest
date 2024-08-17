@@ -281,7 +281,11 @@ const projectItems: ProjectItem[] = [
   <div bg="$bg-2">
     <ProjectOverviewHeader />
     <Hr />
-    <main>
+    <main
+      m="x-15px y-5px" p="y-5px r-3px"
+      grid="~ cols-1"
+      overflow-y-auto overflow-x-hidden scrollbar-default
+    >
       <ProjectButton
         v-for="projectItem in projectItems"
         :key="projectItem"
@@ -293,10 +297,3 @@ const projectItems: ProjectItem[] = [
     </main>
   </div>
 </template>
-
-<style scoped lang="scss">
-main {
-  --uno: "mx-15px my-5px py-5px pr-3px";
-  --uno: "overflow-y-auto overflow-x-hidden scrollbar-default";
-}
-</style>

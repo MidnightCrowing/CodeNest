@@ -23,7 +23,7 @@ function clearInput() {
       spellcheck="false"
       :placeholder="t('home.header.search_project')"
       bg-transparent color="$text-color-2 placeholder:text-comment"
-      border-none outline-none shadow-none
+      b-none outline-none shadow-none
       size-full box-border px-23px
     >
     <span

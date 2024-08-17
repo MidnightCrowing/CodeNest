@@ -18,17 +18,13 @@ provide('updateActivatedItem', updateActivatedItem)
 </script>
 
 <template>
-  <div class="side-panel">
+  <div
+    bg="$bg-1"
+    b-t="solid 1px $bg-2" p="y-8px"
+    overflow-y-auto scrollbar-thin
+  >
     <KindGroup />
     <Hr />
     <LanguagesGroup />
   </div>
 </template>
-
-<style scoped lang="scss">
-.side-panel {
-  --uno: "bg-$bg-1";
-  --uno: "py-8px";
-  --uno: "overflow-y-auto scrollbar-thin";
-}
-</style>

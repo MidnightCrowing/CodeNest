@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import Input from '~/components/common/Input.vue'
+import InputField from '~/components/common/InputField.vue'
 import ConfigItemTitle from '~/views/NewProject/components/common/ConfigItemTitle.vue'
 
 const { t } = useI18n()
@@ -26,10 +26,10 @@ function fillProjectName() {
 
 <template>
   <ConfigItemTitle title="new_project.kind_component.project_url" />
-  <Input v-model="projectUrlInputValue" />
+  <InputField v-model="projectUrlInputValue" />
 
   <ConfigItemTitle title="new_project.kind_component.project_name" />
-  <Input v-model="projectNameInputValue" />
+  <InputField v-model="projectNameInputValue" />
 
   <div
     v-if="repositoryPath && projectNameInputValue !== repositoryPath"

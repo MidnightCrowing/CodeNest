@@ -37,9 +37,8 @@ function changeView() {
 
     <div
       bg="$bg-1"
-      p="8px"
+      b-t="solid 2px $border-line" p="8px"
       flex="~ row-reverse" gap="8px"
-      border-t="solid 2px $border-line"
     >
       <Button @click="changeView">
         取消

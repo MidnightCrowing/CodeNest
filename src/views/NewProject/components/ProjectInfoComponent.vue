@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import Input from '~/components/common/Input.vue'
-import PathInput from '~/components/common/PathInput.vue'
+import InputField from '~/components/common/InputField.vue'
+import PathInputField from '~/components/common/PathInputField.vue'
 
 import ConfigItem from './common/ConfigItem.vue'
 import ConfigItemTitle from './common/ConfigItemTitle.vue'
@@ -27,9 +27,9 @@ function fillProjectName() {
 <template>
   <ConfigItem>
     <ConfigItemTitle title="new_project.directory" />
-    <PathInput v-model="pathInputValue" grow />
+    <PathInputField v-model="pathInputValue" grow />
     <ConfigItemTitle title="new_project.name" />
-    <Input v-model="projectNameInputValue" spellcheck="false" w="200px" />
+    <InputField v-model="projectNameInputValue" spellcheck="false" w="200px" :warning="true" />
 
     <div
       v-if="repositoryFolderName && projectNameInputValue !== repositoryFolderName"
