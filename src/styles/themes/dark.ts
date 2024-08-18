@@ -1,23 +1,20 @@
-import { defaultTheme } from './default'
-import {
-  themeDarkDefaultColor,
-  themeDarkDefaultColor80,
-  themeDarkSelectedColor,
-} from './theme'
+import { commonStyle } from './common'
+import type { Theme } from './interface'
+import { darkTheme as theme } from './themeColors'
 
 const bgContent = 'rgb(30 31 34)'
 const bgDialog = 'rgb(43 45 48)'
 const borderDefault = 'rgb(69 72 77)'
 
-export const darkTheme = {
+export const darkTheme: Theme = {
   window: {
     focusIn: bgDialog,
     focusOut: 'rgb(60 63 65)',
   },
   text: {
-    default: defaultTheme.text.light,
-    link: themeDarkDefaultColor,
-    linkHover: themeDarkDefaultColor80,
+    default: commonStyle.text.light,
+    link: theme.defaultColor,
+    linkHover: theme.defaultColor80,
     infoPanel: 'rgb(90 93 99)', // Inline help, shortcuts
     infoInput: 'rgb(111 115 122)', // Additional information in lists (paths, counters), placeholder
     selection: 'rgb(131 131 145 / 30%)',
@@ -28,13 +25,14 @@ export const darkTheme = {
     bgDialog,
   },
   button: {
-    default: themeDarkDefaultColor,
-    defaultActive: themeDarkDefaultColor80,
-    bg: bgDialog,
-    bgHover: 'rgb(81 81 81 / 50%)',
-    bgActive: 'rgb(81 81 81 / 30%)',
-    border: borderDefault,
-    borderActive: themeDarkDefaultColor80,
+    bgPrimary: theme.defaultColor,
+    bgSecondary: bgDialog,
+    bgHoverTertiary: 'rgb(81 81 81 / 50%)',
+    bgActivePrimary: theme.defaultColor80,
+    bgActiveTertiary: 'rgb(81 81 81 / 30%)',
+    borderPrimary: theme.defaultColor,
+    borderSecondary: borderDefault,
+    borderActiveSecondary: theme.defaultColor80,
   },
   buttonGroup: {
     bgHover: 'rgb(81 81 81 / 50%)',
@@ -45,24 +43,24 @@ export const darkTheme = {
   field: {
     bg: bgDialog,
     border: borderDefault,
-    borderFocused: themeDarkDefaultColor,
+    borderFocused: theme.defaultColor,
     borderError: 'rgb(139 60 60)',
     iconBgHover: 'rgb(81 81 81 / 50%)',
     iconBgActive: 'rgb(81 81 81 / 30%)',
   },
   dropdown: {
     bg: bgDialog,
-    bgSelected: themeDarkSelectedColor,
+    bgSelected: theme.selectedColor,
     border: borderDefault,
-    borderFocused: themeDarkDefaultColor,
+    borderFocused: theme.defaultColor,
   },
   // Checkbox & Radio button
   chbRb: {
     bg: bgDialog,
-    bgActive: themeDarkDefaultColor80,
+    bgActive: theme.defaultColor80,
     border: borderDefault,
-    borderFocused: themeDarkDefaultColor,
-    borderActive: themeDarkDefaultColor80,
+    borderFocused: theme.defaultColor,
+    borderActive: theme.defaultColor80,
   },
   tag: {
     bg: bgDialog,

@@ -2,8 +2,8 @@
   <span
     rounded="4px"
     p="x-10px y-5px"
-    hover-bg="[#6e6e6e33] dark:[#6e6e6ecc]"
-    active-bg="[#5151514d] active:dark:[#51515180]"
+    hover-bg="#6E6E6E4D dark:#6e6e6ecc"
+    active-bg="#6E6E6E33 active:dark:#51515180"
     color="theme-text-infoInput hover:theme-text-default"
     flex="~ row items-center"
     cursor-default truncate

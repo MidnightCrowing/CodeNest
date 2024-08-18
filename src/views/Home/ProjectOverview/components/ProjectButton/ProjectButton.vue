@@ -30,7 +30,7 @@ function projectButtonClicked() {
   <div
     ref="projectButton"
     class="project-button"
-    bg="hover:theme-button-bgHover"
+    bg="hover:theme-button-bgHoverTertiary"
     h="90px"
     rounded="5px"
     p="10px"
@@ -42,11 +42,13 @@ function projectButtonClicked() {
   >
     <div flex="~ col justify-between" w="100%" text-small>
       <div flex="~ col" gap="5px">
-        <span truncate text-default m-b-2px>{{ projectItem.name }}</span>
+        <span truncate m="b-2px">{{ projectItem.name }}</span>
 
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
           class="project-kind"
+          @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
+          @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
         >
           {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <template v-if="kindFrom && kindUrl">
@@ -80,7 +82,7 @@ function projectButtonClicked() {
 <style scoped lang="scss">
 .project-button {
   &.active {
-    --uno: "active:bg-theme-button-bgActive";
+    --uno: "active:bg-theme-button-bgActiveTertiary";
   }
 
   .project-kind {

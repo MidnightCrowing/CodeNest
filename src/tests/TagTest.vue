@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '~/components/common/Button.vue'
+import ButtonSecondary from '~/components/common/ButtonSecondary.vue'
 import Tag from '~/components/common/Tag.vue'
 
 interface TagType {
@@ -84,8 +84,8 @@ function getTagInfo() {
       @remove="handleRemove(index)"
       @select="handleSelect(index, $event)"
     />
-    <Button @click="getTagInfo">
+    <ButtonSecondary @click="getTagInfo">
       Get Tags Information
-    </Button>
+    </ButtonSecondary>
   </div>
 </template>

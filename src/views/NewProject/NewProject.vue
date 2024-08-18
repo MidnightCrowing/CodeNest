@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Button from '~/components/common/Button.vue'
-import ButtonSolid from '~/components/common/ButtonSolid.vue'
+import ButtonPrimary from '~/components/common/ButtonPrimary.vue'
+import ButtonSecondary from '~/components/common/ButtonSecondary.vue'
 
 import DefaultOpenComponent from './components/DefaultOpenComponent.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
@@ -40,10 +40,10 @@ function changeView() {
       b-t="solid 2px theme-hr-bg" p="8px"
       flex="~ row-reverse" gap="8px"
     >
-      <Button @click="changeView">
+      <ButtonSecondary @click="changeView">
         取消
-      </Button>
-      <ButtonSolid>添加</ButtonSolid>
+      </ButtonSecondary>
+      <ButtonPrimary>添加</ButtonPrimary>
     </div>
   </div>
 </template>

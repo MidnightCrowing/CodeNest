@@ -56,7 +56,7 @@ function handleKindItemClick(language: ProjectLanguage) {
 .language-item {
   --uno: "h-20px mx-8px pl-2px pr-20px py-6px rounded-4px";
   --uno: "bg-transparent";
-  --uno: "hover:bg-theme-button-bgHover active:bg-theme-button-bgActive";
+  --uno: "hover:bg-theme-button-bgHoverTertiary active:bg-theme-button-bgActiveTertiary";
   --uno: "flex flex-row items-center justify-between";
   --uno: "cursor-pointer";
 

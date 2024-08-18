@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import ButtonSolid from '~/components/common/ButtonSolid.vue'
+import ButtonPrimary from '~/components/common/ButtonPrimary.vue'
 import SearchBar from '~/components/SearchBar.vue'
 
 const { t } = useI18n()
@@ -21,8 +21,8 @@ function changeView() {
     gap="15px"
   >
     <SearchBar grow />
-    <ButtonSolid @click="changeView">
+    <ButtonPrimary @click="changeView">
       {{ t('home.header.add_item') }}
-    </ButtonSolid>
+    </ButtonPrimary>
   </header>
 </template>

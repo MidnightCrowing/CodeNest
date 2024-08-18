@@ -1,5 +1,4 @@
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
-import { colorResolver } from '@unocss/preset-mini/utils'
 import {
   defineConfig,
   presetAttributify,
@@ -9,11 +8,12 @@ import {
   transformerDirectives,
 } from 'unocss'
 
-import { appIconClasses } from './src/constants/appOptions'
-import { darkTheme } from './src/styles/dark'
-import { defaultTheme } from './src/styles/default'
-import { lightTheme } from './src/styles/light'
-import styles from './src/styles/unocssStyle'
+import { commonStyle } from './src/styles/themes/common'
+import { darkTheme } from './src/styles/themes/dark'
+import { lightTheme } from './src/styles/themes/light'
+import safelist from './src/styles/unocss/safelist'
+import { scrollbarApplyRules, scrollbarApplyVariants } from './src/styles/unocss/scrollbarApply'
+import shortcuts from './src/styles/unocss/shortcuts'
 
 export default defineConfig({
   presets: [
@@ -30,90 +30,16 @@ export default defineConfig({
       },
     }),
   ],
-  shortcuts: [
-    styles.shortcuts,
-    // 颜色，将 `-theme-` 转换成 `-light-` 和 `-dark-` 的组合
-    [/^(.*)-theme-(.*)$/, ([, prefix, themeColor]) =>
-      `${prefix}-light-${themeColor} dark:${prefix}-dark-${themeColor}`],
-    // 图标, 随暗色模式改变
-    [/^i-mode-(.*?)(\?mask)?$/, ([, icon, mask]) =>
-      mask
-        ? `i-custom-${icon}${mask} dark:i-custom-${icon}_dark${mask}`
-        : `i-custom-${icon} dark:i-custom-${icon}_dark`],
-    // 图标, 不随暗色模式改变
-    [/^i-static-(.*?)(\?mask)?$/, ([, icon, mask]) =>
-      mask
-        ? `i-custom-${icon}${mask}`
-        : `i-custom-${icon}`],
-  ],
-  safelist: [
-    ...appIconClasses,
-  ],
+  shortcuts,
+  safelist,
   theme: {
     colors: {
-      default: defaultTheme,
+      common: commonStyle,
       light: lightTheme,
       dark: darkTheme,
     },
   },
-  // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
-  variants: [
-    (matcher) => {
-      const matches = matcher.match(
-        /^(resizer|scrollbar(?:-(?:thumb|track(?:-piece)?|button|corner))?):/,
-      )
-      if (!matches) {
-        return matcher
-      }
-      return {
-        matcher: matcher.slice(matches[0].length),
-        selector: s => `${s}::-webkit-${matches[1]}`,
-      }
-    },
-  ],
-  rules: [
-    [
-      /^scroll(?:bar)?-(thin|none|auto)$/,
-      ([, w]) => ({
-        'scrollbar-width': w,
-      }),
-    ],
-    [
-      /^scroll(?:bar)?-(track|thumb)-(.+)$/,
-      async ([s, section, colorMatch], context) => {
-        const varName = `scroll${section}-bg`
-        const opacityVarName = `--un-${varName}-opacity`
-        const colorVarName = `--un-${varName}`
-        const res = await colorResolver('color', varName)([s, colorMatch], context)
-
-        if (!res) {
-          return
-        }
-
-        // eslint-disable-next-line dot-notation
-        const color = res['color']
-        const opacity = res[opacityVarName]
-
-        if (!color) {
-          return
-        }
-
-        if (opacity) {
-          return {
-            [opacityVarName]: opacity,
-            [colorVarName]: color,
-            'scrollbar-color': 'var(--un-scrollthumb-bg) var(--un-scrolltrack-bg)',
-          }
-        }
-
-        return {
-          [colorVarName]: color,
-          'scrollbar-color': 'var(--un-scrollthumb-bg) var(--un-scrolltrack-bg)',
-        }
-      },
-    ],
-  ],
-  // endregion
-
+  variants: [...scrollbarApplyVariants],
+  rules: [...scrollbarApplyRules],
   transformers: [transformerDirectives()],
 })
