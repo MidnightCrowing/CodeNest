@@ -32,7 +32,8 @@ async function openFolder() {
       absolute right="5px" top="50%" translate-y="-50%"
       p="2px" rounded-2px
       size="13px"
-      bg="hover:$hover-1 active:$active-1"
+      bg="hover:theme-field-iconBgHover active:theme-field-iconBgActive"
+      cursor-pointer
       i-mode="folder"
       @click="openFolder"
     />

@@ -1,7 +1,6 @@
 import { Theme } from '~/constants/theme'
 
-import('~/styles/main.scss')
-const currentTheme: Ref<Theme> = ref(Theme.dark)
+const currentTheme: Ref<Theme> = ref(Theme.light)
 
 function applyTheme(theme: Theme) {
   const appElement = document.getElementById('app')

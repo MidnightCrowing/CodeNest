@@ -89,7 +89,7 @@ watch(visibleSign, (newVal: boolean) => {
 .languagePop {
   --uno: "absolute";
   --uno: "translate-y--100%";
-  --uno: "bg-$bg-1 shadow-$shadow-1";
+  --uno: "bg-theme-panel-bgDialog shadow-$shadow-1";
   --uno: "px-10px py-5px rounded-5px";
   --uno: "cursor-default";
 }

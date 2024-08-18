@@ -19,8 +19,8 @@ provide('updateActivatedItem', updateActivatedItem)
 
 <template>
   <div
-    bg="$bg-1"
-    b-t="solid 1px $bg-2" p="y-8px"
+    bg="theme-panel-bgDialog"
+    b-t="solid 1px theme-panel-bgContent" p="y-8px"
     overflow-y-auto scrollbar-thin
   >
     <KindGroup />

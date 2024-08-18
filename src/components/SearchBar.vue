@@ -22,7 +22,7 @@ function clearInput() {
       v-model="searchText"
       spellcheck="false"
       :placeholder="t('home.header.search_project')"
-      bg-transparent color="$text-color-2 placeholder:text-comment"
+      bg-transparent color="theme-text-default placeholder:text-comment"
       b-none outline-none shadow-none
       size-full box-border px-23px
     >

@@ -16,23 +16,25 @@ provide('view', view)
 </script>
 
 <template>
-  <WindowHeader />
-  <Home v-if="view === 'home'" />
-  <NewProject v-else />
+  <div
+    size-full
+    flex="~ col"
+    bg="theme-panel-bgContent selection:theme-text-selection"
+    text-default
+    caret="theme-text-caret"
+  >
+    <WindowHeader />
+    <Home v-if="view === 'home'" />
+    <NewProject v-else />
+  </div>
 </template>
 
 <style lang="scss">
 body,
-html {
+html,
+#app {
   --uno: "m-0 p-0";
   --uno: "size-full";
   --uno: "overflow-hidden";
-}
-
-#app {
-  --uno: "size-full";
-  --uno: "flex flex-col";
-  --uno: "bg-$bg-2 text-default";
-  --uno: "caret-$caret-color selection:bg-$text-selection";
 }
 </style>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '~/components/common/Button.vue'
 import Tag from '~/components/common/Tag.vue'
 
 interface TagType {
@@ -7,10 +8,10 @@ interface TagType {
   annotation?: string
   deleteAble?: boolean
   selectAble?: boolean
-  select?: boolean
+  isSelected?: boolean
 }
 
-const tags: TagType = ref([
+const tags: Ref<TagType[]> = ref([
   {
     icon: 'i-static-jetbrains-aqua',
     content: 'Tag 1',
@@ -52,11 +53,11 @@ const tags: TagType = ref([
   },
 ])
 
-function handleRemove(index) {
+function handleRemove(index: number) {
   tags.value.splice(index, 1)
 }
 
-function handleSelect(index, isSelected) {
+function handleSelect(index: number, isSelected: boolean) {
   tags.value[index].isSelected = isSelected
 }
 
@@ -83,8 +84,8 @@ function getTagInfo() {
       @remove="handleRemove(index)"
       @select="handleSelect(index, $event)"
     />
-    <button @click="getTagInfo">
+    <Button @click="getTagInfo">
       Get Tags Information
-    </button>
+    </Button>
   </div>
 </template>

@@ -17,11 +17,12 @@ defineProps<{
       type="checkbox"
       align-middle
       appearance-none
-      bg="transparent checked:!$active-3"
-      size-20px m-0
-      b="solid 2px $border-1 focus:$border-2 checked:transparent" rounded="4px"
-      outline="~ 2px transparent checked:focus:$active-3" outline-offset="1px"
-      i-mode="checked:checkbox-checked"
+      size-20px
+      bg="theme-chbRb-bg checked:!theme-chbRb-bgActive"
+      b="solid 2px theme-chbRb-border focus:theme-chbRb-borderFocused checked:transparent" m-0
+      rounded="4px"
+      outline="~ 2px transparent checked:focus:theme-chbRb-borderActive" outline-offset="1px"
+      i-static="checked:checkbox-checked"
     >
     {{ title }}
   </label>

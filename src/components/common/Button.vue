@@ -4,8 +4,8 @@ import ButtonBase from './ButtonBase.vue'
 
 <template>
   <ButtonBase
-    bg="$button-bg-1" color="$text-color-2"
-    outline="~ 2px $border-1 active:$border-2"
+    bg-transparent
+    outline="~ 2px theme-button-border active:theme-button-borderActive"
     m="2px"
   >
     <slot />

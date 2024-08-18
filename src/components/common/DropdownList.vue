@@ -91,10 +91,10 @@ onBeforeUnmount(() => {
     <div
       class="option-item"
       tabindex="0"
+      bg="theme-dropdown-bg"
       min-w-full max-w-full m="2px" p="l-6px r-27px" box-border
       rounded="3px"
-      outline="~ 2px $border-line focus:$active-3"
-      bg="$active-2"
+      outline="~ 2px theme-dropdown-border focus:theme-dropdown-borderFocused"
       cursor-default
       @click="toggleDropdown"
     >
@@ -112,15 +112,16 @@ onBeforeUnmount(() => {
     <span
       absolute top-9px right-7px
       size="13px"
-      i-static="inlay-drop-triangle"
+      color="theme-field-border"
+      i-static="inlay-drop-triangle?mask"
       @click="toggleDropdown"
     />
 
     <template v-if="isOpen">
       <ul
-        bg="$bg-1"
+        bg="theme-dropdown-bg"
         w-full max-h="600px"
-        m="y-5px" b="solid 2px $border-1" p-0
+        m="y-5px" b="solid 2px theme-dropdown-border" p-0
         z="1"
         flex="~ col"
         absolute top-26px
@@ -187,7 +188,7 @@ onBeforeUnmount(() => {
 
   ul & {
     --uno: "px-6px";
-    --uno: "hover:bg-$select-3";
+    --uno: "hover:bg-theme-dropdown-bgSelected";
   }
 
   .option-icon {

@@ -49,7 +49,7 @@ watch(visibleSign, (newVal: boolean) => {
     ref="popElementRef"
     absolute
     translate-y="-100%"
-    bg="$bg-1" shadow="$shadow-1"
+    bg="theme-panel-bgDialog" shadow="$shadow-1"
     p="x-20px y-5px" rounded="5px"
     cursor-default
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"

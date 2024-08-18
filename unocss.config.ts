@@ -10,6 +10,9 @@ import {
 } from 'unocss'
 
 import { appIconClasses } from './src/constants/appOptions'
+import { darkTheme } from './src/styles/dark'
+import { defaultTheme } from './src/styles/default'
+import { lightTheme } from './src/styles/light'
 import styles from './src/styles/unocssStyle'
 
 export default defineConfig({
@@ -21,8 +24,6 @@ export default defineConfig({
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
-        // 'width': '1em',
-        // 'height': '1em',
       },
       collections: {
         custom: FileSystemIconLoader('./src/assets/icons'),
@@ -31,6 +32,9 @@ export default defineConfig({
   ],
   shortcuts: [
     styles.shortcuts,
+    // 颜色，将 `-theme-` 转换成 `-light-` 和 `-dark-` 的组合
+    [/^(.*)-theme-(.*)$/, ([, prefix, themeColor]) =>
+      `${prefix}-light-${themeColor} dark:${prefix}-dark-${themeColor}`],
     // 图标, 随暗色模式改变
     [/^i-mode-(.*?)(\?mask)?$/, ([, icon, mask]) =>
       mask
@@ -42,11 +46,16 @@ export default defineConfig({
         ? `i-custom-${icon}${mask}`
         : `i-custom-${icon}`],
   ],
-
   safelist: [
     ...appIconClasses,
   ],
-
+  theme: {
+    colors: {
+      default: defaultTheme,
+      light: lightTheme,
+      dark: darkTheme,
+    },
+  },
   // region unocss滚动条支持: https://github.com/unocss/unocss/issues/295
   variants: [
     (matcher) => {

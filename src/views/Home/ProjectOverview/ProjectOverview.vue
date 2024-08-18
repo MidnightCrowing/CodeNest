@@ -278,7 +278,7 @@ const projectItems: ProjectItem[] = [
 </script>
 
 <template>
-  <div bg="$bg-2">
+  <div bg="theme-panel-bgContent">
     <ProjectOverviewHeader />
     <Hr />
     <main

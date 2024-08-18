@@ -30,7 +30,7 @@ function projectButtonClicked() {
   <div
     ref="projectButton"
     class="project-button"
-    bg="hover:$hover-1"
+    bg="hover:theme-button-bgHover"
     h="90px"
     rounded="5px"
     p="10px"
@@ -80,14 +80,14 @@ function projectButtonClicked() {
 <style scoped lang="scss">
 .project-button {
   &.active {
-    --uno: "active:bg-$active-1";
+    --uno: "active:bg-theme-button-bgActive";
   }
 
   .project-kind {
     --uno: "truncate text-comment";
 
     a {
-      --uno: "text-comment text-link";
+      --uno: "text-link text-comment";
 
       span {
         --uno: "i-static-external-link-arrow?mask";

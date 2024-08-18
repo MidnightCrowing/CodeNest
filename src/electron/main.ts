@@ -34,8 +34,10 @@ function createWindow() {
     minHeight: WINDOW_HEIGHT,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#00000000',
-      symbolColor: '#dfe1e5',
+      color: '#F2F2F2',
+      symbolColor: '#222323',
+      // color: '#000',
+      // symbolColor: '#DFE1E5',
       height: 40,
     },
     webPreferences: {

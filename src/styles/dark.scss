@@ -1,17 +1,4 @@
 body {
-  // region background color
-  --bg-1: var(--gray-3);
-  --bg-2: var(--gray-4);
-  // endregion
-
-  // region border color
-  --border-line: var(--gray-1);
-  --border-1: var(--gray-2);
-  --border-2: var(--blue-1);
-  --border-Validated: #8b3c3c;
-  // --border-disabled: rgb(60 63 65);
-  // endregion
-
   // region shadows
   // The shadows of the card, button, and other slightly elevated components
   --shadow-1: 0 4px 6px -1px rgb(0 0 0 / 0.18), 0 2px 4px -2px rgb(0 0 0 / 0.14);
@@ -25,64 +12,5 @@ body {
   // Only used in the dialog
   --shadow-4: 0 34px 50px -20px rgb(0 0 0 / 0.24), 0 32px 45px -12px rgb(0 0 0 / 0.2),
     0 30px 40px -8px rgb(0 0 0 / 0.22);
-  // endregion
-
-  // region text color
-  // only used on special place
-  --text-color-1: var(--white-1);
-
-  // default color
-  --text-color-2: var(--white-2);
-
-  // Additional information in lists (paths, counters), placeholder
-  --text-color-3: var(--white-3);
-
-  // Inline help, shortcuts
-  --text-color-4: var(--white-4);
-
-  // link
-  --text-link: var(--blue-1);
-  --text-link-hover: var(--blue-1-80);
-
-  // selection
-  --text-selection: rgb(131 131 145 / 30%);
-
-  // 光标颜色
-  --caret-color: rgb(187 187 187 / 80%);
-  // endregion
-
-  // region hover color
-  --hover-0: var(--gray-1-30);
-  --hover-1: var(--gray-1-50);
-  --hover-2: var(--gray-1-80);
-  // endregion
-
-  // region active color
-  --active-1: var(--gray-1-30);
-  --active-2: var(--gray-1-50);
-  --active-3: var(--blue-1-80);
-  // endregion
-
-  // region select color
-  --select-2: var(--blue-1);
-
-  // use in list and drop-down options
-  --select-3: var(--blue-2);
-  // endregion
-
-  // region button color
-  --button-bg-1: var(--bg-1);
-  --button-bg-2: var(--blue-1);
-  // --button-bg-disabled: rgb(60 63 65);
-  // endregion
-
-  // region window header
-  --window-focus-in: var(--bg-1);
-  --window-focus-out: rgb(60 63 65);
-  // endregion
-
-  // region scrollbar
-  --scrollbar-thumb: var(--white-1-15);
-  --scrollbar-thumb-hover: var(--white-1-25);
   // endregion
 }

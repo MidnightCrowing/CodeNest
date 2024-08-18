@@ -17,16 +17,16 @@ function handleClick(index: string) {
 
 <template>
   <div
+    w-fit
     inline-flex
     rounded="4px"
-    outline="~ 2px $border-1"
-    w-fit
+    outline="~ 2px theme-buttonGroup-border"
   >
     <ButtonBase
       v-for="(button, index) in buttons"
       :key="index"
       :class="{ active: modelValue === button.index }"
-      bg="transparent hover:$hover-0"
+      bg="transparent hover:theme-buttonGroup-bgHover"
       z-0
       @click="handleClick(button.index)"
     >
@@ -37,7 +37,7 @@ function handleClick(index: string) {
 
 <style scoped lang="scss">
 button.active {
-  --uno: "bg-$active-2";
-  --uno: "outline outline-2px outline-$white-3";
+  --uno: "bg-theme-buttonGroup-bgActive";
+  --uno: "outline outline-2px outline-theme-buttonGroup-borderActive";
 }
 </style>

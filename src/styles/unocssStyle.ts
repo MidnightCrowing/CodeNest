@@ -16,26 +16,26 @@ const textSizeBase = {
 
 // Comment 样式
 const textCommentStyles = {
-  text: 'text-$text-color-3',
-  fill: 'fill-$text-color-3',
+  text: 'text-theme-text-infoInput',
+  fill: 'fill-theme-text-infoInput',
 }
 
 // Help 样式
 const textHelpStyles = {
-  text: 'text-$text-color-4',
-  fill: 'fill-$text-color-4',
+  text: 'text-theme-text-infoPanel',
+  fill: 'fill-theme-text-infoPanel',
 }
 
 // Link 样式
 const textLinkStyles = {
   cursor: 'cursor-pointer',
-  fill: 'fill-$text-link hover:fill-$text-link-hover',
-  text: 'text-$text-link hover:text-$text-link-hover',
+  fill: 'fill-theme-text-link hover:fill-theme-text-linkHover',
+  text: 'text-theme-text-link hover:text-theme-text-linkHover',
   textDecoration: 'no-underline',
 }
 
 const textColorBase = {
-  default: 'text-$text-color-2',
+  default: 'text-theme-text-default',
   comment: `
     ${textCommentStyles.text}
     ${textCommentStyles.fill}
@@ -69,8 +69,8 @@ const textStyles = {
 const scrollbarBaseStyles = {
   track: 'scrollbar-track:bg-transparent',
   corner: 'scrollbar-corner:bg-transparent',
-  thumb: 'scrollbar-thumb:bg-$scrollbar-thumb',
-  thumbHover: 'hover:scrollbar-thumb:bg-$scrollbar-thumb-hover',
+  thumb: 'scrollbar-thumb:bg-theme-scrollbar-thumb',
+  thumbHover: 'hover:scrollbar-thumb:bg-theme-scrollbar-thumbHover',
 }
 const scrollbarBase = `
   ${scrollbarBaseStyles.track}

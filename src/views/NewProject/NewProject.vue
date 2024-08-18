@@ -18,7 +18,7 @@ function changeView() {
 <template>
   <div
     size-full
-    bg="$bg-1"
+    bg="theme-panel-bgDialog"
     flex="~ col"
   >
     <div
@@ -36,8 +36,8 @@ function changeView() {
     </div>
 
     <div
-      bg="$bg-1"
-      b-t="solid 2px $border-line" p="8px"
+      bg="theme-panel-bgDialog"
+      b-t="solid 2px theme-hr-bg" p="8px"
       flex="~ row-reverse" gap="8px"
     >
       <Button @click="changeView">

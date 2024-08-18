@@ -24,13 +24,13 @@ function handleFocus() {
   <input
     :value="modelValue"
     :class="[
-      isWarning ? 'outline-$border-warning' : 'outline-$border-line',
+      isWarning ? 'outline-theme-field-borderError' : 'outline-theme-field-border',
     ]"
-    bg-transparent
-    color="$text-color-2 placeholder:text-comment"
+    bg="theme-field-bg"
+    color="theme-text-default placeholder:text-comment"
     m="2px" b-0 p="x-6px y-5px" rounded="3px"
     min-w="64px"
-    outline="~ 2px $border-line focus:$active-3"
+    outline="~ 2px focus:theme-field-borderFocused"
     @input="$emit('update:modelValue', $event.target.value)"
     @focus="handleFocus"
   >
