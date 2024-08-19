@@ -1,11 +1,12 @@
 import { commonStyle } from './common'
+import type { Theme } from './interface'
 import { darkTheme as theme } from './themeColors'
 
 const bgContent = 'rgb(30 31 34)'
 const bgDialog = 'rgb(43 45 48)'
 const borderDefault = 'rgb(69 72 77)'
 
-export const darkTheme = {
+export const darkTheme: Theme = {
   window: {
     focusIn: bgDialog,
     focusOut: 'rgb(60 63 65)',
