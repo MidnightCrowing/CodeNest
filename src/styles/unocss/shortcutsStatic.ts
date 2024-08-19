@@ -59,9 +59,9 @@ const scrollbarStyle = {
 }
 // endregion
 
-const staticStyle = {
+const shortcutsStaticStyle = {
   ...textStyles,
   ...scrollbarStyle,
 }
 
-export default staticStyle
+export default shortcutsStaticStyle

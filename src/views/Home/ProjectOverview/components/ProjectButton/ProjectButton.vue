@@ -42,7 +42,7 @@ function projectButtonClicked() {
   >
     <div flex="~ col justify-between" w="100%" text-small>
       <div flex="~ col" gap="5px">
-        <span truncate m="b-2px">{{ projectItem.name }}</span>
+        <span w-fit m="b-2px" truncate>{{ projectItem.name }}</span>
 
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
@@ -62,7 +62,7 @@ function projectButtonClicked() {
           </template>
         </span>
 
-        <span truncate text-comment>{{ projectItem.path }}</span>
+        <span w-fit truncate text-comment>{{ projectItem.path }}</span>
       </div>
 
       <div flex="~ row" gap="15px">
@@ -86,7 +86,7 @@ function projectButtonClicked() {
   }
 
   .project-kind {
-    --uno: "truncate text-comment";
+    --uno: "w-fit truncate text-comment";
 
     a {
       --uno: "text-link text-comment";

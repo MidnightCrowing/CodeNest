@@ -15,10 +15,10 @@ export const darkTheme: Theme = {
     default: commonStyle.text.light,
     link: theme.defaultColor,
     linkHover: theme.defaultColor80,
-    infoPanel: 'rgb(90 93 99)', // Inline help, shortcuts
-    infoInput: 'rgb(111 115 122)', // Additional information in lists (paths, counters), placeholder
+    infoPanel: 'rgb(90 93 99)',
+    infoInput: 'rgb(111 115 122)',
     selection: 'rgb(131 131 145 / 30%)',
-    caret: 'rgb(187 187 187 / 80%)', // 光标颜色
+    caret: 'rgb(187 187 187 / 80%)',
   },
   panel: {
     bgContent,
@@ -54,7 +54,6 @@ export const darkTheme: Theme = {
     border: borderDefault,
     borderFocused: theme.defaultColor,
   },
-  // Checkbox & Radio button
   chbRb: {
     bg: bgDialog,
     bgActive: theme.defaultColor80,
