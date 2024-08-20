@@ -53,6 +53,7 @@ export const darkTheme: Theme = {
     bgSelected: theme.selectedColor,
     border: borderDefault,
     borderFocused: theme.defaultColor,
+    borderError: 'rgb(139 60 60)',
   },
   chbRb: {
     bg: bgDialog,

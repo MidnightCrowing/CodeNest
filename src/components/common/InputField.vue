@@ -1,22 +1,22 @@
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: string
-  warning?: boolean
+  error?: boolean
 }>()
 
 defineEmits<{
   (event: 'update:modelValue', value: string): void
 }>()
 
-const isWarning = ref(props.warning || false)
+const isError = ref(props.error ?? false)
 
-watch(() => props.warning, (newValue) => {
-  isWarning.value = newValue
+watch(() => props.error, (newValue) => {
+  isError.value = newValue
 })
 
 function handleFocus() {
   // 取消警告样式
-  isWarning.value = false
+  isError.value = false
 }
 </script>
 
@@ -24,7 +24,7 @@ function handleFocus() {
   <input
     :value="modelValue"
     :class="[
-      isWarning ? 'outline-theme-field-borderError' : 'outline-theme-field-border',
+      isError ? 'outline-theme-field-borderError' : 'outline-theme-field-border',
     ]"
     bg="theme-field-bg"
     color="theme-text-default placeholder:text-comment"

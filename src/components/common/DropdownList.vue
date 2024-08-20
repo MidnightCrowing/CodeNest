@@ -8,12 +8,15 @@ interface Option {
 }
 
 const props = defineProps<{
-  options: Option[]
   modelValue: any
+  options: Option[]
+  error?: boolean
 }>()
+
 const emit = defineEmits(['update:modelValue'])
 const selectedValue = ref(props.modelValue)
 const isOpen = ref(false) // 控制下拉框显示状态
+const isError = ref(props.error || false)
 const selectBox = ref<HTMLElement | null>(null)
 
 // 查找当前选中的选项
@@ -48,6 +51,11 @@ const optionDescriptionOrCategory = computed(() => {
   return selectedOption.value?.description || selectedOption.value?.category || ''
 })
 
+function handleFocus() {
+  // 取消警告样式
+  isError.value = false
+}
+
 // 切换下拉框的显示状态
 function toggleDropdown() {
   isOpen.value = !isOpen.value
@@ -72,6 +80,10 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+watch(() => props.error, (newValue) => {
+  isError.value = newValue
+})
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -90,12 +102,16 @@ onBeforeUnmount(() => {
   >
     <div
       class="option-item"
+      :class="[
+        isError ? 'outline-theme-dropdown-borderError' : 'outline-theme-dropdown-border',
+      ]"
       tabindex="0"
       bg="theme-dropdown-bg"
       min-w-full max-w-full m="2px" p="l-6px r-27px" box-border
       rounded="3px"
-      outline="~ 2px theme-dropdown-border focus:theme-dropdown-borderFocused"
+      outline="~ 2px focus:theme-dropdown-borderFocused"
       cursor-default
+      @focus="handleFocus"
       @click="toggleDropdown"
     >
       <span

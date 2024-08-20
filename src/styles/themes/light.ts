@@ -53,6 +53,7 @@ export const lightTheme: Theme = {
     bgSelected: theme.selectedColor,
     border: borderDefault,
     borderFocused: theme.defaultColor,
+    borderError: 'rgb(220 66 81)',
   },
   chbRb: {
     bg: commonStyle.text.white,

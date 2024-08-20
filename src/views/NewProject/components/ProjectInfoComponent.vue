@@ -10,8 +10,10 @@ import ConfigItemTitle from './common/ConfigItemTitle.vue'
 const { t } = useI18n()
 
 const pathInputValue = ref('')
-const projectNameInputValue = ref('')
+const nameInputValue = ref('')
 const repositoryFolderName = ref('')
+const pathInputErrorValue = ref(true)
+const nameInputErrorValue = ref(true)
 
 watch(pathInputValue, (newValue) => {
   // 提取路径的最后一个文件夹名称
@@ -20,19 +22,20 @@ watch(pathInputValue, (newValue) => {
 })
 
 function fillProjectName() {
-  projectNameInputValue.value = repositoryFolderName.value
+  nameInputValue.value = repositoryFolderName.value
+  nameInputErrorValue.value = false
 }
 </script>
 
 <template>
   <ConfigItem>
     <ConfigItemTitle title="new_project.directory" />
-    <PathInputField v-model="pathInputValue" grow />
+    <PathInputField v-model="pathInputValue" :error="pathInputErrorValue" grow />
     <ConfigItemTitle title="new_project.name" />
-    <InputField v-model="projectNameInputValue" spellcheck="false" w="200px" :warning="true" />
+    <InputField v-model="nameInputValue" :error="nameInputErrorValue" spellcheck="false" w="200px" />
 
     <div
-      v-if="repositoryFolderName && projectNameInputValue !== repositoryFolderName"
+      v-if="repositoryFolderName && nameInputValue !== repositoryFolderName"
       col-start="2"
       flex
       overflow-hidden

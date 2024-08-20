@@ -1,6 +1,6 @@
 import { Theme } from '~/constants/theme'
 
-const currentTheme: Ref<Theme> = ref(Theme.light)
+const currentTheme: Ref<Theme> = ref(Theme.dark)
 
 function applyTheme(theme: Theme) {
   const appElement = document.getElementById('app')

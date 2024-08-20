@@ -29,7 +29,7 @@ export interface Theme {
     borderFocused: string
     borderError: string
   }
-  dropdown: { border: string, bg: string, bgSelected: string, borderFocused: string }
+  dropdown: { border: string, bg: string, bgSelected: string, borderFocused: string, borderError: string }
   // Checkbox & Radio button
   chbRb: { border: string, bgActive: string, bg: string, borderActive: string, borderFocused: string }
   tag: { border: string, bg: string, bgSelected: string, borderSelected: string }
