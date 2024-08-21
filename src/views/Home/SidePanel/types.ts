@@ -1,11 +1,11 @@
-import type { KindMark } from './constants'
+import type { KindMenuList, KindMenuMark } from './constants'
 
-export interface KindItem {
-  kind: string
+export interface KindMenuItem {
+  kind: KindMenuList
   i18nKey: string
 }
 
-export type LanguageMark = string
+export type LanguageMenuMark = string
 
-export type ItemMark = KindMark & LanguageMark
-export type ActivatedItem = Ref<ItemMark>
+export type ItemMenuMark = KindMenuMark & LanguageMenuMark
+export type ActivatedMenuItem = Ref<ItemMenuMark>

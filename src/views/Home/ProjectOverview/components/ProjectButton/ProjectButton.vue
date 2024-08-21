@@ -11,29 +11,23 @@ const props = defineProps<{
 const { kind, from: kindFrom, url: kindUrl } = props.projectItem.kindInfo
 
 const projectButton = ref<HTMLDivElement | null>(null)
+const projectButtonActive = ref(false)
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 function projectButtonClick(path: string) {
-  if (projectButton.value) {
-    projectButton.value.classList.add('active')
-  }
+  projectButtonActive.value = true
 }
 
 function projectButtonClicked() {
-  if (projectButton.value) {
-    projectButton.value.classList.remove('active')
-  }
+  projectButtonActive.value = false
 }
 </script>
 
 <template>
   <div
     ref="projectButton"
-    class="project-button"
-    bg="hover:theme-button-bgHoverTertiary"
-    h="90px"
-    rounded="5px"
-    p="10px"
+    bg="hover:theme-button-bgHoverTertiary active:theme-button-bgActiveTertiary"
+    h="90px" p="10px" rounded="5px"
     flex="~ row"
     cursor-pointer
     overflow-hidden
@@ -47,19 +41,19 @@ function projectButtonClicked() {
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
           class="project-kind"
-          @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
-          @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
+          w-fit truncate text-comment
+          @mousedown.stop
+          @mouseup.stop
         >
           {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
-          <template v-if="kindFrom && kindUrl">
-            <a :href="kindUrl" target="_blank">{{ kindFrom }}<span /></a>
-          </template>
-          <template v-else-if="kindUrl">
-            <a :href="kindUrl" target="_blank">{{ kindUrl }}<span /></a>
-          </template>
-          <template v-else>
-            <span>{{ kindFrom }}</span>
-          </template>
+          <a v-if="kindUrl" :href="kindUrl" target="_blank">
+            {{ kindFrom || kindUrl }}
+            <span
+              relative top="-1px" left="-5px"
+              i-static="external-link-arrow?mask" size="13px"
+            />
+          </a>
+          <span v-else>{{ kindFrom }}</span>
         </span>
 
         <span w-fit truncate text-comment>{{ projectItem.path }}</span>
@@ -80,22 +74,7 @@ function projectButtonClicked() {
 </template>
 
 <style scoped lang="scss">
-.project-button {
-  &.active {
-    --uno: "active:bg-theme-button-bgActiveTertiary";
-  }
-
-  .project-kind {
-    --uno: "w-fit truncate text-comment";
-
-    a {
-      --uno: "text-link text-comment";
-
-      span {
-        --uno: "i-static-external-link-arrow?mask";
-        --uno: "size-13px";
-      }
-    }
-  }
+.project-kind a {
+  @apply text-link text-comment;
 }
 </style>

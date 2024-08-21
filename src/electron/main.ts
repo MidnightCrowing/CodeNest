@@ -34,10 +34,6 @@ function createWindow() {
     minHeight: WINDOW_HEIGHT,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      // color: '#F2F2F2',
-      // symbolColor: '#222323',
-      color: '#2B2D30',
-      symbolColor: '#DFE1E5',
       height: 40,
     },
     webPreferences: {
@@ -72,6 +68,10 @@ function createWindow() {
     // 阻止 Electron 打开新窗口
     return { action: 'deny' }
   })
+}
+
+function getMainWindow() {
+  return mainWindow
 }
 
 // 带重试的加载URL函数
@@ -139,3 +139,5 @@ app.on('web-contents-created', (e, contents) => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll() // 注销所有快捷键
 })
+
+export { getMainWindow }

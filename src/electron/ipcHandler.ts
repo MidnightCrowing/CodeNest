@@ -2,6 +2,8 @@ import * as os from 'node:os'
 
 import { dialog, ipcMain } from 'electron'
 
+import { getMainWindow } from './main.js'
+
 /**
  * 将文件路径数组中的用户根目录替换为 `~`。
  *
@@ -22,6 +24,17 @@ function formatPaths(filePaths: string[]): string[] {
     return filePath
   })
 }
+
+ipcMain.handle('set-theme', (event, theme) => {
+  const colorSettings = theme === 'dark'
+    ? { color: '#2B2D30', symbolColor: '#DFE1E5' }
+    : { color: '#F2F2F2', symbolColor: '#222323' }
+
+  getMainWindow().setTitleBarOverlay({
+    color: colorSettings.color,
+    symbolColor: colorSettings.symbolColor,
+  })
+})
 
 ipcMain.handle('open-folder-dialog', async () => {
   const result = await dialog.showOpenDialog({

@@ -28,7 +28,7 @@ function removeTag() {
   <div
     class="tag"
     :class="[{ 'select-able': selectAble, 'selected': isSelected }]"
-    bg="theme-tag-bg"
+    bg="theme-tag-bgUnselectable"
     p="x-6px y-5px" b="solid 2px theme-tag-border" rounded="5px"
     inline-flex gap="0.25rem"
     items-center
@@ -52,7 +52,7 @@ function removeTag() {
 
 <style scoped lang="scss">
 .tag.select-able {
-  --uno: "bg-transparent";
+  --uno: "bg-theme-tag-bgSelectable";
 
   &.selected {
     --uno: "bg-theme-tag-bgSelected";

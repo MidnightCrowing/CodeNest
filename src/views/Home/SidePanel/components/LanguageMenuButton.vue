@@ -3,24 +3,24 @@ import { Shape } from '~/components/LanguageCard/constants'
 import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
 import type { ProjectLanguage, ProjectLanguageInfo } from '~/constants/projectLanguage'
 
-import type { ActivatedItem } from '../types'
+import type { ActivatedMenuItem } from '../types'
 
 defineProps<{
   languageItem: ProjectLanguageInfo
 }>()
 
-const activatedItem = inject<ActivatedItem>('activatedItem')
-const updateLanguage = inject<(language: ProjectLanguage) => void>('updateActivatedItem', () => {})
+const activatedMenuItem = inject<ActivatedMenuItem>('activatedItem')
+const updateMenuLanguage = inject<(language: ProjectLanguage) => void>('updateActivatedItem', () => {})
 
 function handleKindItemClick(language: ProjectLanguage) {
-  updateLanguage(`l-${language}`)
+  updateMenuLanguage(`l-${language}`)
 }
 </script>
 
 <template>
   <div
     class="language-item"
-    :class="{ active: activatedItem === `l-${languageItem.text}` }"
+    :class="{ active: activatedMenuItem === `l-${languageItem.text}` }"
     @click="handleKindItemClick(languageItem.text)"
   >
     <span

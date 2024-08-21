@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import Hr from '~/components/common/Hr.vue'
 
-import KindGroup from './components/KindGroup.vue'
-import LanguagesGroup from './components/LanguagesGroup.vue'
-import { KindMark } from './constants'
-import type { ActivatedItem, ItemMark } from './types'
+import KindGroup from './components/KindMenuGroup.vue'
+import LanguagesGroup from './components/LanguageMenuGroup.vue'
+import { KindMenuMark } from './constants'
+import type { ActivatedMenuItem, ItemMenuMark } from './types'
 
-const activatedItem: ActivatedItem = ref(KindMark.ALL)
+const activatedMenuValue: ActivatedMenuItem = ref(KindMenuMark.ALL)
 
-function updateActivatedItem(itemMark: ItemMark) {
-  if (activatedItem.value !== itemMark)
-    activatedItem.value = itemMark
+function updateActivatedItem(itemMark: ItemMenuMark) {
+  if (activatedMenuValue.value !== itemMark)
+    activatedMenuValue.value = itemMark
 }
 
-provide('activatedItem', activatedItem)
+provide('activatedItem', activatedMenuValue)
 provide('updateActivatedItem', updateActivatedItem)
 </script>
 

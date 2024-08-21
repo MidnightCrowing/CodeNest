@@ -63,7 +63,8 @@ export const lightTheme: Theme = {
     borderActive: theme.defaultColor80,
   },
   tag: {
-    bg: bgDialog,
+    bgUnselectable: 'rgb(200 200 200 / 30%)',
+    bgSelectable: bgDialog,
     bgSelected: commonStyle.text.white,
     border: borderDefault,
     borderSelected: 'rgb(179 184 198)',

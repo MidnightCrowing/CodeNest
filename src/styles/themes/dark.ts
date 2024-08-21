@@ -63,7 +63,8 @@ export const darkTheme: Theme = {
     borderActive: theme.defaultColor80,
   },
   tag: {
-    bg: bgDialog,
+    bgUnselectable: 'rgb(81 81 81 / 30%)',
+    bgSelectable: bgDialog,
     bgSelected: 'rgb(81 81 81 / 50%)',
     border: borderDefault,
     borderSelected: 'rgb(111 115 122)',

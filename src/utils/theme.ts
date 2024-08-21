@@ -1,26 +1,19 @@
 import { Theme } from '~/constants/theme'
 
-const currentTheme: Ref<Theme> = ref(Theme.dark)
+let currentTheme = Theme.dark
 
-function applyTheme(theme: Theme) {
+async function applyTheme(theme?: Theme) {
   const appElement = document.getElementById('app')
   if (appElement) {
-    appElement.className = theme
+    appElement.classList.remove(Theme.light, Theme.dark)
+    appElement.classList.add(theme ?? currentTheme)
   }
-
-  if (theme === Theme.dark) {
-    import('~/styles/dark.scss')
-      .catch(err => console.error(err))
-  }
-  else {
-    import('~/styles/light.scss')
-      .catch(err => console.error(err))
-  }
+  await window.api.setWindowTheme(currentTheme)
 }
 
-// function toggleTheme() {
-//   currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
-//   applyTheme(currentTheme.value)
-// }
+function toggleTheme() {
+  currentTheme = currentTheme === Theme.light ? Theme.dark : Theme.light
+  applyTheme(currentTheme).then(() => {})
+}
 
-export { applyTheme, currentTheme }
+export { applyTheme, toggleTheme }
