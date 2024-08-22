@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue'])
 const selectedValue = ref(props.modelValue)
-const isOpen = ref(false) // 控制下拉框显示状态
+const isOpen = ref(false) // 下拉框显示状态
 const isError = ref(props.error || false)
 const selectBox = ref<HTMLElement | null>(null)
 
