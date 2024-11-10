@@ -13,6 +13,7 @@
     "dev:vue": "vite",
     "dev:electron": "pnpm tsc:electron && electron .",
     "build": "pnpm build:vue && pnpm build:electron",
+    "build:icon": "node jet-icons/build-icons.js",
     "build:vue": "pnpm type-check && pnpm build:vue-only",
     "build:vue-only": "vite build",
     "build:electron": "pnpm tsc:electron && electron-builder",
@@ -27,6 +28,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@iconify/tools": "^4.0.7",
     "linguist-js": "^2.7.1",
     "pinia": "^2.2.0",
     "vue": "^3.4.35",

@@ -1,4 +1,3 @@
-import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import type { Theme as UnoTheme } from '@unocss/preset-mini'
 import {
   defineConfig,
@@ -22,12 +21,12 @@ export default defineConfig({
     presetAttributify(),
     presetTypography(),
     presetIcons({
+      collections: {
+        jet: () => import('./jet-icons/jet-icons.json').then(i => i.default),
+      },
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle',
-      },
-      collections: {
-        custom: FileSystemIconLoader('./src/assets/icons'),
       },
     }),
   ],

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import InputField from '~/components/common/InputField.vue'
-import PathInputField from '~/components/common/PathInputField.vue'
+import { JeFileInputField, JeInputField } from '~/jetv-ui'
 
 import ConfigItem from './common/ConfigItem.vue'
 import ConfigItemTitle from './common/ConfigItemTitle.vue'
@@ -30,9 +29,9 @@ function fillProjectName() {
 <template>
   <ConfigItem>
     <ConfigItemTitle title="new_project.directory" />
-    <PathInputField v-model="pathInputValue" :error="pathInputErrorValue" grow />
+    <JeFileInputField v-model="pathInputValue" :validated="pathInputErrorValue" grow />
     <ConfigItemTitle title="new_project.name" />
-    <InputField v-model="nameInputValue" :error="nameInputErrorValue" spellcheck="false" w="200px" />
+    <JeInputField v-model="nameInputValue" :validated="nameInputErrorValue" spellcheck="false" w="200px" />
 
     <div
       v-if="repositoryFolderName && nameInputValue !== repositoryFolderName"

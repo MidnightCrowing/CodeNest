@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import ButtonPrimary from '~/components/common/ButtonPrimary.vue'
-import SearchBar from '~/components/SearchBar.vue'
+import { JeButton, JeSearchField } from '~/jetv-ui'
 
 const { t } = useI18n()
 
@@ -12,6 +11,7 @@ function changeView() {
   if (view)
     view.value = 'NewView'
 }
+const pathInputValue = ref('')
 </script>
 
 <template>
@@ -20,9 +20,9 @@ function changeView() {
     flex="~ row justify-between items-center"
     gap="15px"
   >
-    <SearchBar grow />
-    <ButtonPrimary @click="changeView">
+    <JeSearchField v-model="pathInputValue" type="in-editor" grow />
+    <JeButton @click="changeView">
       {{ t('home.header.add_item') }}
-    </ButtonPrimary>
+    </JeButton>
   </header>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import CheckBox from '~/components/common/CheckBox.vue'
+import { JeCheckbox } from '~/jetv-ui'
 
 interface Settings {
   checkboxSetting: boolean
@@ -27,9 +27,9 @@ watch(internalValue, (newValue) => {
 
 <template>
   <div col-start="2">
-    <CheckBox
+    <JeCheckbox
       v-model="internalValue.checkboxSetting"
-      :title="t('new_project.kind_component.test_desc')"
+      :label="t('new_project.kind_component.test_desc')"
       w-fit
     />
   </div>

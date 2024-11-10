@@ -32,6 +32,7 @@ async function openFolder() {
 </script>
 
 <template>
+  <span class="i-custom:circle" />
   <span relative>
     <InputField
       v-model="folderPath"
@@ -44,7 +45,7 @@ async function openFolder() {
       size="13px"
       bg="hover:theme-field-iconBgHover active:theme-field-iconBgActive"
       cursor-pointer
-      i-mode="folder"
+      i-jet="folder"
       @click="openFolder"
     />
   </span>

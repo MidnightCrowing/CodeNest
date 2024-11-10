@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import '../styles/light.scss'
+import '../styles/dark.scss'
+
 import WindowHeader from '~/components/WindowHeader.vue'
 import { applyTheme } from '~/utils/theme'
 

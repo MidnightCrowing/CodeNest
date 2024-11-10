@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ButtonGroup from '~/components/common/ButtonGroup.vue'
 import { ProjectKind } from '~/constants/projectKind'
+import { JeSegmentedControl } from '~/jetv-ui'
 
 import ConfigItem from '../common/ConfigItem.vue'
 import ConfigItemTitle from '../common/ConfigItemTitle.vue'
@@ -31,9 +31,9 @@ const currentComponent = computed(() => {
 <template>
   <ConfigItem>
     <ConfigItemTitle title="new_project.kind_component.project_source" />
-    <ButtonGroup
+    <JeSegmentedControl
       v-model="kindSelected"
-      :buttons="kindButtons"
+      :values="kindButtons"
     />
 
     <KeepAlive>

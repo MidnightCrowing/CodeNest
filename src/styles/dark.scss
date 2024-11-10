@@ -1,16 +1,124 @@
-body {
-  // region shadows
-  // The shadows of the card, button, and other slightly elevated components
-  --shadow-1: 0 4px 6px -1px rgb(0 0 0 / 0.18), 0 2px 4px -2px rgb(0 0 0 / 0.14);
+// reference: https://www.figma.com/design/SWaCWAqYTjE2GYZasKyPVn/Int-UI-Kit-(Community)?node-id=305-26005
 
-  // The shadows of the top bar, header, elevated fixed buttons/cards and other components that are in the a fixed or sticky position
-  --shadow-2: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.16);
+:root.dark {
+  // Gray
+  --gray-primary: var(--gray-1);
+  --gray-1: rgb(30 31 34); // Main background (editor)
+  --gray-2: rgb(43 45 48); // Secondary background (tool windows, dialogs, tooltips)
+  --gray-3: rgb(57 59 64); // Lines & separators, Tree hover
+  --gray-4: rgb(67 69 74); // General icons: Fill, Inactive selection
+  --gray-5: rgb(78 81 87);
+  --gray-6: rgb(90 93 99);
+  --gray-7: rgb(111 115 122); // Secondary text & icons, Disabled text in components
+  --gray-8: rgb(134 138 145); // Text on lighter backgrounds (hints)
+  --gray-9: rgb(157 160 168); // Current line number
+  --gray-10: rgb(180 184 191);
+  --gray-11: rgb(206 208 214); // General icons: Stroke, Solid icons, Outline icons
+  --gray-12: rgb(223 225 229); // Primary text
+  --gray-13: rgb(240 241 242);
+  --gray-14: rgb(255 255 255);
 
-  // The shadows of the popover, dropdown
-  --shadow-3: 0 20px 25px -5px rgb(0 0 0 / 0.22), 0 8px 10px -6px rgb(0 0 0 / 0.18);
+  // Blue
+  --blue-primary: var(--blue-6);
+  --blue-1: rgb(37 50 77); // General icons: Fill, Editor: Selection
+  --blue-2: rgb(46 67 110); // Selection in tool windows
+  --blue-3: rgb(53 83 143);
+  --blue-4: rgb(55 95 173); // Button: Pressed
+  --blue-5: rgb(54 106 207); // Button: Hovered
+  --blue-6: rgb(53 116 240); // Button: Default
+  --blue-7: rgb(70 127 242);
+  --blue-8: rgb(84 138 247); // General icons: Stroke, Solid icons, Outline icons
+  --blue-9: rgb(107 155 250); // Link
+  --blue-10: rgb(131 172 252);
+  --blue-11: rgb(153 187 255);
 
-  // Only used in the dialog
-  --shadow-4: 0 34px 50px -20px rgb(0 0 0 / 0.24), 0 32px 45px -12px rgb(0 0 0 / 0.2),
-    0 30px 40px -8px rgb(0 0 0 / 0.22);
-  // endregion
+  // Green
+  --green-primary: var(--green-6);
+  --green-1: rgb(37 54 39); // General icons: Fill
+  --green-2: rgb(55 82 57);
+  --green-3: rgb(67 105 70);
+  --green-4: rgb(78 128 82);
+  --green-5: rgb(87 150 92); // General icons: Stroke, Solid icons, Outline icons
+  --green-6: rgb(95 173 101); // Success icons
+  --green-7: rgb(115 189 121);
+  --green-8: rgb(137 204 142);
+  --green-9: rgb(160 219 165);
+  --green-10: rgb(185 235 189);
+  --green-11: rgb(212 250 215);
+
+  // Red
+  --red-primary: var(--red-6);
+  --red-1: rgb(64 41 41); // General icons: Fill
+  --red-2: rgb(94 56 56);
+  --red-3: rgb(122 67 67);
+  --red-4: rgb(156 78 78);
+  --red-5: rgb(189 87 87);
+  --red-6: rgb(219 92 92); // General icons: Stroke, Solid icons, Outline icons
+  --red-7: rgb(227 119 116);
+  --red-8: rgb(235 147 141);
+  --red-9: rgb(242 177 170);
+  --red-10: rgb(247 204 198);
+  --red-11: rgb(250 227 222);
+
+  // Yellow
+  --yellow-primary: var(--yellow-7);
+  --yellow-1: rgb(61 50 35); // General icons: Fill
+  --yellow-2: rgb(94 77 51);
+  --yellow-3: rgb(130 106 65);
+  --yellow-4: rgb(158 129 74);
+  --yellow-5: rgb(186 151 82);
+  --yellow-6: rgb(214 174 88); // General icons: Stroke
+  --yellow-7: rgb(242 197 92); // Solid icons, Outline icons
+  --yellow-8: rgb(245 210 115);
+  --yellow-9: rgb(247 222 139);
+  --yellow-10: rgb(252 235 164);
+  --yellow-11: rgb(255 246 189);
+
+  // Orange
+  --orange-primary: var(--orange-6);
+  --orange-1: rgb(69 50 43); // General icons: Fill
+  --orange-2: rgb(97 68 56);
+  --orange-3: rgb(130 88 69);
+  --orange-4: rgb(163 107 78);
+  --orange-5: rgb(199 125 85); // General icons: Stroke, Solid icons, Outline icons
+  --orange-6: rgb(224 136 85);
+  --orange-7: rgb(229 152 108);
+  --orange-8: rgb(240 172 129);
+  --orange-9: rgb(245 189 152);
+  --orange-10: rgb(250 206 175);
+  --orange-11: rgb(255 223 199);
+
+  // Purple
+  --purple-primary: var(--purple-6);
+  --purple-1: rgb(47 41 54); // General icons: Fill
+  --purple-2: rgb(67 51 88);
+  --purple-3: rgb(88 61 122);
+  --purple-4: rgb(108 70 156);
+  --purple-5: rgb(129 80 190);
+  --purple-6: rgb(149 90 224);
+  --purple-7: rgb(165 113 230); // General icons: Stroke, Solid icons, Outline icons
+  --purple-8: rgb(181 137 236);
+  --purple-9: rgb(196 160 243);
+  --purple-10: rgb(212 184 249);
+  --purple-11: rgb(228 206 255);
+
+  // Teal
+  --teal-primary: var(--teal-6);
+  --teal-1: rgb(29 56 56); // General icons: Fill
+  --teal-2: rgb(30 77 74);
+  --teal-3: rgb(32 99 93);
+  --teal-4: rgb(33 120 111);
+  --teal-5: rgb(35 142 130);
+  --teal-6: rgb(36 163 148); // General icons: Stroke, Solid icons, Outline icons
+  --teal-7: rgb(66 177 164);
+  --teal-8: rgb(96 192 181);
+  --teal-9: rgb(125 206 197);
+  --teal-10: rgb(155 221 214);
+  --teal-11: rgb(185 235 230);
+
+  // Main Toolbar/Hover
+  --toolbar-hover: rgb(255 255 255 / 10%);
+
+  // Main Toolbar/Active
+  --toolbar-active: rgb(255 255 255 / 5%);
 }
