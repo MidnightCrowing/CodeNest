@@ -1,5 +1,13 @@
+<script lang="ts" setup>
+import type { GroupHeader } from './type'
+
+withDefaults(defineProps<GroupHeader>(), {
+  type: 'primary',
+})
+</script>
+
 <template>
-  <div class="je-group-header">
+  <div class="je-group-header" :class="type">
     <slot />
     <hr>
   </div>
@@ -11,7 +19,15 @@
   @apply mx-5px;
   @apply flex items-center gap-8px;
 
-  @apply light:color-$gray-1 dark:color-$gray-12;
+  // 主样式
+  &.primary {
+    @apply light:color-$gray-1 dark:color-$gray-12;
+  }
+
+  // 次要样式
+  &.secondary {
+    @apply color-$gray-7;
+  }
 
   hr {
     @apply flex-grow h-1px b-0;

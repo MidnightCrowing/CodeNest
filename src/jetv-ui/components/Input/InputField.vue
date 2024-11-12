@@ -1,10 +1,7 @@
 <script lang="ts" setup>
-interface Props {
-  modelValue: string
-  validated?: boolean
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+import type { InputField } from './type'
+
+withDefaults(defineProps<InputField>(), {
   validated: false,
   disabled: false,
 })

@@ -1,11 +1,7 @@
 <script lang="ts" setup>
-interface Props {
-  label: string
-  checked?: boolean
-  indeterminate?: boolean
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+import type { CheckBox } from './type'
+
+withDefaults(defineProps<CheckBox>(), {
   checked: false,
   indeterminate: false,
   disabled: false,
@@ -21,7 +17,7 @@ withDefaults(defineProps<Props>(), {
       :checked="checked"
       :disabled="disabled"
     >
-    {{ label }}
+    <slot />
   </label>
 </template>
 

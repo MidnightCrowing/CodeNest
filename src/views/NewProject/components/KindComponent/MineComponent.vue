@@ -29,8 +29,9 @@ watch(internalValue, (newValue) => {
   <div col-start="2">
     <JeCheckbox
       v-model="internalValue.checkboxSetting"
-      :label="t('new_project.kind_component.test_desc')"
       w-fit
-    />
+    >
+      {{ t('new_project.kind_component.test_desc') }}
+    </JeCheckbox>
   </div>
 </template>

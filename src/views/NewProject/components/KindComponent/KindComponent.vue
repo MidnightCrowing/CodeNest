@@ -33,7 +33,7 @@ const currentComponent = computed(() => {
     <ConfigItemTitle title="new_project.kind_component.project_source" />
     <JeSegmentedControl
       v-model="kindSelected"
-      :values="kindButtons"
+      :labels="kindButtons"
     />
 
     <KeepAlive>

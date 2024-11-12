@@ -1,20 +1,16 @@
 <script lang="ts" setup>
 import { JeSlimButton } from './index'
+import type { SegmentedControl } from './type'
 
-interface Props {
-  modelValue: string
-  values: { label: string, index: string }[]
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<SegmentedControl>(), {
   disabled: false,
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', index: string): void
+  (e: 'update:modelValue', index: string | number): void
 }>()
 
-function handleClick(index: string) {
+function handleClick(index: string | number) {
   emit('update:modelValue', index)
 }
 </script>
@@ -25,14 +21,14 @@ function handleClick(index: string) {
     :class="{ disabled }"
   >
     <JeSlimButton
-      v-for="(value, index) in values"
+      v-for="(label, index) in labels"
       :key="index"
       class="button"
-      :class="{ selected: modelValue === value.index }"
+      :class="{ selected: modelValue === label.value }"
       :disabled="disabled"
-      @click="handleClick(value.index)"
+      @click="handleClick(label.value)"
     >
-      {{ value.label }}
+      {{ label.label }}
     </JeSlimButton>
   </div>
 </template>

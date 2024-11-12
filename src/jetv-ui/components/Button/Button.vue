@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-interface Props {
-  type?: 'primary' | 'secondary'
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+import type { Button } from './type'
+
+withDefaults(defineProps<Button>(), {
   type: 'primary',
   disabled: false,
 })

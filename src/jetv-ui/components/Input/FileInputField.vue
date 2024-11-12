@@ -1,12 +1,8 @@
 <script lang="ts" setup>
 import { JeInputField } from './index'
+import type { FileInputField } from './type'
 
-interface Props {
-  modelValue: string
-  validated?: boolean
-  disabled?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<FileInputField>(), {
   validated: false,
   disabled: false,
 })

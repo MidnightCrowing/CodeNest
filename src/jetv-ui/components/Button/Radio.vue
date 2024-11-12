@@ -1,26 +1,23 @@
 <script lang="ts" setup>
-interface Props {
-  label: string
-  modelValue: string | null
-  disabled?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
+import type { Radio } from './type'
+
+const props = withDefaults(defineProps<Radio>(), {
   disabled: false,
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'change', value: string): void
+  (e: 'update:modelValue', value: string | number): void
+  (e: 'change', value: string | number): void
 }>()
 
-const isChecked = computed(() => props.modelValue === props.label)
+const isChecked = computed(() => props.modelValue === props.value)
 
 function handleClick(event: MouseEvent) {
   if (props.disabled) {
     event.preventDefault()
   }
-  else if (props.modelValue !== props.label) {
-    emit('update:modelValue', props.label)
+  else if (props.modelValue !== props.value) {
+    emit('update:modelValue', props.value)
   }
 }
 </script>
@@ -36,12 +33,14 @@ function handleClick(event: MouseEvent) {
     <input
       type="radio"
       class="radio-input"
-      :value="label"
+      :value="value"
       :checked="isChecked"
       :disabled="disabled"
-      @change="$emit('change', label)"
+      @change="$emit('change', value)"
     >
-    <span class="radio-label">{{ label }}</span>
+    <span class="radio-label">
+      <slot />
+    </span>
   </label>
 </template>
 

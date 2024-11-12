@@ -1,10 +1,8 @@
 <script lang="ts" setup>
 import { JeButton } from './index'
+import type { SlimButton } from './type'
 
-interface Props {
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<SlimButton>(), {
   disabled: false,
 })
 </script>

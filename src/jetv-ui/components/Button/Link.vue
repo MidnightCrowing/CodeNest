@@ -1,15 +1,7 @@
 <script lang="ts" setup>
-export interface Action {
-  label: string
-  onClick: () => void
-}
-interface Props {
-  label: string
-  action: Action
-  type?: 'internal' | 'web' | 'options'
-  disabled?: boolean
-}
-withDefaults(defineProps<Props>(), {
+import type { Action, Link } from './type'
+
+withDefaults(defineProps<Link>(), {
   type: 'internal',
   disabled: false,
 })
@@ -27,7 +19,7 @@ function handleActionClick(action: Action) {
     :class="{ type, disabled }"
     @click="handleActionClick(action)"
   >
-    {{ label }}
+    <slot />
 
     <!-- Icon -->
     <span

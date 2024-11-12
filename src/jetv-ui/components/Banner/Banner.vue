@@ -1,16 +1,11 @@
 <script lang="ts" setup>
 import type { JeAction } from '../index'
 import { JeLink } from '../index'
+import type { Banner } from './type'
 
-interface Props {
-  label: string
-  state: 'info' | 'success' | 'warning' | 'error'
-  actions?: JeAction[]
-  type?: 'default' | 'inline'
-}
-withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Banner>(), {
   actions: () => [] as JeAction[],
-  type: 'inline',
+  type: 'default',
 })
 
 const isVisible = ref(true)

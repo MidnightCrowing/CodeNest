@@ -1,13 +1,8 @@
 <script lang="ts" setup>
 import { JeInputField } from './index'
+import type { SearchField } from './type'
 
-interface Props {
-  modelValue: string
-  type?: 'default' | 'in-editor'
-  validated?: boolean
-  disabled?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<SearchField>(), {
   type: 'default',
   validated: false,
   disabled: false,
