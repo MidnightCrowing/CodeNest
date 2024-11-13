@@ -1,14 +1,109 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
 import { JeGroupHeader } from '../Header'
-import type { Menu, Option } from './type'
+import type { Menu, MenuOption } from './type'
 
-const props = defineProps<Menu>()
+const props = withDefaults(defineProps<Menu>(), {
+  visible: false,
+  isChildMenu: false,
+})
+const emit = defineEmits(['update:visible', 'close'])
+
+const isMenuOpen = ref(props.visible) // 控制菜单的显示状态
+const hoveredOptionIndex = ref<string | number | null>(null) // 存储当前鼠标悬停的选项索引
+const childMenuPosition = ref<'right' | 'left'>('right') // 控制子菜单显示位置
 
 /**
- * 检查菜单项中是否存在图标。
- * 如果菜单项或其子项有图标，返回 `true`，否则返回 `false`。
+ * 点击外部时关闭菜单
+ */
+const menuRef = ref<HTMLElement | null>(null)
+onClickOutside(menuRef, () => {
+  if (!props.isChildMenu) {
+    closeMenu() // 点击外部时关闭菜单
+  }
+})
+
+/**
+ * 监听 visible 属性的变化，并同步到 isMenuOpen
+ */
+watch(() => props.visible, (newVal) => {
+  isMenuOpen.value = newVal
+  if (isMenuOpen.value) {
+    setHoveredOption(null) // 重新显示菜单时清除悬停选项
+  }
+})
+
+/**
+ * 监听 isMenuOpen 的变化，重新检查子菜单位置
+ */
+watch(isMenuOpen, (newVal) => {
+  if (newVal) {
+    checkMenuPosition() // 打开菜单时检查子菜单位置
+  }
+})
+
+/**
+ * 设置当前鼠标悬停的选项索引
+ * @param index - 当前悬停的选项索引
+ */
+function setHoveredOption(index: string | number | null) {
+  hoveredOptionIndex.value = index
+}
+
+/**
+ * 处理选项点击事件
+ * @param option - 被点击的菜单项
+ */
+function handleOptionClick(option: MenuOption) {
+  if (option.onClick) {
+    option.onClick() // 调用选项的 onClick 回调函数
+  }
+
+  // 如果没有子菜单，关闭菜单
+  if (!option.childMenu) {
+    closeMenu()
+  }
+
+  // 如果是子菜单，则触发 'close' 事件
+  if (props.isChildMenu) {
+    emit('close')
+  }
+}
+
+/**
+ * 格式化快捷键字符串
+ * @param keys - 快捷键数组
+ * @returns {string} 格式化后的快捷键字符串
+ */
+function formatShortcut(keys: string[]): string {
+  return keys
+    .map(key => capitalize(key)) // 将每个快捷键的首字母大写
+    .join('+') // 用加号连接快捷键
+}
+
+/**
+ * 将字符串的首字母转换为大写
+ * @param str - 需要转换的字符串
+ * @returns {string} 转换后的字符串
+ */
+function capitalize(str: string): string {
+  if (str.length === 0)
+    return str // 如果字符串为空，直接返回原字符串
+  return str.charAt(0).toUpperCase() + str.slice(1) // 首字母大写，其余部分不变
+}
+
+/**
+ * 将字符串转换为大写
+ * @param str - 需要转换的大写字符串
+ * @returns {string} 转换后的大写字符串
+ */
+function toUpperCase(str: string): string {
+  return str.toUpperCase()
+}
+
+/**
+ * 检查菜单项中是否存在图标
  * @returns {boolean} 是否包含图标
  */
 const hasIcon = computed(() => {
@@ -23,62 +118,36 @@ const hasIcon = computed(() => {
 })
 
 /**
- * 存储当前鼠标悬停的选项索引。
+ * 关闭菜单
  */
-const hoveredOptionIndex = ref<string | number | null>(null)
-
-/**
- * 设置当前鼠标悬停的选项索引。
- * @param index - 悬停选项的索引
- */
-function setHoveredOption(index: string | number) {
-  hoveredOptionIndex.value = index
+function closeMenu() {
+  isMenuOpen.value = false
+  emit('update:visible', false)
 }
 
 /**
- * 将字符串转换为大写字母。
- * @param str - 需要转换的大写字符串
- * @returns {string} 转换后的大写字符串
+ * 检查菜单位置并调整子菜单的显示位置
  */
-function toUpperCase(str: string): string {
-  return str.toUpperCase()
-}
+function checkMenuPosition() {
+  nextTick(() => {
+    if (menuRef.value) {
+      const menuRect = menuRef.value.getBoundingClientRect()
+      const screenWidth = window.innerWidth
+      const isOutOfBounds = menuRect.right + 200 > screenWidth // 200 是子菜单的宽度预估
 
-/**
- * 将字符串的首字母转换为大写，其余部分保持原样。
- * @param str - 需要转换的字符串
- * @returns {string} 首字母大写后的字符串
- */
-function capitalize(str: string): string {
-  if (str.length === 0)
-    return str // 如果字符串为空，直接返回原字符串
-  return str.charAt(0).toUpperCase() + str.slice(1) // 首字母大写，其余部分不变
-}
-
-/**
- * 格式化快捷键，确保每个键的首字母大写，并用加号连接。
- * @param keys - 快捷键数组
- * @returns {string} 格式化后的快捷键字符串
- */
-function formatShortcut(keys: string[]): string {
-  return keys
-    .map(key => capitalize(key)) // 使用 capitalize 函数将每个快捷键的首字母大写
-    .join('+') // 用加号连接快捷键
-}
-
-/**
- * 处理选项点击事件，触发对应的 `onClick` 回调函数（如果存在）。
- * @param option - 被点击的选项
- */
-function handleOptionClick(option: Option) {
-  if (option.onClick) {
-    option.onClick() // 调用选项的 `onClick` 回调函数
-  }
+      if (isOutOfBounds) {
+        childMenuPosition.value = 'left'
+      }
+      else {
+        childMenuPosition.value = 'right'
+      }
+    }
+  })
 }
 </script>
 
 <template>
-  <ul v-if="options" class="je-menu">
+  <ul v-if="isMenuOpen && options" ref="menuRef" class="je-menu">
     <!-- 菜单标题 -->
     <li v-if="title" class="menu-title">
       {{ title }}
@@ -112,6 +181,11 @@ function handleOptionClick(option: Option) {
               <span v-if="option.key" class="option-key-wrapper">
                 (<span class="option-key">{{ toUpperCase(option.key) }}</span>)
               </span>
+
+              <!-- Ellipsis -->
+              <span v-if="option.ellipsis" class="option-ellipsis">
+                ...
+              </span>
             </span>
 
             <!-- Option Description -->
@@ -126,15 +200,23 @@ function handleOptionClick(option: Option) {
               {{ formatShortcut(option.shortcutKey) }}
             </span>
 
-            <!-- DropDown Icon -->
+            <!-- Dropdown Icon -->
             <span v-if="option.childMenu" class="drop-down-icon" />
 
             <!-- 子菜单递归渲染 -->
             <div
               v-if="option.childMenu && hoveredOptionIndex === index"
               class="child-menu-wrapper"
+              :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
             >
-              <Menu class="child" :options="option.childMenu" />
+              <Menu
+                class="child"
+                :visible="true"
+                :title="option.childMenu.title"
+                :options="option.childMenu.options"
+                :is-child-menu="true"
+                @close="closeMenu"
+              />
             </div>
           </div>
         </li>
@@ -179,6 +261,11 @@ function handleOptionClick(option: Option) {
                 <span v-if="groupOption.key" class="option-key-wrapper">
                   (<span class="option-key">{{ toUpperCase(groupOption.key) }}</span>)
                 </span>
+
+                <!-- Ellipsis -->
+                <span v-if="groupOption.ellipsis" class="option-ellipsis">
+                  ...
+                </span>
               </span>
 
               <!-- Option Description -->
@@ -193,15 +280,23 @@ function handleOptionClick(option: Option) {
                 {{ formatShortcut(groupOption.shortcutKey) }}
               </span>
 
-              <!-- DropDown Icon -->
+              <!-- Dropdown Icon -->
               <span v-if="groupOption.childMenu" class="drop-down-icon" />
 
               <!-- 子菜单递归渲染 -->
               <div
                 v-if="groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}`"
                 class="child-menu-wrapper"
+                :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
               >
-                <Menu class="child" :options="groupOption.childMenu" />
+                <Menu
+                  class="child"
+                  :visible="true"
+                  :title="groupOption.childMenu.title"
+                  :options="groupOption.childMenu.options"
+                  :is-child-menu="true"
+                  @close="closeMenu"
+                />
               </div>
             </div>
           </li>
@@ -263,6 +358,7 @@ function handleOptionClick(option: Option) {
       }
     }
 
+    .option-description,
     .option-shortcut {
       @apply text-0.7rem color-$gray-7;
     }
@@ -273,7 +369,7 @@ function handleOptionClick(option: Option) {
     }
 
     .child-menu-wrapper {
-      @apply absolute top--10px left-full z-1;
+      @apply absolute top--10px z-1;
     }
   }
 

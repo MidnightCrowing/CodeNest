@@ -23,7 +23,7 @@ defineEmits<{
 
 <style lang="scss" scoped>
 .je-input-field {
-  @apply font-sans;
+  @apply font-sans text-13px;
   @apply m-2px b-0 px-6px py-5px rounded-3px;
   @apply min-w-64px;
   @apply outline outline-2px;

@@ -12,6 +12,7 @@ function changeView() {
     view.value = 'NewView'
 }
 const pathInputValue = ref('')
+// 控制菜单的显示/隐藏状态
 </script>
 
 <template>

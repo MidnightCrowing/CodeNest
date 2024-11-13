@@ -1,5 +1,5 @@
 // JeMenu
-export interface Option {
+export interface MenuOption {
   /**
    * 索引，用于唯一标识该选项。
    *
@@ -53,6 +53,13 @@ export interface Option {
   onClick?: () => void
 
   /**
+   * 是否显示省略号。
+   *
+   * 如果设置为 true，选项文本会在文本末尾显示省略号。
+   */
+  ellipsis?: boolean
+
+  /**
    * 是否为分割线，标识该选项是否作为分隔线使用。
    *
    * 通常用于视觉上分隔不同的菜单项组，改善菜单布局和可读性。
@@ -69,7 +76,7 @@ export interface Option {
   childMenu?: Menu
 }
 
-export interface OptionGroup {
+export interface MenuOptionGroup {
   /**
    * 索引，用于唯一标识选项组。
    *
@@ -89,10 +96,12 @@ export interface OptionGroup {
    *
    * 每个选项代表该组内的一个菜单项，支持子菜单和图标等属性。
    */
-  options: Option[]
+  options: MenuOption[]
 }
 
 export interface Menu {
+  visible?: boolean
+
   /**
    * 菜单标题，用于在菜单顶部分隔和描述菜单内容。
    *
@@ -105,5 +114,8 @@ export interface Menu {
    * - `Option` 表示单个菜单项，可以是普通项或分隔线。
    * - `OptionGroup` 表示一组相关的菜单项，包含多个 `Option` 项。
    */
-  options: (Option | OptionGroup)[]
+  options: (MenuOption | MenuOptionGroup)[]
+
+  /** 由组件控制，不填 */
+  isChildMenu?: boolean
 }
