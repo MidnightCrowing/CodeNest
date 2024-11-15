@@ -63,7 +63,7 @@ const menuOptions = computed(() => {
 
     <div
       class="dropdown-content"
-      tabindex="0"
+      :tabindex="disabled ? -1 : 0"
       @click="openDropdownMenu"
     >
       <div class="dropdown-text">

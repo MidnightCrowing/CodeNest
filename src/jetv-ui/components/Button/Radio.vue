@@ -26,7 +26,7 @@ function handleClick(event: MouseEvent) {
   <label
     class="je-radio-input"
     :class="[{ checked: isChecked, disabled }]"
-    tabindex="0"
+    :tabindex="disabled ? -1 : 0"
     @click="handleClick"
   >
     <span class="radio-mark" />
@@ -117,7 +117,8 @@ function handleClick(event: MouseEvent) {
   }
 
   .radio-label {
-    @apply font-sans text-13px lh-25px ml-2;
+    @apply font-sans text-13px lh-25px;
+    @apply ml-2;
   }
 
   &.disabled .radio-label {

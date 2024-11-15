@@ -49,7 +49,7 @@ withDefaults(defineProps<Button>(), {
 
     // dark
     @apply dark:color-$gray-12;
-    @apply dark:bg-$gray-1  dark:active:bg-$gray-2 dark:focus:bg-$gray-2;
+    @apply dark:bg-$gray-1 dark:active:bg-$gray-2 dark:focus:bg-$gray-2;
     @apply dark:outline-$gray-5 dark:hover:outline-$gray-7 dark:active:outline-$gray-7 dark:focus:outline-$blue-6;
   }
 

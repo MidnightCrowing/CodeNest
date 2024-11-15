@@ -1,3 +1,4 @@
 import JeGroupHeader from './GroupHeader.vue'
+import JeLine from './Line.vue'
 
-export { JeGroupHeader }
+export { JeGroupHeader, JeLine }

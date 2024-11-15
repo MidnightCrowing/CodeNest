@@ -9,7 +9,7 @@ withDefaults(defineProps<SlimButton>(), {
 
 <template>
   <JeButton
-    class="je-slim-button"
+    class="slim"
     type="secondary"
     :disabled="disabled"
   >
@@ -18,7 +18,7 @@ withDefaults(defineProps<SlimButton>(), {
 </template>
 
 <style lang="scss" scoped>
-.je-slim-button {
+.slim {
   @apply py-1px;
   @apply outline-offset-0;
 

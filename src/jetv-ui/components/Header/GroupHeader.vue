@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { JeLine } from './index'
 import type { GroupHeader } from './type'
 
 withDefaults(defineProps<GroupHeader>(), {
@@ -9,7 +10,7 @@ withDefaults(defineProps<GroupHeader>(), {
 <template>
   <div class="je-group-header" :class="type">
     <slot />
-    <hr>
+    <JeLine />
   </div>
 </template>
 
@@ -27,11 +28,6 @@ withDefaults(defineProps<GroupHeader>(), {
   // 次要样式
   &.secondary {
     @apply color-$gray-7;
-  }
-
-  hr {
-    @apply flex-grow h-1px b-0;
-    @apply light:bg-$gray-12 dark:bg-$gray-3;
   }
 }
 </style>

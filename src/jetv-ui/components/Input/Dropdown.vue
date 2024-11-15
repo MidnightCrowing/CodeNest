@@ -50,7 +50,7 @@ const menuOptions = computed(() => {
   <div
     class="je-dropdown"
     :class="{ validated, disabled }"
-    tabindex="0"
+    :tabindex="disabled ? -1 : 0"
     @click="openDropdownMenu"
   >
     <div class="dropdown-container">

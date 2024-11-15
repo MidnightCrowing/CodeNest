@@ -32,8 +32,8 @@ function updateVisibility(status: boolean) {
 </template>
 
 <style lang="scss">
-.je-menu.mini,
-.je-menu.mini .je-menu.child {
+.je-popup.je-menu.mini .menu-ul,
+.je-popup.je-menu.mini .menu-ul .je-menu.child .menu-ul {
   @apply px-2px py-5px rounded-0 min-w-100px;
 
   .option-item .child-menu-wrapper {

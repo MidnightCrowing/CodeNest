@@ -43,6 +43,23 @@ export interface CheckBox {
   disabled?: boolean
 }
 
+// JeCommandLinkButton
+export interface CommandLinkButton {
+  /**
+   * 图标的类名。
+   * 用于为按钮添加一个图标。可以是任何有效的图标类名（如来自图标库）。
+   * 如果未提供此属性，按钮将仅显示文本。
+   */
+  icon?: string
+
+  /**
+   * 按钮是否禁用。
+   * 设置为 `true` 时，按钮将不可点击，并且通常会应用禁用状态样式。
+   * 默认为 `false`，表示按钮是启用的。
+   */
+  disabled?: boolean
+}
+
 // JeLink
 export interface Action {
   /**
@@ -150,6 +167,113 @@ export interface SlimButton {
    *
    * 如果设置为 `true`，按钮将不可点击，通常用于当前操作不可用的情况。
    * - 默认为 `false`，表示按钮可用。
+   */
+  disabled?: boolean
+}
+
+// JeSlimTag
+export interface SlimTag {
+  /**
+   * 是否可以删除该标签。
+   *
+   * 如果设置为 `true`，标签会显示一个删除按钮，用户可以删除该标签。
+   * - 默认为 `false`。
+   */
+  deleteAble?: boolean
+
+  /**
+   * 是否可以选择该标签。
+   *
+   * 如果设置为 `true`，标签可以被选中或取消选中。
+   * - 默认为 `false`。
+   */
+  selectAble?: boolean
+
+  /**
+   * 标签是否已被选中。
+   *
+   * 用于表示标签的当前选择状态。通常用于控制标签的视觉样式（如背景色）。
+   * - `true` 表示选中，`false` 表示未选中。
+   * - 默认为 `false`。
+   */
+  select?: boolean
+
+  /**
+   * 标签的禁用状态。
+   *
+   * - 默认为 `false`。
+   */
+  disabled?: boolean
+}
+
+// JeSwitch
+export interface Switch {
+  /**
+   * 开关的初始状态，默认为关闭。
+   *
+   * 如果设置为 `true`，表示开关处于开启状态；如果设置为 `false`，表示开关处于关闭状态。
+   * - 默认为 `false`，即开关默认关闭。
+   */
+  modelValue: boolean
+
+  /**
+   * 开启时显示的标签。
+   *
+   * 该标签会在开关开启状态下显示，通常表示开关开启的含义。
+   * - 如果未提供，则默认为 null。
+   */
+  onLabel?: string | null
+
+  /**
+   * 关闭时显示的标签。
+   *
+   * 该标签会在开关关闭状态下显示，通常表示开关关闭的含义。
+   * - 如果未提供，则默认为 null。
+   */
+  offLabel?: string | null
+
+  /**
+   * 开关的禁用状态。
+   *
+   * 如果设置为 `true`，开关将不可点击，通常用于当前操作不可用的情况。
+   *
+   * 禁用状态下，用户不能切换开关。
+   * - 默认为 `false`，表示开关可用。
+   */
+  disabled?: boolean
+}
+
+// JeTag
+export interface Tag {
+  /**
+   * 是否可以删除该标签。
+   *
+   * 如果设置为 `true`，标签会显示一个删除按钮，用户可以删除该标签。
+   * - 默认为 `false`。
+   */
+  deleteAble?: boolean
+
+  /**
+   * 是否可以选择该标签。
+   *
+   * 如果设置为 `true`，标签可以被选中或取消选中。
+   * - 默认为 `false`。
+   */
+  selectAble?: boolean
+
+  /**
+   * 标签是否已被选中。
+   *
+   * 用于表示标签的当前选择状态。通常用于控制标签的视觉样式（如背景色）。
+   * - `true` 表示选中，`false` 表示未选中。
+   * - 默认为 `false`。
+   */
+  select?: boolean
+
+  /**
+   * 标签的禁用状态。
+   *
+   * - 默认为 `false`。
    */
   disabled?: boolean
 }

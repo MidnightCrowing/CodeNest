@@ -7,7 +7,6 @@ const props = withDefaults(defineProps<SearchField>(), {
   validated: false,
   disabled: false,
 })
-
 const emit = defineEmits(['update:modelValue', 'update:validated'])
 
 const searchContent = ref(props.modelValue)
@@ -37,7 +36,12 @@ function clearInput() {
     />
 
     <!-- Clear Icon -->
-    <span v-if="searchContent" class="clear-icon" @click="clearInput" />
+    <span
+      v-if="searchContent"
+      class="clear-icon"
+      :tabindex="disabled ? -1 : 0"
+      @click="clearInput"
+    />
   </span>
 </template>
 
@@ -74,6 +78,14 @@ function clearInput() {
 
     // dark
     @apply dark:i-jet:close-small-dark dark:hover:i-jet:close-small-hovered-dark;
+
+    /* 只在通过 Tab 键聚焦时应用 */
+    &:focus-visible {
+      @apply rounded-2px;
+      @apply outline outline-2px;
+
+      @apply light:outline-$blue-4 dark:outline-$blue-6;
+    }
   }
 }
 </style>

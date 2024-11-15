@@ -6,7 +6,6 @@ const props = withDefaults(defineProps<FileInputField>(), {
   validated: false,
   disabled: false,
 })
-
 const emit = defineEmits(['update:modelValue', 'update:validated'])
 
 const folderPath = ref(props.modelValue)
