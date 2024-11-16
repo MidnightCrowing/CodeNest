@@ -31,8 +31,8 @@ function handleActionClick(action: Action) {
 
 <style lang="scss" scoped>
 .je-link {
-  @apply font-sans text-13px lh-25px;
-  @apply inline-flex items-end;
+  @apply font-sans text-13px lh-16px;
+  @apply inline-flex items-center;
   @apply decoration-none underline-offset-2px;
   @apply cursor-pointer;
 
@@ -44,7 +44,7 @@ function handleActionClick(action: Action) {
 
   // Web 类型样式
   .external-link-icon {
-    @apply text-17px;
+    @apply text-0.8rem;
 
     @apply light:i-jet:external-link dark:i-jet:external-link-dark;
   }

@@ -4,6 +4,4 @@ jetv-ui 是一个根据 JetBrains 产品 UI 界面设计风格进行模仿的 UI
 
 ---
 参考资料：
-- [JetBrains官网](https://www.jetbrains.com/)
 - [IntelliJ Platform UI kit](https://www.figma.com/@JetBrains)
-- [IntelliJ Icons plugin](https://jetbrains.github.io/ui/resources/icons_list/)

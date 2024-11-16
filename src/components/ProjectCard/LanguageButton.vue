@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Shape } from '~/components/LanguageCard/constants'
-import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
 import { hidePop, showPop } from '~/components/LanguagePop/LanguagePopProvider'
 import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/projectLanguage'
+import { JeColorIcon } from '~/jetv-ui'
 
 import InfoButton from './InfoButton.vue'
 
@@ -31,9 +30,9 @@ function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem) {
     @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
   >
     <InfoButton>
-      <LanguageCard
-        :language-color="language.color"
-        :shape="Shape.CIRCLE"
+      <JeColorIcon
+        type="circle"
+        :custom-color="language.color"
         m="r-5px"
       />
       {{ language.text }}

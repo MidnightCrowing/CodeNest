@@ -4,7 +4,7 @@ import type { Rule, Variant } from 'unocss'
 
 // unocss滚动条支持: https://github.com/unocss/unocss/issues/295
 
-const scrollbarApplyVariants: Variant<Theme>[] = [
+export const scrollbarApplyVariants: Variant<Theme>[] = [
   (matcher) => {
     const matches = matcher.match(
       /^(resizer|scrollbar(?:-(?:thumb|track(?:-piece)?|button|corner))?):/,
@@ -18,7 +18,7 @@ const scrollbarApplyVariants: Variant<Theme>[] = [
     }
   },
 ]
-const scrollbarApplyRules: Rule<Theme>[] = [
+export const scrollbarApplyRules: Rule<Theme>[] = [
   [
     /^scroll(?:bar)?-(thin|none|auto)$/,
     ([, w]) => ({
@@ -59,5 +59,3 @@ const scrollbarApplyRules: Rule<Theme>[] = [
     },
   ],
 ]
-
-export { scrollbarApplyRules, scrollbarApplyVariants }

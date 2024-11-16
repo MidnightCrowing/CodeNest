@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Hr from '~/components/common/Hr.vue'
 import LanguagePop from '~/components/LanguagePop/LanguagePop.vue'
 import LicensePop from '~/components/LicensePop/LicensePop.vue'
+import ProjectCard from '~/components/ProjectCard/ProjectCard.vue'
+import type { ProjectItem } from '~/components/ProjectCard/type'
 import { License } from '~/constants/license'
 import { ProjectKind } from '~/constants/projectKind'
+import { JeFrame, JeLine } from '~/jetv-ui'
 
-import ProjectButton from './components/ProjectButton/ProjectButton.vue'
-import ProjectOverviewHeader from './components/ProjectOverviewHeader.vue'
-import type { ProjectItem } from './types'
+import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
 
 const projectItems: ProjectItem[] = [
   {
@@ -278,15 +278,15 @@ const projectItems: ProjectItem[] = [
 </script>
 
 <template>
-  <div bg="theme-panel-bgContent">
+  <JeFrame>
     <ProjectOverviewHeader />
-    <Hr />
-    <main
+    <JeLine mx-20px />
+    <JeFrame
       m="x-15px y-5px" p="y-5px r-3px"
       grid="~ cols-1"
-      overflow-y-auto overflow-x-hidden scrollbar-default
+      overflow-y-auto overflow-x-auto
     >
-      <ProjectButton
+      <ProjectCard
         v-for="projectItem in projectItems"
         :key="projectItem"
         :project-item="projectItem"
@@ -294,6 +294,6 @@ const projectItems: ProjectItem[] = [
 
       <LanguagePop />
       <LicensePop />
-    </main>
-  </div>
+    </JeFrame>
+  </JeFrame>
 </template>

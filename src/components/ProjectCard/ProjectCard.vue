@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ProjectKind } from '~/constants/projectKind'
+import { JeLink } from '~/jetv-ui'
 
-import type { ProjectItem } from '../../types'
 import LanguageButton from './LanguageButton.vue'
 import LicenseButton from './LicenseButton.vue'
+import type { ProjectItem } from './type'
 
 const props = defineProps<{
   projectItem: ProjectItem
@@ -14,49 +15,51 @@ const projectButton = ref<HTMLDivElement | null>(null)
 const projectButtonActive = ref(false)
 
 // eslint-disable-next-line unused-imports/no-unused-vars
-function projectButtonClick(path: string) {
+function handleClick(path: string) {
   projectButtonActive.value = true
 }
 
-function projectButtonClicked() {
+function handleClicked() {
   projectButtonActive.value = false
+}
+
+async function openLink(url: string | undefined) {
+  if (url)
+    await window.api.openExternal(url)
 }
 </script>
 
 <template>
   <div
     ref="projectButton"
-    bg="hover:theme-button-bgHoverTertiary active:theme-button-bgActiveTertiary"
+    hover:bg="dark:$gray-3"
+    active:bg="dark:$gray-2"
     h="90px" p="10px" rounded="5px"
     flex="~ row"
-    cursor-pointer
-    overflow-hidden
-    @mousedown="projectButtonClick(projectItem.path)"
-    @mouseup="projectButtonClicked()"
+    cursor-pointer overflow-hidden
+    @mousedown="handleClick(projectItem.path)"
+    @mouseup="handleClicked"
   >
-    <div flex="~ col justify-between" w="100%" text-small>
+    <div flex="~ col justify-between" w-full>
       <div flex="~ col" gap="5px">
-        <span w-fit m="b-2px" truncate>{{ projectItem.name }}</span>
+        <span truncate>{{ projectItem.name }}</span>
 
         <span
           v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
-          class="project-kind"
-          w-fit truncate text-comment
-          @mousedown.stop
-          @mouseup.stop
+          truncate text-secondary
         >
           {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
-          <a v-if="kindUrl" :href="kindUrl" target="_blank">
+          <JeLink
+            v-if="kindUrl"
+            type="web"
+            :action="{ onClick: () => { openLink(kindUrl) } }"
+          >
             {{ kindFrom || kindUrl }}
-            <span
-              relative top="-1px" left="-5px"
-              i-static="external-link-arrow?mask" size="13px"
-            />
-          </a>
+          </JeLink>
           <span v-else>{{ kindFrom }}</span>
         </span>
 
-        <span w-fit truncate text-comment>{{ projectItem.path }}</span>
+        <span truncate text-secondary>{{ projectItem.path }}</span>
       </div>
 
       <div flex="~ row" gap="15px">
@@ -74,7 +77,7 @@ function projectButtonClicked() {
 </template>
 
 <style scoped lang="scss">
-.project-kind a {
-  @apply text-link text-comment;
+.je-link:not(.disabled) {
+  @apply dark:color-$blue-6;
 }
 </style>

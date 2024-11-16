@@ -3,6 +3,7 @@ import { JeBarColorScheme, JeColorIcon, JeGradient } from './Bar'
 import type { JeAction } from './Button'
 import { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag } from './Button'
 import { JeCard, JeSimpleCard } from './Card'
+import { JeFrame } from './Frame'
 import { JeGroupHeader, JeLine } from './Header'
 import { JeDropdown, JeFileInputField, JeInputField, JeSearchField, JeToolbarDropdown } from './Input'
 import type { JeMenuOption } from './Menu'
@@ -19,6 +20,7 @@ export {
   JeCommandLinkButton,
   JeDropdown,
   JeFileInputField,
+  JeFrame,
   JeGradient,
   JeGroupHeader,
   JeInputField,

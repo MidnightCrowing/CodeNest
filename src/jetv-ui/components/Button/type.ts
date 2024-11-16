@@ -67,7 +67,7 @@ export interface Action {
    *
    * 该标签通常显示在按钮或链接旁，帮助用户了解动作的目的。
    */
-  label: string
+  label?: string
 
   /**
    * 点击事件处理函数。

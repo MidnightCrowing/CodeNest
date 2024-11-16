@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import ButtonPrimary from '~/components/common/ButtonPrimary.vue'
-import ButtonSecondary from '~/components/common/ButtonSecondary.vue'
+import { JeButton } from '~/jetv-ui'
 
 import DefaultOpenComponent from './components/DefaultOpenComponent.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
@@ -40,10 +39,10 @@ function changeView() {
       b-t="solid 2px theme-hr-bg" p="8px"
       flex="~ row-reverse" gap="8px"
     >
-      <ButtonSecondary @click="changeView">
+      <JeButton type="secondary" @click="changeView">
         取消
-      </ButtonSecondary>
-      <ButtonPrimary>添加</ButtonPrimary>
+      </JeButton>
+      <JeButton>添加</JeButton>
     </div>
   </div>
 </template>

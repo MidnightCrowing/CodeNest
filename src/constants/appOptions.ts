@@ -103,7 +103,3 @@ export const appOptions: AppOption[] = [
     iconClass: 'i-static-visual-studio-code',
   },
 ]
-
-// 从 appOptions 中提取所有 iconClass 字段的值，并将它们映射为一个数组，
-// 用于生成图标类名的 safelist，以确保这些动态生成的类名被 Unocss 识别并编译。
-export const appIconClasses = appOptions.map(option => option.iconClass)

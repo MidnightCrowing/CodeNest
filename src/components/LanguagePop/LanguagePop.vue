@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LanguageCard from '~/components/LanguageCard/LanguageCard.vue'
+import { JeColorIcon } from '~/jetv-ui'
 
 import { languagesGroup, position, visible as visibleSign } from './LanguagePopProvider'
 
@@ -70,7 +70,7 @@ watch(visibleSign, (newVal: boolean) => {
         :key="languageItem.text"
         flex="~ items-center"
       >
-        <LanguageCard
+        <JeColorIcon
           :language-color="languageItem.color"
           m="r-2" h="6px" w="6px"
         />
