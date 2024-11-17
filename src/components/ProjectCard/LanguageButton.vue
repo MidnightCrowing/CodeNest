@@ -1,40 +1,33 @@
 <script setup lang="ts">
-import { hidePop, showPop } from '~/components/LanguagePop/LanguagePopProvider'
 import type { languagesGroupItem, ProjectLanguageInfo } from '~/constants/projectLanguage'
 import { JeColorIcon } from '~/jetv-ui'
 
 import InfoButton from './InfoButton.vue'
+import { showPop } from './LanguagePop/LanguagePopProvider'
 
 defineProps<{
   language: ProjectLanguageInfo
   languagesGroup: languagesGroupItem[]
 }>()
 
-function handleClick(event: MouseEvent, languagesGroup: languagesGroupItem) {
-  const target = event.target as HTMLElement
-  const rect = target.getBoundingClientRect()
+const containerRef = ref<HTMLElement | null>(null)
 
-  const top = rect.top + window.scrollY - 3
-  const left = rect.left + window.scrollX - 5
+function handleClick(languagesGroup: languagesGroupItem[]) {
+  if (containerRef.value) {
+    const rect = containerRef.value.getBoundingClientRect()
 
-  showPop(languagesGroup, top, left)
+    const top = rect.top + window.scrollY - 3
+    const left = rect.left + window.scrollX - 5
+
+    showPop(languagesGroup, top, left)
+  }
 }
 </script>
 
 <template>
-  <div
-    relative
-    @click="handleClick($event, languagesGroup)"
-    @mouseleave="hidePop"
-    @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
-    @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
-  >
-    <InfoButton>
-      <JeColorIcon
-        type="circle"
-        :custom-color="language.color"
-        m="r-5px"
-      />
+  <div ref="containerRef" @click="handleClick(languagesGroup)">
+    <InfoButton flex="~ items-center" gap="5px">
+      <JeColorIcon type="circle" :custom-color="language.color" />
       {{ language.text }}
     </InfoButton>
   </div>

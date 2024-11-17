@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import LanguagePop from '~/components/LanguagePop/LanguagePop.vue'
-import LicensePop from '~/components/LicensePop/LicensePop.vue'
+import LanguagePop from '~/components/ProjectCard/LanguagePop/LanguagePop.vue'
+import LicensePop from '~/components/ProjectCard/LicensePop/LicensePop.vue'
 import ProjectCard from '~/components/ProjectCard/ProjectCard.vue'
 import type { ProjectItem } from '~/components/ProjectCard/type'
 import { License } from '~/constants/license'

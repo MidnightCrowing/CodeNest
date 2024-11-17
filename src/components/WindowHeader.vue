@@ -10,7 +10,7 @@ import { JeFrame } from '~/jetv-ui'
     :type="null"
     min-h-40px max-h-40px w-full
     flex="~ row items-center"
-    bg="dark:#2B2D30"
+    bg="light:#F2F2F2 dark:#2B2D30"
   >
     <span relative left="30px" lh="20px">CodeNest</span>
   </JeFrame>

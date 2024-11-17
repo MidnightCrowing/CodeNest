@@ -23,7 +23,7 @@ provide('view', view)
   <JeFrame
     size-full
     flex="~ col"
-    caret="theme-text-caret"
+    caret="theme-text-caret" select-none
   >
     <WindowHeader />
     <Home v-if="view === 'home'" />

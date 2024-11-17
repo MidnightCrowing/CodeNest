@@ -1,36 +1,33 @@
 <script setup lang="ts">
-import { hidePop, showPop } from '~/components/LicensePop/licensePopProvider'
 import type { License } from '~/constants/license'
 
 import InfoButton from './InfoButton.vue'
+import { showPop } from './LicensePop/licensePopProvider'
 
 defineProps<{
   license: License
 }>()
 
-function handleClick(event: MouseEvent, license: License) {
-  const target = event.target as HTMLElement
-  const rect = target.getBoundingClientRect()
+const containerRef = ref<HTMLElement | null>(null)
 
-  const top = rect.top + window.scrollY - 3
-  const left = rect.left + window.scrollX - 5
+function handleClick(license: License) {
+  if (containerRef.value) {
+    const rect = containerRef.value.getBoundingClientRect()
 
-  showPop(license, top, left)
+    const top = rect.top + window.scrollY - 3
+    const left = rect.left + window.scrollX - 5
+
+    showPop(license, top, left)
+  }
 }
 </script>
 
 <template v-if="license">
-  <div
-    relative
-    @click="handleClick($event, license)"
-    @mouseleave="hidePop"
-    @mousedown="(event: MouseEvent) => { event.stopPropagation() }"
-    @mouseup="(event: MouseEvent) => { event.stopPropagation() }"
-  >
-    <InfoButton>
+  <div ref="containerRef" @click="handleClick(license)">
+    <InfoButton flex="~ items-center" gap="5px">
       <div
-        size="13px" m="t-1px r-5px"
-        i-mode="license?mask"
+        size="13px"
+        i-custom="light:license dark:license-dark"
       />
       {{ license }}
     </InfoButton>

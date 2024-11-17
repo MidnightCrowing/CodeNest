@@ -23,7 +23,7 @@ withDefaults(defineProps<Frame>(), {
   }
 
   &.secondary {
-    @apply light:bg-$gray-7 dark:bg-$gray-2;
+    @apply light:bg-$gray-13 dark:bg-$gray-2;
   }
 
   /* 滚动条样式 */

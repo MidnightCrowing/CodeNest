@@ -10,6 +10,7 @@ export default defineConfig({
     presetIcons({
       collections: {
         jet: () => import('./jet-icons/jet-icons.json').then(i => i.default),
+        custom: () => import('./src/assets/icons.json').then(i => i.default),
       },
       extraProperties: {
         'display': 'inline-block',
