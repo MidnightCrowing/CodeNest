@@ -86,7 +86,7 @@ onClickOutside(popupRef, () => {
 
       <JeLink
         type="web"
-        :action="{ onClick: () => { openLink(licenseDescription?.fromUrl) } }"
+        :on-click=" () => openLink(licenseDescription?.fromUrl) "
       >
         {{ t('license_pop.description_from') }}
       </JeLink>

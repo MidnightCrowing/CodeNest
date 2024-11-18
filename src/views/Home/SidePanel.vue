@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import SideMenuButtonBase from '~/components/SideMenuButton.vue'
 import type { ProjectLanguageInfo } from '~/constants/projectLanguage'
 import { JeFrame, JeLine } from '~/jetv-ui'
-
-import SideMenuButtonBase from './SideMenuButton.vue'
 
 const { t } = useI18n()
 

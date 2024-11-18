@@ -2,7 +2,7 @@
 import { JeFrame } from '~/jetv-ui'
 
 import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
-import SidePanel from './SidePanel/SidePanel.vue'
+import SidePanel from './SidePanel.vue'
 </script>
 
 <template>

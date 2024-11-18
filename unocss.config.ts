@@ -1,5 +1,6 @@
 import { defineConfig, presetAttributify, presetIcons, presetTypography, presetUno, transformerDirectives } from 'unocss'
 
+import { editorIconClasses } from './src/constants/codeEditor'
 import { scrollbarApplyRules, scrollbarApplyVariants } from './src/styles/unocss/scrollbarApply'
 
 export default defineConfig({
@@ -31,6 +32,7 @@ export default defineConfig({
     'text-primary': 'light:color-$gray-1 dark:color-$gray-12',
     'text-secondary': 'color-$gray-7',
   },
+  safelist: editorIconClasses,
   variants: scrollbarApplyVariants,
   rules: scrollbarApplyRules,
   transformers: [transformerDirectives()],

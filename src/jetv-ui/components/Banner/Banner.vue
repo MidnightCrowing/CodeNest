@@ -35,9 +35,10 @@ function handleClose() {
             v-for="(action, index) in actions"
             :key="index"
             class="action"
-            :label="action.label"
-            :action="action"
-          />
+            :on-click="action.onClick"
+          >
+            {{ action.label }}
+          </JeLink>
         </div>
       </div>
     </div>

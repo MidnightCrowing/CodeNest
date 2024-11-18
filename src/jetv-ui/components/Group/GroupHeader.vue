@@ -4,13 +4,15 @@ import type { GroupHeader } from './type'
 
 withDefaults(defineProps<GroupHeader>(), {
   type: 'primary',
+  foldAble: false,
+  isFold: false,
 })
 </script>
 
 <template>
   <div class="je-group-header" :class="type">
     <slot />
-    <JeLine />
+    <JeLine class="header-line" />
   </div>
 </template>
 
@@ -28,6 +30,10 @@ withDefaults(defineProps<GroupHeader>(), {
   // 次要样式
   &.secondary {
     @apply color-$gray-7;
+  }
+
+  .header-line {
+    @apply grow;
   }
 }
 </style>

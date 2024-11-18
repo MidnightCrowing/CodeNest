@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import type { Action, Link } from './type'
+import type { Link } from './type'
 
 withDefaults(defineProps<Link>(), {
   type: 'internal',
   disabled: false,
 })
 
-function handleActionClick(action: Action) {
-  if (action.onClick) {
-    action.onClick()
+function handleActionClick(func?: () => void, disabled = false) {
+  if (!disabled && func) {
+    func()
   }
 }
 </script>
@@ -17,7 +17,7 @@ function handleActionClick(action: Action) {
   <span
     class="je-link"
     :class="{ type, disabled }"
-    @click="handleActionClick(action)"
+    @click="handleActionClick(onClick, disabled)"
   >
     <slot />
 

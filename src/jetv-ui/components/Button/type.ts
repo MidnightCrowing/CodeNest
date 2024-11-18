@@ -61,29 +61,8 @@ export interface CommandLinkButton {
 }
 
 // JeLink
-export interface Action {
-  /**
-   * 动作的标签文本，用于描述该动作的作用。
-   *
-   * 该标签通常显示在按钮或链接旁，帮助用户了解动作的目的。
-   */
-  label?: string
-
-  /**
-   * 点击事件处理函数。
-   *
-   * 在用户点击按钮或链接时触发，执行对应的操作。
-   */
-  onClick: () => void
-}
-
 export interface Link {
-  /**
-   * 关联的动作对象，包含标签和点击事件处理函数。
-   *
-   * 定义了用户点击链接时将执行的操作。
-   */
-  action: Action
+  onClick?: () => void
 
   /**
    * 链接的类型，用于定义链接的行为。

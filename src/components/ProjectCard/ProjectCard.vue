@@ -52,7 +52,7 @@ function handleClicked() {
           <JeLink
             v-if="kindUrl"
             type="web"
-            :action="{ onClick: () => { openLink(kindUrl) } }"
+            :on-click=" () => openLink(kindUrl) "
             @mousedown.stop @mouseup.stop
           >
             {{ kindFrom || kindUrl }}

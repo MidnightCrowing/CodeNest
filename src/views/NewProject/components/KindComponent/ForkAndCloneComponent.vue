@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import { JeInputField } from '~/jetv-ui'
+import { JeInputField, JeLink } from '~/jetv-ui'
 import ConfigItemTitle from '~/views/NewProject/components/common/ConfigItemTitle.vue'
 
 const { t } = useI18n()
@@ -33,12 +33,12 @@ function fillProjectName() {
   <div
     v-if="repositoryPath && projectNameInputValue !== repositoryPath"
     col-start="2"
-    flex
+    flex gap="2px"
     overflow-hidden
   >
-    <span text-help truncate>{{ repositoryPath }}</span>
-    <span text-link m="l-2px" text-nowrap @click="fillProjectName">
+    <span text="secondary" truncate>{{ repositoryPath }}</span>
+    <JeLink :on-click="fillProjectName">
       {{ t('new_project.kind_component.fill_in') }}
-    </span>
+    </JeLink>
   </div>
 </template>

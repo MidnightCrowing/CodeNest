@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 
-import { JeGroupHeader } from '../Header'
-import { JeLine, JePopup } from '../index'
+import { JeGroup, JeLine, JePopup } from '../index'
 import type { Menu, MenuOption } from './type'
 
 const props = withDefaults(defineProps<Menu>(), {
@@ -232,81 +231,79 @@ function checkMenuPosition() {
         <template v-if="'groupLabel' in option">
           <!-- Group Title -->
           <li class="option-group-header">
-            <JeGroupHeader type="secondary">
-              {{ option.groupLabel }}
-            </JeGroupHeader>
-          </li>
+            <JeGroup :label="option.groupLabel" label-type="secondary">
+              <!-- Group Options -->
+              <template
+                v-for="(groupOption, groupIndex) in option.options"
+                :key="groupOption.value"
+              >
+                <!-- 分割线 -->
+                <li v-if="groupOption.isLine" class="option-line group">
+                  <JeLine />
+                </li>
 
-          <!-- Group Options -->
-          <template
-            v-for="(groupOption, groupIndex) in option.options"
-            :key="groupOption.value"
-          >
-            <!-- 分割线 -->
-            <li v-if="groupOption.isLine" class="option-line group">
-              <JeLine />
-            </li>
-
-            <!-- 菜单项 -->
-            <li
-              v-else
-              class="option-item"
-              :class="{ hovered: groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}` }"
-              @click="handleOptionClick(groupOption)"
-              @mouseenter="setHoveredOption(`${index}-${groupIndex}`)"
-            >
-              <div class="option-item-left">
-                <!-- Option Icon -->
-                <span v-show="hasIcon" class="option-icon" :class="groupOption.icon" />
-
-                <!-- Option Label -->
-                <span class="option-label">
-                  {{ groupOption.label }}
-
-                  <!-- Option Key -->
-                  <span v-if="groupOption.key" class="option-key-wrapper">
-                    (<span class="option-key">{{ toUpperCase(groupOption.key) }}</span>)
-                  </span>
-
-                  <!-- Ellipsis -->
-                  <span v-if="groupOption.ellipsis" class="option-ellipsis">
-                    ...
-                  </span>
-                </span>
-
-                <!-- Option Description -->
-                <span v-if="groupOption.description" class="option-description">
-                  {{ groupOption.description }}
-                </span>
-              </div>
-
-              <div class="option-item-right">
-                <!-- Option Shortcut Key -->
-                <span v-if="groupOption.shortcutKey" class="option-shortcut">
-                  {{ formatShortcut(groupOption.shortcutKey) }}
-                </span>
-
-                <!-- Dropdown Icon -->
-                <span v-if="groupOption.childMenu" class="drop-down-icon" />
-
-                <!-- 子菜单递归渲染 -->
-                <div
-                  v-if="groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}`"
-                  class="child-menu-wrapper"
-                  :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
+                <!-- 菜单项 -->
+                <li
+                  v-else
+                  class="option-item"
+                  :class="{ hovered: groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}` }"
+                  @click="handleOptionClick(groupOption)"
+                  @mouseenter="setHoveredOption(`${index}-${groupIndex}`)"
                 >
-                  <Menu
-                    class="child"
-                    :visible="true"
-                    :title="groupOption.childMenu.title"
-                    :options="groupOption.childMenu.options"
-                    :is-child-menu="true"
-                    @close="closeMenu"
-                  />
-                </div>
-              </div>
-            </li>
-          </template>
+                  <div class="option-item-left">
+                    <!-- Option Icon -->
+                    <span v-show="hasIcon" class="option-icon" :class="groupOption.icon" />
+
+                    <!-- Option Label -->
+                    <span class="option-label">
+                      {{ groupOption.label }}
+
+                      <!-- Option Key -->
+                      <span v-if="groupOption.key" class="option-key-wrapper">
+                        (<span class="option-key">{{ toUpperCase(groupOption.key) }}</span>)
+                      </span>
+
+                      <!-- Ellipsis -->
+                      <span v-if="groupOption.ellipsis" class="option-ellipsis">
+                        ...
+                      </span>
+                    </span>
+
+                    <!-- Option Description -->
+                    <span v-if="groupOption.description" class="option-description">
+                      {{ groupOption.description }}
+                    </span>
+                  </div>
+
+                  <div class="option-item-right">
+                    <!-- Option Shortcut Key -->
+                    <span v-if="groupOption.shortcutKey" class="option-shortcut">
+                      {{ formatShortcut(groupOption.shortcutKey) }}
+                    </span>
+
+                    <!-- Dropdown Icon -->
+                    <span v-if="groupOption.childMenu" class="drop-down-icon" />
+
+                    <!-- 子菜单递归渲染 -->
+                    <div
+                      v-if="groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}`"
+                      class="child-menu-wrapper"
+                      :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
+                    >
+                      <Menu
+                        class="child"
+                        :visible="true"
+                        :title="groupOption.childMenu.title"
+                        :options="groupOption.childMenu.options"
+                        :is-child-menu="true"
+                        @close="closeMenu"
+                      />
+                    </div>
+                  </div>
+                </li>
+              </template>
+            </JeGroup>
+          </li>
         </template>
       </template>
     </ul>

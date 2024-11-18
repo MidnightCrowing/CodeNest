@@ -8,7 +8,5 @@ import JeSlimButton from './SlimButton.vue'
 import JeSlimTag from './SlimTag.vue'
 import JeSwitch from './Switch.vue'
 import JeTag from './Tag.vue'
-import type { Action as JeAction } from './type'
 
 export { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag }
-export type { JeAction }

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { JeMenuOption } from '../index'
 import { JeMiniMenu } from '../index'
-import type { Dropdown } from './type'
+import type { Dropdown, DropdownOption, DropdownOptionGroup } from './type'
 
 const props = withDefaults(defineProps<Dropdown>(), {
   validated: false,
@@ -17,32 +17,57 @@ function openDropdownMenu() {
   }
 }
 
-// 将 DropdownOption 转换为 MenuOption
 const menuOptions = computed(() => {
-  // 检查 options 是否为有效数组
   if (!props.options || props.options.length === 0) {
     return []
   }
 
-  return props.options.map(option => ({
-    value: option.value,
-    label: option.label,
-    icon: option.icon,
-    description: option.description,
-    // 检查 onClick 是否存在，存在则调用，否者使用默认行为
-    onClick: () => {
-      // 如果 option 定义了 onClick，则执行它
-      if (option.onClick) {
-        option.onClick()
+  return props.options.map((option) => {
+    if ('options' in option) {
+      // 处理 DropdownOptionGroup
+      const group = option as DropdownOptionGroup
+      return {
+        value: group.value,
+        groupLabel: group.groupLabel,
+        options: group.options.map(subOption => ({
+          value: subOption.value,
+          label: subOption.label,
+          icon: subOption.icon,
+          description: subOption.description,
+          onClick: () => {
+            if (subOption.onClick) {
+              subOption.onClick()
+            }
+            else {
+              selectOption.value = subOption
+            }
+          },
+          ellipsis: subOption.ellipsis,
+          isLine: subOption.isLine,
+        })),
       }
-      else {
-        // 否则执行选择行为
-        selectOption.value = option
+    }
+    else {
+      // 处理 DropdownOption
+      const singleOption = option as DropdownOption
+      return {
+        value: singleOption.value,
+        label: singleOption.label,
+        icon: singleOption.icon,
+        description: singleOption.description,
+        onClick: () => {
+          if (singleOption.onClick) {
+            singleOption.onClick()
+          }
+          else {
+            selectOption.value = singleOption
+          }
+        },
+        ellipsis: singleOption.ellipsis,
+        isLine: singleOption.isLine,
       }
-    },
-    ellipsis: option.ellipsis,
-    isLine: option.isLine,
-  }))
+    }
+  })
 })
 </script>
 

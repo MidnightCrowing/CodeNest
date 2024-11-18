@@ -31,7 +31,7 @@ defineProps<{
     <span
       v-if="tagValue"
       class="side-menu-tag"
-      bg="light:$gray-11 dark:$gray-6"
+      bg="light:$gray-11 dark:$gray-5"
       h="17px" p="x-8px" rounded-full
       flex="~ items-center"
       text="default-semibold"
@@ -46,7 +46,7 @@ defineProps<{
   @apply light:bg-$blue-11 dark:bg-$blue-2;
 
   .side-menu-tag {
-    @apply light:bg-$blue-9 dark:bg-$blue-4;
+    @apply light:bg-$blue-9 dark:bg-$blue-5;
   }
 }
 </style>

@@ -55,6 +55,29 @@ export interface DropdownOption {
   isLine?: boolean
 }
 
+export interface DropdownOptionGroup {
+  /**
+   * 索引，用于唯一标识选项组。
+   *
+   * 在渲染和排序时用于区分不同的组。
+   */
+  value: string | number
+
+  /**
+   * 组标签，用于显示在选项组的标题位置。
+   *
+   * 该标签通常用于描述组内选项的类别或用途。
+   */
+  groupLabel: string
+
+  /**
+   * 选项列表，包含该组中的所有 `Option` 项目。
+   *
+   * 每个选项代表该组内的一个菜单项，支持子菜单和图标等属性。
+   */
+  options: DropdownOption[]
+}
+
 export interface Dropdown {
   /**
    * 当前选择的值。
@@ -68,7 +91,7 @@ export interface Dropdown {
    *
    * 是一个包含多个 `DropdownOption` 类型的数组，每个选项代表一个下拉菜单项。
    */
-  options: DropdownOption[]
+  options: (DropdownOption | DropdownOptionGroup)[]
 
   /**
    * 选中项的验证状态。
