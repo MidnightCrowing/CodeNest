@@ -18,6 +18,16 @@ export default defineConfig({
       '~/': `${r('src')}/`, // 设置别名 `~/` 为 `src/` 目录
     },
   },
+
+  // 设置scss的api类型为modern-compiler https://blog.csdn.net/CssHero/article/details/142686148
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+      },
+    },
+  },
+
   plugins: [
     vue(),
 
