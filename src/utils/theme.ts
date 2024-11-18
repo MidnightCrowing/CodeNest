@@ -1,19 +1,26 @@
-import { Theme } from '~/constants/theme'
+export enum Theme {
+  light = 'light',
+  dark = 'dark',
+}
 
 let currentTheme = Theme.dark
 
-async function applyTheme(theme?: Theme) {
-  const appElement = document.getElementById('app')
-  if (appElement) {
-    appElement.classList.remove(Theme.light, Theme.dark)
-    appElement.classList.add(theme ?? currentTheme)
+export async function applyTheme(theme?: Theme) {
+  const rootElement = document.documentElement // 获取 :root 即 <html> 元素
+  if (rootElement) {
+    rootElement.className = theme ?? currentTheme
   }
-  await window.api.setWindowTheme(currentTheme)
+
+  // 修改Electron窗口主题样式
+  try {
+    await window.api.setWindowTheme(currentTheme)
+  }
+  catch (error) {
+    console.error('Failed to set window theme:', error)
+  }
 }
 
-function toggleTheme() {
+export function toggleTheme() {
   currentTheme = currentTheme === Theme.light ? Theme.dark : Theme.light
   applyTheme(currentTheme).then(() => {})
 }
-
-export { applyTheme, toggleTheme }

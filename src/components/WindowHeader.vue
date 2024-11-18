@@ -1,16 +1,24 @@
 <!-- https://www.electronjs.org/zh/docs/latest/tutorial/window-customization -->
+
+<script setup lang="ts">
+import { JeFrame } from '~/jetv-ui'
+</script>
+
 <template>
-  <div class="window-header">
+  <JeFrame
+    class="window-header"
+    :type="null"
+    min-h-40px max-h-40px w-full
+    flex="~ row items-center"
+    bg="light:#F2F2F2 dark:#2B2D30"
+  >
     <span relative left="30px" lh="20px">CodeNest</span>
-  </div>
+  </JeFrame>
 </template>
 
 <style scoped lang="scss">
 .window-header {
   -webkit-app-region: drag;
   -webkit-user-select: none;
-  --uno: "min-h-40px max-h-40px w-full";
-  --uno: "flex flex-row items-center";
-  --uno: "bg-theme-window-focusIn";
 }
 </style>

@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import '../styles/light.scss'
+import '../styles/dark.scss'
+
 import WindowHeader from '~/components/WindowHeader.vue'
+import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
@@ -16,25 +20,23 @@ provide('view', view)
 </script>
 
 <template>
-  <div
+  <JeFrame
     size-full
     flex="~ col"
-    bg="theme-panel-bgContent selection:theme-text-selection"
-    text-default
-    caret="theme-text-caret"
+    caret="theme-text-caret" select-none
   >
     <WindowHeader />
     <Home v-if="view === 'home'" />
     <NewProject v-else />
-  </div>
+  </JeFrame>
 </template>
 
 <style lang="scss">
 body,
 html,
 #app {
-  --uno: "m-0 p-0";
-  --uno: "size-full";
-  --uno: "overflow-hidden";
+  @apply m-0 p-0;
+  @apply size-full;
+  @apply overflow-hidden;
 }
 </style>

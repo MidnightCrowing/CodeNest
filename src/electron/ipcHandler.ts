@@ -1,6 +1,6 @@
 import * as os from 'node:os'
 
-import { dialog, ipcMain } from 'electron'
+import { dialog, ipcMain, shell } from 'electron'
 
 import { getMainWindow } from './main.js'
 
@@ -25,6 +25,7 @@ function formatPaths(filePaths: string[]): string[] {
   })
 }
 
+// 设置主题
 ipcMain.handle('set-theme', (event, theme) => {
   const colorSettings = theme === 'dark'
     ? { color: '#2B2D30', symbolColor: '#DFE1E5' }
@@ -36,9 +37,17 @@ ipcMain.handle('set-theme', (event, theme) => {
   })
 })
 
+// 打开文件选择对话框
 ipcMain.handle('open-folder-dialog', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory'], // 只能选择文件夹
   })
   return formatPaths(result.filePaths)
+})
+
+// 在系统默认浏览器中打开链接
+ipcMain.handle('open-external', (_, url) => {
+  shell.openExternal(url)
+    .then(() => {})
+    .catch(err => console.error('Failed to open link:', err))
 })

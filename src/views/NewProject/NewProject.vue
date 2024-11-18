@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import ButtonPrimary from '~/components/common/ButtonPrimary.vue'
-import ButtonSecondary from '~/components/common/ButtonSecondary.vue'
+import { JeButton, JeFrame } from '~/jetv-ui'
 
 import DefaultOpenComponent from './components/DefaultOpenComponent.vue'
 import KindComponent from './components/KindComponent/KindComponent.vue'
@@ -16,12 +15,13 @@ function changeView() {
 </script>
 
 <template>
-  <div
+  <JeFrame
     size-full
     bg="theme-panel-bgDialog"
     flex="~ col"
   >
-    <div
+    <JeFrame
+      type="secondary"
       grow
       flex="~ col" gap="y-15px"
       overflow-auto scrollbar-default
@@ -33,17 +33,27 @@ function changeView() {
       <MainLanguageComponent />
 
       <DefaultOpenComponent />
-    </div>
+    </JeFrame>
 
-    <div
-      bg="theme-panel-bgDialog"
-      b-t="solid 2px theme-hr-bg" p="8px"
+    <JeFrame
+      type="secondary"
+      b-t="solid 2px light:$gray-12 dark:$gray-3" p="8px"
       flex="~ row-reverse" gap="8px"
     >
-      <ButtonSecondary @click="changeView">
+      <JeButton class="cancel-button" type="secondary" @click="changeView">
         取消
-      </ButtonSecondary>
-      <ButtonPrimary>添加</ButtonPrimary>
-    </div>
-  </div>
+      </JeButton>
+      <JeButton>添加</JeButton>
+    </JeFrame>
+  </JeFrame>
 </template>
+
+<style lang="scss" scoped>
+.cancel-button.je-button.secondary {
+  // light
+  @apply light:bg-$gray-14 dark:bg-$gray-2;
+
+  // dark
+  @apply dark:bg-$gray-2 dark:hover:bg-$gray-3;
+}
+</style>
