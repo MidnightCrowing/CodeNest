@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Radio } from './type'
+import type { Radio } from './types'
 
 const props = withDefaults(defineProps<Radio>(), {
   disabled: false,

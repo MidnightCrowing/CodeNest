@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Tag } from './type'
+import type { Tag } from './types'
 
 const props = withDefaults(defineProps<Tag>(), {
   deleteAble: false,

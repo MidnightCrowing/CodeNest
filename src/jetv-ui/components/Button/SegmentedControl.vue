@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeSlimButton } from './index'
-import type { SegmentedControl } from './type'
+import type { SegmentedControl } from './types'
 
 withDefaults(defineProps<SegmentedControl>(), {
   disabled: false,

@@ -16,6 +16,8 @@ export interface DropdownOption {
    */
   label?: string
 
+  labelColor?: `#${string}`
+
   /**
    * 选项的图标。
    *
@@ -100,6 +102,8 @@ export interface Dropdown {
    * - 默认为 `false`
    */
   validated?: boolean
+
+  loading?: boolean
 
   /**
    * 是否禁用下拉菜单。

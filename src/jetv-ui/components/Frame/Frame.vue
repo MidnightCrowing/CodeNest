@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Frame } from './type'
+import type { Frame } from './types'
 
 withDefaults(defineProps<Frame>(), {
   type: 'primary',

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeGroupHeader } from './index'
-import type { Group } from './type'
+import type { Group } from './types'
 
 const props = withDefaults(defineProps<Group>(), {
   labelType: 'primary',

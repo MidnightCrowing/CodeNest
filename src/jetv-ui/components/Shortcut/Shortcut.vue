@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Shortcut } from './type'
+import type { Shortcut } from './types'
 
 withDefaults(defineProps<Shortcut>(), {
   type: 'outline',

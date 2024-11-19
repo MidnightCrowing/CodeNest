@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Switch } from './type'
+import type { Switch } from './types'
 
 const props = withDefaults(defineProps<Switch>(), {
   modelValue: false,

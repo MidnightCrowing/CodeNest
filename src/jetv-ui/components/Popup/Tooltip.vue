@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JePopup } from './index'
-import type { Tooltip } from './type'
+import type { Tooltip } from './types'
 
 withDefaults(defineProps<Tooltip>(), {
   size: 'small',

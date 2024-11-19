@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Button } from './type'
+import type { Button } from './types'
 
 withDefaults(defineProps<Button>(), {
   type: 'primary',

@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 
 import fs from 'fs-extra'
 
-import { dataPath } from './dataPath.js'
+import { dataPath } from './utils/dataPath.js'
 
 async function checkFileExists(filePath: string): Promise<boolean> {
   try {

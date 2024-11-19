@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { CheckBox } from './type'
+import type { CheckBox } from './types'
 
 withDefaults(defineProps<CheckBox>(), {
   checked: false,

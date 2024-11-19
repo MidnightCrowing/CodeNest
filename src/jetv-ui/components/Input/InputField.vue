@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { InputField } from './type'
+import type { InputField } from './types'
 
 withDefaults(defineProps<InputField>(), {
   validated: false,

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeLine } from './index'
-import type { GroupHeader } from './type'
+import type { GroupHeader } from './types'
 
 withDefaults(defineProps<GroupHeader>(), {
   type: 'primary',

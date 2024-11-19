@@ -287,8 +287,8 @@ const projectItems: ProjectItem[] = [
       overflow-y-auto overflow-x-auto
     >
       <ProjectCard
-        v-for="projectItem in projectItems"
-        :key="projectItem"
+        v-for="(projectItem, index) in projectItems"
+        :key="index"
         :project-item="projectItem"
       />
 

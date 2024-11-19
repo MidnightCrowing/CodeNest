@@ -14,6 +14,8 @@ export interface MenuOption {
    */
   label?: string
 
+  labelColor?: `#${string}`
+
   /**
    * 选项前显示的图标。
    *

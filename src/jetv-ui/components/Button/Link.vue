@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Link } from './type'
+import type { Link } from './types'
 
 withDefaults(defineProps<Link>(), {
   type: 'internal',

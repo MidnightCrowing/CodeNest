@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { CommandLinkButton } from './type'
+import type { CommandLinkButton } from './types'
 
 withDefaults(defineProps<CommandLinkButton>(), {
   disabled: false,

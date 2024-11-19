@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeInputField } from './index'
-import type { FileInputField } from './type'
+import type { FileInputField } from './types'
 
 const props = withDefaults(defineProps<FileInputField>(), {
   validated: false,

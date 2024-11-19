@@ -29,9 +29,16 @@ watch(internalValue, (newValue) => {
   <div col-start="2">
     <JeCheckbox
       v-model="internalValue.checkboxSetting"
+      class="checkbox-setting"
       w-fit
     >
       {{ t('new_project.kind_component.test_desc') }}
     </JeCheckbox>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.checkbox-setting {
+  @apply light:bg-$gray-13;
+}
+</style>

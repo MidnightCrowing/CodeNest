@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeInputField } from './index'
-import type { SearchField } from './type'
+import type { SearchField } from './types'
 
 const props = withDefaults(defineProps<SearchField>(), {
   type: 'default',

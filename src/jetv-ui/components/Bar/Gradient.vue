@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Gradient } from './type'
+import type { Gradient } from './types'
 
 defineProps<Gradient>()
 </script>

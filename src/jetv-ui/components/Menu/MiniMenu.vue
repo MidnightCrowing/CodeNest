@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeMenu } from './index'
-import type { Menu } from './type'
+import type { Menu } from './types'
 
 // 接收传入的参数
 const props = defineProps<Menu>()

@@ -2,7 +2,7 @@
 import { onClickOutside } from '@vueuse/core'
 
 import { JeGroup, JeLine, JePopup } from '../index'
-import type { Menu, MenuOption } from './type'
+import type { Menu, MenuOption } from './types'
 
 const props = withDefaults(defineProps<Menu>(), {
   visible: false,
@@ -130,7 +130,7 @@ function closeMenu() {
  */
 function checkMenuPosition() {
   nextTick(() => {
-    if (menuRef.value) {
+    if (menuRef.value instanceof HTMLElement) {
       const menuRect = menuRef.value.getBoundingClientRect()
       const screenWidth = window.innerWidth
       const isOutOfBounds = menuRect.right + 200 > screenWidth // 200 是子菜单的宽度预估
@@ -179,7 +179,7 @@ function checkMenuPosition() {
               <span v-show="hasIcon" class="option-icon" :class="option.icon" />
 
               <!-- Option Label -->
-              <span class="option-label">
+              <span class="option-label" :style="{ color: option.labelColor }">
                 {{ option.label }}
 
                 <!-- Option Key -->
@@ -255,7 +255,7 @@ function checkMenuPosition() {
                     <span v-show="hasIcon" class="option-icon" :class="groupOption.icon" />
 
                     <!-- Option Label -->
-                    <span class="option-label">
+                    <span class="option-label" :style="{ color: groupOption.labelColor }">
                       {{ groupOption.label }}
 
                       <!-- Option Key -->

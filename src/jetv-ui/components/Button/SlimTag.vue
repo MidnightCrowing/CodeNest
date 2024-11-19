@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { JeTag } from './index'
-import type { SlimTag } from './type'
+import type { SlimTag } from './types'
 
 withDefaults(defineProps<SlimTag>(), {
   deleteAble: false,

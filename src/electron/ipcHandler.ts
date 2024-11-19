@@ -3,6 +3,7 @@ import * as os from 'node:os'
 import { dialog, ipcMain, shell } from 'electron'
 
 import { getMainWindow } from './main.js'
+import { analyzeFolder } from './utils/linguist.js'
 
 /**
  * 将文件路径数组中的用户根目录替换为 `~`。
@@ -50,4 +51,9 @@ ipcMain.handle('open-external', (_, url) => {
   shell.openExternal(url)
     .then(() => {})
     .catch(err => console.error('Failed to open link:', err))
+})
+
+// 传入项目根目录，获取项目各编程语言的占比
+ipcMain.handle('analyze-folder', async (_, folderPath) => {
+  return analyzeFolder(folderPath)
 })

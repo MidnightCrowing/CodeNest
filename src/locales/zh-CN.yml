@@ -83,8 +83,9 @@ new_project:
   kind_component:
     project_source: 项目来源
     test_desc: 测试项目
-    project_url: 项目url
+    project_url: 项目网址
     project_name: 项目名称
     fill_in: 填入
   main_lang_project: 项目主要语言
+  main_lang_option_desc: '类型: {type}, 字节: {bytes}, 行数: {lines}'
   default_opening_method: 默认打开方式

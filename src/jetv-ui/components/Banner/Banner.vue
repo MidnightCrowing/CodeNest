@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import type { JeAction } from '../index'
 import { JeLink } from '../index'
-import type { Banner } from './type'
+import type { Action, Banner } from './types'
 
 withDefaults(defineProps<Banner>(), {
-  actions: () => [] as JeAction[],
+  actions: () => [] as Action[],
   type: 'default',
 })
 

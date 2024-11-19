@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { ColorIcon } from './type'
+import type { ColorIcon } from './types'
 
 withDefaults(defineProps<ColorIcon>(), {
   type: 'default',

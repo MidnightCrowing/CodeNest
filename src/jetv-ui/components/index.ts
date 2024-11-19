@@ -6,6 +6,7 @@ import { JeFrame } from './Frame'
 import { JeGroup, JeGroupHeader, JeLine } from './Group'
 import type { JeDropdownOption, JeDropdownOptionGroup } from './Input'
 import { JeDropdown, JeFileInputField, JeInputField, JeSearchField, JeToolbarDropdown } from './Input'
+import { JeLoader } from './Loader'
 import type { JeMenuOption } from './Menu'
 import { JeMenu, JeMiniMenu } from './Menu'
 import { JePopup, JeTooltip } from './Popup'
@@ -27,6 +28,7 @@ export {
   JeInputField,
   JeLine,
   JeLink,
+  JeLoader,
   JeMenu,
   JeMiniMenu,
   JePopup,

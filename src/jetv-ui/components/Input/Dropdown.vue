@@ -1,15 +1,22 @@
 <script lang="ts" setup>
 import type { JeMenuOption } from '../index'
-import { JeMiniMenu } from '../index'
-import type { Dropdown, DropdownOption, DropdownOptionGroup } from './type'
+import { JeLoader, JeMiniMenu } from '../index'
+import type { Dropdown, DropdownOption, DropdownOptionGroup } from './types'
 
 const props = withDefaults(defineProps<Dropdown>(), {
   validated: false,
+  loading: false,
   disabled: false,
 })
+const emit = defineEmits(['update:modelValue'])
 
 const selectOption = ref<JeMenuOption | null>(null)
 const isMenuOpen = ref(false)
+
+watch(() => props.modelValue, (newValue) => {
+  const foundOption = findOptionByValue(newValue)
+  selectOption.value = foundOption || null
+})
 
 function openDropdownMenu() {
   if (!props.disabled) {
@@ -32,6 +39,7 @@ const menuOptions = computed(() => {
         options: group.options.map(subOption => ({
           value: subOption.value,
           label: subOption.label,
+          labelColor: subOption.labelColor,
           icon: subOption.icon,
           description: subOption.description,
           onClick: () => {
@@ -40,6 +48,7 @@ const menuOptions = computed(() => {
             }
             else {
               selectOption.value = subOption
+              emit('update:modelValue', subOption.value)
             }
           },
           ellipsis: subOption.ellipsis,
@@ -53,6 +62,7 @@ const menuOptions = computed(() => {
       return {
         value: singleOption.value,
         label: singleOption.label,
+        labelColor: singleOption.labelColor,
         icon: singleOption.icon,
         description: singleOption.description,
         onClick: () => {
@@ -61,6 +71,7 @@ const menuOptions = computed(() => {
           }
           else {
             selectOption.value = singleOption
+            emit('update:modelValue', singleOption.value)
           }
         },
         ellipsis: singleOption.ellipsis,
@@ -69,6 +80,13 @@ const menuOptions = computed(() => {
     }
   })
 })
+
+// 根据传入的选项值查找对应的选项
+function findOptionByValue(value: string) {
+  return menuOptions.value.flatMap(optionGroup =>
+    optionGroup.options ? optionGroup.options : [optionGroup],
+  ).find(option => option.value === value) || null
+}
 </script>
 
 <template>
@@ -103,8 +121,13 @@ const menuOptions = computed(() => {
         </span>
       </div>
 
-      <!-- Chevron Down Icon -->
-      <span class="chevron-down-icon" />
+      <div class="dropdown-icon">
+        <!-- Loader -->
+        <JeLoader v-if="loading" />
+
+        <!-- Chevron Down Icon -->
+        <span class="chevron-down-icon" />
+      </div>
     </div>
 
     <!-- Menu -->
@@ -148,9 +171,13 @@ const menuOptions = computed(() => {
       }
     }
 
-    .chevron-down-icon {
-      @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
-      @apply light:size-1rem dark:size-1rem;
+    .dropdown-icon {
+      @apply flex items-center gap-5px;
+
+      .chevron-down-icon {
+        @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
+        @apply light:size-1rem dark:size-1rem;
+      }
     }
   }
 
