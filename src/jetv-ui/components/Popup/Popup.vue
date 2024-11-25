@@ -1,7 +1,11 @@
+<script lang="ts" setup>
+import { JeFrame } from '../index'
+</script>
+
 <template>
-  <div class="je-popup">
+  <JeFrame class="je-popup">
     <slot />
-  </div>
+  </JeFrame>
 </template>
 
 <style lang="scss" scoped>

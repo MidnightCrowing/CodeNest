@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { JeLine } from './index'
-import type { GroupHeader } from './types'
+import { JeLine } from '../index'
+import type { GroupHeaderProps } from './types'
 
-withDefaults(defineProps<GroupHeader>(), {
+withDefaults(defineProps<GroupHeaderProps>(), {
   type: 'primary',
   foldAble: false,
   isFold: false,
@@ -10,9 +10,9 @@ withDefaults(defineProps<GroupHeader>(), {
 </script>
 
 <template>
-  <div class="je-group-header" :class="type">
+  <div class="je-group-header" :class="`je-group-header--${type}`">
     <slot />
-    <JeLine class="header-line" />
+    <JeLine class="je-group-header__line" />
   </div>
 </template>
 
@@ -23,17 +23,17 @@ withDefaults(defineProps<GroupHeader>(), {
   @apply flex items-center gap-8px;
 
   // 主样式
-  &.primary {
+  &--primary {
     @apply light:color-$gray-1 dark:color-$gray-12;
   }
 
   // 次要样式
-  &.secondary {
+  &--secondary {
     @apply color-$gray-7;
   }
+}
 
-  .header-line {
-    @apply grow;
-  }
+.je-group-header__line {
+  @apply grow;
 }
 </style>

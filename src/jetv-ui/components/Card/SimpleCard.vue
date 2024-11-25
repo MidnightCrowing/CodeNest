@@ -1,17 +1,15 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { JeCard } from './index'
 </script>
 
 <template>
-  <JeCard class="simple">
+  <JeCard class="je-card--simple">
     <slot />
   </JeCard>
 </template>
 
 <style lang="scss" scoped>
-.je-card.simple {
-  @apply light:bg-transparent dark:bg-transparent;
-
+.je-card--simple {
   // light
   @apply light:bg-transparent light:hover:bg-$gray-13;
 

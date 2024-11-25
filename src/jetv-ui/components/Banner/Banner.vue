@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { JeLink } from '../index'
-import type { Action, Banner } from './types'
+import type { BannerActionProps, BannerProps } from './types'
 
-withDefaults(defineProps<Banner>(), {
-  actions: () => [] as Action[],
+withDefaults(defineProps<BannerProps>(), {
+  actions: () => [] as BannerActionProps[],
   type: 'default',
 })
 
@@ -18,22 +18,22 @@ function handleClose() {
   <div
     v-if="isVisible"
     class="je-banner"
-    :class="[state, type]"
+    :class="[`je-banner--${state}`, `je-banner--${type}`]"
   >
-    <div class="banner-content">
+    <div class="je-banner__content">
       <!-- State Icon -->
-      <div class="state-icon" />
+      <div class="je-banner__icon-state" />
 
-      <div class="banner-text">
+      <div class="je-banner__text">
         <!-- Label -->
-        <span class="banner-label">{{ label }}</span>
+        <span class="je-banner__label">{{ label }}</span>
 
         <!-- Actions -->
-        <div class="banner-actions">
+        <div class="je-banner__actions">
           <JeLink
             v-for="(action, index) in actions"
             :key="index"
-            class="action"
+            class="je-banner__action"
             :on-click="action.onClick"
           >
             {{ action.label }}
@@ -43,8 +43,8 @@ function handleClose() {
     </div>
 
     <!-- Close Button -->
-    <div class="close-button-wrapper">
-      <div class="close-button" @click="handleClose" />
+    <div class="je-banner__close-button-wrapper">
+      <div class="je-banner__close-button" @click="handleClose" />
     </div>
   </div>
 </template>
@@ -54,131 +54,104 @@ function handleClose() {
   @apply font-sans text-13px lh-25px;
   @apply b-solid b-2px px-13px py-9px box-border;
   @apply flex gap-8px;
+}
 
-  // Type Style
-  &.default {
+// Type Style
+.je-banner {
+  &--default {
     @apply w-full b-x-none;
     @apply items-center;
 
-    .banner-content {
-      @apply grow;
-      @apply flex items-center gap-8px;
+    .je-banner__content {
+      @apply grow flex items-center gap-8px;
 
-      .banner-text {
-        @apply grow;
-        @apply flex justify-between items-center;
+      .je-banner__text {
+        @apply grow flex justify-between items-center;
         @apply truncate;
       }
     }
   }
 
-  &.inline {
+  &--inline {
     @apply rounded-10px;
     @apply items-start;
 
-    .banner-content {
-      @apply grow;
-      @apply flex items-start gap-8px;
+    .je-banner__content {
+      @apply grow flex items-start gap-8px;
 
-      .banner-text {
-        @apply grow;
-        @apply flex flex-col items-start;
+      .je-banner__text {
+        @apply grow flex flex-col items-start;
       }
     }
 
-    .state-icon,
-    .close-button-wrapper {
+    .je-banner__icon-state,
+    .je-banner__close-button-wrapper {
       @apply my-2px;
     }
   }
+}
 
-  // State Style
-  &.info {
-    // light
+// State Style
+.je-banner {
+  &--info {
     @apply light:bg-$blue-13 light:b-$blue-10;
-
-    // dark
     @apply dark:bg-$blue-1 dark:b-$blue-3;
 
-    .banner-content {
-      .state-icon {
-        @apply light:i-jet:info dark:i-jet:info-dark;
-        @apply light:size-1rem dark:size-1rem;
-      }
+    .je-banner__icon-state {
+      @apply light:i-jet:info dark:i-jet:info-dark;
     }
   }
 
-  &.success {
-    // light
+  &--success {
     @apply light:bg-$green-11 light:b-$green-9;
-
-    // dark
     @apply dark:bg-$green-1 dark:b-$green-3;
 
-    .banner-content {
-      .state-icon {
-        @apply light:i-jet:success dark:i-jet:success-dark;
-        @apply light:size-1rem dark:size-1rem;
-      }
+    .je-banner__icon-state {
+      @apply light:i-jet:success dark:i-jet:success-dark;
     }
   }
 
-  &.warning {
-    // light
+  &--warning {
     @apply light:bg-$yellow-10 light:b-$yellow-6;
-
-    // dark
     @apply dark:bg-$yellow-1 dark:b-$yellow-3;
 
-    .banner-content {
-      .state-icon {
-        @apply light:i-jet:warning dark:i-jet:warning-dark;
-        @apply light:size-1rem dark:size-1rem;
-      }
+    .je-banner__icon-state {
+      @apply light:i-jet:warning dark:i-jet:warning-dark;
     }
   }
 
-  &.error {
-    // light
+  &--error {
     @apply light:bg-$red-11 light:b-$red-9;
-
-    // dark
     @apply dark:bg-$red-1 dark:b-$red-3;
 
-    .banner-content {
-      .state-icon {
-        @apply light:i-jet:error dark:i-jet:error-dark;
-        @apply light:size-1rem dark:size-1rem;
-      }
+    .je-banner__icon-state {
+      @apply light:i-jet:error dark:i-jet:error-dark;
     }
   }
+}
 
-  // State Icon Style
-  .state-icon {
-    @apply size-min-1.25rem;
-  }
+.je-banner__icon-state {
+  @apply text-1rem;
+  @apply size-min-1.25rem;
+}
 
-  // Actions Style
-  .banner-actions {
-    @apply flex items-center gap-13px;
-  }
+.je-banner__actions {
+  @apply flex items-center gap-13px;
+}
 
-  // Label Style
-  .banner-label {
-    @apply light:color-$gray-1 dark:color-$gray-12;
-  }
+.je-banner__label {
+  @apply light:color-$gray-1 dark:color-$gray-12;
+}
 
-  // Close Button Style
-  .close-button-wrapper {
-    @apply flex items-center justify-center;
-    @apply size-min-1.25rem rounded-4px;
-    @apply hover:bg-$toolbar-hover active:bg-$toolbar-active;
-    @apply cursor-pointer;
+.je-banner__close-button-wrapper {
+  @apply flex items-center justify-center;
+  @apply size-min-1.25rem rounded-4px;
+  @apply hover:bg-$toolbar-hover active:bg-$toolbar-active;
+  @apply cursor-pointer;
 
-    .close-button {
-      @apply text-0.9rem;
-      @apply light:i-jet:close dark:i-jet:close-dark;
-    }
+  .je-banner__close-button {
+    @apply text-0.9rem;
+    @apply light:i-jet:close dark:i-jet:close-dark;
   }
 }
 </style>

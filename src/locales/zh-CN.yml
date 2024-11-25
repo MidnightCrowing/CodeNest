@@ -89,3 +89,4 @@ new_project:
   main_lang_project: 项目主要语言
   main_lang_option_desc: '类型: {type}, 字节: {bytes}, 行数: {lines}'
   default_opening_method: 默认打开方式
+  license: 许可证

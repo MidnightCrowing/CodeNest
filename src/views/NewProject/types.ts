@@ -1,4 +1,5 @@
-export interface Files {
+// Linguist API types
+export interface LinguistFiles {
   count: number
   bytes: number
   lines: { total: number, content: number, code: number }
@@ -6,7 +7,7 @@ export interface Files {
   alternatives: Record<string, (string | null)[]>
 }
 
-export interface LanguageResult {
+export interface LinguistLanguageResult {
   bytes: number
   lines: {
     total: number
@@ -18,14 +19,14 @@ export interface LanguageResult {
   color?: `#${string}`
 }
 
-export interface Languages {
+export interface LinguistLanguages {
   count: number
   bytes: number
   lines: { total: number, content: number, code: number }
-  results: Record<string, LanguageResult>
+  results: Record<string, LinguistLanguageResult>
 }
 
-export interface Unknown {
+export interface LinguistUnknown {
   count: number
   bytes: number
   lines: { total: number, content: number, code: number }
@@ -34,7 +35,7 @@ export interface Unknown {
 }
 
 export interface LinguistResult {
-  files: Files
-  languages: Languages
-  unknown: Unknown
+  files: LinguistFiles
+  languages: LinguistLanguages
+  unknown: LinguistUnknown
 }

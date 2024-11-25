@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { Tag } from './types'
+import type { TagProps } from './types'
 
-const props = withDefaults(defineProps<Tag>(), {
+const props = withDefaults(defineProps<TagProps>(), {
   deleteAble: false,
   selectAble: false,
   select: false,
@@ -26,7 +26,10 @@ function removeTag() {
 <template>
   <div
     class="je-tag"
-    :class="[{ 'select-able': selectAble, 'selected': isSelected }]"
+    :class="{
+      'je-tag--select-able': selectAble,
+      'je-tag--selected': isSelected,
+    }"
     :tabindex="disabled ? -1 : 0"
     @click="toggleSelect"
   >
@@ -35,7 +38,7 @@ function removeTag() {
     <!-- Close Icon -->
     <span
       v-if="deleteAble"
-      class="close-icon"
+      class="je-tag__icon-close"
       :tabindex="disabled ? -1 : 0"
       @click.stop="removeTag"
     />
@@ -50,47 +53,40 @@ function removeTag() {
   @apply outline outline-2px rounded-4px;
   @apply truncate cursor-default;
 
-  // light
   @apply light:bg-$gray-12 light:outline-$gray-9;
-
-  // dark
   @apply dark:bg-$gray-2 dark:outline-$gray-3;
 
-  &.select-able {
-    // light
+  &--select-able {
     @apply light:bg-$gray-14 light:focus:outline-$blue-7;
-
-    // dark
     @apply dark:bg-$gray-1 dark:focus:outline-$blue-3;
-
-    &.selected {
-      // light
-      @apply light:bg-$gray-12;
-      @apply light:outline-$gray-7 light:focus:outline-$blue-4;
-
-      // dark
-      @apply dark:bg-$gray-3;
-      @apply dark:outline-$gray-5 dark:focus:outline-$blue-6;
-    }
   }
 
-  .close-icon {
-    @apply text-0.9rem;
-    @apply cursor-pointer;
-
+  &--selected {
     // light
-    @apply light:i-jet:close-small light:hover:i-jet:close-small-hovered;
+    @apply light:bg-$gray-12;
+    @apply light:outline-$gray-7 light:focus:outline-$blue-4;
 
     // dark
-    @apply dark:i-jet:close-small-dark dark:hover:i-jet:close-small-hovered-dark;
+    @apply dark:bg-$gray-3;
+    @apply dark:outline-$gray-5 dark:focus:outline-$blue-6;
+  }
+}
 
-    /* 只在通过 Tab 键聚焦时应用 */
-    &:focus-visible {
-      @apply rounded-2px;
-      @apply outline outline-2px;
+.je-tag__icon-close {
+  @apply text-0.9rem;
+  @apply cursor-pointer;
 
-      @apply light:outline-$blue-4 dark:outline-$blue-6;
-    }
+  // light
+  @apply light:i-jet:close-small light:hover:i-jet:close-small-hovered;
+
+  // dark
+  @apply dark:i-jet:close-small-dark dark:hover:i-jet:close-small-hovered-dark;
+
+  &:focus-visible {
+    @apply rounded-2px;
+    @apply outline outline-2px;
+
+    @apply light:outline-$blue-4 dark:outline-$blue-6;
   }
 }
 </style>

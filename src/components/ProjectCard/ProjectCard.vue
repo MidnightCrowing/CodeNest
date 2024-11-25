@@ -1,16 +1,25 @@
-<script setup lang="ts">
-import { ProjectKind } from '~/constants/projectKind'
+<script lang="ts" setup>
+import type { LocalProject } from '~/constants/localProject'
+import { ProjectKind } from '~/constants/localProject'
 import { JeLink } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 import LanguageButton from './LanguageButton.vue'
 import LicenseButton from './LicenseButton.vue'
-import type { ProjectItem } from './type'
 
 const props = defineProps<{
-  projectItem: ProjectItem
+  projectItem: LocalProject
 }>()
-const { kind, from: kindFrom, url: kindUrl } = props.projectItem.kindInfo
+const {
+  path: projectPath,
+  name: projectName,
+  kind: projectKind,
+  fromUrl: projectFromUrl,
+  fromName: projectFromName,
+  mainLang: projectMainLang,
+  langGroup: projectLangGroup,
+  license: projectLicense,
+} = toRefs(props.projectItem)
 
 const projectCard = ref<HTMLDivElement | null>(null)
 const projectCardActive = ref(false)
@@ -34,52 +43,53 @@ function handleClicked() {
     h="90px" p="10px" rounded="5px"
     flex="~ row"
     cursor-pointer overflow-hidden
-    @mousedown="handleClick(projectItem.path)"
+    @mousedown="handleClick(projectPath)"
     @mouseup="handleClicked"
   >
     <div flex="~ col justify-between" gap="8px">
       <!-- Info -->
       <div flex="~ col" gap="5px">
         <!-- Title -->
-        <span truncate>{{ projectItem.name }}</span>
+        <span truncate>{{ projectName }}</span>
 
         <!-- Link -->
         <span
-          v-if="(kind === ProjectKind.FORK || kind === ProjectKind.CLONE) && (kindFrom || kindUrl)"
+          v-if="(projectKind === (ProjectKind.FORK || ProjectKind.CLONE)) && (projectFromUrl || projectFromName)"
           truncate text-secondary
         >
-          {{ kind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
+          {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <JeLink
-            v-if="kindUrl"
+            v-if="projectFromUrl"
             type="web"
-            :on-click=" () => openLink(kindUrl) "
+            :on-click=" () => openLink(projectFromUrl) "
             @mousedown.stop @mouseup.stop
           >
-            {{ kindFrom || kindUrl }}
+            {{ projectFromName || projectFromUrl }}
           </JeLink>
-          <span v-else>{{ kindFrom }}</span>
+          <span v-else>{{ projectFromName }}</span>
         </span>
 
         <!-- Path -->
-        <span truncate text-secondary>{{ projectItem.path }}</span>
+        <span truncate text-secondary>{{ projectPath }}</span>
       </div>
 
       <!-- Button -->
       <div flex="~ row" gap="15px">
         <LanguageButton
-          :language="projectItem.language"
-          :languages-group="projectItem.languagesGroup"
+          :main-lang="projectMainLang"
+          :lang-group="projectLangGroup"
         />
 
         <LicenseButton
-          :license="projectItem.license"
+          v-if="projectLicense"
+          :license="projectLicense"
         />
       </div>
     </div>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .project-card.active {
   @apply active:light:bg-$gray-13 active:dark:bg-$gray-2;
 }

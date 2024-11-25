@@ -1,16 +1,23 @@
 <script lang="ts" setup>
 import { JePopup } from './index'
-import type { Tooltip } from './types'
+import type { TooltipProps } from './types'
 
-withDefaults(defineProps<Tooltip>(), {
+withDefaults(defineProps<TooltipProps>(), {
   size: 'small',
 })
 </script>
 
 <template>
-  <JePopup class="je-tooltip" :class="[state, direction, size]">
-    <div v-if="state !== 'info'" class="tooltip-state-icon" />
-    <div class="tooltip-content">
+  <JePopup
+    class="je-tooltip"
+    :class="[
+      `je-tooltip--${state}`,
+      `je-tooltip--${direction}`,
+      `je-tooltip--${size}`,
+    ]"
+  >
+    <div v-if="state !== 'info'" class="je-tooltip__icon-state" />
+    <div class="je-tooltip__content">
       <slot />
     </div>
   </JePopup>
@@ -22,54 +29,53 @@ withDefaults(defineProps<Tooltip>(), {
   @apply flex gap-3px items-start;
   @apply shadow-$shadow-editor-tooltip;
 
-  .tooltip-state-icon {
-    @apply my-1px;
-  }
-
   &::before {
     @apply content-[''];
     @apply absolute rotate-45 z--1;
     @apply b-solid b-1px border-transparent;
   }
+}
 
-  /* Size Style */
-
+/* Size Style */
+.je-tooltip {
   // Small Size
-  &.small::before {
+  &--small::before {
     @apply size-8px;
   }
+}
 
-  /* Direction Style */
-
+/* Direction Style */
+.je-tooltip {
   // Up Direction
-  &.up::before {
+  &--up::before {
     @apply bottom-full left-16px translate-y-50%;
   }
 
   // Down Direction
-  &.down::before {
+  &--down::before {
     @apply top-full left-16px translate-y--50%;
   }
 
   // Left Direction
-  &.left::before {
+  &--left::before {
     @apply right-full top-16px translate-x-50%;
   }
 
   // Right Direction
-  &.right::before {
+  &--right::before {
     @apply left-full top-16px translate-x--50%;
   }
+}
 
-  /* State Style */
-
+/* State Style */
+.je-tooltip {
   // Info State
-  &.info {
+  &--info {
     &::before {
       @apply light:bg-$gray-14 dark:bg-$gray-2;
     }
 
-    &.up::before {
+    &.je-tooltip--up::before {
       // light
       @apply light:border-t-$gray-9 light:border-l-$gray-9;
 
@@ -77,7 +83,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-t-$gray-3 dark:border-l-$gray-3;
     }
 
-    &.down::before {
+    &.je-tooltip--down::before {
       // light
       @apply light:border-b-$gray-9 light:border-r-$gray-9;
 
@@ -85,7 +91,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$gray-3 dark:border-r-$gray-3;
     }
 
-    &.left::before {
+    &.je-tooltip--left::before {
       // light
       @apply light:border-b-$gray-9 light:border-l-$gray-9;
 
@@ -93,7 +99,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$gray-3 dark:border-l-$gray-3;
     }
 
-    &.right::before {
+    &.je-tooltip--right::before {
       // light
       @apply light:border-t-$gray-9 light:border-r-$gray-9;
 
@@ -103,7 +109,7 @@ withDefaults(defineProps<Tooltip>(), {
   }
 
   // Success State
-  &.success {
+  &--success {
     // light
     @apply light:b-$green-6 light:bg-$green-11;
 
@@ -114,7 +120,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply light:bg-$green-11 dark:bg-$green-1;
     }
 
-    &.up::before {
+    &.je-tooltip--up::before {
       // light
       @apply light:border-t-$green-6 light:border-l-$green-6;
 
@@ -122,7 +128,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-t-$green-2 dark:border-l-$green-2;
     }
 
-    &.down::before {
+    &.je-tooltip--down::before {
       // light
       @apply light:border-b-$green-6 light:border-r-$green-6;
 
@@ -130,7 +136,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$green-2 dark:border-r-$green-2;
     }
 
-    &.left::before {
+    &.je-tooltip--left::before {
       // light
       @apply light:border-b-$green-6 light:border-l-$green-6;
 
@@ -138,21 +144,17 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$green-2 dark:border-l-$green-2;
     }
 
-    &.right::before {
+    &.je-tooltip--right::before {
       // light
       @apply light:border-t-$green-6 light:border-r-$green-6;
 
       // dark
       @apply dark:border-t-$green-2 dark:border-r-$green-2;
     }
-
-    .tooltip-state-icon {
-      @apply light:i-jet:success dark:i-jet:success-dark;
-    }
   }
 
   // Warning State
-  &.warning {
+  &--warning {
     // light
     @apply light:b-$yellow-6 light:bg-$yellow-9;
 
@@ -163,7 +165,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply light:bg-$yellow-9 dark:bg-$yellow-1;
     }
 
-    &.up::before {
+    &.je-tooltip--up::before {
       // light
       @apply light:border-t-$yellow-6 light:border-l-$yellow-6;
 
@@ -171,7 +173,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-t-$yellow-2 dark:border-l-$yellow-2;
     }
 
-    &.down::before {
+    &.je-tooltip--down::before {
       // light
       @apply light:border-b-$yellow-6 light:border-r-$yellow-6;
 
@@ -179,7 +181,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$yellow-2 dark:border-r-$yellow-2;
     }
 
-    &.left::before {
+    &.je-tooltip--left::before {
       // light
       @apply light:border-b-$yellow-6 light:border-l-$yellow-6;
 
@@ -187,21 +189,17 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$yellow-2 dark:border-l-$yellow-2;
     }
 
-    &.right::before {
+    &.je-tooltip--right::before {
       // light
       @apply light:border-t-$yellow-6 light:border-r-$yellow-6;
 
       // dark
       @apply dark:border-t-$yellow-2 dark:border-r-$yellow-2;
     }
-
-    .tooltip-state-icon {
-      @apply light:i-jet:warning dark:i-jet:warning-dark;
-    }
   }
 
   // Error State
-  &.error {
+  &--error {
     // light
     @apply light:b-$red-8 light:bg-$red-10;
 
@@ -212,7 +210,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply light:bg-$red-10 dark:bg-$red-1;
     }
 
-    &.up::before {
+    &.je-tooltip--up::before {
       // light
       @apply light:border-t-$red-8 light:border-l-$red-8;
 
@@ -220,7 +218,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-t-$red-2 dark:border-l-$red-2;
     }
 
-    &.down::before {
+    &.je-tooltip--down::before {
       // light
       @apply light:border-b-$red-8 light:border-r-$red-8;
 
@@ -228,7 +226,7 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$red-2 dark:border-r-$red-2;
     }
 
-    &.left::before {
+    &.je-tooltip--left::before {
       // light
       @apply light:border-b-$red-8 light:border-l-$red-8;
 
@@ -236,17 +234,29 @@ withDefaults(defineProps<Tooltip>(), {
       @apply dark:border-b-$red-2 dark:border-l-$red-2;
     }
 
-    &.right::before {
+    &.je-tooltip--right::before {
       // light
       @apply light:border-t-$red-8 light:border-r-$red-8;
 
       // dark
       @apply dark:border-t-$red-2 dark:border-r-$red-2;
     }
+  }
+}
 
-    .tooltip-state-icon {
-      @apply light:i-jet:error dark:i-jet:error-dark;
-    }
+.je-tooltip__icon-state {
+  @apply my-1px;
+
+  .je-tooltip--success & {
+    @apply light:i-jet:success dark:i-jet:success-dark;
+  }
+
+  .je-tooltip--warning & {
+    @apply light:i-jet:warning dark:i-jet:warning-dark;
+  }
+
+  .je-tooltip--error & {
+    @apply light:i-jet:error dark:i-jet:error-dark;
   }
 }
 </style>

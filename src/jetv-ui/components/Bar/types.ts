@@ -1,7 +1,7 @@
-import type { JeBarColorScheme } from './index'
+import type { JeBarColorSchemeEnum } from './index'
 
 // JeColorIcon
-export interface ColorIcon {
+export interface ColorIconProps {
   /**
    * 图标的类型。
    *
@@ -18,7 +18,7 @@ export interface ColorIcon {
    *
    * 使用 `JeBarColorScheme` 来选择图标颜色的预定义方案。
    */
-  colorScheme?: JeBarColorScheme
+  colorScheme?: JeBarColorSchemeEnum
 
   /**
    * 自定义颜色。
@@ -31,11 +31,11 @@ export interface ColorIcon {
 }
 
 // JeGradient
-export interface Gradient {
+export interface GradientProps {
   /**
    * 颜色方案，决定渐变色的配色方案。
    *
    * 使用 `JeBarColorScheme` 来选择渐变色的预定义颜色。
    */
-  colorScheme: JeBarColorScheme
+  colorScheme: JeBarColorSchemeEnum
 }

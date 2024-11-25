@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { Button } from './types'
+import type { ButtonProps } from './types'
 
-withDefaults(defineProps<Button>(), {
+withDefaults(defineProps<ButtonProps>(), {
   type: 'primary',
   disabled: false,
 })
@@ -10,7 +10,7 @@ withDefaults(defineProps<Button>(), {
 <template>
   <button
     class="je-button"
-    :class="type"
+    :class="`je-button--${type}`"
     :disabled="disabled"
   >
     <slot />
@@ -26,7 +26,7 @@ withDefaults(defineProps<Button>(), {
   @apply min-w-72px;
 
   // Primary 按钮类型样式
-  &.primary:not(:disabled) {
+  &--primary:not(:disabled) {
     @apply outline-offset-1px;
 
     // light
@@ -39,7 +39,7 @@ withDefaults(defineProps<Button>(), {
   }
 
   // Secondary 按钮类型样式
-  &.secondary:not(:disabled) {
+  &--secondary:not(:disabled) {
     @apply outline-offset-0;
 
     // light
@@ -56,7 +56,6 @@ withDefaults(defineProps<Button>(), {
   // 禁用状态样式
   &:disabled {
     @apply color-$gray-8;
-
     @apply light:bg-$gray-12 dark:bg-$gray-5;
   }
 }

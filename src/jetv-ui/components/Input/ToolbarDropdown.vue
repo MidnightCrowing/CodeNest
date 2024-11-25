@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import type { JeMenuOption } from '../index'
+import type { JeMenuOptionProps } from '../index'
 import { JeMiniMenu } from '../index'
-import type { ToolbarDropdown } from './types'
+import type { ToolbarDropdownProps } from './types'
 
-const props = withDefaults(defineProps<ToolbarDropdown>(), {
+const props = withDefaults(defineProps<ToolbarDropdownProps>(), {
   disabled: false,
 })
 
-const selectOption = ref<JeMenuOption | null>(null)
+const selectOption = ref<JeMenuOptionProps | null>(null)
 const isMenuOpen = ref(false)
 
 // 初始化时选择默认值
@@ -56,17 +56,17 @@ const menuOptions = computed(() => {
 </script>
 
 <template>
-  <div class="je-dropdown toolbar" :class="{ disabled }">
-    <div class="dropdown_label">
+  <div class="je-toolbar-dropdown" :class="{ 'je-toolbar-dropdown--disabled': disabled }">
+    <div class="je-toolbar-dropdown__label">
       {{ label }}:
     </div>
 
     <div
-      class="dropdown-content"
+      class="je-toolbar-dropdown__inner"
       :tabindex="disabled ? -1 : 0"
       @click="openDropdownMenu"
     >
-      <div class="dropdown-text">
+      <div class="je-toolbar-dropdown__text">
         {{ selectOption?.label }}
 
         <!-- Ellipsis -->
@@ -74,13 +74,13 @@ const menuOptions = computed(() => {
           ...
         </span>
       </div>
-      <span class="chevron-down-icon" />
+      <span class="je-toolbar-dropdown__icon-chevron-down" />
 
       <!-- Menu -->
-      <div class="dropdown-menu-wrapper" @click.stop>
+      <div class="je-toolbar-dropdown__menu-wrapper" @click.stop>
         <JeMiniMenu
           v-model:visible="isMenuOpen"
-          class="dropdown-menu"
+          class="je-toolbar-dropdown__menu"
           :options="menuOptions"
         />
       </div>
@@ -89,70 +89,69 @@ const menuOptions = computed(() => {
 </template>
 
 <style lang="scss" scoped>
-.je-dropdown.toolbar {
+.je-toolbar-dropdown {
   @apply flex items-center gap-5px;
   @apply cursor-default;
 
-  .dropdown-content {
-    @apply relative;
-    @apply flex items-center;
-  }
-
-  .dropdown-text {
-    @apply flex cursor-pointer;
-  }
-
-  .chevron-down-icon {
-    @apply cursor-pointer;
-
-    @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
-    @apply light:size-1rem dark:size-1rem;
-  }
-
-  .dropdown-menu-wrapper {
-    @apply w-min;
-    @apply absolute top-full left--7px;
-  }
-
   // Default 状态样式
-  &:not(.disabled) {
-    .dropdown_label {
+  &:not(&--disabled) {
+    .je-toolbar-dropdown__label {
       @apply color-$gray-7;
     }
 
-    .dropdown-text {
+    .je-toolbar-dropdown__text {
       @apply light:color-$gray-1 dark:color-$gray-12;
     }
   }
 
   // Hover 状态样式
-  &:not(.disabled):hover .dropdown_label {
+  &:not(&--disabled):hover .je-toolbar-dropdown__label {
     @apply light:color-$gray-1 dark:color-$gray-13;
   }
 
   // Active 状态样式
-  &:not(.disabled):active {
-    .dropdown-label {
+  &:not(&--disabled):active {
+    .je-toolbar-dropdown__label {
       @apply light:color-$gray-1 dark:color-$gray-14;
     }
 
-    .dropdown-text {
+    .je-toolbar-dropdown__text {
       @apply light:color-$gray-1 dark:color-$gray-13;
     }
   }
 
   // 禁用状态样式
-  &.disabled {
-    .dropdown-label,
-    .dropdown-text {
+  &--disabled {
+    .je-toolbar-dropdown__label,
+    .je-toolbar-dropdown__text {
       @apply cursor-default;
 
       @apply light:color-$gray-8 dark:color-$gray-7;
     }
 
-    .chevron-down-icon {
+    .je-toolbar-dropdown__icon-chevron-down {
       @apply cursor-default;
     }
   }
+}
+
+.je-toolbar-dropdown__inner {
+  @apply relative;
+  @apply flex items-center;
+}
+
+.je-toolbar-dropdown__text {
+  @apply flex cursor-pointer;
+}
+
+.je-toolbar-dropdown__icon-chevron-down {
+  @apply text-1rem cursor-pointer;
+
+  @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
+}
+
+.je-toolbar-dropdown__menu-wrapper {
+  @apply w-min;
+  @apply absolute top-full left--7px;
 }
 </style>

@@ -1,112 +1,101 @@
 <script lang="ts" setup>
-import type { JeMenuOption } from '../index'
+import type { JeMenuOptionProps } from '../index'
 import { JeLoader, JeMiniMenu } from '../index'
-import type { Dropdown, DropdownOption, DropdownOptionGroup } from './types'
+import type { DropdownOptionGroupProps, DropdownOptionProps, DropdownProps } from './types'
 
-const props = withDefaults(defineProps<Dropdown>(), {
+const props = withDefaults(defineProps<DropdownProps>(), {
   validated: false,
   loading: false,
   disabled: false,
 })
 const emit = defineEmits(['update:modelValue'])
 
-const selectOption = ref<JeMenuOption | null>(null)
+const selectOption = ref<JeMenuOptionProps | null>(null)
 const isMenuOpen = ref(false)
 
-watch(() => props.modelValue, (newValue) => {
-  const foundOption = findOptionByValue(newValue)
-  selectOption.value = foundOption || null
-})
-
-function openDropdownMenu() {
-  if (!props.disabled) {
-    isMenuOpen.value = true
+// 辅助函数：处理单个选项
+function transformOption(option: DropdownOptionProps): JeMenuOptionProps {
+  return {
+    value: option.value,
+    label: option.label,
+    labelColor: option.labelColor,
+    icon: option.icon,
+    description: option.description,
+    onClick: () => {
+      option.onClick?.() || handleOptionSelect(option)
+    },
+    ellipsis: option.ellipsis,
+    isLine: option.isLine,
   }
 }
 
-const menuOptions = computed(() => {
-  if (!props.options || props.options.length === 0) {
+// 辅助函数：处理分组选项
+function transformGroupOption(group: DropdownOptionGroupProps): JeMenuOptionProps {
+  return {
+    value: group.value,
+    groupLabel: group.groupLabel,
+    options: group.options.map(transformOption),
+    isExpand: group.isExpand,
+  }
+}
+
+// 处理选项选择逻辑
+function handleOptionSelect(option: DropdownOptionProps) {
+  selectOption.value = option
+  emit('update:modelValue', option.value)
+}
+
+// 菜单选项计算属性
+const menuOptions = computed<JeMenuOptionProps[]>(() => {
+  if (!props.options || props.options.length === 0)
     return []
-  }
 
-  return props.options.map((option) => {
-    if ('options' in option) {
-      // 处理 DropdownOptionGroup
-      const group = option as DropdownOptionGroup
-      return {
-        value: group.value,
-        groupLabel: group.groupLabel,
-        options: group.options.map(subOption => ({
-          value: subOption.value,
-          label: subOption.label,
-          labelColor: subOption.labelColor,
-          icon: subOption.icon,
-          description: subOption.description,
-          onClick: () => {
-            if (subOption.onClick) {
-              subOption.onClick()
-            }
-            else {
-              selectOption.value = subOption
-              emit('update:modelValue', subOption.value)
-            }
-          },
-          ellipsis: subOption.ellipsis,
-          isLine: subOption.isLine,
-        })),
-      }
-    }
-    else {
-      // 处理 DropdownOption
-      const singleOption = option as DropdownOption
-      return {
-        value: singleOption.value,
-        label: singleOption.label,
-        labelColor: singleOption.labelColor,
-        icon: singleOption.icon,
-        description: singleOption.description,
-        onClick: () => {
-          if (singleOption.onClick) {
-            singleOption.onClick()
-          }
-          else {
-            selectOption.value = singleOption
-            emit('update:modelValue', singleOption.value)
-          }
-        },
-        ellipsis: singleOption.ellipsis,
-        isLine: singleOption.isLine,
-      }
-    }
-  })
+  return props.options.map(option =>
+    'options' in option
+      ? transformGroupOption(option as DropdownOptionGroupProps)
+      : transformOption(option as DropdownOptionProps),
+  )
 })
 
-// 根据传入的选项值查找对应的选项
-function findOptionByValue(value: string) {
-  return menuOptions.value.flatMap(optionGroup =>
-    optionGroup.options ? optionGroup.options : [optionGroup],
-  ).find(option => option.value === value) || null
+// 打开菜单
+function openDropdownMenu() {
+  if (!props.disabled)
+    isMenuOpen.value = true
 }
+
+// 根据值查找选项
+function findOptionByValue(value: string | null): JeMenuOptionProps | null {
+  return menuOptions.value
+    .flatMap(option => ('options' in option ? option.options : [option]))
+    .find(option => option.value === value) || null
+}
+
+watch(() => props.modelValue, (newValue) => {
+  selectOption.value = findOptionByValue(newValue)
+}, { immediate: true })
 </script>
 
 <template>
   <div
     class="je-dropdown"
-    :class="{ validated, disabled }"
+    :class="{
+      'je-dropdown--validated': validated,
+      'je-dropdown--disabled': disabled,
+    }"
     :tabindex="disabled ? -1 : 0"
     @click="openDropdownMenu"
   >
-    <div class="dropdown-container">
-      <div class="dropdown-text">
+    <div class="je-dropdown__inner">
+      <div class="je-dropdown__text">
         <!-- Text Icon -->
         <span
           v-if="selectOption?.icon"
-          class="dropdown-icon"
+          class="je-dropdown__icon"
           :class="selectOption?.icon"
         />
 
         <!-- Text Label -->
-        <span class="dropdown-label">
+        <span class="je-dropdown__label">
           {{ selectOption?.label }}
 
           <!-- Ellipsis -->
@@ -116,25 +105,25 @@ function findOptionByValue(value: string) {
         </span>
 
         <!-- Text Description -->
-        <span v-if="selectOption?.description" class="dropdown-description">
+        <span v-if="selectOption?.description" class="je-dropdown__description">
           {{ selectOption?.description }}
         </span>
       </div>
 
-      <div class="dropdown-icon">
+      <div class="je-dropdown__icon-dropdown">
         <!-- Loader -->
         <JeLoader v-if="loading" />
 
         <!-- Chevron Down Icon -->
-        <span class="chevron-down-icon" />
+        <span class="je-dropdown__icon-chevron-down" />
       </div>
     </div>
 
     <!-- Menu -->
-    <div class="dropdown-menu-wrapper" @click.stop>
+    <div class="je-dropdown__menu-wrapper" @click.stop>
       <JeMiniMenu
         v-model:visible="isMenuOpen"
-        class="dropdown-menu"
+        class="je-dropdown__menu"
         :options="menuOptions"
       />
     </div>
@@ -144,49 +133,14 @@ function findOptionByValue(value: string) {
 <style lang="scss" scoped>
 .je-dropdown {
   @apply font-sans text-13px;
-  @apply m-2px b-0 px-6px py-5px rounded-3px;
+  @apply m-2px b-0 px-6px py-5px outline outline-2px rounded-3px;
   @apply min-w-64px;
-  @apply outline outline-2px;
   @apply relative;
   @apply text-ellipsis whitespace-nowrap;
   @apply cursor-default;
 
-  .dropdown-container {
-    @apply w-full;
-    @apply flex items-center justify-between;
-
-    .dropdown-text {
-      @apply flex items-center gap-7px;
-
-      .dropdown-icon {
-        @apply size-0.7rem;
-      }
-
-      .dropdown-label {
-        @apply flex text-0.8rem mr-5px;
-      }
-
-      .dropdown-description {
-        @apply text-0.7rem color-$gray-7;
-      }
-    }
-
-    .dropdown-icon {
-      @apply flex items-center gap-5px;
-
-      .chevron-down-icon {
-        @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
-        @apply light:size-1rem dark:size-1rem;
-      }
-    }
-  }
-
-  .dropdown-menu-wrapper {
-    @apply absolute w-full left-0 top-full;
-  }
-
   // Default 状态样式
-  &:not(.disabled) {
+  &:not(&--disabled) {
     // light
     @apply light:bg-$gray-14;
     @apply light:outline-$gray-9 light:focus:outline-$blue-4;
@@ -195,35 +149,73 @@ function findOptionByValue(value: string) {
     @apply dark:bg-$gray-2;
     @apply dark:outline-$gray-5 dark:focus:outline-$blue-6;
 
-    .dropdown-label {
+    .je-dropdown__label {
       @apply light:color-$gray-1 dark:color-$gray-12;
     }
   }
 
   // Validated 状态样式
-  &.validated:not(.disabled) {
+  &--validated:not(&--disabled) {
     // light
     @apply light:outline-$red-9 light:focus:outline-$red-4;
 
     // dark
     @apply dark:outline-$red-2 dark:focus:outline-$red-6;
 
-    .dropdown-label {
+    .je-dropdown__label {
       @apply light:color-$gray-1 dark:color-$gray-12;
     }
   }
 
   // 禁用状态样式
-  &.disabled {
+  &--disabled {
     // light
     @apply light:bg-$gray-13 light:outline-$gray-11;
 
     // dark
     @apply dark:bg-$gray-2 dark:outline-$gray-5;
 
-    .dropdown-label {
+    .je-dropdown__label {
       @apply light:color-$gray-8 dark:color-$gray-7;
     }
   }
+}
+
+.je-dropdown__inner {
+  @apply w-full;
+  @apply flex items-center justify-between;
+}
+
+.je-dropdown__text {
+  @apply flex items-center gap-7px;
+}
+
+.je-dropdown__icon {
+  @apply size-0.7rem;
+}
+
+.je-dropdown__label {
+  @apply flex text-0.8rem mr-5px;
+}
+
+.je-dropdown__description {
+  @apply text-0.7rem color-$gray-7;
+}
+
+.je-dropdown__icon-dropdown {
+  @apply flex items-center gap-5px;
+}
+
+.je-dropdown__icon-chevron-down {
+  @apply text-1rem;
+  @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
+}
+
+.je-dropdown__menu-wrapper {
+  @apply absolute w-full left-0 top-full;
+}
+
+.je-dropdown__menu {
+  @apply max-h-300px;
 }
 </style>

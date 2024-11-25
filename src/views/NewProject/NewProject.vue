@@ -1,70 +1,75 @@
 <script lang="ts" setup>
+import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { CodeEditorOption } from '~/constants/codeEditor'
 import { codeEditors, languageToEditorMap } from '~/constants/codeEditor'
-import { ProjectKind } from '~/constants/projectKind'
-import type { JeDropdownOption, JeDropdownOptionGroup } from '~/jetv-ui'
-import { JeButton, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
+import { LicenseEnum } from '~/constants/license'
+import type { LocalProject } from '~/constants/localProject'
+import { ProjectKind } from '~/constants/localProject'
+import { View } from '~/constants/viewEnums'
+import { addProjectItem } from '~/core/main'
+import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
+import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
+import ForkAndCloneComponent from '~/views/NewProject/components/KindComponent/ForkAndCloneComponent.vue'
+import MineComponent from '~/views/NewProject/components/KindComponent/MineComponent.vue'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
-import ForkAndCloneComponent from './components/KindComponent/ForkAndCloneComponent.vue'
-import MineComponent from './components/KindComponent/MineComponent.vue'
-import type { LanguageResult, LinguistResult } from './types'
+import type { LinguistLanguageResult, LinguistResult } from './types'
 
 const { t } = useI18n()
 
-const view = inject('view') as Ref<string>
+// ==================== localProjectItem ====================
+const localProjectItem: Ref<LocalProject> = ref({
+  license: 'None',
+})
 
-function changeView() {
-  if (view)
-    view.value = 'home'
-}
-
-/** ConfigValues */
-const pathInputValue = ref('')
-const nameInputValue = ref('')
-const KindButtonsSelectedValue = ref('')
-const mainLangSelectedValue = ref('')
-const defaultOpenSelectedValue = ref('')
-
-/** ProjectInfo */
+// ==================== ProjectInfo ====================
+const projectPathInputValidated = ref(false)
+const projectNameInputValidated = ref(false)
 const repositoryFolderName = ref('')
 
 function fillProjectName() {
-  nameInputValue.value = repositoryFolderName.value
+  localProjectItem.value.name = repositoryFolderName.value
 }
 
-/** KindButtons */
+// ==================== KindButtons ====================
 const kindButtons: { label: string, value: ProjectKind }[] = [
   { label: 'Mine', value: ProjectKind.MINE },
   { label: 'Fork', value: ProjectKind.FORK },
   { label: 'Clone', value: ProjectKind.CLONE },
 ]
 const kindSelected: Ref<ProjectKind> = ref(ProjectKind.MINE)
+const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncComponent>>> = {
+  [ProjectKind.MINE]: MineComponent,
+  [ProjectKind.FORK]: ForkAndCloneComponent,
+  [ProjectKind.CLONE]: ForkAndCloneComponent,
+}
 
-const currentComponent = computed(() => {
-  switch (kindSelected.value) {
-    case ProjectKind.MINE:
-      return MineComponent
-    case ProjectKind.FORK:
-    case ProjectKind.CLONE:
-      return ForkAndCloneComponent
-    default:
-      return null
-  }
-})
+function updateProjectKind(newKind: ProjectKind) {
+  localProjectItem.value.kind = newKind
+}
 
-/** MainLanguage */
-const mainLanguageOptions = ref<(JeDropdownOption | JeDropdownOptionGroup)[]>([])
+function updateProjectFromUrl(newKind: string) {
+  localProjectItem.value.fromUrl = newKind
+}
+
+function updateProjectFromName(newKind: string) {
+  localProjectItem.value.fromName = newKind
+}
+
+// ==================== Language ====================
+const projectLangInputValidated = ref(false)
+const mainLanguageOptions = ref<JeComboboxOptionProps[]>([])
+const mainLanguageLoading = ref(false)
 
 async function getLanguagesResult(folderPath: string) {
   const { languages } = await window.api.analyzeFolder(folderPath) as { languages: LinguistResult['languages'] }
   return languages.results
 }
 
-function sortByMainProgrammingLanguage(results: Record<string, LanguageResult>) {
+function sortByMainProgrammingLanguage(results: Record<string, LinguistLanguageResult>) {
   const typePriority = { programming: 1, markup: 2, data: 3, prose: 4 }
 
   const sortedEntries = Object.entries(results).sort(([keyA, valueA], [keyB, valueB]) => {
@@ -87,7 +92,7 @@ function sortByMainProgrammingLanguage(results: Record<string, LanguageResult>) 
   return Object.fromEntries(sortedEntries)
 }
 
-function convertResultsToDropdownOptions(results: Record<string, LanguageResult>): (JeDropdownOption | JeDropdownOptionGroup)[] {
+function convertResultsToDropdownOptions(results: Record<string, LinguistLanguageResult>): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
   return Object.entries(results).map(([key, value]) => ({
     value: key,
     label: key,
@@ -95,10 +100,34 @@ function convertResultsToDropdownOptions(results: Record<string, LanguageResult>
   }))
 }
 
-/** DefaultOpen */
+/**
+ * 将 sortedResults 转换为 langGroup 格式
+ * @param sortedResults - 排序后的语言统计结果
+ * @returns {languagesGroupItem[] | null} - 转换后的语言分组
+ */
+function convertToLangGroup(sortedResults: Record<string, { type: string, bytes: number, color: string }>): languagesGroupItem[] | null {
+  if (!sortedResults || Object.keys(sortedResults).length === 0) {
+    return null // 如果没有数据，返回 null
+  }
+
+  // 计算总字节数
+  const totalBytes = Object.values(sortedResults).reduce((sum, lang) => sum + lang.bytes, 0)
+
+  // 将数据转换为 langGroup 格式
+  return Object.entries(sortedResults).map(([lang, info]) => ({
+    text: lang, // 语言名
+    color: info.color, // 颜色
+    percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)), // 百分比，保留两位小数
+  }))
+}
+
+// ==================== DefaultOpen ====================
+const projectDefaultOpenInputValidated = ref(false)
+const defaultOpenLoading = ref(false)
+
 // 将 CodeEditorOption 转换为 Dropdown 可接受的 options
-function transformCodeEditorOptionsToDropdownOptions(codeEditorOptions: CodeEditorOption[]): (JeDropdownOption | JeDropdownOptionGroup)[] {
-  const groupedOptions = new Map<string, JeDropdownOption[]>()
+function transformCodeEditorOptionsToDropdownOptions(codeEditorOptions: CodeEditorOption[]): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
+  const groupedOptions = new Map<string, JeDropdownOptionProps[]>()
 
   // 按照 group 分类 CodeEditorOption
   for (const { value, label, icon, description, group } of codeEditorOptions) {
@@ -116,16 +145,64 @@ function transformCodeEditorOptionsToDropdownOptions(codeEditorOptions: CodeEdit
       : { value: group, groupLabel: group, options }).flat()
 }
 
-/** Others */
-const loading = ref(false)
+// ==================== License ====================
 
-function cleanConfigValue() {
-  mainLangSelectedValue.value = ''
-  mainLanguageOptions.value = []
-  defaultOpenSelectedValue.value = ''
+// 定义常用的 License
+const commonLicenses: LicenseEnum[] = [LicenseEnum.MIT, LicenseEnum.GPLV3]
+
+/**
+ * 将 License 枚举转换为 JeDropdownOptionProps 列表
+ * 常用的 License 放在前面，不常用的归类到分组中
+ * @param license - LicenseEnum 枚举
+ * @returns {JeDropdownOptionProps[]} 转换后的菜单选项数组
+ */
+function convertLicensesToDropdownOptions(license: LicenseEnum): JeDropdownOptionProps[] {
+  const commonOptions: JeDropdownOptionProps[] = []
+  const otherOptions: JeDropdownOptionProps[] = []
+
+  Object.entries(license).forEach(([, value]) => {
+    const option = {
+      value,
+      label: value,
+      icon: 'light:i-custom:license dark:i-custom:license-dark',
+    }
+
+    if (commonLicenses.includes(value as LicenseEnum)) {
+      commonOptions.push(option)
+    }
+    else {
+      otherOptions.push(option)
+    }
+  })
+
+  // 返回带分组的选项数组
+  return [
+    {
+      value: 'None',
+      label: '<None>',
+    },
+    ...commonOptions,
+    {
+      value: 'other',
+      groupLabel: '其他许可证',
+      options: otherOptions,
+      isExpand: false,
+    },
+  ]
 }
 
-watch(pathInputValue, async (newValue) => {
+// ==================== Others ====================
+function cleanConfigValue() {
+  localProjectItem.value.mainLang = null
+  mainLanguageOptions.value = []
+  localProjectItem.value.defaultOpen = null
+}
+
+watch(() => localProjectItem.value.path, async (newValue) => {
+  if (newValue === null) {
+    return
+  }
+
   // 清空设置项
   cleanConfigValue()
 
@@ -134,10 +211,11 @@ watch(pathInputValue, async (newValue) => {
   repositoryFolderName.value = parts[parts.length - 1] || ''
 
   if (newValue) {
-    loading.value = true
+    mainLanguageLoading.value = true
+    defaultOpenLoading.value = true
 
     // 获取项目编程语言分析结果
-    let results = { }
+    let results = {}
     try {
       results = await getLanguagesResult(newValue)
     }
@@ -146,21 +224,56 @@ watch(pathInputValue, async (newValue) => {
     }
     finally {
       const sortedResults = sortByMainProgrammingLanguage(results) // 排序
-      mainLanguageOptions.value = convertResultsToDropdownOptions(sortedResults)// 转换成 JeDropdown 所需的格式
-      // 自动设置选中的值为第一个选项
-      if (mainLanguageOptions.value.length > 0) {
-        mainLangSelectedValue.value = mainLanguageOptions.value[0].value as string
-      }
+      mainLanguageOptions.value = convertResultsToDropdownOptions(sortedResults) // 转换成 JeDropdown 所需的格式
 
-      // 获取默认打开方式
-      if (mainLangSelectedValue.value) {
-        defaultOpenSelectedValue.value = languageToEditorMap[mainLangSelectedValue.value] || ''
-      }
+      // 保存主要编程语言和语言分组
+      localProjectItem.value.mainLang = mainLanguageOptions.value.length > 0
+        ? (mainLanguageOptions.value[0].value as string) // 自动设置选中的值为第一个选项
+        : null
+      localProjectItem.value.langGroup = convertToLangGroup(sortedResults)
     }
 
-    loading.value = false
+    mainLanguageLoading.value = false
+    defaultOpenLoading.value = false
   }
 })
+
+watch(() => localProjectItem.value.mainLang, (newValue) => {
+  localProjectItem.value.defaultOpen = newValue
+    ? languageToEditorMap[newValue] || null
+    : null
+})
+
+watch(kindSelected, (newValue) => {
+  localProjectItem.value.kind = newValue
+})
+
+// ==================== Bottom Menu ====================
+const activatedView = inject('activatedView') as Ref<View>
+
+function changeView() {
+  if (activatedView)
+    activatedView.value = View.Home
+}
+
+function addNewProject() {
+  const validations = [
+    { field: localProjectItem.value.path, validated: projectPathInputValidated },
+    { field: localProjectItem.value.name, validated: projectNameInputValidated },
+    { field: localProjectItem.value.mainLang, validated: projectLangInputValidated },
+    { field: localProjectItem.value.defaultOpen, validated: projectDefaultOpenInputValidated },
+  ]
+
+  const hasError = validations.some(({ field, validated }) => {
+    validated.value = !field
+    return !field
+  })
+
+  if (!hasError) {
+    addProjectItem(localProjectItem.value)
+    changeView()
+  }
+}
 </script>
 
 <template>
@@ -171,21 +284,27 @@ watch(pathInputValue, async (newValue) => {
   >
     <JeFrame
       type="secondary"
-      grow
-      flex="~ col" gap="y-15px"
+      grow flex="~ col" gap="y-15px"
       overflow-auto scrollbar-default
     >
       <!-- ProjectInfo -->
       <ConfigItem>
         <ConfigItemTitle title="new_project.directory" />
-        <JeFileInputField v-model="pathInputValue" grow />
+        <JeFileInputField
+          v-model="localProjectItem.path"
+          :validated="projectPathInputValidated"
+          grow
+        />
         <ConfigItemTitle title="new_project.name" />
-        <JeInputField v-model="nameInputValue" spellcheck="false" w="200px" />
+        <JeInputField
+          v-model="localProjectItem.name"
+          :validated="projectNameInputValidated"
+          spellcheck="false" w="200px"
+        />
 
         <div
-          v-if="repositoryFolderName && nameInputValue !== repositoryFolderName"
-          col-start="2"
-          flex gap="2px"
+          v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
+          col-start="2" flex gap="2px"
           overflow-hidden
         >
           <span text="secondary" truncate>{{ repositoryFolderName }}</span>
@@ -204,9 +323,12 @@ watch(pathInputValue, async (newValue) => {
         />
 
         <KeepAlive>
-          <component
-            :is="currentComponent"
-            v-model:value="KindButtonsSelectedValue"
+          <Component
+            :is="kindComponents[kindSelected]"
+            :local-project-item="localProjectItem"
+            @update:project-kind="updateProjectKind"
+            @update:project-from-url="updateProjectFromUrl"
+            @update:project-from-name="updateProjectFromName"
           />
         </KeepAlive>
       </ConfigItem>
@@ -214,22 +336,31 @@ watch(pathInputValue, async (newValue) => {
       <!-- MainLanguage -->
       <ConfigItem>
         <ConfigItemTitle title="new_project.main_lang_project" />
-        <JeDropdown
-          v-model="mainLangSelectedValue"
+        <JeCombobox
+          v-model="localProjectItem.mainLang"
+          :validated="projectLangInputValidated"
           :options="mainLanguageOptions"
-          :loading="loading"
+          :loading="mainLanguageLoading"
         />
       </ConfigItem>
 
       <!-- DefaultOpen -->
       <ConfigItem>
-        <!-- 配置项标题 -->
         <ConfigItemTitle title="new_project.default_opening_method" />
-        <!-- 下拉菜单组件 -->
         <JeDropdown
-          v-model="defaultOpenSelectedValue"
+          v-model="localProjectItem.defaultOpen"
+          :validated="projectDefaultOpenInputValidated"
           :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
-          :loading="loading"
+          :loading="defaultOpenLoading"
+        />
+      </ConfigItem>
+
+      <!-- License -->
+      <ConfigItem>
+        <ConfigItemTitle title="new_project.license" />
+        <JeDropdown
+          v-model="localProjectItem.license"
+          :options="convertLicensesToDropdownOptions(LicenseEnum)"
         />
       </ConfigItem>
     </JeFrame>
@@ -242,17 +373,16 @@ watch(pathInputValue, async (newValue) => {
       <JeButton class="cancel-button" type="secondary" @click="changeView">
         取消
       </JeButton>
-      <JeButton>添加</JeButton>
+      <JeButton @click="addNewProject">
+        添加
+      </JeButton>
     </JeFrame>
   </JeFrame>
 </template>
 
 <style lang="scss" scoped>
-.cancel-button.je-button.secondary {
-  // light
+.cancel-button.je-button--secondary {
   @apply light:bg-$gray-14 dark:bg-$gray-2;
-
-  // dark
   @apply dark:bg-$gray-2 dark:hover:bg-$gray-3;
 }
 </style>

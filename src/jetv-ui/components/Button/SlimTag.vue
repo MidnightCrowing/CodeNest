@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { JeTag } from './index'
-import type { SlimTag } from './types'
+import type { SlimTagProps } from './types'
 
-withDefaults(defineProps<SlimTag>(), {
+withDefaults(defineProps<SlimTagProps>(), {
   deleteAble: false,
   selectAble: false,
   select: false,
@@ -14,7 +14,7 @@ const emit = defineEmits(['remove', 'select'])
  * 处理删除事件
  * @param tag 当前删除的标签对象
  */
-function handleRemove(tag: SlimTag) {
+function handleRemove(tag: SlimTagProps) {
   emit('remove', tag) // 向父组件传递删除事件
 }
 
@@ -23,14 +23,14 @@ function handleRemove(tag: SlimTag) {
  * @param tag 当前选择的标签对象
  * @param isSelected 标签的选中状态
  */
-function handleSelect(tag: SlimTag, isSelected: boolean) {
+function handleSelect(tag: SlimTagProps, isSelected: boolean) {
   emit('select', tag, isSelected) // 向父组件传递选择事件
 }
 </script>
 
 <template>
   <JeTag
-    class="slim"
+    class="je-tag--slim"
     :select-able="selectAble"
     :select="select"
     :delete-able="deleteAble"
@@ -43,7 +43,7 @@ function handleSelect(tag: SlimTag, isSelected: boolean) {
 </template>
 
 <style lang="scss" scoped>
-.je-tag.slim {
+.je-tag--slim {
   @apply px-4px py-2px rounded-2px;
 }
 </style>

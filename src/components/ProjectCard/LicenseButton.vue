@@ -1,16 +1,16 @@
-<script setup lang="ts">
-import type { License } from '~/constants/license'
+<script lang="ts" setup>
+import type { LicenseEnum } from '~/constants/license'
 
 import InfoButton from './InfoButton.vue'
 import { showPop } from './LicensePop/licensePopProvider'
 
 defineProps<{
-  license: License
+  license: LicenseEnum
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
 
-function handleClick(license: License) {
+function handleClick(license: LicenseEnum) {
   if (containerRef.value) {
     const rect = containerRef.value.getBoundingClientRect()
 

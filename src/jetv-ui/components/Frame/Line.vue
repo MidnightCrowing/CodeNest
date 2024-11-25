@@ -4,7 +4,7 @@
 
 <style lang="scss" scoped>
 .je-line {
-  @apply flex-grow min-h-1px b-0;
+  @apply min-h-1px b-0;
 
   @apply light:bg-$gray-12 dark:bg-$gray-3;
 }

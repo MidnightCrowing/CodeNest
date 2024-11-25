@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { JeInputField } from './index'
-import type { FileInputField } from './types'
+import type { FileInputFieldProps } from './types'
 
-const props = withDefaults(defineProps<FileInputField>(), {
+const props = withDefaults(defineProps<FileInputFieldProps>(), {
   validated: false,
   disabled: false,
 })
@@ -27,54 +27,68 @@ async function openFolder() {
 </script>
 
 <template>
-  <span class="je-file-input-filed-wrapper">
+  <span class="je-file-input-filed">
     <!-- Input -->
     <JeInputField
       v-model="folderPath"
       :validated="validated"
       :disabled="disabled"
-      class="file-input"
+      class="je-file-input-filed__input"
     />
 
     <!-- Icon -->
     <span
-      class="icon-wrapper"
-      :class="{ disabled }"
+      class="je-file-input-filed__icon-wrapper"
+      :class="{
+        'je-file-input-filed__icon-wrapper--validated': validated,
+        'je-file-input-filed__icon-wrapper--disabled': disabled,
+      }"
+      :tabindex="disabled ? -1 : 0"
       @click="openFolder"
+      @keydown.enter="openFolder"
     >
-      <span class="folder-icon" />
+      <span class="je-file-input-filed__icon-folder" />
     </span>
   </span>
 </template>
 
 <style lang="scss" scoped>
-.je-file-input-filed-wrapper {
+.je-file-input-filed {
   @apply relative;
+}
 
-  .file-input {
-    @apply w-full box-border pr-27px;
+.je-file-input-filed__input {
+  @apply w-full box-border pr-27px;
+}
+
+.je-file-input-filed__icon-wrapper {
+  @apply absolute right-5px top-50% translate-y--50%;
+  @apply size-19px rounded-3px;
+  @apply flex items-center justify-center;
+
+  &:not(&--disabled) {
+    @apply cursor-pointer;
+    @apply focus-visible:outline focus-visible:outline-2px;
+
+    // light
+    @apply light:hover:bg-$gray-11 light:active:bg-$gray-12;
+
+    // dark
+    @apply dark:hover:bg-$gray-4 dark:active:bg-$gray-3;
   }
 
-  .icon-wrapper {
-    @apply absolute right-5px top-50% translate-y--50%;
-    @apply size-19px rounded-3px;
-    @apply flex items-center justify-center;
-
-    &:not(.disabled) {
-      @apply cursor-pointer;
-
-      // light
-      @apply light:hover:bg-$gray-11 light:active:bg-$gray-12;
-
-      // dark
-      @apply dark:hover:bg-$gray-4 dark:active:bg-$gray-3;
-    }
-
-    .folder-icon {
-      @apply text-17px;
-
-      @apply light:i-jet:folder dark:i-jet:folder-dark;
-    }
+  &:not(&--validated, &--disabled) {
+    @apply light:focus-visible:outline-$blue-4 dark:focus-visible:outline-$blue-6;
   }
+
+  &--validated:not(&--disabled) {
+    @apply light:focus-visible:outline-$red-4 dark:focus-visible:outline-$red-6;
+  }
+}
+
+.je-file-input-filed__icon-folder {
+  @apply text-17px;
+
+  @apply light:i-jet:folder dark:i-jet:folder-dark;
 }
 </style>

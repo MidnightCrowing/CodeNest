@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import type { Frame } from './types'
+import type { FrameProps } from './types'
 
-withDefaults(defineProps<Frame>(), {
+withDefaults(defineProps<FrameProps>(), {
   type: 'primary',
 })
 </script>
 
 <template>
-  <div class="je-frame" :class="type">
+  <div class="je-frame" :class="`je-frame--${type}`">
     <slot />
   </div>
 </template>
@@ -18,11 +18,11 @@ withDefaults(defineProps<Frame>(), {
 
   @apply light:color-$gray-1 dark:color-$gray-12;
 
-  &.primary {
+  &--primary {
     @apply light:bg-$gray-14 dark:bg-$gray-1;
   }
 
-  &.secondary {
+  &--secondary {
     @apply light:bg-$gray-13 dark:bg-$gray-2;
   }
 

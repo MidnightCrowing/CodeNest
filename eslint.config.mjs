@@ -24,6 +24,7 @@ export default antfu(
       ],
       'no-alert': 'off',
       'style/quote-props': 'off',
+      'perfectionist/sort-imports': 'off',
     },
     eslint: {
       ignorePatterns: [

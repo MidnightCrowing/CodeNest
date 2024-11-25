@@ -1,11 +1,11 @@
-export enum Theme {
+export enum ThemeEnum {
   light = 'light',
   dark = 'dark',
 }
 
-let currentTheme = Theme.dark
+let currentTheme = ThemeEnum.dark
 
-export async function applyTheme(theme?: Theme) {
+export async function applyTheme(theme?: ThemeEnum) {
   const rootElement = document.documentElement // 获取 :root 即 <html> 元素
   if (rootElement) {
     rootElement.className = theme ?? currentTheme
@@ -21,6 +21,6 @@ export async function applyTheme(theme?: Theme) {
 }
 
 export function toggleTheme() {
-  currentTheme = currentTheme === Theme.light ? Theme.dark : Theme.light
+  currentTheme = currentTheme === ThemeEnum.light ? ThemeEnum.dark : ThemeEnum.light
   applyTheme(currentTheme).then(() => {})
 }

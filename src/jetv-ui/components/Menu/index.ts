@@ -1,6 +1,6 @@
 import JeMenu from './Menu.vue'
 import JeMiniMenu from './MiniMenu.vue'
-import type { MenuOption as JeMenuOption } from './types'
+import type { MenuOptionGroupProps as JeMenuOptionGroupProps, MenuOptionProps as JeMenuOptionProps, MenuProps as JeMenuProps } from './types'
 
 export { JeMenu, JeMiniMenu }
-export type { JeMenuOption }
+export type { JeMenuOptionGroupProps, JeMenuOptionProps, JeMenuProps }

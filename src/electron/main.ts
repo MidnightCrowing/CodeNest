@@ -3,7 +3,7 @@ import './ipcHandler.js'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, globalShortcut, Menu, shell } from 'electron'
+import { app, BrowserWindow, globalShortcut, Menu } from 'electron'
 
 import { performAsyncTask } from './asyncTask.js'
 
@@ -58,13 +58,8 @@ function createWindow() {
       .then(() => {})
   }
 
-  // 拦截新的窗口请求
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // 在系统默认浏览器中打开 URL
-    if (url !== DEV_URL) {
-      shell.openExternal(url)
-        .then(() => {})
-    }
+  // 拦截新的窗口请求，不做任何处理
+  mainWindow.webContents.setWindowOpenHandler(() => {
     // 阻止 Electron 打开新窗口
     return { action: 'deny' }
   })
@@ -124,15 +119,6 @@ app.whenReady().then(async () => {
   await performAsyncTask()
   setGlobalShortcut()
   createWindow()
-})
-
-// 拦截所有链接，并在默认浏览器中打开
-app.on('web-contents-created', (e, contents) => {
-  contents.on('will-navigate', (event, url) => {
-    event.preventDefault()
-    shell.openExternal(url)
-      .then(() => {})
-  })
 })
 
 // 应用退出时的操作

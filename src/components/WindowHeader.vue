@@ -1,6 +1,6 @@
 <!-- https://www.electronjs.org/zh/docs/latest/tutorial/window-customization -->
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { JeFrame } from '~/jetv-ui'
 </script>
 
@@ -16,7 +16,7 @@ import { JeFrame } from '~/jetv-ui'
   </JeFrame>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .window-header {
   -webkit-app-region: drag;
   -webkit-user-select: none;

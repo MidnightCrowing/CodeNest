@@ -102,12 +102,6 @@ export const codeEditors: CodeEditorOption[] = [
     icon: 'i-custom:jetbrains-fleet',
   },
   {
-    group: 'Google',
-    value: CodeEditorEnum.AndroidStudio,
-    label: 'Android Studio',
-    icon: 'i-custom:android-studio-stable',
-  },
-  {
     group: 'Microsoft',
     value: CodeEditorEnum.VisualStudio,
     label: 'Visual Studio',
@@ -119,35 +113,43 @@ export const codeEditors: CodeEditorOption[] = [
     label: 'Visual Studio Code',
     icon: 'i-custom:visual-studio-code',
   },
+  {
+    group: 'Google',
+    value: CodeEditorEnum.AndroidStudio,
+    label: 'Android Studio',
+    icon: 'i-custom:android-studio-stable',
+  },
 ]
 
 // 从 codeEditors 中提取所有 icon 字段的值，并将它们映射为一个数组，
 // 用于生成图标类名的 safelist，以确保这些动态生成的类名被 Unocss 识别并编译。
 export const editorIconClasses = codeEditors.map(option => option.icon)
 
-export const languageToEditorMap: Record<string, string> = {
+export const languageToEditorMap: Record<string, CodeEditorEnum> = {
   // IntellijIdea
+  'Gradle': CodeEditorEnum.IntellijIdea,
   'Java': CodeEditorEnum.IntellijIdea,
   'Kotlin': CodeEditorEnum.IntellijIdea,
   'Spring': CodeEditorEnum.IntellijIdea,
 
   // PyCharm
-  'Python': CodeEditorEnum.PyCharm,
   'Django': CodeEditorEnum.PyCharm,
   'Jupyter': CodeEditorEnum.PyCharm,
+  'Pip Requirements': CodeEditorEnum.PyCharm,
+  'Python': CodeEditorEnum.PyCharm,
 
   // PhpStorm
-  'PHP': CodeEditorEnum.PhpStorm,
   'Laravel': CodeEditorEnum.PhpStorm,
+  'PHP': CodeEditorEnum.PhpStorm,
   'Symfony': CodeEditorEnum.PhpStorm,
 
   // GoLand
   'Go': CodeEditorEnum.GoLand,
 
   // Rider
-  'C#': CodeEditorEnum.Rider,
   '.NET': CodeEditorEnum.Rider,
   'ASP.NET': CodeEditorEnum.Rider,
+  'C#': CodeEditorEnum.Rider,
 
   // Clion
   'C': CodeEditorEnum.Clion,
@@ -156,23 +158,33 @@ export const languageToEditorMap: Record<string, string> = {
 
   // RustRover
   'Rust': CodeEditorEnum.RustRover,
-  'TOML': CodeEditorEnum.RustRover,
   'SQL': CodeEditorEnum.RustRover,
+  'TOML': CodeEditorEnum.RustRover,
 
   // WebStorm
+  'Angular': CodeEditorEnum.WebStorm,
+  'CSS': CodeEditorEnum.WebStorm,
+  'HTML': CodeEditorEnum.WebStorm,
   'JavaScript': CodeEditorEnum.WebStorm,
+  'Less': CodeEditorEnum.WebStorm,
+  'React': CodeEditorEnum.WebStorm,
+  'Sass': CodeEditorEnum.WebStorm,
+  'SCSS': CodeEditorEnum.WebStorm,
+  'Stylus': CodeEditorEnum.WebStorm,
   'TypeScript': CodeEditorEnum.WebStorm,
   'Vue': CodeEditorEnum.WebStorm,
-  'React': CodeEditorEnum.WebStorm,
-  'Angular': CodeEditorEnum.WebStorm,
-  'HTML': CodeEditorEnum.WebStorm,
-  'CSS': CodeEditorEnum.WebStorm,
-  'Sass': CodeEditorEnum.WebStorm,
-  'Less': CodeEditorEnum.WebStorm,
-  'Stylus': CodeEditorEnum.WebStorm,
 
   // RubyMine
-  'Ruby': CodeEditorEnum.RubyMine,
-  'Ruby on Rails': CodeEditorEnum.RubyMine,
   'RoR': CodeEditorEnum.RubyMine,
+  'Ruby on Rails': CodeEditorEnum.RubyMine,
+  'Ruby': CodeEditorEnum.RubyMine,
+
+  // Visual Studio Code
+  'INI': CodeEditorEnum.VisualStudioCode,
+  'JSON': CodeEditorEnum.VisualStudioCode,
+  'Markdown': CodeEditorEnum.VisualStudioCode,
+  'SVG': CodeEditorEnum.VisualStudioCode,
+  'Text': CodeEditorEnum.VisualStudioCode,
+  'XML': CodeEditorEnum.VisualStudioCode,
+  'YAML': CodeEditorEnum.VisualStudioCode,
 }

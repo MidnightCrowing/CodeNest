@@ -1,34 +1,27 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
+import { ProjectKind } from '~/constants/localProject'
 import { JeCheckbox } from '~/jetv-ui'
 
-interface Settings {
-  checkboxSetting: boolean
-  textSetting: string
-}
-
-const props = defineProps<{
-  value: Settings
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:value', value: Settings): void
-}>()
+const emit = defineEmits(['update:projectKind'])
 
 const { t } = useI18n()
 
-const internalValue = ref({ ...props.value })
+const isTestProject = ref(false)
 
-watch(internalValue, (newValue) => {
-  emit('update:value', newValue)
-}, { deep: true })
+watch(isTestProject, (newValue) => {
+  if (newValue)
+    emit('update:projectKind', ProjectKind.TEST)
+  else
+    emit('update:projectKind', ProjectKind.MINE)
+})
 </script>
 
 <template>
   <div col-start="2">
     <JeCheckbox
-      v-model="internalValue.checkboxSetting"
+      v-model="isTestProject"
       class="checkbox-setting"
       w-fit
     >

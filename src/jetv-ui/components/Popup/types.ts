@@ -1,5 +1,5 @@
 // JeTooltip
-export interface Tooltip {
+export interface TooltipProps {
   /**
    * 工具提示的状态，用于定义横幅的视觉样式和用途。
    *

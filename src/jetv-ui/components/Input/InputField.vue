@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import type { InputField } from './types'
+import type { InputFieldProps } from './types'
 
-withDefaults(defineProps<InputField>(), {
+withDefaults(defineProps<InputFieldProps>(), {
   validated: false,
   disabled: false,
 })
-
 defineEmits<{
   (event: 'update:modelValue', value: string): void
 }>()
@@ -14,7 +13,10 @@ defineEmits<{
 <template>
   <input
     class="je-input-field"
-    :class="{ validated }"
+    :class="{
+      'je-input-field--validated': validated,
+      'je-input-field--disabled': disabled,
+    }"
     :disabled="disabled"
     :value="modelValue"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
@@ -29,7 +31,7 @@ defineEmits<{
   @apply outline outline-2px;
 
   // Default 状态样式
-  &:not(:disabled) {
+  &:not(&--disabled) {
     // light
     @apply light:color-$gray-1 light:bg-$gray-14;
     @apply light:outline-$gray-9 light:focus:outline-$blue-4;
@@ -40,7 +42,7 @@ defineEmits<{
   }
 
   // Validated 状态样式
-  &.validated:not(:disabled) {
+  &--validated:not(&--disabled) {
     // light
     @apply light:outline-$red-9 light:focus:outline-$red-4;
 
@@ -49,7 +51,7 @@ defineEmits<{
   }
 
   // 禁用状态样式
-  &:disabled {
+  &--disabled {
     // light
     @apply light:color-$gray-8 light:bg-$gray-13 light:outline-$gray-11;
 

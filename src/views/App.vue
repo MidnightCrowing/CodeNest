@@ -1,22 +1,26 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import '../styles/light.scss'
 import '../styles/dark.scss'
 
 import WindowHeader from '~/components/WindowHeader.vue'
+import { View } from '~/constants/viewEnums'
 import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
-import NewProject from './NewProject/NewProject.vue'
 
-const view: Ref<string> = ref('home')
+const activatedView: Ref<View> = ref(View.Home)
+const viewComponents = {
+  [View.Home]: Home,
+  [View.NewProject]: defineAsyncComponent(() => import('./NewProject/NewProject.vue')),
+}
 
 // 在组件挂载时应用默认主题
 onMounted(() => {
   applyTheme()
 })
 
-provide('view', view)
+provide('activatedView', activatedView)
 </script>
 
 <template>
@@ -26,8 +30,7 @@ provide('view', view)
     caret="theme-text-caret" select-none
   >
     <WindowHeader />
-    <Home v-if="view === 'home'" />
-    <NewProject v-else />
+    <Component :is="viewComponents[activatedView]" grow />
   </JeFrame>
 </template>
 

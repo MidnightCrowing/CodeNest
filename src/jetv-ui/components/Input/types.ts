@@ -1,5 +1,85 @@
+// JeCombobox - 类型定义
+export interface ComboboxOptionProps {
+  /**
+   * 选项的唯一标识值
+   */
+  value: string | number
+
+  /**
+   * 显示在选项中的标签文本
+   * （可选，如果未提供则使用 value 作为显示内容）
+   */
+  label?: string
+
+  /**
+   * 标签文本的颜色，以十六进制格式指定（例如：#FFFFFF）
+   * （可选）
+   */
+  labelColor?: `#${string}`
+
+  /**
+   * 选项前显示的图标，可以是图标类名或路径
+   * （可选）
+   */
+  icon?: string
+
+  /**
+   * 描述性文本，用于补充标签内容的详细信息
+   * （可选）
+   */
+  description?: string
+
+  /**
+   * 选项的点击事件回调函数
+   * 若提供此函数，将在点击该选项时执行此回调
+   * （可选）
+   */
+  onClick?: () => void
+
+  /**
+   * 是否启用文本溢出省略号样式
+   * （可选，默认值为 false）
+   */
+  ellipsis?: boolean
+
+  /**
+   * 是否为分隔线选项，用于在菜单中添加分隔线效果
+   * （可选，默认值为 false）
+   */
+  isLine?: boolean
+}
+
+export interface ComboboxProps {
+  /**
+   * 当前选中的值
+   * 如果未选择任何值，则为 null
+   */
+  modelValue: string | null
+
+  /**
+   * 下拉菜单中的选项列表
+   * 每个选项需符合 ComboboxOptionProps 类型
+   */
+  options: ComboboxOptionProps[]
+
+  loading?: boolean
+
+  /**
+   * 是否启用验证状态
+   * （可选，默认值为 false）
+   */
+  validated?: boolean
+
+  /**
+   * 是否禁用组件
+   * 如果为 true，则组件处于不可交互状态
+   * （可选，默认值为 false）
+   */
+  disabled?: boolean
+}
+
 // JeDropdown
-export interface DropdownOption {
+export interface DropdownOptionProps {
   /**
    * 选项的值。
    *
@@ -57,7 +137,7 @@ export interface DropdownOption {
   isLine?: boolean
 }
 
-export interface DropdownOptionGroup {
+export interface DropdownOptionGroupProps {
   /**
    * 索引，用于唯一标识选项组。
    *
@@ -77,23 +157,27 @@ export interface DropdownOptionGroup {
    *
    * 每个选项代表该组内的一个菜单项，支持子菜单和图标等属性。
    */
-  options: DropdownOption[]
+  options: DropdownOptionProps[]
+
+  isExpand?: boolean
 }
 
-export interface Dropdown {
+export interface DropdownProps {
   /**
    * 当前选择的值。
    *
    * 用于控制下拉菜单的选中状态，通常与 `options` 数组中的 `value` 对应。
    */
-  modelValue: string
+  modelValue: string | null
 
   /**
    * 下拉菜单的选项列表。
    *
    * 是一个包含多个 `DropdownOption` 类型的数组，每个选项代表一个下拉菜单项。
    */
-  options: (DropdownOption | DropdownOptionGroup)[]
+  options: (DropdownOptionProps | DropdownOptionGroupProps)[]
+
+  loading?: boolean
 
   /**
    * 选中项的验证状态。
@@ -102,8 +186,6 @@ export interface Dropdown {
    * - 默认为 `false`
    */
   validated?: boolean
-
-  loading?: boolean
 
   /**
    * 是否禁用下拉菜单。
@@ -114,13 +196,13 @@ export interface Dropdown {
 }
 
 // JeFileInputField
-export interface FileInputField {
+export interface FileInputFieldProps {
   /**
    * 文件输入字段的当前值，用于表示所选文件的路径或文件名。
    *
    * 当用户选择文件时，该值会更新为所选文件的路径或标识信息。
    */
-  modelValue: string
+  modelValue: string | null
 
   /**
    * 文件输入字段的验证状态。
@@ -140,13 +222,13 @@ export interface FileInputField {
 }
 
 // JeInputField
-export interface InputField {
+export interface InputFieldProps {
   /**
    * 输入字段的当前值，用于表示用户输入的内容。
    *
    * 当用户输入时，该值会随之更新，以反映输入的文本内容。
    */
-  modelValue: string
+  modelValue: string | null
 
   /**
    * 输入字段的验证状态。
@@ -166,7 +248,7 @@ export interface InputField {
 }
 
 // JeSearchField
-export interface SearchField {
+export interface SearchFieldProps {
   /**
    * 搜索字段的当前值，用于表示用户输入的搜索关键词。
    *
@@ -202,7 +284,7 @@ export interface SearchField {
 }
 
 // JeToolbarDropdown
-export interface ToolbarDropdownOption {
+export interface ToolbarDropdownOptionProps {
   /**
    * 选项的值。
    *
@@ -242,7 +324,7 @@ export interface ToolbarDropdownOption {
   isLine?: boolean
 }
 
-export interface ToolbarDropdown {
+export interface ToolbarDropdownProps {
   /**
    * 下拉菜单的标签文本。
    *
@@ -256,7 +338,7 @@ export interface ToolbarDropdown {
    * 是一个包含多个 `ToolbarDropdownOption` 类型的数组，每个选项代表一个下拉菜单项。
    * 该数组用于填充下拉菜单的所有可选项。
    */
-  options: ToolbarDropdownOption[]
+  options: ToolbarDropdownOptionProps[]
 
   /**
    * 默认选中的值。

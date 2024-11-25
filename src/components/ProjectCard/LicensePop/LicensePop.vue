@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
@@ -6,6 +6,7 @@ import { LicenseInfo } from '~/constants/license'
 import { JeLink, JeTooltip } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
+// noinspection ES6UnusedImports
 import { license, popupVisible, position } from './licensePopProvider'
 
 const { t } = useI18n()
@@ -42,7 +43,7 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-permission" />
-              {{ permission }}
+              {{ t(permission) }}
             </li>
           </ul>
         </div>
@@ -60,7 +61,7 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-limitation" />
-              {{ limitation }}
+              {{ t(limitation) }}
             </li>
           </ul>
         </div>
@@ -78,15 +79,16 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-condition" />
-              {{ condition }}
+              {{ t(condition) }}
             </li>
           </ul>
         </div>
       </div>
 
       <JeLink
+        v-if="licenseDescription?.fromUrl"
         type="web"
-        :on-click=" () => openLink(licenseDescription?.fromUrl) "
+        :on-click=" () => openLink(t(licenseDescription?.fromUrl)) "
       >
         {{ t('license_pop.description_from') }}
       </JeLink>
@@ -100,7 +102,7 @@ onClickOutside(popupRef, () => {
   </JeTooltip>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .licensePop {
   @apply absolute translate-y--100%;
   @apply px-15px pt-10px pb-5px rounded-5px;

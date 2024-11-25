@@ -1,5 +1,5 @@
 // JeShortcut
-export interface Shortcut {
+export interface ShortcutProps {
   /**
    * 快捷键的样式类型（可选）。
    *

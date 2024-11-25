@@ -1,15 +1,12 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 
 import { JeColorIcon, JeTooltip } from '~/jetv-ui'
 
+// noinspection ES6UnusedImports
 import { languagesGroup, popupVisible, position } from './LanguagePopProvider'
 
 const popupRef = ref<HTMLElement | null>(null)
-
-function percentConversion(num: number) {
-  return `${(num * 100).toFixed(2)}%`
-}
 
 onClickOutside(popupRef, () => {
   popupVisible.value = false
@@ -20,7 +17,7 @@ onClickOutside(popupRef, () => {
   <JeTooltip
     v-if="popupVisible && languagesGroup"
     ref="popupRef"
-    class="languagePop" state="info" direction="down"
+    class="language-pop" state="info" direction="down"
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"
   >
     <div h="8px" m="t-5px b-10px">
@@ -32,15 +29,15 @@ onClickOutside(popupRef, () => {
         <span
           v-for="languageItem in languagesGroup"
           :key="languageItem.text"
-          :style="{ backgroundColor: languageItem.color, width: percentConversion(languageItem.percentage) }"
-          :aria-label="`${languageItem.text} ${percentConversion(languageItem.percentage)}`"
+          :style="{ backgroundColor: languageItem.color, width: `${languageItem.percentage}%` }"
+          :aria-label="`${languageItem.text} ${languageItem.percentage}%`"
         />
       </span>
     </div>
 
     <ul
       m="x-3px y-5px" p-0
-      grid="~ cols-2" gap="x-15px y-8px"
+      grid="~ cols-3" gap="x-15px y-8px"
       list-none
     >
       <li
@@ -48,24 +45,29 @@ onClickOutside(popupRef, () => {
         :key="languageItem.text"
         flex="~ items-center justify-between" gap="10px"
       >
-        <div flex="~ items-center" gap="8px">
+        <div flex="~ items-center" gap="5px">
           <JeColorIcon
-            type="vertical-bar"
+            class="color-icon"
+            type="circle"
             :custom-color="languageItem.color"
           />
           {{ languageItem.text }}
         </div>
         <span text="secondary">
-          {{ percentConversion(languageItem.percentage) }}
+          {{ languageItem.percentage }}%
         </span>
       </li>
     </ul>
   </JeTooltip>
 </template>
 
-<style scoped lang="scss">
-.languagePop {
+<style lang="scss" scoped>
+.language-pop {
   @apply absolute translate-y--100%;
   @apply px-10px py-5px rounded-5px;
+}
+
+.color-icon {
+  @apply size-0.6rem;
 }
 </style>

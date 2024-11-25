@@ -1,5 +1,5 @@
 // JeButton
-export interface Button {
+export interface ButtonProps {
   /**
    * 按钮的类型，用于定义按钮的视觉样式。
    *
@@ -20,13 +20,13 @@ export interface Button {
 }
 
 // JeCheckbox
-export interface CheckBox {
+export interface CheckBoxProps {
   /**
    * 是否被选中，表示复选框当前的状态。
    * - 如果设置为 `true`，复选框将显示为已选中。
    * - 默认为 `false`，即复选框未选中。
    */
-  checked?: boolean
+  modelValue: boolean
 
   /**
    * 是否为半选中状态，用于表示不确定的选中状态。
@@ -44,7 +44,7 @@ export interface CheckBox {
 }
 
 // JeCommandLinkButton
-export interface CommandLinkButton {
+export interface CommandLinkButtonProps {
   /**
    * 图标的类名。
    * 用于为按钮添加一个图标。可以是任何有效的图标类名（如来自图标库）。
@@ -61,7 +61,7 @@ export interface CommandLinkButton {
 }
 
 // JeLink
-export interface Link {
+export interface LinkProps {
   onClick?: () => void
 
   /**
@@ -85,7 +85,7 @@ export interface Link {
 }
 
 // JeRadio
-export interface Radio {
+export interface RadioProps {
   /**
    * 单选按钮的当前值，表示用户选择的选项。
    *
@@ -112,7 +112,7 @@ export interface Radio {
 }
 
 // JeSegmentedControl
-export interface SegmentedControl {
+export interface SegmentedControlProps {
   /**
    * 分段控制器的当前值，表示当前选中的选项。
    *
@@ -140,7 +140,7 @@ export interface SegmentedControl {
 }
 
 // JeSlimButton
-export interface SlimButton {
+export interface SlimButtonProps {
   /**
    * 按钮的禁用状态。
    *
@@ -151,7 +151,7 @@ export interface SlimButton {
 }
 
 // JeSlimTag
-export interface SlimTag {
+export interface SlimTagProps {
   /**
    * 是否可以删除该标签。
    *
@@ -186,7 +186,7 @@ export interface SlimTag {
 }
 
 // JeSwitch
-export interface Switch {
+export interface SwitchProps {
   /**
    * 开关的初始状态，默认为关闭。
    *
@@ -223,7 +223,7 @@ export interface Switch {
 }
 
 // JeTag
-export interface Tag {
+export interface TagProps {
   /**
    * 是否可以删除该标签。
    *

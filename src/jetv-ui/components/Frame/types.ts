@@ -1,5 +1,5 @@
 // JeFrame
-export interface Frame {
+export interface FrameProps {
   /**
    * 设置框架背景颜色的类型。
    *

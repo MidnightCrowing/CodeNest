@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { JeMenu } from './index'
-import type { Menu } from './types'
+import type { MenuProps } from './types'
 
 // 接收传入的参数
-const props = defineProps<Menu>()
+const props = defineProps<MenuProps>()
 const emit = defineEmits(['update:visible'])
 
 // 在MiniMenu内部使用同步状态
@@ -22,7 +22,7 @@ function updateVisibility(status: boolean) {
 
 <template>
   <JeMenu
-    class="mini"
+    class="je-menu--mini"
     :visible="isVisible"
     :title="title"
     :options="options"
@@ -32,11 +32,11 @@ function updateVisibility(status: boolean) {
 </template>
 
 <style lang="scss">
-.je-popup.je-menu.mini .menu-ul,
-.je-popup.je-menu.mini .menu-ul .je-menu.child .menu-ul {
+.je-menu--mini .je-menu__ul,
+.je-menu--mini .je-menu__ul .je-menu.je-menu__child .je-menu__ul {
   @apply px-2px py-5px rounded-0 min-w-100px;
 
-  .option-item .child-menu-wrapper {
+  .je-menu__option-item .je-menu__child-menu-wrapper {
     @apply top--6px;
   }
 }

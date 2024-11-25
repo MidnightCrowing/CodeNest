@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { JeSlimButton } from './index'
-import type { SegmentedControl } from './types'
+import type { SegmentedControlProps } from './types'
 
-withDefaults(defineProps<SegmentedControl>(), {
+withDefaults(defineProps<SegmentedControlProps>(), {
   disabled: false,
 })
 
@@ -18,15 +18,16 @@ function handleClick(index: string | number) {
 <template>
   <div
     class="je-segmented-control"
-    :class="{ disabled }"
+    :class="{ 'je-segmented-control--disabled': disabled }"
   >
     <JeSlimButton
       v-for="(label, index) in labels"
       :key="index"
-      class="button"
-      :class="{ selected: modelValue === label.value }"
+      class="je-segmented-control__button"
+      :class="{ 'je-segmented-control__button--selected': modelValue === label.value }"
       :disabled="disabled"
       @click="handleClick(label.value)"
+      @keydown.enter="handleClick(label.value)"
     >
       {{ label.label }}
     </JeSlimButton>
@@ -40,28 +41,17 @@ function handleClick(index: string | number) {
   @apply outline outline-2px;
 
   // 激活状态
-  &:not(.disabled) {
-    // light
+  &:not(&--disabled) {
     @apply light:bg-$gray-13 light:outline-$gray-9;
-
-    // dark
     @apply dark:bg-$gray-2 dark:outline-$gray-5;
 
-    // &:focus-within {
-    //   // light
-    //   @apply light:outline-$blue-8;
-    //
-    //   // dark
-    //   @apply dark:outline-$blue-4;
-    // }
-
-    .button {
+    .je-segmented-control__button {
       @apply outline-0;
 
       @apply light:bg-$gray-13 dark:bg-$gray-2;
 
       // Hovered 状态
-      &:hover {
+      &:hover:not(&--selected) {
         @apply outline-2px;
         @apply z-0;
 
@@ -69,7 +59,14 @@ function handleClick(index: string | number) {
       }
 
       // Focused 状态
-      &:focus {
+      &:focus:not(&--selected) {
+        @apply outline-2px;
+        @apply z-2;
+
+        @apply light:outline-$blue-4 dark:outline-$blue-6;
+      }
+
+      &:focus-visible {
         @apply outline-2px;
         @apply z-2;
 
@@ -77,45 +74,33 @@ function handleClick(index: string | number) {
       }
 
       // 选中状态
-      &.selected {
+      &--selected {
         @apply outline-2px;
         @apply z-1;
 
-        // light
         @apply light:bg-$gray-14 light:outline-$gray-9;
-
-        // dark
         @apply dark:bg-$gray-3 dark:outline-$gray-7;
       }
     }
   }
 
   // 禁用状态样式
-  &.disabled {
-    // light
+  &--disabled {
     @apply light:bg-$gray-14 light:outline-$gray-9;
-
-    // dark
     @apply dark:bg-$gray-2 dark:outline-$gray-5;
 
-    .button {
+    .je-segmented-control__button {
       @apply outline-0;
 
-      // light
       @apply light:bg-$gray-14;
-
-      // dark
       @apply dark:bg-$gray-2 dark:color-$gray-8;
 
       // 选中状态
-      &.selected {
+      &--selected {
         @apply outline-2px;
         @apply z-1;
 
-        // light
         @apply light:bg-$gray-12 light:outline-$gray-9;
-
-        // dark
         @apply dark:bg-$gray-5 dark:outline-$gray-5;
       }
     }
