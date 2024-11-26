@@ -1,4 +1,4 @@
-import type { JeBarColorSchemeEnum } from './index'
+import type { BarColorScheme as JeBarColorSchemeEnum } from './constant'
 
 // JeColorIcon
 export interface ColorIconProps {

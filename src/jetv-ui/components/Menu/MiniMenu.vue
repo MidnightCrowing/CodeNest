@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeMenu } from './index'
+import JeMenu from './Menu.vue'
 import type { MenuProps } from './types'
 
 // 接收传入的参数

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { JeLoader, JeMiniMenu } from '../index'
+import JeLoader from '../Loader/Loader.vue'
+import JeMiniMenu from '../Menu/MiniMenu.vue'
 import type { ComboboxProps } from './types'
 
 const props = withDefaults(defineProps<ComboboxProps>(), {
@@ -137,7 +138,14 @@ function openMenu() {
   &:focus-visible {
     @apply z-1;
     @apply rounded-3px;
-    @apply light:b-$blue-4 dark:b-$blue-6;
+
+    :not(.je-combobox--disabled, .je-combobox--validated) & {
+      @apply light:b-$blue-4 dark:b-$blue-6;
+    }
+
+    :not(.je-combobox--disabled).je-combobox--validated & {
+      @apply light:b-$red-4 dark:b-$red-6;
+    }
   }
 }
 

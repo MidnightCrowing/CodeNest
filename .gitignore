@@ -2,5 +2,8 @@
 dist/
 node_modules/
 build/
+data/
 *.log
 *.zip
+tsconfig.tsbuildinfo
+vite.config.ts.timestamp*.mjs

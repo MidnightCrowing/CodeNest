@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeSlimButton } from './index'
+import JeSlimButton from './SlimButton.vue'
 import type { SegmentedControlProps } from './types'
 
 withDefaults(defineProps<SegmentedControlProps>(), {

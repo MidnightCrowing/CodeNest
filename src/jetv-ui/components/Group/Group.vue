@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeGroupHeader } from './index'
+import JeGroupHeader from './GroupHeader.vue'
 import type { GroupProps } from './types'
 
 const props = withDefaults(defineProps<GroupProps>(), {

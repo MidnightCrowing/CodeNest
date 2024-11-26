@@ -5,10 +5,10 @@ import { useI18n } from 'vue-i18n'
 import type { CodeEditorOption } from '~/constants/codeEditor'
 import { codeEditors, languageToEditorMap } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
-import type { LocalProject } from '~/constants/localProject'
+import type { languagesGroupItem, LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { View } from '~/constants/viewEnums'
-import { addProjectItem } from '~/core/main'
+import { projectManager } from '~/core/main'
 import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
 import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
 import ForkAndCloneComponent from '~/views/NewProject/components/KindComponent/ForkAndCloneComponent.vue'
@@ -21,7 +21,21 @@ import type { LinguistLanguageResult, LinguistResult } from './types'
 const { t } = useI18n()
 
 // ==================== localProjectItem ====================
-const localProjectItem: Ref<LocalProject> = ref({
+type Nullable<T> = {
+  [K in keyof T]: T[K] | null;
+}
+export type NullableLocalProject = Nullable<Omit<LocalProject, 'license'>> & {
+  license: LicenseEnum | string
+}
+
+const localProjectItem: Ref<NullableLocalProject> = ref({
+  appendTime: null,
+  path: null,
+  name: null,
+  kind: null,
+  mainLang: null,
+  langGroup: null,
+  defaultOpen: null,
   license: 'None',
 })
 
@@ -105,7 +119,7 @@ function convertResultsToDropdownOptions(results: Record<string, LinguistLanguag
  * @param sortedResults - 排序后的语言统计结果
  * @returns {languagesGroupItem[] | null} - 转换后的语言分组
  */
-function convertToLangGroup(sortedResults: Record<string, { type: string, bytes: number, color: string }>): languagesGroupItem[] | null {
+function convertToLangGroup(sortedResults: Record<string, LinguistLanguageResult>): languagesGroupItem[] | null {
   if (!sortedResults || Object.keys(sortedResults).length === 0) {
     return null // 如果没有数据，返回 null
   }
@@ -116,7 +130,7 @@ function convertToLangGroup(sortedResults: Record<string, { type: string, bytes:
   // 将数据转换为 langGroup 格式
   return Object.entries(sortedResults).map(([lang, info]) => ({
     text: lang, // 语言名
-    color: info.color, // 颜色
+    color: info.color as string, // 颜色
     percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)), // 百分比，保留两位小数
   }))
 }
@@ -153,14 +167,14 @@ const commonLicenses: LicenseEnum[] = [LicenseEnum.MIT, LicenseEnum.GPLV3]
 /**
  * 将 License 枚举转换为 JeDropdownOptionProps 列表
  * 常用的 License 放在前面，不常用的归类到分组中
- * @param license - LicenseEnum 枚举
- * @returns {JeDropdownOptionProps[]} 转换后的菜单选项数组
+ * @param licenseEnum - LicenseEnum 枚举
+ * @returns {(JeDropdownOptionProps | JeDropdownOptionGroupProps)[]} 转换后的菜单选项数组
  */
-function convertLicensesToDropdownOptions(license: LicenseEnum): JeDropdownOptionProps[] {
+function convertLicensesToDropdownOptions(licenseEnum: typeof LicenseEnum): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
   const commonOptions: JeDropdownOptionProps[] = []
   const otherOptions: JeDropdownOptionProps[] = []
 
-  Object.entries(license).forEach(([, value]) => {
+  Object.entries(licenseEnum).forEach(([, value]) => {
     const option = {
       value,
       label: value,
@@ -199,7 +213,7 @@ function cleanConfigValue() {
 }
 
 watch(() => localProjectItem.value.path, async (newValue) => {
-  if (newValue === null) {
+  if (!newValue) {
     return
   }
 
@@ -257,6 +271,7 @@ function changeView() {
 }
 
 function addNewProject() {
+  // 验证输入项
   const validations = [
     { field: localProjectItem.value.path, validated: projectPathInputValidated },
     { field: localProjectItem.value.name, validated: projectNameInputValidated },
@@ -264,15 +279,38 @@ function addNewProject() {
     { field: localProjectItem.value.defaultOpen, validated: projectDefaultOpenInputValidated },
   ]
 
-  const hasError = validations.some(({ field, validated }) => {
-    validated.value = !field
-    return !field
-  })
-
-  if (!hasError) {
-    addProjectItem(localProjectItem.value)
-    changeView()
+  if (validations.reduce((errorFound, { field, validated }) => {
+    const isInvalid = !field
+    validated.value = isInvalid
+    return errorFound || isInvalid
+  }, false)) {
+    return
   }
+
+  // 添加项目
+  projectManager.addProject({
+    appendTime: Date.now(), // 添加创建时间
+    path: localProjectItem.value.path,
+    name: localProjectItem.value.name,
+    kind: localProjectItem.value.kind,
+    mainLang: localProjectItem.value.mainLang,
+    langGroup: localProjectItem.value.langGroup,
+    defaultOpen: localProjectItem.value.defaultOpen,
+    // 根据条件动态添加 fromUrl 和 fromName
+    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
+      ? {
+          fromUrl: localProjectItem.value.fromUrl,
+          fromName: localProjectItem.value.fromName,
+        }
+      : {}),
+    // 如果 license 不为 None，则包含 license 属性
+    ...(localProjectItem.value.license !== 'None'
+      ? { license: localProjectItem.value.license }
+      : {}),
+  } as LocalProject)
+
+  // 返回主页
+  changeView()
 }
 </script>
 

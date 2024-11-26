@@ -14,8 +14,8 @@ const emit = defineEmits(['update:projectFromUrl', 'update:projectFromName'])
 const { t } = useI18n()
 
 // 用于获取输入框的内容
-const projectUrlInputValue = ref(props.localProjectItem.fromUrl)
-const projectNameInputValue = ref(props.localProjectItem.fromName)
+const projectUrlInputValue = ref(props.localProjectItem.fromUrl || '')
+const projectNameInputValue = ref(props.localProjectItem.fromName || '')
 // 用于存储匹配结果
 const repositoryPath = ref('')
 
@@ -25,9 +25,12 @@ function fillProjectName() {
 
 watch(projectUrlInputValue, (newValue) => {
   emit('update:projectFromUrl', newValue)
-  const match = newValue.match(/github\.com\/([^/]+\/[^/]+)/)
-  repositoryPath.value = match ? match[1] : ''
+  if (newValue) {
+    const match = newValue.match(/github\.com\/([^/]+\/[^/]+)/)
+    repositoryPath.value = match ? match[1] : ''
+  }
 })
+
 watch(projectNameInputValue, (newValue) => {
   emit('update:projectFromName', newValue)
 })

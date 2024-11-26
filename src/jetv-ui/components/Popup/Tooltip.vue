@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JePopup } from './index'
+import JePopup from './Popup.vue'
 import type { TooltipProps } from './types'
 
 withDefaults(defineProps<TooltipProps>(), {

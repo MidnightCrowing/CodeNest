@@ -8,11 +8,12 @@ import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
+import NewProject from './NewProject/NewProject.vue'
 
 const activatedView: Ref<View> = ref(View.Home)
 const viewComponents = {
   [View.Home]: Home,
-  [View.NewProject]: defineAsyncComponent(() => import('./NewProject/NewProject.vue')),
+  [View.NewProject]: NewProject,
 }
 
 // 在组件挂载时应用默认主题

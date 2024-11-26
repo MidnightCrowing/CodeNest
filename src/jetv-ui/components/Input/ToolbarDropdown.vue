@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { JeMenuOptionProps } from '../index'
-import { JeMiniMenu } from '../index'
+import type { JeMenuOptionProps } from '../Menu/index'
+import { JeMiniMenu } from '../Menu/index'
 import type { ToolbarDropdownProps } from './types'
 
 const props = withDefaults(defineProps<ToolbarDropdownProps>(), {

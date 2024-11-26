@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { LicensePop, mainLangPop, ProjectCard } from '~/components/ProjectCard'
-import { projectItems } from '~/core/main'
+import { projectManager } from '~/core/main'
 import { JeFrame, JeLine } from '~/jetv-ui'
 
 import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
@@ -16,7 +16,7 @@ import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
       overflow-y-auto overflow-x-auto
     >
       <ProjectCard
-        v-for="(projectItem, index) in projectItems"
+        v-for="(projectItem, index) in projectManager.getProjects()"
         :key="index"
         :project-item="projectItem"
       />

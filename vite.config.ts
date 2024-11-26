@@ -49,6 +49,10 @@ export default defineConfig({
     hmr: {
       host: 'localhost',
     },
+    watch: {
+      // 排除特定的文件夹或文件
+      ignored: ['**/data/*', '**/node_modules/*'],
+    },
   },
   build: {
     emptyOutDir: false,

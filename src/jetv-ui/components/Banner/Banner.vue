@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeLink } from '../index'
+import { JeLink } from '../Button/index'
 import type { BannerActionProps, BannerProps } from './types'
 
 withDefaults(defineProps<BannerProps>(), {

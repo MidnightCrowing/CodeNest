@@ -1,4 +1,4 @@
-// JeCombobox - 类型定义
+// JeCombobox
 export interface ComboboxOptionProps {
   /**
    * 选项的唯一标识值

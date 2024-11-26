@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import type { JeMenuOptionProps } from '../index'
-import { JeLoader, JeMiniMenu } from '../index'
+import { JeLoader } from '../Loader/index'
+import type { JeMenuOptionGroupProps, JeMenuOptionProps } from '../Menu/index'
+import { JeMiniMenu } from '../Menu/index'
 import type { DropdownOptionGroupProps, DropdownOptionProps, DropdownProps } from './types'
 
 const props = withDefaults(defineProps<DropdownProps>(), {
@@ -30,7 +31,7 @@ function transformOption(option: DropdownOptionProps): JeMenuOptionProps {
 }
 
 // 辅助函数：处理分组选项
-function transformGroupOption(group: DropdownOptionGroupProps): JeMenuOptionProps {
+function transformGroupOption(group: DropdownOptionGroupProps): JeMenuOptionGroupProps {
   return {
     value: group.value,
     groupLabel: group.groupLabel,
@@ -66,8 +67,11 @@ function openDropdownMenu() {
 // 根据值查找选项
 function findOptionByValue(value: string | null): JeMenuOptionProps | null {
   return menuOptions.value
-    .flatMap(option => ('options' in option ? option.options : [option]))
-    .find(option => option.value === value) || null
+    .flatMap((option: JeMenuOptionProps | JeMenuOptionGroupProps) => {
+      // 如果选项有 `options` 字段，就展开该字段，否则返回当前选项本身
+      return 'options' in option ? option.options : [option]
+    })
+    .find((option: JeMenuOptionProps) => option.value === value) || null
 }
 
 watch(() => props.modelValue, (newValue) => {

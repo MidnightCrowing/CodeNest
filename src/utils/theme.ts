@@ -3,7 +3,7 @@ export enum ThemeEnum {
   dark = 'dark',
 }
 
-let currentTheme = ThemeEnum.dark
+let currentTheme: ThemeEnum = ThemeEnum.dark
 
 export async function applyTheme(theme?: ThemeEnum) {
   const rootElement = document.documentElement // 获取 :root 即 <html> 元素

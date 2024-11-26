@@ -86,9 +86,9 @@ onClickOutside(popupRef, () => {
       </div>
 
       <JeLink
-        v-if="licenseDescription?.fromUrl"
+        v-if="licenseDescription.fromUrl"
         type="web"
-        :on-click=" () => openLink(t(licenseDescription?.fromUrl)) "
+        :on-click=" () => openLink(t(licenseDescription?.fromUrl || '')) "
       >
         {{ t('license_pop.description_from') }}
       </JeLink>

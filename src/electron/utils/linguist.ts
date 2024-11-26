@@ -33,7 +33,7 @@ interface Unknown {
   filenames: Record<string, number>
 }
 
-interface LinguistResult {
+export interface LinguistResult {
   files: Files
   languages: Languages
   unknown: Unknown

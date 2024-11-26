@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeInputField } from './index'
+import JeInputField from './InputField.vue'
 import type { SearchFieldProps } from './types'
 
 const props = withDefaults(defineProps<SearchFieldProps>(), {

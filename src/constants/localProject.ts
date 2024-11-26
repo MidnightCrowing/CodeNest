@@ -23,14 +23,14 @@ export interface languagesGroupItem extends ProjectLanguageInfo {
 
 // LocalProject
 export interface LocalProject {
-  appendTime: number | null
-  path: string | null
-  name: string | null
-  kind: ProjectKind | null
-  fromUrl?: string | null
-  fromName?: string | null
-  mainLang: ProjectLanguage | null
-  langGroup: languagesGroupItem[] | null
-  defaultOpen: CodeEditorEnum | null
-  license?: LicenseEnum | null
+  appendTime: number // 创建时间
+  path: string
+  name: string
+  kind: ProjectKind
+  fromUrl?: string
+  fromName?: string
+  mainLang: ProjectLanguage
+  langGroup: languagesGroupItem[]
+  defaultOpen: CodeEditorEnum
+  license?: LicenseEnum
 }

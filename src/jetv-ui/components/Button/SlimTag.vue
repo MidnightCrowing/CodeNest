@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeTag } from './index'
+import JeTag from './Tag.vue'
 import type { SlimTagProps } from './types'
 
 withDefaults(defineProps<SlimTagProps>(), {

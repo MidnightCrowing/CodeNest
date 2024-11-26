@@ -92,8 +92,10 @@ function loadURLWithRetry(url: string) {
 function setGlobalShortcut() {
   // F5: 重新加载url
   globalShortcut.register('F5', () => {
-    retryCount = 0
-    loadURLWithRetry(DEV_URL)
+    if (isPackaged) {
+      retryCount = 0
+      loadURLWithRetry(DEV_URL)
+    }
   })
 
   // F6: 重置窗口大小
