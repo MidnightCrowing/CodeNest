@@ -6,13 +6,14 @@
 
 <style lang="scss" scoped>
 .je-card {
-  @apply p-3px rounded-4px;
-  @apply transition-all;
+  @apply text-default;
+  @apply rounded-4px;
+  @apply transition-all duration-150;
 
   // light
-  @apply light:bg-$gray-13 light:hover:bg-$gray-12;
+  @apply light:bg-$gray-12 light:hover:bg-$gray-11;
 
   // dark
-  @apply dark:bg-$gray-2 dark:hover:bg-$gray-3;
+  @apply dark:bg-$gray-3 dark:hover:bg-$gray-4;
 }
 </style>

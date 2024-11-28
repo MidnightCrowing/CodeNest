@@ -90,3 +90,18 @@ new_project:
   main_lang_option_desc: '类型: {type}, 字节: {bytes}, 行数: {lines}'
   default_opening_method: 默认打开方式
   license: 许可证
+settings:
+  appearance:
+    title: 外观
+    app_theme:
+      title: 应用程序主题
+      light: 浅色
+      dark: 暗色
+    app_language: 语言
+  ides_path:
+    title: IDE 路径
+    none: 无
+    browse: 浏览...
+  open_json_file: 打开 JSON 文件
+  save: 保存
+  discard_changes: 放弃更改

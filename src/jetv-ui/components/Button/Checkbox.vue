@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { CheckBoxProps } from './types'
+import type { JeCheckBoxProps } from './types'
 
-withDefaults(defineProps<CheckBoxProps>(), {
+withDefaults(defineProps<JeCheckBoxProps>(), {
   indeterminate: false,
   disabled: false,
 })

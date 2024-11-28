@@ -8,7 +8,9 @@ import JeSlimButton from './SlimButton.vue'
 import JeSlimTag from './SlimTag.vue'
 import JeSwitch from './Switch.vue'
 import JeTag from './Tag.vue'
-import type { ButtonProps as JeButtonProps, CheckBoxProps as JeCheckBoxProps, CommandLinkButtonProps as JeCommandLinkButtonProps, LinkProps as JeLinkProps, RadioProps as JeRadioProps, SegmentedControlProps as JeSegmentedControlProps, SlimButtonProps as JeSlimButtonProps, SlimTagProps as JeSlimTagProps, SwitchProps as JeSwitchProps, TagProps as JeTagProps } from './types'
+import JeTransparentButton from './TransparentButton.vue'
+import JeTransparentToolButton from './TransparentToolButton.vue'
+import type { JeButtonProps, JeCheckBoxProps, JeCommandLinkButtonProps, JeLinkProps, JeRadioProps, JeSegmentedControlProps, JeSlimButtonProps, JeSlimTagProps, JeSwitchProps, JeTagProps, JeTransparentButtonProps, JeTransparentToolButtonProps } from './types'
 
-export { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag }
-export type { JeButtonProps, JeCheckBoxProps, JeCommandLinkButtonProps, JeLinkProps, JeRadioProps, JeSegmentedControlProps, JeSlimButtonProps, JeSlimTagProps, JeSwitchProps, JeTagProps }
+export { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag, JeTransparentButton, JeTransparentToolButton }
+export type { JeButtonProps, JeCheckBoxProps, JeCommandLinkButtonProps, JeLinkProps, JeRadioProps, JeSegmentedControlProps, JeSlimButtonProps, JeSlimTagProps, JeSwitchProps, JeTagProps, JeTransparentButtonProps, JeTransparentToolButtonProps }

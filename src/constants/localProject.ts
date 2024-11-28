@@ -30,6 +30,7 @@ export interface LocalProject {
   fromUrl?: string
   fromName?: string
   mainLang: ProjectLanguage
+  mainLangColor?: `#${string}`
   langGroup: languagesGroupItem[]
   defaultOpen: CodeEditorEnum
   license?: LicenseEnum

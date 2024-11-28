@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import { JeLink } from '~/jetv-ui'
+import { JeLink, JeTransparentToolButton } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 import LanguageButton from './LanguageButton.vue'
 import LicenseButton from './LicenseButton.vue'
+import OpenButton from './OpenButton.vue'
 
 const props = defineProps<{
   projectItem: LocalProject
@@ -17,12 +18,15 @@ const {
   fromUrl: projectFromUrl,
   fromName: projectFromName,
   mainLang: projectMainLang,
+  mainLangColor: projectMainLangColor,
   langGroup: projectLangGroup,
+  defaultOpen: projectDefaultOpen,
   license: projectLicense,
 } = toRefs(props.projectItem)
 
 const projectCard = ref<HTMLDivElement | null>(null)
 const projectCardActive = ref(false)
+const langGroup = ref(projectLangGroup)
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 function handleClick(path: string) {
@@ -32,16 +36,23 @@ function handleClick(path: string) {
 function handleClicked() {
   projectCardActive.value = false
 }
+
+watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
+  if (newLangGroup !== oldLangGroup) {
+    langGroup.value = newLangGroup
+  }
+}, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
 </script>
 
 <template>
   <div
     ref="projectCard"
-    class="project-card"
+    class="project-card group/item"
     :class="{ active: projectCardActive }"
     hover:bg="light:$gray-12 dark:$gray-3"
-    h="90px" p="10px" rounded="5px"
-    flex="~ row"
+    p="10px" rounded="5px"
+    flex="~ row justify-between"
+    transition-all duration="150" ease-in-out
     cursor-pointer overflow-hidden
     @mousedown="handleClick(projectPath)"
     @mouseup="handleClicked"
@@ -77,7 +88,8 @@ function handleClicked() {
       <div flex="~ row" gap="15px">
         <LanguageButton
           :main-lang="projectMainLang"
-          :lang-group="projectLangGroup"
+          :main-lang-color="projectMainLangColor"
+          :lang-group="langGroup"
         />
 
         <LicenseButton
@@ -85,6 +97,21 @@ function handleClicked() {
           :license="projectLicense"
         />
       </div>
+    </div>
+
+    <div flex="~ row items-center" gap="10px">
+      <OpenButton
+        class="group-hover/item:visible"
+        :default-open="projectDefaultOpen"
+        invisible
+      />
+
+      <JeTransparentToolButton
+        p="3px"
+        icon="light:i-jet:more-vertical dark:i-jet:more-vertical-dark"
+        icon-size="17px"
+        @mousedown.stop @mouseup.stop
+      />
     </div>
   </div>
 </template>

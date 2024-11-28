@@ -1,5 +1,5 @@
 // Group
-export interface GroupProps {
+export interface JeGroupProps {
   /**
    * 显示在组头部的标签文本。
    * 这是一个必填字段。
@@ -30,7 +30,7 @@ export interface GroupProps {
 }
 
 // JeGroupHeader
-export interface GroupHeaderProps {
+export interface JeGroupHeaderProps {
   /**
    * 分组标题的类型，用于定义分组标题的视觉样式。
    *

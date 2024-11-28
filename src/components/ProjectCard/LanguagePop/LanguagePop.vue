@@ -24,7 +24,7 @@ onClickOutside(popupRef, () => {
       <span
         inline-block size-full
         rounded="8px" overflow-hidden
-        flex="~ row" gap="1px"
+        flex="~ row" gap="0.6px"
       >
         <span
           v-for="languageItem in languagesGroup"
@@ -44,6 +44,7 @@ onClickOutside(popupRef, () => {
         v-for="languageItem in languagesGroup"
         :key="languageItem.text"
         flex="~ items-center justify-between" gap="10px"
+        text-medium
       >
         <div flex="~ items-center" gap="5px">
           <JeColorIcon

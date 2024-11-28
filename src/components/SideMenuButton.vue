@@ -4,16 +4,18 @@ import { JeColorIcon } from '~/jetv-ui'
 defineProps<{
   active: boolean
   colorValue?: string
-  tagValue?: string
+  tagValue?: number
 }>()
 </script>
 
 <template>
   <div
     class="side-menu-button-base"
-    :class="{ active }"
-    max-w="150px"
-    h="20px" m="x-5px" p="l-10px r-20px y-6px" rounded="4px"
+    :class="{ active, 'opacity-50': !tagValue }"
+    :tabindex="tagValue ? 0 : -1"
+    w="150px" h="20px" m="x-5px" b="solid 2px transparent" p="l-10px r-20px y-6px"
+    rounded="4px"
+    focus-visible:b="light:$blue-9 dark:$blue-4" focus-visible:outline-none
     flex="~ items-center justify-between" gap="8px"
     overflow-hidden cursor-default
   >
@@ -31,10 +33,10 @@ defineProps<{
     <span
       v-if="tagValue"
       class="side-menu-tag"
+      text="medium"
       bg="light:$gray-11 dark:$gray-5"
       h="17px" p="x-8px" rounded-full
       flex="~ items-center"
-      text="default-semibold"
     >
       {{ tagValue }}
     </span>

@@ -2,8 +2,10 @@
 import { useI18n } from 'vue-i18n'
 
 import SideMenuButtonBase from '~/components/SideMenuButton.vue'
-import type { ProjectLanguageInfo } from '~/constants/localProject'
-import { JeFrame, JeLine } from '~/jetv-ui'
+import { ViewEnum } from '~/constants/appEnums'
+import { ProjectKind } from '~/constants/localProject'
+import { projectManager } from '~/core/main'
+import { JeFrame, JeLine, JeTransparentToolButton } from '~/jetv-ui'
 
 const { t } = useI18n()
 
@@ -16,80 +18,104 @@ function updateActivatedItem(itemMark: string) {
 }
 
 // Kind Group
-const kindMenuGroup1: { kind: string, label: string }[] = [
+const kinds = [
   { kind: 'all', label: t('home.side_panel.kinds.all') },
-  { kind: 'mine', label: t('home.side_panel.kinds.mine') },
-  { kind: 'fork', label: t('home.side_panel.kinds.fork') },
-  { kind: 'clone', label: t('home.side_panel.kinds.clone') },
+  { kind: 'mine', label: t('home.side_panel.kinds.mine'), projectKind: ProjectKind.MINE },
+  { kind: 'fork', label: t('home.side_panel.kinds.fork'), projectKind: ProjectKind.FORK },
+  { kind: 'clone', label: t('home.side_panel.kinds.clone'), projectKind: ProjectKind.CLONE },
+  { kind: 'test', label: t('home.side_panel.kinds.test'), projectKind: ProjectKind.TEST },
 ]
-const kindMenuGroup2: { kind: string, label: string }[] = [
-  { kind: 'test', label: t('home.side_panel.kinds.test') },
-]
+// 使用 map 方法动态生成 Kind Group 数据
+const kindMenuGroups = kinds.map(({ kind, label, projectKind }) => ({
+  kind,
+  label,
+  count: projectKind ? projectManager.getProjectsByKindCount(projectKind) : projectManager.getProjects().length,
+}))
+// 分组 Kind Group1 和 Kind Group2
+const kindMenuGroup1 = kindMenuGroups.slice(0, 4) // 包含 all, mine, fork, clone
+const kindMenuGroup2 = kindMenuGroups.slice(4) // 包含 test
 
 // Language Group
-const languagesGroup: ProjectLanguageInfo[] = [
-  { text: 'JavaScript', color: '#f1e05a' },
-  { text: 'HTML', color: '#e34c26' },
-  { text: 'Java', color: '#b07219' },
-  { text: 'Python', color: '#3572a5' },
-  { text: 'TypeScript', color: '#3178c6' },
-  { text: 'Jupyter Notebook', color: '#da5b0b' },
-  { text: 'C#', color: '#178600' },
-  { text: 'CSS', color: '#563d7c' },
-  { text: 'Ruby', color: '#701516' },
-  { text: 'C++', color: '#f34b7d' },
-]
+const languagesGroup = projectManager.getMainLangSummary()
+
+// ==================== Settings Bottom ====================
+const activatedView = inject('activatedView') as Ref<ViewEnum>
+
+function changeSettingsView() {
+  if (activatedView)
+    activatedView.value = ViewEnum.Settings
+}
 </script>
 
 <template>
   <JeFrame
     type="secondary"
-    b-t="solid 1px light:$gray-14 dark:$gray-1" p="8px"
-    overflow-y-auto
+    m-t="1px"
+    b="solid x-4px y-8px light:$gray-13 dark:$gray-2" box-border
+    flex="~ col justify-between" gap="5px"
   >
-    <!-- Kind Group -->
-    <header text="default-semibold" p="x-10px t-12px b-8px">
-      {{ t('home.side_panel.projects') }}
-    </header>
-    <main flex="~ col" gap="1px">
-      <SideMenuButtonBase
-        v-for="kindItem in kindMenuGroup1"
-        :key="kindItem.kind"
-        :active="activatedItem === `k-${kindItem.kind}`"
-        tag-value="123"
-        @click="updateActivatedItem(`k-${kindItem.kind}`)"
-      >
-        {{ kindItem.label }}
-      </SideMenuButtonBase>
-      <JeLine mx-10px />
-      <SideMenuButtonBase
-        v-for="kindItem in kindMenuGroup2"
-        :key="kindItem.kind"
-        :active="activatedItem === `k-${kindItem.kind}`"
-        tag-value="123"
-        @click="updateActivatedItem(`k-${kindItem.kind}`)"
-      >
-        {{ kindItem.label }}
-      </SideMenuButtonBase>
-    </main>
+    <JeFrame
+      type="secondary"
+      p="x-4px"
+      flex="~ col" gap="1px"
+      overflow-auto
+    >
+      <!-- Kind Group -->
+      <header text="default-semibold" p="x-10px t-12px b-8px">
+        {{ t('home.side_panel.projects') }}
+      </header>
+      <main flex="~ col" gap="1px">
+        <SideMenuButtonBase
+          v-for="kindItem in kindMenuGroup1"
+          :key="kindItem.kind"
+          :active="activatedItem === `k-${kindItem.kind}`"
+          :tag-value="kindItem.count"
+          @click="updateActivatedItem(`k-${kindItem.kind}`)"
+          @keydown.enter="updateActivatedItem(`k-${kindItem.kind}`)"
+        >
+          {{ kindItem.label }}
+        </SideMenuButtonBase>
+        <JeLine mx-10px />
+        <SideMenuButtonBase
+          v-for="kindItem in kindMenuGroup2"
+          :key="kindItem.kind"
+          :active="activatedItem === `k-${kindItem.kind}`"
+          :tag-value="kindItem.count"
+          @click="updateActivatedItem(`k-${kindItem.kind}`)"
+        >
+          {{ kindItem.label }}
+        </SideMenuButtonBase>
+      </main>
 
-    <JeLine />
+      <!-- Language Group -->
+      <template v-if="languagesGroup.length > 0">
+        <header text="default-semibold" p="x-10px t-12px b-8px">
+          {{ t('home.side_panel.languages') }}
+        </header>
+        <main flex="~ col" gap="1px">
+          <SideMenuButtonBase
+            v-for="languageItem in languagesGroup"
+            :key="languageItem.text"
+            :active="activatedItem === `l-${languageItem.text}`"
+            :color-value="languageItem.color"
+            :tag-value="languageItem.count"
+            @click="updateActivatedItem(`l-${languageItem.text}`)"
+            @keydown.enter="updateActivatedItem(`l-${languageItem.text}`)"
+          >
+            {{ languageItem.text }}
+          </SideMenuButtonBase>
+        </main>
+      </template>
+    </JeFrame>
 
-    <!-- Language Group -->
-    <header text="default-semibold" p="x-10px t-12px b-8px">
-      {{ t('home.side_panel.languages') }}
-    </header>
-    <main>
-      <SideMenuButtonBase
-        v-for="languageItem in languagesGroup"
-        :key="languageItem.text"
-        :active="activatedItem === `l-${languageItem.text}`"
-        :color-value="languageItem.color"
-        tag-value="123"
-        @click="updateActivatedItem(`l-${languageItem.text}`)"
-      >
-        {{ languageItem.text }}
-      </SideMenuButtonBase>
-    </main>
+    <div p="4px t-2px">
+      <JeTransparentToolButton
+        p="6px"
+        icon="light:i-jet:settings dark:i-jet:settings-dark"
+        icon-size="17px"
+        @click="changeSettingsView"
+        @keydown.enter="changeSettingsView"
+      />
+    </div>
   </JeFrame>
 </template>

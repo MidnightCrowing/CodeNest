@@ -1,4 +1,4 @@
-import type { ThemeEnum } from '~/utils/theme'
+import type { ThemeEnum } from '~/constants/appEnums'
 import type { LinguistResult } from '~/views/NewProject/types'
 
 declare global {
@@ -6,10 +6,14 @@ declare global {
     api: {
       setWindowTheme: (currentTheme: ThemeEnum) => void
       openFolderDialog: () => Promise<string[]>
+      openFileDialog: (fileTypes?: { name: string, extensions: string[] }[]) => Promise<string[]>
       openExternal: (url: string) => void
       analyzeFolder: (folderPath: string) => Promise<LinguistResult>
       saveProjectData: (data: string) => Promise<{ success: boolean, error?: string }>
       loadProjectData: () => Promise<{ success: boolean, data?: string, error?: string }>
+      saveSettingsData: (data: string) => Promise<void>
+      loadSettingsData: () => Promise<{ success: boolean, data?: string, error?: string }>
+      openSettingsJSON: () => void
     }
   }
 }

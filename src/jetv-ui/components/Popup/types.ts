@@ -1,5 +1,18 @@
+// JeMiniTooltip
+export interface JeMiniTooltipProps {
+  /**
+   * 小型工具提示的状态，用于定义横幅的视觉样式和用途。
+   *
+   * - `'info'`：信息提示，通常用于传达一般信息。例如，用于显示帮助或说明性文本。
+   * - `'success'`：成功提示，通常用于通知成功的操作。例如，用于提醒用户某个操作已成功完成。
+   * - `'warning'`：警告提示，通常用于提醒潜在问题或需要注意的事项。例如，用于提示用户某个操作可能有风险。
+   * - `'error'`：错误提示，通常用于通知操作失败或出现错误。例如，用于提醒用户某个操作未能成功执行。
+   */
+  state: 'info' | 'success' | 'warning' | 'error'
+}
+
 // JeTooltip
-export interface TooltipProps {
+export interface JeTooltipProps {
   /**
    * 工具提示的状态，用于定义横幅的视觉样式和用途。
    *

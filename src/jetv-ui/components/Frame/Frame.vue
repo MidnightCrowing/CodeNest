@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { FrameProps } from './types'
+import type { JeFrameProps } from './types'
 
-withDefaults(defineProps<FrameProps>(), {
+withDefaults(defineProps<JeFrameProps>(), {
   type: 'primary',
 })
 </script>

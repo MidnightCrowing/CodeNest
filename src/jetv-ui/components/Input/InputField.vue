@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import type { InputFieldProps } from './types'
+import { JeMiniTooltip } from '../Popup'
+import type { JeInputFieldProps } from './types'
 
-withDefaults(defineProps<InputFieldProps>(), {
+withDefaults(defineProps<JeInputFieldProps>(), {
   validated: false,
   disabled: false,
 })
@@ -11,27 +12,36 @@ defineEmits<{
 </script>
 
 <template>
-  <input
+  <div
     class="je-input-field"
     :class="{
       'je-input-field--validated': validated,
       'je-input-field--disabled': disabled,
     }"
-    :disabled="disabled"
-    :value="modelValue"
-    @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
   >
+    <input
+      class="je-input-field__input"
+      :disabled="disabled"
+      :value="modelValue"
+      :tabindex="tabindex"
+      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+    >
+    <JeMiniTooltip
+      v-if="validatedTooltip"
+      class="je-input-field__tooltip"
+      state="error"
+    >
+      {{ validatedTooltip }}
+    </JeMiniTooltip>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .je-input-field {
-  @apply font-sans text-13px;
-  @apply m-2px b-0 px-6px py-5px rounded-3px;
-  @apply min-w-64px;
-  @apply outline outline-2px;
+  @apply relative;
 
   // Default 状态样式
-  &:not(&--disabled) {
+  &:not(&--disabled) &__input {
     // light
     @apply light:color-$gray-1 light:bg-$gray-14;
     @apply light:outline-$gray-9 light:focus:outline-$blue-4;
@@ -42,7 +52,7 @@ defineEmits<{
   }
 
   // Validated 状态样式
-  &--validated:not(&--disabled) {
+  &--validated:not(&--disabled) &__input {
     // light
     @apply light:outline-$red-9 light:focus:outline-$red-4;
 
@@ -51,12 +61,28 @@ defineEmits<{
   }
 
   // 禁用状态样式
-  &--disabled {
+  &--disabled &__input {
     // light
     @apply light:color-$gray-8 light:bg-$gray-13 light:outline-$gray-11;
 
     // dark
     @apply dark:color-$gray-7 dark:bg-$gray-2 dark:outline-$gray-5;
   }
+
+  &--validated &__input:hover + &__tooltip {
+    @apply visible;
+  }
+}
+
+.je-input-field__input {
+  @apply font-sans text-13px;
+  @apply m-2px b-0 px-6px py-5px rounded-3px;
+  @apply w-full min-w-64px box-border;
+  @apply outline outline-2px;
+}
+
+.je-input-field__tooltip {
+  @apply absolute z-2 translate-y-1px;
+  @apply invisible;
 }
 </style>

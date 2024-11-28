@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { ButtonProps } from './types'
+import type { JeButtonProps } from './types'
 
-withDefaults(defineProps<ButtonProps>(), {
+withDefaults(defineProps<JeButtonProps>(), {
   type: 'primary',
   disabled: false,
 })

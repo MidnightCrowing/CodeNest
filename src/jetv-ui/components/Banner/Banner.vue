@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { JeLink } from '../Button/index'
-import type { BannerActionProps, BannerProps } from './types'
+import { JeLink, JeTransparentToolButton } from '../Button'
+import type { JeBannerActionProps, JeBannerProps } from './types'
 
-withDefaults(defineProps<BannerProps>(), {
-  actions: () => [] as BannerActionProps[],
+withDefaults(defineProps<JeBannerProps>(), {
+  actions: () => [] as JeBannerActionProps[],
   type: 'default',
 })
 
@@ -26,7 +26,9 @@ function handleClose() {
 
       <div class="je-banner__text">
         <!-- Label -->
-        <span class="je-banner__label">{{ label }}</span>
+        <span class="je-banner__label">
+          <slot />
+        </span>
 
         <!-- Actions -->
         <div class="je-banner__actions">
@@ -43,9 +45,11 @@ function handleClose() {
     </div>
 
     <!-- Close Button -->
-    <div class="je-banner__close-button-wrapper">
-      <div class="je-banner__close-button" @click="handleClose" />
-    </div>
+    <JeTransparentToolButton
+      class="je-banner__close-button"
+      icon="light:i-jet:close dark:i-jet:close-dark"
+      @click="handleClose"
+    />
   </div>
 </template>
 
@@ -141,17 +145,5 @@ function handleClose() {
 
 .je-banner__label {
   @apply light:color-$gray-1 dark:color-$gray-12;
-}
-
-.je-banner__close-button-wrapper {
-  @apply flex items-center justify-center;
-  @apply size-min-1.25rem rounded-4px;
-  @apply hover:bg-$toolbar-hover active:bg-$toolbar-active;
-  @apply cursor-pointer;
-
-  .je-banner__close-button {
-    @apply text-0.9rem;
-    @apply light:i-jet:close dark:i-jet:close-dark;
-  }
 }
 </style>

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JeButton from './Button.vue'
-import type { SlimButtonProps } from './types'
+import type { JeSlimButtonProps } from './types'
 
-withDefaults(defineProps<SlimButtonProps>(), {
+withDefaults(defineProps<JeSlimButtonProps>(), {
   disabled: false,
 })
 </script>

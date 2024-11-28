@@ -1,5 +1,5 @@
 // JeBanner
-export interface BannerActionProps {
+export interface JeBannerActionProps {
   /**
    * 动作的标签文本，用于描述该动作的作用。
    *
@@ -15,14 +15,7 @@ export interface BannerActionProps {
   onClick: () => void
 }
 
-export interface BannerProps {
-  /**
-   * 横幅的标签文本，用于描述横幅的主要内容。
-   *
-   * 该标签通常显示在横幅上，帮助用户了解横幅的消息。
-   */
-  label: string
-
+export interface JeBannerProps {
   /**
    * 横幅的状态，用于定义横幅的视觉样式和用途。
    *
@@ -39,7 +32,7 @@ export interface BannerProps {
    * - 可以是 `JeAction` 对象的数组，表示多个可交互操作。
    * - 默认为空数组，表示没有附加的操作。
    */
-  actions?: BannerActionProps[]
+  actions?: JeBannerActionProps[]
 
   /**
    * 横幅的类型，用于定义横幅的显示方式。

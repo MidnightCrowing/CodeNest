@@ -1,4 +1,4 @@
-enum BarColorScheme {
+enum JeBarColorSchemeEnum {
   Amber = 'amber',
   Rust = 'rust',
   Olive = 'olive',
@@ -10,4 +10,4 @@ enum BarColorScheme {
   Plum = 'plum',
 }
 
-export { BarColorScheme }
+export { JeBarColorSchemeEnum }

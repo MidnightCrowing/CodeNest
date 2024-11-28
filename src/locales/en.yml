@@ -83,7 +83,7 @@ home:
       clone: Clone
       test: Test
   header:
-    add_item: Add item
+    add_item: Add Item
     search_project: Search Project
 new_project:
   name: Name
@@ -97,3 +97,19 @@ new_project:
   main_lang_project: Main language of the project
   main_lang_option_desc: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
   default_opening_method: Default opening method
+  license: License
+settings:
+  appearance:
+    title: Appearance
+    app_theme:
+      title: Application theme
+      light: Light
+      dark: Dark
+    app_language: Language
+  ides_path:
+    title: IDEs Path
+    none: None
+    browse: Browse...
+  open_json_file: open JSON file
+  save: Save
+  discard_changes: Discard changes

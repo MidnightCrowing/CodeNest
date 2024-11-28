@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { capitalize } from '../../utils/main'
-import type { ShortcutProps } from './types'
+import type { JeShortcutProps } from './types'
 
-withDefaults(defineProps<ShortcutProps>(), {
+withDefaults(defineProps<JeShortcutProps>(), {
   type: 'outline',
 })
 </script>

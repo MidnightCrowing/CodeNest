@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { ColorIconProps } from './types'
+import type { JeColorIconProps } from './types'
 
-withDefaults(defineProps<ColorIconProps>(), {
+withDefaults(defineProps<JeColorIconProps>(), {
   type: 'default',
 })
 </script>

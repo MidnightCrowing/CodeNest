@@ -37,7 +37,3 @@ function handleRemove(tag: { label: string, selected: boolean }) {
     {{ tag.label }}
   </JeSlimTag>
 </template>
-
-<style lang="scss" scoped>
-
-</style>

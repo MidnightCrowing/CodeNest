@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { LinkProps } from './types'
+import type { JeLinkProps } from './types'
 
-withDefaults(defineProps<LinkProps>(), {
+withDefaults(defineProps<JeLinkProps>(), {
   type: 'internal',
   disabled: false,
 })

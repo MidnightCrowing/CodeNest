@@ -1,5 +1,5 @@
 // JeMenu
-export interface MenuOptionProps {
+export interface JeMenuOptionProps {
   /**
    * 索引，用于唯一标识该选项。
    *
@@ -75,10 +75,10 @@ export interface MenuOptionProps {
    *
    * 用于表示该选项具有子级菜单，悬停或点击该选项时显示子菜单内容。
    */
-  childMenu?: MenuProps
+  childMenu?: JeMenuProps
 }
 
-export interface MenuOptionGroupProps {
+export interface JeMenuOptionGroupProps {
   /**
    * 索引，用于唯一标识选项组。
    *
@@ -98,12 +98,12 @@ export interface MenuOptionGroupProps {
    *
    * 每个选项代表该组内的一个菜单项，支持子菜单和图标等属性。
    */
-  options: MenuOptionProps[]
+  options: JeMenuOptionProps[]
 
   isExpand?: boolean
 }
 
-export interface MenuProps {
+export interface JeMenuProps {
   visible?: boolean
 
   /**
@@ -118,7 +118,7 @@ export interface MenuProps {
    * - `Option` 表示单个菜单项，可以是普通项或分隔线。
    * - `OptionGroup` 表示一组相关的菜单项，包含多个 `Option` 项。
    */
-  options: (MenuOptionProps | MenuOptionGroupProps)[]
+  options: (JeMenuOptionProps | JeMenuOptionGroupProps)[]
 
   /** 由组件控制，不填 */
   isChildMenu?: boolean

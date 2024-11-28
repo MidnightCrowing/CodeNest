@@ -1,5 +1,5 @@
 // JeCombobox
-export interface ComboboxOptionProps {
+export interface JeComboboxOptionProps {
   /**
    * 选项的唯一标识值
    */
@@ -49,7 +49,7 @@ export interface ComboboxOptionProps {
   isLine?: boolean
 }
 
-export interface ComboboxProps {
+export interface JeComboboxProps {
   /**
    * 当前选中的值
    * 如果未选择任何值，则为 null
@@ -60,7 +60,7 @@ export interface ComboboxProps {
    * 下拉菜单中的选项列表
    * 每个选项需符合 ComboboxOptionProps 类型
    */
-  options: ComboboxOptionProps[]
+  options: JeComboboxOptionProps[]
 
   loading?: boolean
 
@@ -69,6 +69,7 @@ export interface ComboboxProps {
    * （可选，默认值为 false）
    */
   validated?: boolean
+  validatedTooltip?: string
 
   /**
    * 是否禁用组件
@@ -79,7 +80,7 @@ export interface ComboboxProps {
 }
 
 // JeDropdown
-export interface DropdownOptionProps {
+export interface JeDropdownOptionProps {
   /**
    * 选项的值。
    *
@@ -137,7 +138,7 @@ export interface DropdownOptionProps {
   isLine?: boolean
 }
 
-export interface DropdownOptionGroupProps {
+export interface JeDropdownOptionGroupProps {
   /**
    * 索引，用于唯一标识选项组。
    *
@@ -157,12 +158,12 @@ export interface DropdownOptionGroupProps {
    *
    * 每个选项代表该组内的一个菜单项，支持子菜单和图标等属性。
    */
-  options: DropdownOptionProps[]
+  options: JeDropdownOptionProps[]
 
   isExpand?: boolean
 }
 
-export interface DropdownProps {
+export interface JeDropdownProps {
   /**
    * 当前选择的值。
    *
@@ -175,7 +176,7 @@ export interface DropdownProps {
    *
    * 是一个包含多个 `DropdownOption` 类型的数组，每个选项代表一个下拉菜单项。
    */
-  options: (DropdownOptionProps | DropdownOptionGroupProps)[]
+  options: (JeDropdownOptionProps | JeDropdownOptionGroupProps)[]
 
   loading?: boolean
 
@@ -187,6 +188,8 @@ export interface DropdownProps {
    */
   validated?: boolean
 
+  validatedTooltip?: string
+
   /**
    * 是否禁用下拉菜单。
    *
@@ -196,7 +199,7 @@ export interface DropdownProps {
 }
 
 // JeFileInputField
-export interface FileInputFieldProps {
+export interface JeFileInputFieldProps {
   /**
    * 文件输入字段的当前值，用于表示所选文件的路径或文件名。
    *
@@ -212,6 +215,8 @@ export interface FileInputFieldProps {
    */
   validated?: boolean
 
+  validatedTooltip?: string
+
   /**
    * 文件输入字段的禁用状态。
    *
@@ -222,7 +227,7 @@ export interface FileInputFieldProps {
 }
 
 // JeInputField
-export interface InputFieldProps {
+export interface JeInputFieldProps {
   /**
    * 输入字段的当前值，用于表示用户输入的内容。
    *
@@ -238,6 +243,8 @@ export interface InputFieldProps {
    */
   validated?: boolean
 
+  validatedTooltip?: string
+
   /**
    * 输入字段的禁用状态。
    *
@@ -245,10 +252,12 @@ export interface InputFieldProps {
    * - 默认为 `false`，表示输入字段可用。
    */
   disabled?: boolean
+
+  tabindex?: number
 }
 
 // JeSearchField
-export interface SearchFieldProps {
+export interface JeSearchFieldProps {
   /**
    * 搜索字段的当前值，用于表示用户输入的搜索关键词。
    *
@@ -284,7 +293,7 @@ export interface SearchFieldProps {
 }
 
 // JeToolbarDropdown
-export interface ToolbarDropdownOptionProps {
+export interface JeToolbarDropdownOptionProps {
   /**
    * 选项的值。
    *
@@ -324,7 +333,7 @@ export interface ToolbarDropdownOptionProps {
   isLine?: boolean
 }
 
-export interface ToolbarDropdownProps {
+export interface JeToolbarDropdownProps {
   /**
    * 下拉菜单的标签文本。
    *
@@ -338,7 +347,7 @@ export interface ToolbarDropdownProps {
    * 是一个包含多个 `ToolbarDropdownOption` 类型的数组，每个选项代表一个下拉菜单项。
    * 该数组用于填充下拉菜单的所有可选项。
    */
-  options: ToolbarDropdownOptionProps[]
+  options: JeToolbarDropdownOptionProps[]
 
   /**
    * 默认选中的值。

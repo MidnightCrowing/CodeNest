@@ -7,12 +7,12 @@ import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
 </script>
 
 <template>
-  <JeFrame>
+  <JeFrame flex="~ col">
     <ProjectOverviewHeader />
     <JeLine mx-20px />
     <JeFrame
       m="x-15px y-5px" p="y-5px r-3px"
-      grid="~ cols-1"
+      flex="~ col" gap="10px"
       overflow-y-auto overflow-x-auto
     >
       <ProjectCard

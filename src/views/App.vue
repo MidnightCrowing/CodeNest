@@ -2,23 +2,36 @@
 import '../styles/light.scss'
 import '../styles/dark.scss'
 
+import { useI18n } from 'vue-i18n'
+
 import WindowHeader from '~/components/WindowHeader.vue'
-import { View } from '~/constants/viewEnums'
+import type { ThemeEnum } from '~/constants/appEnums'
+import { ViewEnum } from '~/constants/appEnums'
+import { settings } from '~/core/settings'
 import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
 import NewProject from './NewProject/NewProject.vue'
+import Settings from './Settings/Settings.vue'
 
-const activatedView: Ref<View> = ref(View.Home)
-const viewComponents = {
-  [View.Home]: Home,
-  [View.NewProject]: NewProject,
+const { locale } = useI18n()
+
+const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
+const viewComponents: Record<ViewEnum, Component> = {
+  [ViewEnum.Home]: Home,
+  [ViewEnum.NewProject]: NewProject,
+  [ViewEnum.Settings]: Settings,
 }
 
-// 在组件挂载时应用默认主题
+function applyLanguage(lang: string) {
+  locale.value = lang
+}
+
 onMounted(() => {
-  applyTheme()
+  settings.loadSettings()
+  applyTheme(settings.getSetting('theme' as ThemeEnum))
+  applyLanguage(settings.getSetting('language'))
 })
 
 provide('activatedView', activatedView)

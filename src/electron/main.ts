@@ -91,12 +91,12 @@ function loadURLWithRetry(url: string) {
 // 注册全局快捷键
 function setGlobalShortcut() {
   // F5: 重新加载url
-  globalShortcut.register('F5', () => {
-    if (isPackaged) {
+  if (!isPackaged) {
+    globalShortcut.register('F5', () => {
       retryCount = 0
       loadURLWithRetry(DEV_URL)
-    }
-  })
+    })
+  }
 
   // F6: 重置窗口大小
   globalShortcut.register('F6', () => {

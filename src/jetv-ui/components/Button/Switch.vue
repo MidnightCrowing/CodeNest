@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { SwitchProps } from './types'
+import type { JeSwitchProps } from './types'
 
-const props = withDefaults(defineProps<SwitchProps>(), {
+const props = withDefaults(defineProps<JeSwitchProps>(), {
   modelValue: false,
   onLabel: null,
   offLabel: null,

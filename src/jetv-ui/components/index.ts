@@ -2,8 +2,8 @@ import type { JeBannerActionProps, JeBannerProps } from './Banner'
 import { JeBanner } from './Banner'
 import type { JeColorIconProps, JeGradientProps } from './Bar'
 import { JeBarColorSchemeEnum, JeColorIcon, JeGradient } from './Bar'
-import type { JeButtonProps, JeCheckBoxProps, JeCommandLinkButtonProps, JeLinkProps, JeRadioProps, JeSegmentedControlProps, JeSlimButtonProps, JeSlimTagProps, JeSwitchProps, JeTagProps } from './Button'
-import { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag } from './Button'
+import type { JeButtonProps, JeCheckBoxProps, JeCommandLinkButtonProps, JeLinkProps, JeRadioProps, JeSegmentedControlProps, JeSlimButtonProps, JeSlimTagProps, JeSwitchProps, JeTagProps, JeTransparentButtonProps, JeTransparentToolButtonProps } from './Button'
+import { JeButton, JeCheckbox, JeCommandLinkButton, JeLink, JeRadio, JeSegmentedControl, JeSlimButton, JeSlimTag, JeSwitch, JeTag, JeTransparentButton, JeTransparentToolButton } from './Button'
 import { JeCard, JeSimpleCard } from './Card'
 import type { JeFrameProps } from './Frame'
 import { JeFrame, JeLine } from './Frame'
@@ -22,6 +22,7 @@ import { JeShortcut } from './Shortcut'
 // export components
 export {
   JeBanner,
+  JeBarColorSchemeEnum,
   JeButton,
   JeCard,
   JeCheckbox,
@@ -52,10 +53,8 @@ export {
   JeTag,
   JeToolbarDropdown,
   JeTooltip,
-}
-// export constant
-export {
-  JeBarColorSchemeEnum,
+  JeTransparentButton,
+  JeTransparentToolButton,
 }
 // export type
 export type {
@@ -91,4 +90,6 @@ export type {
   JeToolbarDropdownOptionProps,
   JeToolbarDropdownProps,
   JeTooltipProps,
+  JeTransparentButtonProps,
+  JeTransparentToolButtonProps,
 }

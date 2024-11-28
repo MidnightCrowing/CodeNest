@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeFrame } from '../index'
+import { JeFrame } from '../Frame'
 </script>
 
 <template>

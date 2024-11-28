@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { JeLoader } from '../Loader/index'
-import type { JeMenuOptionGroupProps, JeMenuOptionProps } from '../Menu/index'
-import { JeMiniMenu } from '../Menu/index'
-import type { DropdownOptionGroupProps, DropdownOptionProps, DropdownProps } from './types'
+import { JeLoader } from '../Loader'
+import type { JeMenuOptionGroupProps, JeMenuOptionProps } from '../Menu'
+import { JeMiniMenu } from '../Menu'
+import { JeMiniTooltip } from '../Popup'
+import type { JeDropdownOptionGroupProps, JeDropdownOptionProps, JeDropdownProps } from './types'
 
-const props = withDefaults(defineProps<DropdownProps>(), {
+const props = withDefaults(defineProps<JeDropdownProps>(), {
   validated: false,
   loading: false,
   disabled: false,
@@ -15,7 +16,7 @@ const selectOption = ref<JeMenuOptionProps | null>(null)
 const isMenuOpen = ref(false)
 
 // 辅助函数：处理单个选项
-function transformOption(option: DropdownOptionProps): JeMenuOptionProps {
+function transformOption(option: JeDropdownOptionProps): JeMenuOptionProps {
   return {
     value: option.value,
     label: option.label,
@@ -31,7 +32,7 @@ function transformOption(option: DropdownOptionProps): JeMenuOptionProps {
 }
 
 // 辅助函数：处理分组选项
-function transformGroupOption(group: DropdownOptionGroupProps): JeMenuOptionGroupProps {
+function transformGroupOption(group: JeDropdownOptionGroupProps): JeMenuOptionGroupProps {
   return {
     value: group.value,
     groupLabel: group.groupLabel,
@@ -41,7 +42,7 @@ function transformGroupOption(group: DropdownOptionGroupProps): JeMenuOptionGrou
 }
 
 // 处理选项选择逻辑
-function handleOptionSelect(option: DropdownOptionProps) {
+function handleOptionSelect(option: JeDropdownOptionProps) {
   selectOption.value = option
   emit('update:modelValue', option.value)
 }
@@ -53,8 +54,8 @@ const menuOptions = computed<JeMenuOptionProps[]>(() => {
 
   return props.options.map(option =>
     'options' in option
-      ? transformGroupOption(option as DropdownOptionGroupProps)
-      : transformOption(option as DropdownOptionProps),
+      ? transformGroupOption(option as JeDropdownOptionGroupProps)
+      : transformOption(option as JeDropdownOptionProps),
   )
 })
 
@@ -88,6 +89,7 @@ watch(() => props.modelValue, (newValue) => {
     }"
     :tabindex="disabled ? -1 : 0"
     @click="openDropdownMenu"
+    @keydown.enter="openDropdownMenu"
   >
     <div class="je-dropdown__inner">
       <div class="je-dropdown__text">
@@ -100,7 +102,7 @@ watch(() => props.modelValue, (newValue) => {
 
         <!-- Text Label -->
         <span class="je-dropdown__label">
-          {{ selectOption?.label }}
+          {{ findOptionByValue(props.modelValue)?.label }}
 
           <!-- Ellipsis -->
           <span v-if="selectOption?.ellipsis">
@@ -122,6 +124,15 @@ watch(() => props.modelValue, (newValue) => {
         <span class="je-dropdown__icon-chevron-down" />
       </div>
     </div>
+
+    <!-- Tooltip -->
+    <JeMiniTooltip
+      v-if="validatedTooltip"
+      class="je-dropdown__tooltip"
+      state="error"
+    >
+      {{ validatedTooltip }}
+    </JeMiniTooltip>
 
     <!-- Menu -->
     <div class="je-dropdown__menu-wrapper" @click.stop>
@@ -169,6 +180,10 @@ watch(() => props.modelValue, (newValue) => {
     .je-dropdown__label {
       @apply light:color-$gray-1 dark:color-$gray-12;
     }
+
+    .je-dropdown__inner:hover + .je-dropdown__tooltip {
+      @apply visible;
+    }
   }
 
   // 禁用状态样式
@@ -213,6 +228,11 @@ watch(() => props.modelValue, (newValue) => {
 .je-dropdown__icon-chevron-down {
   @apply text-1rem;
   @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
+}
+
+.je-dropdown__tooltip {
+  @apply absolute top-100% left-0 z-2 translate-y-3px;
+  @apply invisible;
 }
 
 .je-dropdown__menu-wrapper {

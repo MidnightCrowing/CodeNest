@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { RadioProps } from './types'
+import type { JeRadioProps } from './types'
 
-const props = withDefaults(defineProps<RadioProps>(), {
+const props = withDefaults(defineProps<JeRadioProps>(), {
   disabled: false,
 })
 

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JeGroupHeader from './GroupHeader.vue'
-import type { GroupProps } from './types'
+import type { JeGroupProps } from './types'
 
-const props = withDefaults(defineProps<GroupProps>(), {
+const props = withDefaults(defineProps<JeGroupProps>(), {
   labelType: 'primary',
   expandable: true,
   isExpand: true,

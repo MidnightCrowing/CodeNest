@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import JeLoader from '../Loader/Loader.vue'
-import JeMiniMenu from '../Menu/MiniMenu.vue'
-import type { ComboboxProps } from './types'
+import { JeLoader } from '../Loader'
+import { JeMiniMenu } from '../Menu'
+import { JeMiniTooltip } from '../Popup'
+import type { JeComboboxProps } from './types'
 
-const props = withDefaults(defineProps<ComboboxProps>(), {
+const props = withDefaults(defineProps<JeComboboxProps>(), {
   validated: false,
   disabled: false,
 })
@@ -71,6 +72,15 @@ function openMenu() {
       <span class="je-combobox__icon-chevron-down" />
     </span>
 
+    <!-- Tooltip -->
+    <JeMiniTooltip
+      v-if="validatedTooltip"
+      class="je-combobox__tooltip"
+      state="error"
+    >
+      {{ validatedTooltip }}
+    </JeMiniTooltip>
+
     <!-- Menu -->
     <div class="je-combobox__menu-wrapper" @click.stop>
       <JeMiniMenu
@@ -90,17 +100,21 @@ function openMenu() {
   @apply light:outline-$gray-9 dark:outline-$gray-5;
 
   // 焦点样式
-  &:focus-within:not(:has(.je-combobox__icon-wrapper:focus-visible)):not(
-      .je-combobox--validated,
-      .je-combobox--disabled
-    ) {
+  &:focus-within:not(&--validated, &--disabled, :has(&__icon-wrapper:focus-visible)) {
     @apply light:outline-$blue-4 dark:outline-$blue-6;
   }
 
   // Validated 状态样式
   &--validated {
-    @apply light:outline-$red-9 light:focus-within:outline-$red-4;
-    @apply dark:outline-$red-2 dark:focus-within:outline-$red-6;
+    @apply light:outline-$red-9 dark:outline-$red-2;
+
+    &:focus-within:not(:has(.je-combobox__icon-wrapper:focus-visible)) {
+      @apply light:outline-$red-4 dark:outline-$red-6;
+    }
+
+    &:hover:not(:has(.je-combobox__menu-wrapper:hover)) .je-combobox__tooltip {
+      @apply visible;
+    }
   }
 
   // 禁用状态样式
@@ -152,6 +166,11 @@ function openMenu() {
 .je-combobox__icon-chevron-down {
   @apply text-1rem;
   @apply light:i-jet:chevron-down dark:i-jet:chevron-down-dark;
+}
+
+.je-combobox__tooltip {
+  @apply absolute top-100% z-2 translate-y-3px;
+  @apply invisible;
 }
 
 .je-combobox__menu-wrapper {

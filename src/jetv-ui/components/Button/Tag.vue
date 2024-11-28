@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { TagProps } from './types'
+import type { JeTagProps } from './types'
 
-const props = withDefaults(defineProps<TagProps>(), {
+const props = withDefaults(defineProps<JeTagProps>(), {
   deleteAble: false,
   selectAble: false,
   select: false,

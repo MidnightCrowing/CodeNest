@@ -2,10 +2,12 @@
 import { onClickOutside } from '@vueuse/core'
 
 import { capitalize, toUpperCase } from '../../utils/main'
-import { JeGroup, JeLine, JePopup } from '../index'
-import type { MenuOptionProps, MenuProps } from './types'
+import { JeLine } from '../Frame'
+import { JeGroup } from '../Group'
+import { JePopup } from '../Popup'
+import type { JeMenuOptionProps, JeMenuProps } from './types'
 
-const props = withDefaults(defineProps<MenuProps>(), {
+const props = withDefaults(defineProps<JeMenuProps>(), {
   visible: false,
   isChildMenu: false,
 })
@@ -62,7 +64,7 @@ function setHoveredOption(index: string | number | null) {
  * 处理选项点击事件
  * @param option - 被点击的菜单项
  */
-function handleOptionClick(option: MenuOptionProps) {
+function handleOptionClick(option: JeMenuOptionProps) {
   if (option.onClick) {
     option.onClick() // 调用选项的 onClick 回调函数
   }
@@ -136,7 +138,9 @@ function checkMenuPosition() {
             v-else
             class="je-menu__option-item"
             :class="{ hovered: option.childMenu && hoveredOptionIndex === index }"
+            :tabindex="0"
             @click="handleOptionClick(option)"
+            @keydown.enter="handleOptionClick(option)"
             @mouseenter="setHoveredOption(index)"
           >
             <div class="je-menu__option-item-left">
@@ -179,7 +183,7 @@ function checkMenuPosition() {
                 class="je-menu__child-menu-wrapper"
                 :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
               >
-                <MenuProps
+                <JeMenuProps
                   class="child"
                   :visible="true"
                   :title="option.childMenu.title"
@@ -212,7 +216,9 @@ function checkMenuPosition() {
                   v-else
                   class="je-menu__option-item"
                   :class="{ hovered: groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}` }"
+                  :tabindex="0"
                   @click="handleOptionClick(groupOption)"
+                  @keydown.enter="handleOptionClick(groupOption)"
                   @mouseenter="setHoveredOption(`${index}-${groupIndex}`)"
                 >
                   <div class="je-menu__option-item-left">
@@ -255,7 +261,7 @@ function checkMenuPosition() {
                       class="je-menu__child-menu-wrapper"
                       :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
                     >
-                      <MenuProps
+                      <JeMenuProps
                         class="je-menu__child"
                         :visible="true"
                         :title="groupOption.childMenu.title"

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JeInputField from './InputField.vue'
-import type { FileInputFieldProps } from './types'
+import type { JeFileInputFieldProps } from './types'
 
-const props = withDefaults(defineProps<FileInputFieldProps>(), {
+const props = withDefaults(defineProps<JeFileInputFieldProps>(), {
   validated: false,
   disabled: false,
 })
@@ -32,6 +32,7 @@ async function openFolder() {
     <JeInputField
       v-model="folderPath"
       :validated="validated"
+      :validated-tooltip="validatedTooltip"
       :disabled="disabled"
       class="je-file-input-filed__input"
     />
@@ -55,10 +56,6 @@ async function openFolder() {
 <style lang="scss" scoped>
 .je-file-input-filed {
   @apply relative;
-}
-
-.je-file-input-filed__input {
-  @apply w-full box-border pr-27px;
 }
 
 .je-file-input-filed__icon-wrapper {
@@ -90,5 +87,11 @@ async function openFolder() {
   @apply text-17px;
 
   @apply light:i-jet:folder dark:i-jet:folder-dark;
+}
+</style>
+
+<style lang="scss">
+.je-file-input-filed__input .je-input-field__input {
+  @apply w-full pr-27px;
 }
 </style>

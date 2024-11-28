@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { CommandLinkButtonProps } from './types'
+import type { JeCommandLinkButtonProps } from './types'
 
-withDefaults(defineProps<CommandLinkButtonProps>(), {
+withDefaults(defineProps<JeCommandLinkButtonProps>(), {
   disabled: false,
 })
 </script>

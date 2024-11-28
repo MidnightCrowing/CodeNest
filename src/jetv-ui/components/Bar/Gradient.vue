@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { GradientProps } from './types'
+import type { JeGradientProps } from './types'
 
-defineProps<GradientProps>()
+defineProps<JeGradientProps>()
 </script>
 
 <template>

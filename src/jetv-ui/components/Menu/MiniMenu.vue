@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import JeMenu from './Menu.vue'
-import type { MenuProps } from './types'
+import type { JeMenuProps } from './types'
 
 // 接收传入的参数
-const props = defineProps<MenuProps>()
+const props = defineProps<JeMenuProps>()
 const emit = defineEmits(['update:visible'])
 
 // 在MiniMenu内部使用同步状态

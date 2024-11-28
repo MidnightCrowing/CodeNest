@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JeInputField from './InputField.vue'
-import type { SearchFieldProps } from './types'
+import type { JeSearchFieldProps } from './types'
 
-const props = withDefaults(defineProps<SearchFieldProps>(), {
+const props = withDefaults(defineProps<JeSearchFieldProps>(), {
   type: 'default',
   validated: false,
   disabled: false,
@@ -49,19 +49,11 @@ function clearInput() {
 <style lang="scss" scoped>
 .je-search-filed {
   @apply relative;
-}
-
-.je-search-filed__input {
-  @apply w-full box-border pl-25px pr-23px;
-
-  // In Editor 类型样式
-  &--in-editor {
-    @apply outline-0;
-  }
+  @apply m-2px;
 }
 
 .je-search-filed__icon-search {
-  @apply absolute left-7px top-50% translate-y--50%;
+  @apply absolute left-7px top-50% translate-y--50% z-1;
   @apply rounded-3px;
   @apply flex items-center justify-center;
   @apply text-17px;
@@ -86,6 +78,18 @@ function clearInput() {
     @apply outline outline-2px;
 
     @apply light:outline-$blue-4 dark:outline-$blue-6;
+  }
+}
+</style>
+
+<style lang="scss">
+.je-input-field__input {
+  .je-search-filed__input & {
+    @apply m-0 pl-25px pr-23px;
+  }
+
+  .je-search-filed__input--in-editor & {
+    @apply outline-0;
   }
 }
 </style>

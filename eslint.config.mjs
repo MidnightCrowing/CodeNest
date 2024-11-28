@@ -32,7 +32,7 @@ export default antfu(
         'build',
         'node_modules',
         'public',
-        'src/data',
+        'data',
       ],
     },
   },

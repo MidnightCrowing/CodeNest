@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { LicenseEnum } from '~/constants/license'
+import { JeTransparentButton } from '~/jetv-ui'
 
-import InfoButton from './InfoButton.vue'
 import { showPop } from './LicensePop/licensePopProvider'
 
 defineProps<{
@@ -24,12 +24,23 @@ function handleClick(license: LicenseEnum) {
 
 <template v-if="license">
   <div ref="containerRef" @click="handleClick(license)">
-    <InfoButton flex="~ items-center" gap="5px">
+    <JeTransparentButton
+      class="license-button"
+      flex="~ items-center" gap="5px"
+      @mousedown.stop @mouseup.stop
+    >
       <div
         size="13px"
         i-custom="light:license dark:license-dark"
       />
       {{ license }}
-    </InfoButton>
+    </JeTransparentButton>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.license-button {
+  @apply lh-16px;
+  @apply px-10px py-5px;
+}
+</style>

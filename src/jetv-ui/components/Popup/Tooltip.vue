@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JePopup from './Popup.vue'
-import type { TooltipProps } from './types'
+import type { JeTooltipProps } from './types'
 
-withDefaults(defineProps<TooltipProps>(), {
+withDefaults(defineProps<JeTooltipProps>(), {
   size: 'small',
 })
 </script>

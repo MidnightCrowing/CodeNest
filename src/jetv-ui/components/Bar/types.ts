@@ -1,7 +1,7 @@
-import type { BarColorScheme as JeBarColorSchemeEnum } from './constant'
+import type { JeBarColorSchemeEnum } from './constant'
 
 // JeColorIcon
-export interface ColorIconProps {
+export interface JeColorIconProps {
   /**
    * 图标的类型。
    *
@@ -31,7 +31,7 @@ export interface ColorIconProps {
 }
 
 // JeGradient
-export interface GradientProps {
+export interface JeGradientProps {
   /**
    * 颜色方案，决定渐变色的配色方案。
    *

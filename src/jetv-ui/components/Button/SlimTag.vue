@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import JeTag from './Tag.vue'
-import type { SlimTagProps } from './types'
+import type { JeSlimTagProps } from './types'
 
-withDefaults(defineProps<SlimTagProps>(), {
+withDefaults(defineProps<JeSlimTagProps>(), {
   deleteAble: false,
   selectAble: false,
   select: false,
@@ -14,7 +14,7 @@ const emit = defineEmits(['remove', 'select'])
  * 处理删除事件
  * @param tag 当前删除的标签对象
  */
-function handleRemove(tag: SlimTagProps) {
+function handleRemove(tag: JeSlimTagProps) {
   emit('remove', tag) // 向父组件传递删除事件
 }
 
@@ -23,7 +23,7 @@ function handleRemove(tag: SlimTagProps) {
  * @param tag 当前选择的标签对象
  * @param isSelected 标签的选中状态
  */
-function handleSelect(tag: SlimTagProps, isSelected: boolean) {
+function handleSelect(tag: JeSlimTagProps, isSelected: boolean) {
   emit('select', tag, isSelected) // 向父组件传递选择事件
 }
 </script>

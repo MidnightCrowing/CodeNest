@@ -1,6 +1,7 @@
+import JeMiniTooltip from './MiniTooltip.vue'
 import JePopup from './Popup.vue'
 import JeTooltip from './Tooltip.vue'
-import type { TooltipProps as JeTooltipProps } from './types'
+import type { JeTooltipProps } from './types'
 
-export { JePopup, JeTooltip }
+export { JeMiniTooltip, JePopup, JeTooltip }
 export type { JeTooltipProps }

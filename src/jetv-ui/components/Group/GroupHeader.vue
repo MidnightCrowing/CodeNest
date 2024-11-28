@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { JeLine } from '../index'
-import type { GroupHeaderProps } from './types'
+import { JeLine } from '../Frame'
+import type { JeGroupHeaderProps } from './types'
 
-withDefaults(defineProps<GroupHeaderProps>(), {
+withDefaults(defineProps<JeGroupHeaderProps>(), {
   type: 'primary',
   foldAble: false,
   isFold: false,

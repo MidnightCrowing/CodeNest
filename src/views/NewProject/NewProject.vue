@@ -2,13 +2,13 @@
 import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { CodeEditorOption } from '~/constants/codeEditor'
+import { ViewEnum } from '~/constants/appEnums'
+import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
 import { codeEditors, languageToEditorMap } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
-import type { languagesGroupItem, LocalProject } from '~/constants/localProject'
+import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import { View } from '~/constants/viewEnums'
-import { projectManager } from '~/core/main'
+import { LanguageAnalyzer, projectManager } from '~/core/main'
 import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
 import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
 import ForkAndCloneComponent from '~/views/NewProject/components/KindComponent/ForkAndCloneComponent.vue'
@@ -16,7 +16,6 @@ import MineComponent from '~/views/NewProject/components/KindComponent/MineCompo
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
-import type { LinguistLanguageResult, LinguistResult } from './types'
 
 const { t } = useI18n()
 
@@ -78,85 +77,37 @@ const projectLangInputValidated = ref(false)
 const mainLanguageOptions = ref<JeComboboxOptionProps[]>([])
 const mainLanguageLoading = ref(false)
 
-async function getLanguagesResult(folderPath: string) {
-  const { languages } = await window.api.analyzeFolder(folderPath) as { languages: LinguistResult['languages'] }
-  return languages.results
-}
-
-function sortByMainProgrammingLanguage(results: Record<string, LinguistLanguageResult>) {
-  const typePriority = { programming: 1, markup: 2, data: 3, prose: 4 }
-
-  const sortedEntries = Object.entries(results).sort(([keyA, valueA], [keyB, valueB]) => {
-    // 按类型优先级排序
-    const priorityA = typePriority[valueA.type] || 5
-    const priorityB = typePriority[valueB.type] || 5
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB
-    }
-
-    // 按字节数排序
-    if (valueA.bytes !== valueB.bytes) {
-      return valueB.bytes - valueA.bytes
-    }
-
-    // 按语言名排序（字母顺序）
-    return keyA.localeCompare(keyB)
-  })
-
-  return Object.fromEntries(sortedEntries)
-}
-
-function convertResultsToDropdownOptions(results: Record<string, LinguistLanguageResult>): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
-  return Object.entries(results).map(([key, value]) => ({
-    value: key,
-    label: key,
-    description: t('new_project.main_lang_option_desc', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
-  }))
-}
-
-/**
- * 将 sortedResults 转换为 langGroup 格式
- * @param sortedResults - 排序后的语言统计结果
- * @returns {languagesGroupItem[] | null} - 转换后的语言分组
- */
-function convertToLangGroup(sortedResults: Record<string, LinguistLanguageResult>): languagesGroupItem[] | null {
-  if (!sortedResults || Object.keys(sortedResults).length === 0) {
-    return null // 如果没有数据，返回 null
-  }
-
-  // 计算总字节数
-  const totalBytes = Object.values(sortedResults).reduce((sum, lang) => sum + lang.bytes, 0)
-
-  // 将数据转换为 langGroup 格式
-  return Object.entries(sortedResults).map(([lang, info]) => ({
-    text: lang, // 语言名
-    color: info.color as string, // 颜色
-    percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)), // 百分比，保留两位小数
-  }))
-}
-
 // ==================== DefaultOpen ====================
 const projectDefaultOpenInputValidated = ref(false)
 const defaultOpenLoading = ref(false)
 
 // 将 CodeEditorOption 转换为 Dropdown 可接受的 options
-function transformCodeEditorOptionsToDropdownOptions(codeEditorOptions: CodeEditorOption[]): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
+function transformCodeEditorOptionsToDropdownOptions(
+  codeEditorOptions: Record<CodeEditorEnum, CodeEditorOption>,
+): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
   const groupedOptions = new Map<string, JeDropdownOptionProps[]>()
 
-  // 按照 group 分类 CodeEditorOption
-  for (const { value, label, icon, description, group } of codeEditorOptions) {
+  // 遍历所有 CodeEditorOption
+  Object.entries(codeEditorOptions).forEach(([value, { label, icon, description, group }]) => {
     const key = group || 'default'
     if (!groupedOptions.has(key)) {
       groupedOptions.set(key, [])
     }
     groupedOptions.get(key)!.push({ value, label, icon, description })
-  }
+  })
 
-  // 构造结果：未分组的为单独项，有分组的归为 OptionGroup
-  return Array.from(groupedOptions, ([group, options]) =>
-    group === 'default'
-      ? options // 未分组，直接加入结果
-      : { value: group, groupLabel: group, options }).flat()
+  // 构造结果
+  const dropdownOptions: (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] = []
+  groupedOptions.forEach((options, group) => {
+    if (group === 'default') {
+      dropdownOptions.push(...options) // 未分组直接加入结果
+    }
+    else {
+      dropdownOptions.push({ value: group, groupLabel: group, options }) // 分组的生成 OptionGroup
+    }
+  })
+
+  return dropdownOptions
 }
 
 // ==================== License ====================
@@ -213,7 +164,7 @@ function cleanConfigValue() {
 }
 
 watch(() => localProjectItem.value.path, async (newValue) => {
-  if (!newValue) {
+  if (newValue === null) {
     return
   }
 
@@ -229,23 +180,19 @@ watch(() => localProjectItem.value.path, async (newValue) => {
     defaultOpenLoading.value = true
 
     // 获取项目编程语言分析结果
-    let results = {}
-    try {
-      results = await getLanguagesResult(newValue)
-    }
-    catch (error) {
-      console.error('获取编程语言分析结果失败:', error)
-    }
-    finally {
-      const sortedResults = sortByMainProgrammingLanguage(results) // 排序
-      mainLanguageOptions.value = convertResultsToDropdownOptions(sortedResults) // 转换成 JeDropdown 所需的格式
-
-      // 保存主要编程语言和语言分组
-      localProjectItem.value.mainLang = mainLanguageOptions.value.length > 0
-        ? (mainLanguageOptions.value[0].value as string) // 自动设置选中的值为第一个选项
-        : null
-      localProjectItem.value.langGroup = convertToLangGroup(sortedResults)
-    }
+    const analyzer = new LanguageAnalyzer(newValue)
+    analyzer.analyze().then((success) => {
+      if (success) {
+        mainLanguageOptions.value = analyzer.mainLanguageOptions
+        localProjectItem.value.mainLang = analyzer.mainLang
+        localProjectItem.value.mainLangColor = analyzer.mainLangColor
+        localProjectItem.value.langGroup = analyzer.langGroup
+      }
+      else {
+        // eslint-disable-next-line no-console
+        console.log('No language data found or analysis failed.')
+      }
+    })
 
     mainLanguageLoading.value = false
     defaultOpenLoading.value = false
@@ -263,11 +210,11 @@ watch(kindSelected, (newValue) => {
 })
 
 // ==================== Bottom Menu ====================
-const activatedView = inject('activatedView') as Ref<View>
+const activatedView = inject('activatedView') as Ref<ViewEnum>
 
-function changeView() {
+function changeHomeView() {
   if (activatedView)
-    activatedView.value = View.Home
+    activatedView.value = ViewEnum.Home
 }
 
 function addNewProject() {
@@ -294,6 +241,7 @@ function addNewProject() {
     name: localProjectItem.value.name,
     kind: localProjectItem.value.kind,
     mainLang: localProjectItem.value.mainLang,
+    mainLangColor: localProjectItem.value.mainLangColor,
     langGroup: localProjectItem.value.langGroup,
     defaultOpen: localProjectItem.value.defaultOpen,
     // 根据条件动态添加 fromUrl 和 fromName
@@ -310,7 +258,7 @@ function addNewProject() {
   } as LocalProject)
 
   // 返回主页
-  changeView()
+  changeHomeView()
 }
 </script>
 
@@ -331,12 +279,14 @@ function addNewProject() {
         <JeFileInputField
           v-model="localProjectItem.path"
           :validated="projectPathInputValidated"
+          validated-tooltip="项目路径为空"
           grow
         />
         <ConfigItemTitle title="new_project.name" />
         <JeInputField
           v-model="localProjectItem.name"
           :validated="projectNameInputValidated"
+          validated-tooltip="项目名称为空"
           spellcheck="false" w="200px"
         />
 
@@ -376,9 +326,10 @@ function addNewProject() {
         <ConfigItemTitle title="new_project.main_lang_project" />
         <JeCombobox
           v-model="localProjectItem.mainLang"
-          :validated="projectLangInputValidated"
           :options="mainLanguageOptions"
           :loading="mainLanguageLoading"
+          :validated="projectLangInputValidated"
+          validated-tooltip="项目语言为空"
         />
       </ConfigItem>
 
@@ -387,9 +338,10 @@ function addNewProject() {
         <ConfigItemTitle title="new_project.default_opening_method" />
         <JeDropdown
           v-model="localProjectItem.defaultOpen"
-          :validated="projectDefaultOpenInputValidated"
           :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
           :loading="defaultOpenLoading"
+          :validated="projectDefaultOpenInputValidated"
+          validated-tooltip="打开方式为空"
         />
       </ConfigItem>
 
@@ -408,11 +360,18 @@ function addNewProject() {
       b-t="solid 2px light:$gray-12 dark:$gray-3" p="8px"
       flex="~ row-reverse" gap="8px"
     >
-      <JeButton class="cancel-button" type="secondary" @click="changeView">
-        取消
-      </JeButton>
-      <JeButton @click="addNewProject">
+      <JeButton
+        order-2
+        @click="addNewProject"
+      >
         添加
+      </JeButton>
+      <JeButton
+        class="cancel-button" type="secondary"
+        order-1
+        @click="changeHomeView"
+      >
+        取消
       </JeButton>
     </JeFrame>
   </JeFrame>

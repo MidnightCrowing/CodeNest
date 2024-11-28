@@ -1,5 +1,5 @@
 // JeButton
-export interface ButtonProps {
+export interface JeButtonProps {
   /**
    * 按钮的类型，用于定义按钮的视觉样式。
    *
@@ -20,7 +20,7 @@ export interface ButtonProps {
 }
 
 // JeCheckbox
-export interface CheckBoxProps {
+export interface JeCheckBoxProps {
   /**
    * 是否被选中，表示复选框当前的状态。
    * - 如果设置为 `true`，复选框将显示为已选中。
@@ -44,7 +44,7 @@ export interface CheckBoxProps {
 }
 
 // JeCommandLinkButton
-export interface CommandLinkButtonProps {
+export interface JeCommandLinkButtonProps {
   /**
    * 图标的类名。
    * 用于为按钮添加一个图标。可以是任何有效的图标类名（如来自图标库）。
@@ -61,7 +61,7 @@ export interface CommandLinkButtonProps {
 }
 
 // JeLink
-export interface LinkProps {
+export interface JeLinkProps {
   onClick?: () => void
 
   /**
@@ -85,7 +85,7 @@ export interface LinkProps {
 }
 
 // JeRadio
-export interface RadioProps {
+export interface JeRadioProps {
   /**
    * 单选按钮的当前值，表示用户选择的选项。
    *
@@ -112,7 +112,7 @@ export interface RadioProps {
 }
 
 // JeSegmentedControl
-export interface SegmentedControlProps {
+export interface JeSegmentedControlProps {
   /**
    * 分段控制器的当前值，表示当前选中的选项。
    *
@@ -140,7 +140,7 @@ export interface SegmentedControlProps {
 }
 
 // JeSlimButton
-export interface SlimButtonProps {
+export interface JeSlimButtonProps {
   /**
    * 按钮的禁用状态。
    *
@@ -151,7 +151,7 @@ export interface SlimButtonProps {
 }
 
 // JeSlimTag
-export interface SlimTagProps {
+export interface JeSlimTagProps {
   /**
    * 是否可以删除该标签。
    *
@@ -186,7 +186,7 @@ export interface SlimTagProps {
 }
 
 // JeSwitch
-export interface SwitchProps {
+export interface JeSwitchProps {
   /**
    * 开关的初始状态，默认为关闭。
    *
@@ -223,7 +223,7 @@ export interface SwitchProps {
 }
 
 // JeTag
-export interface TagProps {
+export interface JeTagProps {
   /**
    * 是否可以删除该标签。
    *
@@ -252,6 +252,31 @@ export interface TagProps {
   /**
    * 标签的禁用状态。
    *
+   * - 默认为 `false`。
+   */
+  disabled?: boolean
+}
+
+// JeTransparentButton
+export interface JeTransparentButtonProps {
+  /**
+   * 是否禁用复选框，使复选框不可交互。
+   * - 如果设置为 `true`，复选框将显示为不可点击。
+   * - 默认为 `false`。
+   */
+  disabled?: boolean
+}
+
+// JeTransparentToolButton
+export interface JeTransparentToolButtonProps {
+  icon: string
+
+  // 用于设置内部图标大小，需要加上css单位
+  iconSize?: string
+
+  /**
+   * 是否禁用复选框，使复选框不可交互。
+   * - 如果设置为 `true`，复选框将显示为不可点击。
    * - 默认为 `false`。
    */
   disabled?: boolean
