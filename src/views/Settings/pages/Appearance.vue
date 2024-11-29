@@ -17,13 +17,13 @@ function setLanguage(lang: string) {
 
 watch(currentTheme, (newTheme) => {
   settings.updateSetting('theme', newTheme)
-  // settings.saveSettings()
+  settings.saveSettings()
 })
 
 watch(appLanguage, (newLang) => {
   setLanguage(newLang)
   settings.updateSetting('language', newLang)
-  // settings.saveSettings()
+  settings.saveSettings()
 })
 </script>
 

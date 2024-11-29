@@ -1,6 +1,6 @@
 import { ThemeEnum } from '~/constants/appEnums'
 
-export const currentTheme: Ref<ThemeEnum> = ref(ThemeEnum.Dark)
+export const currentTheme: Ref<ThemeEnum> = ref(ThemeEnum.Light)
 
 export async function applyTheme(theme?: ThemeEnum) {
   const rootElement = document.documentElement // 获取 :root，即 <html> 元素

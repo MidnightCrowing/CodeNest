@@ -31,6 +31,7 @@ const searchValue = ref('')
 
 // ==================== Bottom Menu ====================
 const activatedView = inject('activatedView') as Ref<ViewEnum>
+const unsaveChanges = ref(false)
 
 function openSettingsJSON() {
   window.api.openSettingsJSON()
@@ -51,6 +52,8 @@ onMounted(() => {
   settings.loadSettings()
   eventBus.emit('updateSettings')
 })
+
+provide('unsaveChanges', unsaveChanges)
 </script>
 
 <template>
@@ -119,7 +122,7 @@ onMounted(() => {
           order-1
           @click="changeHomeView"
         >
-          {{ t('settings.discard_changes') }}
+          {{ unsaveChanges ? t('settings.discard_changes') : t('settings.cancel') }}
         </JeButton>
       </div>
     </JeFrame>

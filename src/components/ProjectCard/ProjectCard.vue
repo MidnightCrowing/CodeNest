@@ -103,6 +103,7 @@ watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
       <OpenButton
         class="group-hover/item:visible"
         :default-open="projectDefaultOpen"
+        :project-path="projectPath"
         invisible
       />
 

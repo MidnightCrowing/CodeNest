@@ -7,7 +7,7 @@ import { showPop } from './LanguagePop/LanguagePopProvider'
 const props = defineProps<{
   mainLang: ProjectLanguage
   mainLangColor?: `#${string}`
-  langGroup: languagesGroupItem[]
+  langGroup: languagesGroupItem[] | undefined
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
@@ -25,7 +25,7 @@ let languagesGroup = props.langGroup
 // }
 
 function handleClick() {
-  if (containerRef.value) {
+  if (containerRef.value && languagesGroup) {
     const rect = containerRef.value.getBoundingClientRect()
 
     const top = rect.top + window.scrollY - 3

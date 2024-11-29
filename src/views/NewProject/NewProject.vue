@@ -31,7 +31,7 @@ const localProjectItem: Ref<NullableLocalProject> = ref({
   appendTime: null,
   path: null,
   name: null,
-  kind: null,
+  kind: ProjectKind.MINE,
   mainLang: null,
   langGroup: null,
   defaultOpen: null,
@@ -59,10 +59,7 @@ const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncC
   [ProjectKind.FORK]: ForkAndCloneComponent,
   [ProjectKind.CLONE]: ForkAndCloneComponent,
 }
-
-function updateProjectKind(newKind: ProjectKind) {
-  localProjectItem.value.kind = newKind
-}
+const isTestProject = ref(false)
 
 function updateProjectFromUrl(newKind: string) {
   localProjectItem.value.fromUrl = newKind
@@ -149,7 +146,7 @@ function convertLicensesToDropdownOptions(licenseEnum: typeof LicenseEnum): (JeD
     ...commonOptions,
     {
       value: 'other',
-      groupLabel: '其他许可证',
+      groupLabel: t('new_project.license_other'),
       options: otherOptions,
       isExpand: false,
     },
@@ -181,32 +178,38 @@ watch(() => localProjectItem.value.path, async (newValue) => {
 
     // 获取项目编程语言分析结果
     const analyzer = new LanguageAnalyzer(newValue)
-    analyzer.analyze().then((success) => {
-      if (success) {
-        mainLanguageOptions.value = analyzer.mainLanguageOptions
-        localProjectItem.value.mainLang = analyzer.mainLang
-        localProjectItem.value.mainLangColor = analyzer.mainLangColor
-        localProjectItem.value.langGroup = analyzer.langGroup
-      }
-      else {
+    analyzer.analyze()
+      .then((success) => {
+        if (success) {
+          mainLanguageOptions.value = analyzer.mainLanguageOptions
+          localProjectItem.value.mainLang = analyzer.mainLang
+          localProjectItem.value.mainLangColor = analyzer.mainLangColor
+          localProjectItem.value.langGroup = analyzer.langGroup
+        }
+        else {
         // eslint-disable-next-line no-console
-        console.log('No language data found or analysis failed.')
-      }
-    })
-
-    mainLanguageLoading.value = false
-    defaultOpenLoading.value = false
+          console.log('No language data found or analysis failed.')
+        }
+      })
+      .catch((error) => {
+        console.error('Analysis error:', error)
+      })
+      .finally(() => {
+        mainLanguageLoading.value = false
+        defaultOpenLoading.value = false
+      })
   }
 })
 
 watch(() => localProjectItem.value.mainLang, (newValue) => {
+  // 查找匹配的语言组项
+  const languageItem = localProjectItem.value.langGroup?.find(item => item.text === newValue)
+  localProjectItem.value.mainLangColor = languageItem?.color || null
+
+  // 查找匹配的默认打开项
   localProjectItem.value.defaultOpen = newValue
     ? languageToEditorMap[newValue] || null
     : null
-})
-
-watch(kindSelected, (newValue) => {
-  localProjectItem.value.kind = newValue
 })
 
 // ==================== Bottom Menu ====================
@@ -239,13 +242,15 @@ function addNewProject() {
     appendTime: Date.now(), // 添加创建时间
     path: localProjectItem.value.path,
     name: localProjectItem.value.name,
-    kind: localProjectItem.value.kind,
+    kind: (kindSelected.value === ProjectKind.MINE && isTestProject.value)
+      ? ProjectKind.TEST
+      : kindSelected.value,
     mainLang: localProjectItem.value.mainLang,
     mainLangColor: localProjectItem.value.mainLangColor,
     langGroup: localProjectItem.value.langGroup,
     defaultOpen: localProjectItem.value.defaultOpen,
     // 根据条件动态添加 fromUrl 和 fromName
-    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
+    ...(localProjectItem.value.kind === (ProjectKind.FORK || ProjectKind.CLONE)
       ? {
           fromUrl: localProjectItem.value.fromUrl,
           fromName: localProjectItem.value.fromName,
@@ -279,14 +284,14 @@ function addNewProject() {
         <JeFileInputField
           v-model="localProjectItem.path"
           :validated="projectPathInputValidated"
-          validated-tooltip="项目路径为空"
+          :validated-tooltip="t('new_project.path_tooltip')"
           grow
         />
         <ConfigItemTitle title="new_project.name" />
         <JeInputField
           v-model="localProjectItem.name"
           :validated="projectNameInputValidated"
-          validated-tooltip="项目名称为空"
+          :validated-tooltip="t('new_project.name_tooltip')"
           spellcheck="false" w="200px"
         />
 
@@ -297,14 +302,14 @@ function addNewProject() {
         >
           <span text="secondary" truncate>{{ repositoryFolderName }}</span>
           <JeLink :on-click="fillProjectName">
-            {{ t('new_project.kind_component.fill_in') }}
+            {{ t('new_project.kind.fill') }}
           </JeLink>
         </div>
       </ConfigItem>
 
       <!-- KindButtons -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.kind_component.project_source" />
+        <ConfigItemTitle title="new_project.kind.source" />
         <JeSegmentedControl
           v-model="kindSelected"
           :labels="kindButtons"
@@ -313,8 +318,8 @@ function addNewProject() {
         <KeepAlive>
           <Component
             :is="kindComponents[kindSelected]"
+            v-model:is-test-project="isTestProject"
             :local-project-item="localProjectItem"
-            @update:project-kind="updateProjectKind"
             @update:project-from-url="updateProjectFromUrl"
             @update:project-from-name="updateProjectFromName"
           />
@@ -323,25 +328,25 @@ function addNewProject() {
 
       <!-- MainLanguage -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.main_lang_project" />
+        <ConfigItemTitle title="new_project.main_lang" />
         <JeCombobox
           v-model="localProjectItem.mainLang"
           :options="mainLanguageOptions"
           :loading="mainLanguageLoading"
           :validated="projectLangInputValidated"
-          validated-tooltip="项目语言为空"
+          :validated-tooltip="t('new_project.lang_tooltip')"
         />
       </ConfigItem>
 
       <!-- DefaultOpen -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.default_opening_method" />
+        <ConfigItemTitle title="new_project.open_method" />
         <JeDropdown
           v-model="localProjectItem.defaultOpen"
           :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
           :loading="defaultOpenLoading"
           :validated="projectDefaultOpenInputValidated"
-          validated-tooltip="打开方式为空"
+          :validated-tooltip="t('new_project.open_tooltip')"
         />
       </ConfigItem>
 
@@ -364,14 +369,14 @@ function addNewProject() {
         order-2
         @click="addNewProject"
       >
-        添加
+        {{ t('new_project.create') }}
       </JeButton>
       <JeButton
         class="cancel-button" type="secondary"
         order-1
         @click="changeHomeView"
       >
-        取消
+        {{ t('new_project.cancel') }}
       </JeButton>
     </JeFrame>
   </JeFrame>

@@ -7,36 +7,46 @@ import { ProjectKind } from '~/constants/localProject'
 import { projectManager } from '~/core/main'
 import { JeFrame, JeLine, JeTransparentToolButton } from '~/jetv-ui'
 
+const props = defineProps<{
+  activatedItem: string
+}>()
+const emit = defineEmits(['updateActivatedItem'])
+
 const { t } = useI18n()
 
-// Side Panel
-const activatedItem: Ref<string> = ref('k-all')
-
+// 通过点击更新激活项
 function updateActivatedItem(itemMark: string) {
-  if (activatedItem.value !== itemMark)
-    activatedItem.value = itemMark
+  if (props.activatedItem !== itemMark) {
+    emit('updateActivatedItem', itemMark)
+  }
 }
 
-// Kind Group
-const kinds = [
+// ==================== Kind Group ====================
+const kinds = computed(() => [
   { kind: 'all', label: t('home.side_panel.kinds.all') },
   { kind: 'mine', label: t('home.side_panel.kinds.mine'), projectKind: ProjectKind.MINE },
   { kind: 'fork', label: t('home.side_panel.kinds.fork'), projectKind: ProjectKind.FORK },
   { kind: 'clone', label: t('home.side_panel.kinds.clone'), projectKind: ProjectKind.CLONE },
   { kind: 'test', label: t('home.side_panel.kinds.test'), projectKind: ProjectKind.TEST },
-]
+])
 // 使用 map 方法动态生成 Kind Group 数据
-const kindMenuGroups = kinds.map(({ kind, label, projectKind }) => ({
-  kind,
-  label,
-  count: projectKind ? projectManager.getProjectsByKindCount(projectKind) : projectManager.getProjects().length,
-}))
+const kindMenuGroups = computed(() =>
+  kinds.value.map(({ kind, label, projectKind }) => ({
+    kind,
+    label,
+    count: projectKind
+      ? projectManager.getProjectsByKind(projectKind).length
+      : projectManager.getProjects().length,
+  })),
+)
 // 分组 Kind Group1 和 Kind Group2
-const kindMenuGroup1 = kindMenuGroups.slice(0, 4) // 包含 all, mine, fork, clone
-const kindMenuGroup2 = kindMenuGroups.slice(4) // 包含 test
+const kindMenuGroup1 = computed(() => kindMenuGroups.value.slice(0, 4)) // 包含 all, mine, fork, clone
+const kindMenuGroup2 = computed(() => kindMenuGroups.value.slice(4)) // 包含 test
 
-// Language Group
-const languagesGroup = projectManager.getMainLangSummary()
+// ==================== Language Group ====================
+const languagesGroup = computed(() => {
+  return projectManager.getMainLangSummary()
+})
 
 // ==================== Settings Bottom ====================
 const activatedView = inject('activatedView') as Ref<ViewEnum>

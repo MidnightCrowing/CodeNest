@@ -1,3 +1,6 @@
+import { exec } from 'node:child_process'
+import * as path from 'node:path'
+
 import { dialog, ipcMain, shell } from 'electron'
 import fs from 'fs-extra'
 
@@ -117,6 +120,34 @@ ipcMain.handle('load-settings-data', async (): Promise<{ success: boolean, data?
       console.error('Unknown error:', error)
       return { success: false, error: 'Unknown error occurred' }
     }
+  }
+})
+
+// 使用IDE打开项目
+ipcMain.handle('open-project', async (_, idePath: string, projectPath: string): Promise<string> => {
+  if (!idePath || !projectPath) {
+    throw new Error('IDE 路径和项目路径不能为空')
+  }
+
+  // 验证路径是否正确
+  if (!path.isAbsolute(idePath) || !path.isAbsolute(projectPath)) {
+    throw new Error('提供的路径必须是绝对路径')
+  }
+
+  try {
+    // 使用 IDE 打开项目目录
+    exec(`"${idePath}" "${projectPath}"`, (error) => {
+      if (error) {
+        console.error('Failed to open project:', error)
+        throw new Error('打开项目失败，请检查 IDE 路径和项目路径是否正确')
+      }
+    })
+
+    return '项目已成功打开'
+  }
+  catch (err) {
+    console.error(err)
+    throw new Error('打开项目时发生错误')
   }
 })
 

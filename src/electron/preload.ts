@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('api', {
   loadProjectData: () => ipcRenderer.invoke('load-project-data'),
   saveSettingsData: (data: string) => ipcRenderer.invoke('save-settings-data', data),
   loadSettingsData: () => ipcRenderer.invoke('load-settings-data'),
+  openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('open-project', idePath, projectPath),
   openSettingsJSON: () => ipcRenderer.invoke('open-settings-json'),
 })

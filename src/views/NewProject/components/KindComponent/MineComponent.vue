@@ -1,31 +1,30 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
-import { ProjectKind } from '~/constants/localProject'
 import { JeCheckbox } from '~/jetv-ui'
 
-const emit = defineEmits(['update:projectKind'])
+const props = defineProps<{
+  isTestProject: boolean
+}>()
+const emit = defineEmits(['update:isTestProject'])
 
 const { t } = useI18n()
 
-const isTestProject = ref(false)
+const isTestProjectLocal = ref(props.isTestProject)
 
-watch(isTestProject, (newValue) => {
-  if (newValue)
-    emit('update:projectKind', ProjectKind.TEST)
-  else
-    emit('update:projectKind', ProjectKind.MINE)
+watch(isTestProjectLocal, (newValue) => {
+  emit('update:isTestProject', newValue)
 })
 </script>
 
 <template>
   <div col-start="2">
     <JeCheckbox
-      v-model="isTestProject"
+      v-model="isTestProjectLocal"
       class="checkbox-setting"
       w-fit
     >
-      {{ t('new_project.kind_component.test_desc') }}
+      {{ t('new_project.kind.test') }}
     </JeCheckbox>
   </div>
 </template>

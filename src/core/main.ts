@@ -104,7 +104,7 @@ export class LanguageAnalyzer {
     return Object.entries(results).map(([key, value]) => ({
       value: key,
       label: key,
-      description: t('new_project.main_lang_option_desc', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
+      description: t('new_project.lang_info', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
     }))
   }
 
@@ -170,6 +170,43 @@ class ProjectManager {
     return this.projectItems
   }
 
+  // 获取指定类型的项目
+  getProjectsByKind(kind: ProjectKind): LocalProject[] {
+    return this.projectItems.filter(project => project.kind === kind)
+  }
+
+  // 获取指定语言的项目
+  getProjectsByLang(lang: ProjectLanguage): LocalProject[] {
+    return this.projectItems.filter(project => project.mainLang === lang)
+  }
+
+  // 获取主要语言的统计信息
+  getMainLangSummary(): { text: ProjectLanguage, color: string, count: number }[] {
+    // 创建一个 Map 来统计语言及其信息
+    const langMap = new Map<ProjectLanguage, { color: string, count: number }>()
+
+    for (const project of this.projectItems) {
+      const lang = project.mainLang
+      const color = project.mainLangColor ?? '#000000' // 如果没有定义颜色，则使用默认黑色
+
+      if (langMap.has(lang)) {
+        // 如果语言已存在于 Map 中，则更新计数
+        langMap.get(lang)!.count += 1
+      }
+      else {
+        // 如果语言不存在于 Map 中，则添加初始信息
+        langMap.set(lang, { color, count: 1 })
+      }
+    }
+
+    // 将 Map 转换为数组形式并返回
+    return Array.from(langMap.entries()).map(([text, { color, count }]) => ({
+      text,
+      color,
+      count,
+    }))
+  }
+
   // 根据索引移除项目
   removeProject(index: number): boolean {
     if (index >= 0 && index < this.projectItems.length) {
@@ -233,36 +270,6 @@ class ProjectManager {
     catch (error: any) {
       console.error('Error loading project data:', error)
     }
-  }
-
-  getProjectsByKindCount(kind: ProjectKind): number {
-    return this.projectItems.filter(project => project.kind === kind).length
-  }
-
-  getMainLangSummary(): { text: ProjectLanguage, color: string, count: number }[] {
-    // 创建一个 Map 来统计语言及其信息
-    const langMap = new Map<ProjectLanguage, { color: string, count: number }>()
-
-    for (const project of this.projectItems) {
-      const lang = project.mainLang
-      const color = project.mainLangColor ?? '#000000' // 如果没有定义颜色，则使用默认黑色
-
-      if (langMap.has(lang)) {
-        // 如果语言已存在于 Map 中，则更新计数
-        langMap.get(lang)!.count += 1
-      }
-      else {
-        // 如果语言不存在于 Map 中，则添加初始信息
-        langMap.set(lang, { color, count: 1 })
-      }
-    }
-
-    // 将 Map 转换为数组形式并返回
-    return Array.from(langMap.entries()).map(([text, { color, count }]) => ({
-      text,
-      color,
-      count,
-    }))
   }
 }
 

@@ -14,7 +14,7 @@ export enum ProjectKind {
 export type ProjectLanguage = string
 export interface ProjectLanguageInfo {
   text: ProjectLanguage
-  color: string
+  color: `#${string}`
 }
 
 export interface languagesGroupItem extends ProjectLanguageInfo {

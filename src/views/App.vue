@@ -24,14 +24,20 @@ const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Settings]: Settings,
 }
 
-function applyLanguage(lang: string) {
+async function applyLanguage(lang: string) {
   locale.value = lang
 }
 
-onMounted(() => {
-  settings.loadSettings()
-  applyTheme(settings.getSetting('theme' as ThemeEnum))
-  applyLanguage(settings.getSetting('language'))
+onMounted(async () => {
+  await settings.loadSettings()
+
+  const themeSetting = settings.getSetting('theme' as ThemeEnum)
+  const languageSetting = settings.getSetting('language')
+
+  await Promise.all([
+    applyTheme(themeSetting),
+    applyLanguage(languageSetting),
+  ])
 })
 
 provide('activatedView', activatedView)

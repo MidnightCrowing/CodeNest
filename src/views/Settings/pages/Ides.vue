@@ -7,9 +7,11 @@ import { settings } from '~/core/settings'
 import { eventBus } from '~/utils/eventBus'
 
 const { t } = useI18n()
+const unsaveChanges = inject('unsaveChanges') as Ref<boolean>
 
+const originalCodeEditorsPaths = structuredClone(settings.getSetting('codeEditorsPath')) as Record<CodeEditorEnum, string>
 const codeEditorsPaths = ref<Record<CodeEditorEnum, string>>(
-  structuredClone(settings.getSetting('codeEditorsPath')) as Record<CodeEditorEnum, string>,
+  structuredClone(originalCodeEditorsPaths) as Record<CodeEditorEnum, string>,
 )
 
 function updateCodeEditorsPaths() {
@@ -20,13 +22,12 @@ function savePathSetting() {
   settings.updateSetting('codeEditorsPath', toRaw(codeEditorsPaths.value))
 }
 
-eventBus.on('updateSettings', () => {
-  updateCodeEditorsPaths()
-})
+watch(codeEditorsPaths, (newValue) => {
+  unsaveChanges.value = JSON.stringify(newValue) !== JSON.stringify(originalCodeEditorsPaths)
+}, { deep: true })
 
-eventBus.on('saveSettings', () => {
-  savePathSetting()
-})
+eventBus.on('updateSettings', updateCodeEditorsPaths)
+eventBus.on('saveSettings', savePathSetting)
 </script>
 
 <template>

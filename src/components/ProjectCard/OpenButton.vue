@@ -1,9 +1,17 @@
 <script lang="ts" setup>
 import type { CodeEditorEnum } from '~/constants/codeEditor'
+import { codeEditors } from '~/constants/codeEditor'
+import { settings } from '~/core/settings'
 
 defineProps<{
   defaultOpen: CodeEditorEnum
+  projectPath: string
 }>()
+
+function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
+  const idePath = settings.getSetting('codeEditorsPath')[codeEditor]
+  window.api.openProject(idePath, projectPath)
+}
 </script>
 
 <template>
@@ -14,10 +22,11 @@ defineProps<{
     dark:bg="$blue-6 hover:$blue-5 active:$blue-4"
     color="$gray-12"
     flex="~ items-center gap-5px"
+    @click="handleClick(defaultOpen, projectPath)"
     @mousedown.stop @mouseup.stop
   >
     <!-- 使用 text-color 动态适配 -->
-    <span class="i-custom:visual-studio-code" />
-    <span>Intellij IDEA</span>
+    <span :class="codeEditors[defaultOpen].icon" />
+    <span>{{ codeEditors[defaultOpen].label }}</span>
   </button>
 </template>

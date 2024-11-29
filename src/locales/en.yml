@@ -88,16 +88,23 @@ home:
 new_project:
   name: Name
   directory: Directory
-  kind_component:
-    project_source: Project source
-    test_desc: Test project
-    project_url: Project url
-    project_name: Project name
-    fill_in: Fill in
-  main_lang_project: Main language of the project
-  main_lang_option_desc: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
-  default_opening_method: Default opening method
+  kind:
+    source: Project Source
+    test: Test Project
+    url: Project URL
+    name: Project Name
+    fill: Fill In
+  main_lang: Main Language
+  lang_info: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
+  open_method: Opening Method
   license: License
+  license_other: Other Licenses
+  path_tooltip: Path cannot be empty
+  name_tooltip: Name cannot be empty
+  lang_tooltip: Language cannot be empty
+  open_tooltip: Opening method cannot be empty
+  create: Create
+  cancel: Cancel
 settings:
   appearance:
     title: Appearance
@@ -112,4 +119,5 @@ settings:
     browse: Browse...
   open_json_file: open JSON file
   save: Save
+  cancel: Cancel
   discard_changes: Discard changes
