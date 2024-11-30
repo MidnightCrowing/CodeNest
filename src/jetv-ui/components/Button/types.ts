@@ -8,7 +8,7 @@ export interface JeButtonProps {
    *
    * 默认为 `'primary'`。
    */
-  type?: 'primary' | 'secondary'
+  type?: 'primary' | 'secondary' | 'secondary-alt'
 
   /**
    * 按钮的禁用状态。
@@ -141,6 +141,8 @@ export interface JeSegmentedControlProps {
 
 // JeSlimButton
 export interface JeSlimButtonProps {
+  type?: 'default' | 'alt'
+
   /**
    * 按钮的禁用状态。
    *

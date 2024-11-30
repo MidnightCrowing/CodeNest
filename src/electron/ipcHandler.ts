@@ -47,8 +47,21 @@ ipcMain.handle('open-external', (_, url: string): void => {
 })
 
 // 传入项目根目录，获取项目各编程语言的占比
-ipcMain.handle('analyze-folder', async (_, folderPath): Promise<LinguistResult> => {
-  return analyzeFolder(folderPath)
+ipcMain.handle('analyze-folder', async (_, folderPath): Promise<LinguistResult | { error: string }> => {
+  try {
+    const stat = await fs.stat(folderPath)
+
+    // 检查是否是目录
+    if (!stat.isDirectory()) {
+      return { error: 'Provided path is not a directory' }
+    }
+
+    // 如果路径是有效的目录，继续分析
+    return analyzeFolder(folderPath)
+  }
+  catch (error) {
+    return { error: `Error checking folder path:${error}` }
+  }
 })
 
 // 保存数据到本地
@@ -148,6 +161,56 @@ ipcMain.handle('open-project', async (_, idePath: string, projectPath: string): 
   catch (err) {
     console.error(err)
     throw new Error('打开项目时发生错误')
+  }
+})
+
+// 导入数据
+ipcMain.handle('import-data', async () => {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'JSON Files', extensions: ['json'] }],
+    })
+
+    if (result.canceled || !result.filePaths.length) {
+      return { success: false, message: 'No file selected for import' }
+    }
+
+    const importedFilePath = result.filePaths[0]
+
+    // 将选中的文件复制到默认数据路径
+    await fs.copy(importedFilePath, dataFilePath)
+
+    return { success: true, message: 'Data file imported successfully' }
+  }
+  catch (error) {
+    console.error('Error importing data file:', error)
+    return { success: false, message: 'Failed to import data file' }
+  }
+})
+
+// 导出数据
+ipcMain.handle('export-data', async () => {
+  try {
+    const result = await dialog.showSaveDialog({
+      defaultPath: 'projects.json',
+      filters: [{ name: 'JSON Files', extensions: ['json'] }],
+    })
+
+    if (result.canceled || !result.filePath) {
+      return { success: false, message: 'No file path selected for export' }
+    }
+
+    const exportedFilePath = result.filePath
+
+    // 复制程序内部的 `data.json` 文件到用户选择的路径
+    await fs.copy(dataFilePath, exportedFilePath)
+
+    return { success: true, message: 'Data file exported successfully' }
+  }
+  catch (error) {
+    console.error('Error exporting data file:', error)
+    return { success: false, message: 'Failed to export data file' }
   }
 })
 

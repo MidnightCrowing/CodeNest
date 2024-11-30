@@ -100,7 +100,7 @@ function handleClick(event: MouseEvent) {
 }
 
 .je-radio-input__label {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply ml-2;
 
   .je-radio-input--disabled & {

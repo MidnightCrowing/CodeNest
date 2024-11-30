@@ -18,7 +18,7 @@ withDefaults(defineProps<JeGroupHeaderProps>(), {
 
 <style lang="scss" scoped>
 .je-group-header {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply mx-5px;
   @apply flex items-center gap-8px;
 

@@ -82,13 +82,12 @@ function openMenu() {
     </JeMiniTooltip>
 
     <!-- Menu -->
-    <div class="je-combobox__menu-wrapper" @click.stop>
-      <JeMiniMenu
-        v-model:visible="isMenuOpen"
-        class="je-combobox__menu"
-        :options="menuOptions"
-      />
-    </div>
+    <JeMiniMenu
+      v-model:visible="isMenuOpen"
+      class="je-combobox__menu"
+      :options="menuOptions"
+      @click.stop
+    />
   </div>
 </template>
 
@@ -112,7 +111,7 @@ function openMenu() {
       @apply light:outline-$red-4 dark:outline-$red-6;
     }
 
-    &:hover:not(:has(.je-combobox__menu-wrapper:hover)) .je-combobox__tooltip {
+    &:hover:not(:has(.je-combobox__menu:hover)) .je-combobox__tooltip {
       @apply visible;
     }
   }
@@ -173,11 +172,7 @@ function openMenu() {
   @apply invisible;
 }
 
-.je-combobox__menu-wrapper {
-  @apply absolute w-full left-0 top-full;
-}
-
 .je-combobox__menu {
-  @apply max-h-300px;
+  @apply w-full max-h-300px left-0 top-full;
 }
 </style>

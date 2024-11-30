@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
@@ -11,32 +10,14 @@ import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer, projectManager } from '~/core/main'
 import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
 import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
-import ForkAndCloneComponent from '~/views/NewProject/components/KindComponent/ForkAndCloneComponent.vue'
-import MineComponent from '~/views/NewProject/components/KindComponent/MineComponent.vue'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
+import ForkAndCloneComponent from './components/KindComponent/ForkAndCloneComponent.vue'
+import MineComponent from './components/KindComponent/MineComponent.vue'
+import { initializeNewProjectState, isUpdateProject, localProjectItem } from './ProjectConfigProvider'
 
 const { t } = useI18n()
-
-// ==================== localProjectItem ====================
-type Nullable<T> = {
-  [K in keyof T]: T[K] | null;
-}
-export type NullableLocalProject = Nullable<Omit<LocalProject, 'license'>> & {
-  license: LicenseEnum | string
-}
-
-const localProjectItem: Ref<NullableLocalProject> = ref({
-  appendTime: null,
-  path: null,
-  name: null,
-  kind: ProjectKind.MINE,
-  mainLang: null,
-  langGroup: null,
-  defaultOpen: null,
-  license: 'None',
-})
 
 // ==================== ProjectInfo ====================
 const projectPathInputValidated = ref(false)
@@ -53,7 +34,7 @@ const kindButtons: { label: string, value: ProjectKind }[] = [
   { label: 'Fork', value: ProjectKind.FORK },
   { label: 'Clone', value: ProjectKind.CLONE },
 ]
-const kindSelected: Ref<ProjectKind> = ref(ProjectKind.MINE)
+const kindSelected: Ref<ProjectKind> = ref(localProjectItem.value.kind as ProjectKind)
 const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncComponent>>> = {
   [ProjectKind.MINE]: MineComponent,
   [ProjectKind.FORK]: ForkAndCloneComponent,
@@ -140,7 +121,7 @@ function convertLicensesToDropdownOptions(licenseEnum: typeof LicenseEnum): (JeD
   // 返回带分组的选项数组
   return [
     {
-      value: 'None',
+      value: LicenseEnum.NONE,
       label: '<None>',
     },
     ...commonOptions,
@@ -186,10 +167,6 @@ watch(() => localProjectItem.value.path, async (newValue) => {
           localProjectItem.value.mainLangColor = analyzer.mainLangColor
           localProjectItem.value.langGroup = analyzer.langGroup
         }
-        else {
-        // eslint-disable-next-line no-console
-          console.log('No language data found or analysis failed.')
-        }
       })
       .catch((error) => {
         console.error('Analysis error:', error)
@@ -216,12 +193,14 @@ watch(() => localProjectItem.value.mainLang, (newValue) => {
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 
 function changeHomeView() {
+  initializeNewProjectState()
+
   if (activatedView)
     activatedView.value = ViewEnum.Home
 }
 
-function addNewProject() {
-  // 验证输入项
+// 公共的验证函数
+function validateFields(): boolean {
   const validations = [
     { field: localProjectItem.value.path, validated: projectPathInputValidated },
     { field: localProjectItem.value.name, validated: projectNameInputValidated },
@@ -229,11 +208,34 @@ function addNewProject() {
     { field: localProjectItem.value.defaultOpen, validated: projectDefaultOpenInputValidated },
   ]
 
-  if (validations.reduce((errorFound, { field, validated }) => {
+  return validations.reduce((errorFound, { field, validated }) => {
     const isInvalid = !field
     validated.value = isInvalid
     return errorFound || isInvalid
-  }, false)) {
+  }, false)
+}
+
+// 公共的动态字段处理函数
+function getDynamicFields(): Record<string, any> {
+  return {
+    // 根据条件动态添加 fromUrl 和 fromName
+    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
+      ? {
+          fromUrl: localProjectItem.value.fromUrl,
+          fromName: localProjectItem.value.fromName,
+        }
+      : {}),
+
+    // 如果 license 不为 None，则包含 license 属性
+    ...(localProjectItem.value.license !== LicenseEnum.NONE
+      ? { license: localProjectItem.value.license }
+      : {}),
+  }
+}
+
+function addNewProject() {
+  // 验证输入项
+  if (validateFields()) {
     return
   }
 
@@ -249,18 +251,24 @@ function addNewProject() {
     mainLangColor: localProjectItem.value.mainLangColor,
     langGroup: localProjectItem.value.langGroup,
     defaultOpen: localProjectItem.value.defaultOpen,
-    // 根据条件动态添加 fromUrl 和 fromName
-    ...(localProjectItem.value.kind === (ProjectKind.FORK || ProjectKind.CLONE)
-      ? {
-          fromUrl: localProjectItem.value.fromUrl,
-          fromName: localProjectItem.value.fromName,
-        }
-      : {}),
-    // 如果 license 不为 None，则包含 license 属性
-    ...(localProjectItem.value.license !== 'None'
-      ? { license: localProjectItem.value.license }
-      : {}),
+    ...getDynamicFields(),
   } as LocalProject)
+
+  // 返回主页
+  changeHomeView()
+}
+
+function updateProject() {
+  // 验证输入项
+  if (validateFields()) {
+    return
+  }
+
+  // 更新项目
+  projectManager.updateProject(
+    localProjectItem.value.appendTime as number,
+    localProjectItem.value as LocalProject,
+  )
 
   // 返回主页
   changeHomeView()
@@ -366,13 +374,21 @@ function addNewProject() {
       flex="~ row-reverse" gap="8px"
     >
       <JeButton
+        v-if="!isUpdateProject"
         order-2
         @click="addNewProject"
       >
         {{ t('new_project.create') }}
       </JeButton>
       <JeButton
-        class="cancel-button" type="secondary"
+        v-else
+        order-2
+        @click="updateProject"
+      >
+        {{ t('new_project.update') }}
+      </JeButton>
+      <JeButton
+        type="secondary-alt"
         order-1
         @click="changeHomeView"
       >
@@ -381,10 +397,3 @@ function addNewProject() {
     </JeFrame>
   </JeFrame>
 </template>
-
-<style lang="scss" scoped>
-.cancel-button.je-button--secondary {
-  @apply light:bg-$gray-14 dark:bg-$gray-2;
-  @apply dark:bg-$gray-2 dark:hover:bg-$gray-3;
-}
-</style>

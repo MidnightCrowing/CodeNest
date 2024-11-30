@@ -7,6 +7,7 @@ import { settings } from '~/core/settings'
 import { eventBus } from '~/utils/eventBus'
 
 const { t } = useI18n()
+
 const unsaveChanges = inject('unsaveChanges') as Ref<boolean>
 
 const originalCodeEditorsPaths = structuredClone(settings.getSetting('codeEditorsPath')) as Record<CodeEditorEnum, string>
@@ -43,7 +44,7 @@ eventBus.on('saveSettings', savePathSetting)
     >
       <div flex="~ items-center" gap="10px">
         <span :class="value.icon" text="1.25rem" />
-        <strong>{{ value.label }}</strong>
+        <strong whitespace-nowrap>{{ value.label }}</strong>
       </div>
     </SettingPathCard>
   </div>

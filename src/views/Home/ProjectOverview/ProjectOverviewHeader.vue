@@ -1,21 +1,27 @@
 <script lang="ts" setup>
-import type { Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
-import { JeButton, JeSearchField } from '~/jetv-ui'
+import { JeSearchField, JeSlimButton } from '~/jetv-ui'
+
+const props = defineProps<{
+  searchValue: string
+}>()
+const emit = defineEmits(['update:searchValue'])
 
 const { t } = useI18n()
 
 const activatedView = inject('activatedView') as Ref<ViewEnum>
+const searchInputValue = ref(props.searchValue)
 
 function changeNewProjectView() {
   if (activatedView)
     activatedView.value = ViewEnum.NewProject
 }
 
-const pathInputValue = ref('')
-// 控制菜单的显示/隐藏状态
+watch(searchInputValue, (newSearchValue) => {
+  emit('update:searchValue', newSearchValue)
+})
 </script>
 
 <template>
@@ -25,13 +31,13 @@ const pathInputValue = ref('')
     gap="15px"
   >
     <JeSearchField
-      v-model="pathInputValue"
+      v-model="searchInputValue"
       class="overview-header-search-input" type="in-editor"
       grow
     />
-    <JeButton @click="changeNewProjectView">
+    <JeSlimButton type="alt" @click="changeNewProjectView">
       {{ t('home.header.add_item') }}
-    </JeButton>
+    </JeSlimButton>
   </header>
 </template>
 

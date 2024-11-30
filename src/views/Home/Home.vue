@@ -14,14 +14,14 @@ function updateActivatedItem(itemMark: string) {
 </script>
 
 <template>
-  <JeFrame flex="~ row" overflow-hidden>
+  <JeFrame flex="~ row" w-100vw>
     <SidePanel
       :activated-item="activatedItem"
       @update-activated-item="updateActivatedItem"
     />
     <ProjectOverview
       :activated-item="activatedItem"
-      grow
+      grow overflow-hidden
     />
   </JeFrame>
 </template>

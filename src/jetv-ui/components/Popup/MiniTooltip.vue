@@ -12,7 +12,7 @@ defineProps<JeMiniTooltipProps>()
 
 <style lang="scss" scoped>
 .je-mini-tooltip {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply b-solid b-1px px-5px;
 
   &--error {

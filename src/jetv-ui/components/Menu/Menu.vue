@@ -148,7 +148,14 @@ function checkMenuPosition() {
               <span v-show="hasIcon" class="je-menu__option-icon" :class="option.icon" />
 
               <!-- Option Label -->
-              <span class="je-menu__option-label" :style="{ color: option.labelColor }">
+              <span
+                class="je-menu__option-label"
+                :class="{
+                  'custom-color': option.labelColor && !option.labelColor.startsWith('#'),
+                  [option.labelColor as string]: !option.labelColor?.startsWith('#'),
+                }"
+                :style="option.labelColor?.startsWith('#') ? {} : { color: option.labelColor }"
+              >
                 {{ option.label }}
 
                 <!-- Option Key -->
@@ -183,7 +190,7 @@ function checkMenuPosition() {
                 class="je-menu__child-menu-wrapper"
                 :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
               >
-                <JeMenuProps
+                <Menu
                   class="child"
                   :visible="true"
                   :title="option.childMenu.title"
@@ -226,7 +233,14 @@ function checkMenuPosition() {
                     <span v-show="hasIcon" class="je-menu__option-icon" :class="groupOption.icon" />
 
                     <!-- Option Label -->
-                    <span class="je-menu__option-label" :style="{ color: groupOption.labelColor }">
+                    <span
+                      class="je-menu__option-label"
+                      :class="{
+                        'custom-color': groupOption.labelColor && !groupOption.labelColor.startsWith('#'),
+                        [groupOption.labelColor as string]: !groupOption.labelColor?.startsWith('#'),
+                      }"
+                      :style="groupOption.labelColor?.startsWith('#') ? {} : { color: groupOption.labelColor }"
+                    >
                       {{ groupOption.label }}
 
                       <!-- Option Key -->
@@ -261,7 +275,7 @@ function checkMenuPosition() {
                       class="je-menu__child-menu-wrapper"
                       :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
                     >
-                      <JeMenuProps
+                      <Menu
                         class="je-menu__child"
                         :visible="true"
                         :title="groupOption.childMenu.title"
@@ -283,7 +297,7 @@ function checkMenuPosition() {
 
 <style lang="scss" scoped>
 .je-menu {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply min-w-150px overflow-y-auto;
   @apply cursor-default;
 }
@@ -318,7 +332,7 @@ function checkMenuPosition() {
   @apply size-0.7rem;
 }
 
-.je-menu__option-label {
+.je-menu__option-label:not(.custom-color) {
   @apply flex;
   @apply text-0.8rem mr-5px;
   @apply light:color-$gray-1 dark:color-$gray-12;

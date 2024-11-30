@@ -253,6 +253,8 @@ export interface JeInputFieldProps {
    */
   disabled?: boolean
 
+  isReadonly?: boolean
+
   tabindex?: number
 }
 

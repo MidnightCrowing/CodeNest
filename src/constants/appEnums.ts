@@ -7,6 +7,7 @@ export enum ViewEnum {
 export enum SettingPageEnum {
   Appearance = 'Appearance',
   Ides = 'Ides',
+  About = 'About',
 }
 
 export enum ThemeEnum {

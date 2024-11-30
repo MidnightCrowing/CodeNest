@@ -24,6 +24,7 @@ defineEmits<{
       :disabled="disabled"
       :value="modelValue"
       :tabindex="tabindex"
+      :readonly="isReadonly"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     >
     <JeMiniTooltip

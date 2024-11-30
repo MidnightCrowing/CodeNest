@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
-import SideMenuButtonBase from '~/components/SideMenuButton.vue'
+import SideMenuButton from '~/components/SideMenuButton.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import { ProjectKind } from '~/constants/localProject'
 import { projectManager } from '~/core/main'
@@ -61,7 +61,7 @@ function changeSettingsView() {
   <JeFrame
     type="secondary"
     m-t="1px"
-    b="solid x-4px y-8px light:$gray-13 dark:$gray-2" box-border
+    b="solid x-4px y-8px white light:$gray-13 dark:$gray-2"
     flex="~ col justify-between" gap="5px"
   >
     <JeFrame
@@ -75,7 +75,7 @@ function changeSettingsView() {
         {{ t('home.side_panel.projects') }}
       </header>
       <main flex="~ col" gap="1px">
-        <SideMenuButtonBase
+        <SideMenuButton
           v-for="kindItem in kindMenuGroup1"
           :key="kindItem.kind"
           :active="activatedItem === `k-${kindItem.kind}`"
@@ -84,9 +84,9 @@ function changeSettingsView() {
           @keydown.enter="updateActivatedItem(`k-${kindItem.kind}`)"
         >
           {{ kindItem.label }}
-        </SideMenuButtonBase>
+        </SideMenuButton>
         <JeLine mx-10px />
-        <SideMenuButtonBase
+        <SideMenuButton
           v-for="kindItem in kindMenuGroup2"
           :key="kindItem.kind"
           :active="activatedItem === `k-${kindItem.kind}`"
@@ -94,7 +94,7 @@ function changeSettingsView() {
           @click="updateActivatedItem(`k-${kindItem.kind}`)"
         >
           {{ kindItem.label }}
-        </SideMenuButtonBase>
+        </SideMenuButton>
       </main>
 
       <!-- Language Group -->
@@ -103,7 +103,7 @@ function changeSettingsView() {
           {{ t('home.side_panel.languages') }}
         </header>
         <main flex="~ col" gap="1px">
-          <SideMenuButtonBase
+          <SideMenuButton
             v-for="languageItem in languagesGroup"
             :key="languageItem.text"
             :active="activatedItem === `l-${languageItem.text}`"
@@ -113,7 +113,7 @@ function changeSettingsView() {
             @keydown.enter="updateActivatedItem(`l-${languageItem.text}`)"
           >
             {{ languageItem.text }}
-          </SideMenuButtonBase>
+          </SideMenuButton>
         </main>
       </template>
     </JeFrame>

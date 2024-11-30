@@ -19,7 +19,7 @@ withDefaults(defineProps<JeButtonProps>(), {
 
 <style lang="scss" scoped>
 .je-button {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply color-$gray-14;
   @apply outline outline-2px outline-none;
   @apply px-14px py-3px b-0 rounded-4px;
@@ -39,7 +39,8 @@ withDefaults(defineProps<JeButtonProps>(), {
   }
 
   // Secondary 按钮类型样式
-  &--secondary:not(:disabled) {
+  &--secondary:not(:disabled),
+  &--secondary-alt:not(:disabled) {
     @apply outline-offset-0;
 
     // light
@@ -51,6 +52,11 @@ withDefaults(defineProps<JeButtonProps>(), {
     @apply dark:color-$gray-12;
     @apply dark:bg-$gray-1 dark:active:bg-$gray-2 dark:focus:bg-$gray-2;
     @apply dark:outline-$gray-5 dark:hover:outline-$gray-7 dark:active:outline-$gray-7 dark:focus:outline-$blue-6;
+  }
+
+  &--secondary-alt:not(:disabled) {
+    @apply light:hover:bg-$gray-13;
+    @apply dark:bg-$gray-2 dark:hover:bg-$gray-3;
   }
 
   // 禁用状态样式

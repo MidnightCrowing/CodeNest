@@ -17,7 +17,7 @@ withDefaults(defineProps<JeTransparentButtonProps>(), {
 
 <style lang="scss" scoped>
 .je-transparent-button {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply light:color-$gray-1 dark:color-$gray-12;
   @apply bg-transparent hover:bg-$toolbar-hover active:bg-$toolbar-active;
   @apply focus-visible:bg-$toolbar-hover;

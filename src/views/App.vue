@@ -4,6 +4,8 @@ import '../styles/dark.scss'
 
 import { useI18n } from 'vue-i18n'
 
+import DeleteProjectDialog from '~/components/DeleteProjectDialog/DeleteProjectDialog.vue'
+import NewProject from '~/components/ProjectConfig/ProjectConfig.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { ThemeEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
@@ -12,7 +14,6 @@ import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
-import NewProject from './NewProject/NewProject.vue'
 import Settings from './Settings/Settings.vue'
 
 const { locale } = useI18n()
@@ -49,8 +50,11 @@ provide('activatedView', activatedView)
     flex="~ col"
     caret="theme-text-caret" select-none
   >
-    <WindowHeader />
+    <WindowHeader shrink-0 />
     <Component :is="viewComponents[activatedView]" grow />
+
+    <!-- Dialog -->
+    <DeleteProjectDialog />
   </JeFrame>
 </template>
 

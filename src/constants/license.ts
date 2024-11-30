@@ -33,6 +33,7 @@ export enum LicenseEnum {
   MS_PL = 'Microsoft Public License',
   MS_RL = 'Microsoft Reciprocal License',
   OTHER = 'Other',
+  NONE = 'None',
 }
 
 interface LicenseDescription { fromUrl: string, permissions?: string[], conditions?: string[], limitations?: string[] }
@@ -318,6 +319,10 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
   },
   [LicenseEnum.OTHER]: {
     name: 'Other',
+    url: '',
+  },
+  [LicenseEnum.NONE]: {
+    name: 'None',
     url: '',
   },
 }

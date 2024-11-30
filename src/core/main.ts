@@ -1,9 +1,9 @@
 import { reactive } from 'vue'
 
+import type { LinguistLanguageResult, LinguistResult } from '~/components/ProjectConfig/types'
 import type { languagesGroupItem, LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
 import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
 import { t } from '~/utils/i18n'
-import type { LinguistLanguageResult, LinguistResult } from '~/views/NewProject/types'
 
 /**
  * 用于分析项目语言的工具类
@@ -54,7 +54,7 @@ export class LanguageAnalyzer {
       return true
     }
     catch (error) {
-      console.error('LanguageAnalyzer analyze failed:', error)
+      console.warn('LanguageAnalyzer analyze failed:', error)
       this.reset()
       return false
     }
@@ -121,7 +121,7 @@ export class LanguageAnalyzer {
 
     const languages = Object.entries(sortedResults).map(([lang, info]) => ({
       text: lang,
-      color: info.color as string,
+      color: info.color as `#${string}`,
       percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)),
     }))
 
@@ -133,9 +133,9 @@ export class LanguageAnalyzer {
       const otherTotalPercentage = otherLanguages.reduce((sum, lang) => sum + lang.percentage, 0)
       significantLanguages.push({
         text: 'Other',
-        color: '#cccccc', // 可自定义颜色
+        color: '#ccc', // 可自定义颜色
         percentage: Number.parseFloat(otherTotalPercentage.toFixed(2)),
-      })
+      } as languagesGroupItem)
     }
 
     return significantLanguages
@@ -181,13 +181,13 @@ class ProjectManager {
   }
 
   // 获取主要语言的统计信息
-  getMainLangSummary(): { text: ProjectLanguage, color: string, count: number }[] {
+  getMainLangSummary(): { text: ProjectLanguage, color: `#${string}`, count: number }[] {
     // 创建一个 Map 来统计语言及其信息
-    const langMap = new Map<ProjectLanguage, { color: string, count: number }>()
+    const langMap = new Map<ProjectLanguage, { color: `#${string}`, count: number }>()
 
     for (const project of this.projectItems) {
       const lang = project.mainLang
-      const color = project.mainLangColor ?? '#000000' // 如果没有定义颜色，则使用默认黑色
+      const color = project.mainLangColor ?? '#ccc' // 如果没有定义颜色，则使用默认颜色
 
       if (langMap.has(lang)) {
         // 如果语言已存在于 Map 中，则更新计数
@@ -207,10 +207,38 @@ class ProjectManager {
     }))
   }
 
+  // 更新项目
+  async updateProject(appendTime: number, updatedProject: LocalProject): Promise<boolean> {
+    // 根据 appendTime 查找项目的索引
+    const index = this.projectItems.findIndex(project => project.appendTime === appendTime)
+
+    // 如果找到对应的项目，更新它
+    if (index !== -1) {
+      const project = this.projectItems[index]
+
+      // 更新项目的字段，保留原有的字段
+      Object.assign(project, updatedProject)
+
+      // 保存项目列表
+      await this.saveProjects()
+
+      return true
+    }
+
+    // 如果没有找到对应的项目，返回 false
+    return false
+  }
+
   // 根据索引移除项目
-  removeProject(index: number): boolean {
-    if (index >= 0 && index < this.projectItems.length) {
+  async removeProject(appendTime: number): Promise<boolean> {
+    const index = this.projectItems.findIndex(project => project.appendTime === appendTime)
+
+    if (index !== -1) {
       this.projectItems.splice(index, 1)
+
+      // 保存项目列表
+      await this.saveProjects()
+
       return true
     }
     return false
@@ -255,8 +283,8 @@ class ProjectManager {
             analyzer.analyze().then((success) => {
               if (success) {
                 Object.assign(project, {
-                  mainLangColor: analyzer.mainLangColor ?? project.mainLangColor,
-                  langGroup: analyzer.langGroup ?? project.langGroup,
+                  mainLangColor: project.mainLangColor ?? analyzer.mainLangColor,
+                  langGroup: project.langGroup ?? analyzer.langGroup,
                 })
               }
               else {

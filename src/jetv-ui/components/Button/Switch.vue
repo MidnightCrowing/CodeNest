@@ -68,7 +68,7 @@ function toggleSwitch() {
 }
 
 .je-switch {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply flex items-center gap-5px;
   @apply cursor-default;
 }

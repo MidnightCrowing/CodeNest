@@ -13,17 +13,6 @@ const props = defineProps<{
 const containerRef = ref<HTMLElement | null>(null)
 let languagesGroup = props.langGroup
 
-// /**
-//  * 获取 mainLang 对应的颜色
-//  * @param mainLang - 当前的主语言
-//  * @param langGroup - 语言组列表
-//  * @returns {string} 颜色值，如果没有找到，则返回默认颜色
-//  */
-// function getMainLangColor(mainLang: ProjectLanguage, langGroup: languagesGroupItem[]): string {
-//   const matchedLang = langGroup.find(lang => lang.text === mainLang)
-//   return matchedLang ? matchedLang.color : '#fff'
-// }
-
 function handleClick() {
   if (containerRef.value && languagesGroup) {
     const rect = containerRef.value.getBoundingClientRect()
@@ -49,7 +38,7 @@ watch(() => props.langGroup, (newLangGroup, oldLangGroup) => {
       flex="~ items-center" gap="5px"
       @mousedown.stop @mouseup.stop
     >
-      <JeColorIcon type="circle" :custom-color="mainLangColor" />
+      <JeColorIcon type="circle" :custom-color="mainLangColor ?? '#ccc'" />
       {{ mainLang }}
     </JeTransparentButton>
   </div>

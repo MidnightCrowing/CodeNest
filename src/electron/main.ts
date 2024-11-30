@@ -5,12 +5,10 @@ import { fileURLToPath } from 'node:url'
 
 import { app, BrowserWindow, globalShortcut, Menu } from 'electron'
 
-import { performAsyncTask } from './asyncTask.js'
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const DEV_URL = 'http://localhost:5173/'
+const DEV_URL = 'http://localhost:3001/'
 const MAX_RETRIES = 5
 const WINDOW_WIDTH = 800
 const WINDOW_HEIGHT = 650
@@ -118,7 +116,6 @@ function setGlobalShortcut() {
 
 // 应用启动时的操作
 app.whenReady().then(async () => {
-  await performAsyncTask()
   setGlobalShortcut()
   createWindow()
 })

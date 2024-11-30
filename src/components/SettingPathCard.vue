@@ -52,7 +52,7 @@ function resetPath() {
     <!-- 卡片部分 -->
     <JeCard
       p="15px"
-      flex="~ items-center justify-between"
+      flex="~ items-center justify-between" gap="20px"
       @click="togglePanel"
     >
       <div flex="~ items-center" gap="3px">
@@ -69,7 +69,7 @@ function resetPath() {
         />
       </div>
 
-      <div flex="~ items-center" gap="10px" text="$gray-8">
+      <div flex="~ items-center" gap="10px" text="$gray-8" break-all>
         {{ codeEditorPath || t('settings.ides_path.none') }}
         <JeTransparentToolButton
           class="toggle-button"
@@ -91,6 +91,7 @@ function resetPath() {
         <JeInputField
           v-model="codeEditorPath"
           :tabindex="isPanelOpen ? 0 : -1"
+          :is-readonly="true"
           w="300px"
         />
         <JeTransparentButton

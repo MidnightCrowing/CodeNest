@@ -3,6 +3,7 @@ import JeButton from './Button.vue'
 import type { JeSlimButtonProps } from './types'
 
 withDefaults(defineProps<JeSlimButtonProps>(), {
+  type: 'default',
   disabled: false,
 })
 </script>
@@ -10,7 +11,7 @@ withDefaults(defineProps<JeSlimButtonProps>(), {
 <template>
   <JeButton
     class="slim"
-    type="secondary"
+    :type="type === 'alt' ? 'secondary-alt' : 'secondary'"
     :disabled="disabled"
   >
     <slot />

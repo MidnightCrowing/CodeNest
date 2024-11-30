@@ -14,7 +14,7 @@ export interface JeMenuOptionProps {
    */
   label?: string
 
-  labelColor?: `#${string}`
+  labelColor?: `#${string}` | string
 
   /**
    * 选项前显示的图标。

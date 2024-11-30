@@ -72,6 +72,14 @@ license_pop:
   conditions: Conditions
   description_from: Description from
   no_description_desc: Not has description
+project_card:
+  update: Update
+  delete: Delete
+delete_project_dialog:
+  dialog_title: Confirm Deletion
+  dialog_desc: 'Are you sure you want to delete the project "{name}"?'
+  cancel: Cancel
+  delete: Delete
 home:
   side_panel:
     projects: Projects
@@ -85,6 +93,8 @@ home:
   header:
     add_item: Add Item
     search_project: Search Project
+  overview:
+    empty_desc: No content to display
 new_project:
   name: Name
   directory: Directory
@@ -104,6 +114,7 @@ new_project:
   lang_tooltip: Language cannot be empty
   open_tooltip: Opening method cannot be empty
   create: Create
+  update: Update
   cancel: Cancel
 settings:
   appearance:
@@ -117,6 +128,14 @@ settings:
     title: IDEs Path
     none: None
     browse: Browse...
+  about:
+    title: About
+    version: Version
+    link: Link
+    import_export:
+      title: Import/Export
+      import_desc: Import project list
+      export_desc: Export project list
   open_json_file: open JSON file
   save: Save
   cancel: Cancel

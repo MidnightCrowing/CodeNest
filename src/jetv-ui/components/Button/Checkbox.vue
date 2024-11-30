@@ -32,7 +32,7 @@ function handleChange(event: Event) {
 
 <style lang="scss" scoped>
 .je-checkbox {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply flex items-center gap-x-5px;
 
   @apply light:color-$gray-1 dark:color-$gray-12;

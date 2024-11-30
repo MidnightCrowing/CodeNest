@@ -26,7 +26,7 @@ withDefaults(defineProps<JeColorIconProps>(), {
 // Type Style
 .je-color-icon {
   &--default {
-    @apply font-sans text-13px lh-25px;
+    @apply font-sans text-13px lh-26px;
     @apply size-1.5rem rounded-4px;
     @apply flex items-center justify-center;
 

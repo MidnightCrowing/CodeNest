@@ -6,6 +6,7 @@ import { settings } from '~/core/settings'
 import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from '~/jetv-ui'
 import { eventBus } from '~/utils/eventBus'
 
+import AboutPage from './pages/About.vue'
 import AppearancePage from './pages/Appearance.vue'
 import IdesPage from './pages/Ides.vue'
 
@@ -13,14 +14,16 @@ const { t } = useI18n()
 
 // ==================== Side Menu ====================
 const menuItems = computed(() => [
-  { value: SettingPageEnum.Appearance, label: t('settings.appearance.title'), icon: 'appearance' },
-  { value: SettingPageEnum.Ides, label: t('settings.ides_path.title'), icon: 'ides' },
+  { value: SettingPageEnum.Appearance, label: t('settings.appearance.title') },
+  { value: SettingPageEnum.Ides, label: t('settings.ides_path.title') },
+  { value: SettingPageEnum.About, label: t('settings.about.title') },
 ])
 
 const activatedPage: Ref<SettingPageEnum> = ref(SettingPageEnum.Appearance)
 const PageComponents: Record<SettingPageEnum, Component> = {
   [SettingPageEnum.Appearance]: AppearancePage,
   [SettingPageEnum.Ides]: IdesPage,
+  [SettingPageEnum.About]: AboutPage,
 }
 
 function updateActivatedPage(page: SettingPageEnum) {
@@ -68,7 +71,7 @@ provide('unsaveChanges', unsaveChanges)
     >
       <JeFrame
         type="secondary"
-        flex="~ col" w-200px
+        shrink-0 flex="~ col" w-200px
         overflow-y-auto
       >
         <JeSearchField v-model="searchValue" class="search-input" />

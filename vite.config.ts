@@ -45,7 +45,7 @@ export default defineConfig({
     UnoCSS(),
   ],
   server: {
-    port: 5173,
+    port: 3001,
     hmr: {
       host: 'localhost',
     },

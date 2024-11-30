@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n'
+
 import { LicensePop, mainLangPop, ProjectCard } from '~/components/ProjectCard'
 import { ProjectKind } from '~/constants/localProject'
 import { projectManager } from '~/core/main'
@@ -9,6 +11,10 @@ import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
 const props = defineProps<{
   activatedItem: string
 }>()
+
+const { t } = useI18n()
+
+const searchValue = ref('')
 
 // 根据激活的菜单项获取 kind (去除前缀 k-)
 const kind = computed(() => {
@@ -47,23 +53,48 @@ const projects = computed(() => {
     }
   }
 })
+
+// 过滤项目
+const filteredProjects = computed(() => {
+  let result = projects.value
+
+  if (searchValue.value) {
+    // 根据搜索值过滤项目
+    result = result.filter((project) => {
+      const projectName = project.name.toLowerCase()
+      const searchQuery = searchValue.value.toLowerCase()
+      return projectName.includes(searchQuery)
+    })
+  }
+
+  return result
+})
 </script>
 
 <template>
   <JeFrame flex="~ col">
-    <ProjectOverviewHeader />
+    <ProjectOverviewHeader v-model:search-value="searchValue" />
     <JeLine mx-20px />
     <JeFrame
       m="x-15px y-5px" p="y-5px r-3px"
-      flex="~ col" gap="10px"
+      grow flex="~ col" gap="10px"
       overflow-auto
     >
       <ProjectCard
-        v-for="(projectItem, index) in projects"
-        :key="`${kind}-${lang}-${index}`"
+        v-for="projectItem in filteredProjects"
+        :key="projectItem.appendTime"
         :project-item="projectItem"
         shrink-0
       />
+
+      <!-- Empty -->
+      <span
+        v-if="filteredProjects.length === 0"
+        text="default-semibold center secondary"
+        p="5px t-150px"
+      >
+        {{ t('home.overview.empty_desc') }}
+      </span>
 
       <mainLangPop />
       <LicensePop />

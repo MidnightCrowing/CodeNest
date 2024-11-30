@@ -8,7 +8,7 @@ import { JeFrame } from '~/jetv-ui'
   <JeFrame
     class="window-header"
     :type="null"
-    min-h-40px max-h-40px w-full
+    h-40px w-full
     flex="~ row items-center"
     bg="light:#F2F2F2 dark:#2B2D30"
   >

@@ -135,13 +135,12 @@ watch(() => props.modelValue, (newValue) => {
     </JeMiniTooltip>
 
     <!-- Menu -->
-    <div class="je-dropdown__menu-wrapper" @click.stop>
-      <JeMiniMenu
-        v-model:visible="isMenuOpen"
-        class="je-dropdown__menu"
-        :options="menuOptions"
-      />
-    </div>
+    <JeMiniMenu
+      v-model:visible="isMenuOpen"
+      class="je-dropdown__menu"
+      :options="menuOptions"
+      @click.stop
+    />
   </div>
 </template>
 
@@ -235,11 +234,7 @@ watch(() => props.modelValue, (newValue) => {
   @apply invisible;
 }
 
-.je-dropdown__menu-wrapper {
-  @apply absolute w-full left-0 top-full;
-}
-
 .je-dropdown__menu {
-  @apply max-h-300px;
+  @apply w-full max-h-300px left-0 top-full;
 }
 </style>

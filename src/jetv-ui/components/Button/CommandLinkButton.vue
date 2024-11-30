@@ -27,7 +27,7 @@ withDefaults(defineProps<JeCommandLinkButtonProps>(), {
 
 <style lang="scss" scoped>
 .je-command-link-button {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply px-15px py-7px rounded-7px w-full box-border;
   @apply outline outline-2px outline-transparent;
   @apply flex items-center justify-between gap-10px;

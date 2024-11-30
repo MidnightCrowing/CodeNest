@@ -16,17 +16,20 @@ function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
 
 <template>
   <button
-    font-sans text-13px lh-25px
+    font-sans text="13px" lh="26px" whitespace-nowrap
     p="x-14px y-3px" b-0 rounded="4px"
     light:bg="$blue-4 hover:$blue-3 active:$blue-2"
     dark:bg="$blue-6 hover:$blue-5 active:$blue-4"
-    color="$gray-12"
-    flex="~ items-center gap-5px"
     @click="handleClick(defaultOpen, projectPath)"
     @mousedown.stop @mouseup.stop
   >
-    <!-- 使用 text-color 动态适配 -->
-    <span :class="codeEditors[defaultOpen].icon" />
-    <span>{{ codeEditors[defaultOpen].label }}</span>
+    <span
+      flex="~ items-center" gap="5px"
+      color="$gray-12"
+    >
+      <!-- 使用 text-color 动态适配 -->
+      <span :class="codeEditors[defaultOpen].icon" />
+      <span>{{ codeEditors[defaultOpen].label }}</span>
+    </span>
   </button>
 </template>

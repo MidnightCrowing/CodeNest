@@ -7,6 +7,7 @@ import { JeInputField, JeLink } from '~/jetv-ui'
 import ConfigItemTitle from '../common/ConfigItemTitle.vue'
 
 const props = defineProps<{
+  isTestProject?: boolean
   localProjectItem: LocalProject
 }>()
 const emit = defineEmits(['update:projectFromUrl', 'update:projectFromName'])

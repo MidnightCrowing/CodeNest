@@ -55,7 +55,7 @@ function handleClose() {
 
 <style lang="scss" scoped>
 .je-banner {
-  @apply font-sans text-13px lh-25px;
+  @apply font-sans text-13px lh-26px;
   @apply b-solid b-2px px-13px py-9px box-border;
   @apply flex gap-8px;
 }

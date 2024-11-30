@@ -10,7 +10,7 @@ import { JeFrame } from '../Frame'
 
 <style lang="scss" scoped>
 .je-popup {
-  @apply relative z-1;
+  @apply absolute z-1;
   @apply b-solid b-1px rounded-5px;
   @apply shadow-$shadow-popup;
 
