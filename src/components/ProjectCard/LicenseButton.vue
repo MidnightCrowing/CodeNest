@@ -2,7 +2,7 @@
 import type { LicenseEnum } from '~/constants/license'
 import { JeTransparentButton } from '~/jetv-ui'
 
-import { showPop } from './LicensePop/licensePopProvider'
+import { showPop } from './LicensePop/LicensePopProvider'
 
 defineProps<{
   license: LicenseEnum

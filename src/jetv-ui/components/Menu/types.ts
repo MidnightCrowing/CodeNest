@@ -23,6 +23,11 @@ export interface JeMenuOptionProps {
    */
   icon?: string
 
+  iconColor?: `#${string}` | string
+
+  // 默认1rem
+  iconSize?: string
+
   /**
    * 选项描述，用于提供该选项的详细信息。
    *

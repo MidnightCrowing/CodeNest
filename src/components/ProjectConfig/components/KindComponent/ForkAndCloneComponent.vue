@@ -38,10 +38,10 @@ watch(projectNameInputValue, (newValue) => {
 </script>
 
 <template>
-  <ConfigItemTitle title="new_project.kind.url" />
+  <ConfigItemTitle title="project_config.kind.url" />
   <JeInputField v-model="projectUrlInputValue" />
 
-  <ConfigItemTitle title="new_project.kind.name" />
+  <ConfigItemTitle title="project_config.kind.name" />
   <JeInputField v-model="projectNameInputValue" />
 
   <div
@@ -52,7 +52,7 @@ watch(projectNameInputValue, (newValue) => {
   >
     <span text="secondary" truncate>{{ repositoryPath }}</span>
     <JeLink :on-click="fillProjectName">
-      {{ t('new_project.kind.fill') }}
+      {{ t('project_config.kind.fill') }}
     </JeLink>
   </div>
 </template>

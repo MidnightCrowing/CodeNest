@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { showNoIdePathDialog } from '~/components/NoIdePathDialog/NoIdePathDialogProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
 import { settings } from '~/core/settings'
@@ -10,7 +11,11 @@ defineProps<{
 
 function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
   const idePath = settings.getSetting('codeEditorsPath')[codeEditor]
-  window.api.openProject(idePath, projectPath)
+
+  if (!idePath)
+    showNoIdePathDialog()
+  else
+    window.api.openProject(idePath, projectPath)
 }
 </script>
 

@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import '../styles/light.scss'
 import '../styles/dark.scss'
+import '../styles/transitionAndTransitionGroup.scss'
 
 import { useI18n } from 'vue-i18n'
 
 import DeleteProjectDialog from '~/components/DeleteProjectDialog/DeleteProjectDialog.vue'
+import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
 import NewProject from '~/components/ProjectConfig/ProjectConfig.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { ThemeEnum } from '~/constants/appEnums'
@@ -55,6 +57,7 @@ provide('activatedView', activatedView)
 
     <!-- Dialog -->
     <DeleteProjectDialog />
+    <NoIdePathDialog />
   </JeFrame>
 </template>
 

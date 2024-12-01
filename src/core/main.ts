@@ -104,7 +104,7 @@ export class LanguageAnalyzer {
     return Object.entries(results).map(([key, value]) => ({
       value: key,
       label: key,
-      description: t('new_project.lang_info', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
+      description: t('project_config.lang_info', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
     }))
   }
 
@@ -253,8 +253,8 @@ class ProjectManager {
   async saveProjects(): Promise<void> {
     try {
       const dataToSave = JSON.stringify(this.projectItems, (key, value) => {
-        if (key === 'langGroup')
-          return undefined // 不保存 langGroup
+        if (key === 'langGroup' || key === 'exists')
+          return undefined // 不保存 langGroup 和 exists
         return value
       })
       await window.api.saveProjectData(dataToSave)
@@ -274,24 +274,11 @@ class ProjectManager {
         // 更新项目列表
         this.projectItems.splice(0, this.projectItems.length, ...loadedProjects)
 
-        // 补充 mainLangColor 和 langGroup 数据
         for (const project of this.projectItems) {
-          if (!project.langGroup || project.langGroup.length === 0) {
-            const folderPath = project.path
-
-            const analyzer = new LanguageAnalyzer(folderPath)
-            analyzer.analyze().then((success) => {
-              if (success) {
-                Object.assign(project, {
-                  mainLangColor: project.mainLangColor ?? analyzer.mainLangColor,
-                  langGroup: project.langGroup ?? analyzer.langGroup,
-                })
-              }
-              else {
-                console.error(`Error analyzing folder for project at ${folderPath}`)
-              }
-            })
-          }
+          // 补充exists字段
+          window.api.checkPathExistence(project.path).then((res) => {
+            project.exists = res.exists
+          })
         }
       }
     }

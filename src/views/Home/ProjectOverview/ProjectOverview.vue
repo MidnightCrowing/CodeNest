@@ -24,7 +24,7 @@ const kind = computed(() => {
 
 // 根据激活的菜单项获取语言 (去除前缀 l-)
 const lang = computed(() => {
-  const langMatch = props.activatedItem.match(/^l-(\w+)$/)
+  const langMatch = props.activatedItem.match(/^l-(.+)$/)
   return langMatch ? langMatch[1] : ''
 })
 
@@ -76,17 +76,10 @@ const filteredProjects = computed(() => {
     <ProjectOverviewHeader v-model:search-value="searchValue" />
     <JeLine mx-20px />
     <JeFrame
-      m="x-15px y-5px" p="y-5px r-3px"
+      m="x-15px t-5px b-10px" p="y-5px r-3px"
       grow flex="~ col" gap="10px"
       overflow-auto
     >
-      <ProjectCard
-        v-for="projectItem in filteredProjects"
-        :key="projectItem.appendTime"
-        :project-item="projectItem"
-        shrink-0
-      />
-
       <!-- Empty -->
       <span
         v-if="filteredProjects.length === 0"
@@ -95,6 +88,15 @@ const filteredProjects = computed(() => {
       >
         {{ t('home.overview.empty_desc') }}
       </span>
+
+      <TransitionGroup v-else name="list">
+        <template v-for="projectItem in filteredProjects" :key="projectItem.appendTime">
+          <ProjectCard
+            :project-item="projectItem"
+            shrink-0
+          />
+        </template>
+      </TransitionGroup>
 
       <mainLangPop />
       <LicensePop />

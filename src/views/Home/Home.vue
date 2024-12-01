@@ -14,7 +14,7 @@ function updateActivatedItem(itemMark: string) {
 </script>
 
 <template>
-  <JeFrame flex="~ row" w-100vw>
+  <JeFrame flex="~ row" w-100vw overflow-hidden>
     <SidePanel
       :activated-item="activatedItem"
       @update-activated-item="updateActivatedItem"

@@ -1,34 +1,25 @@
 <script lang="ts" setup>
-import type { languagesGroupItem, ProjectLanguage } from '~/constants/localProject'
+import type { LocalProject } from '~/constants/localProject'
 import { JeColorIcon, JeTransparentButton } from '~/jetv-ui'
 
 import { showPop } from './LanguagePop/LanguagePopProvider'
 
 const props = defineProps<{
-  mainLang: ProjectLanguage
-  mainLangColor?: `#${string}`
-  langGroup: languagesGroupItem[] | undefined
+  projectItem: LocalProject
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
-let languagesGroup = props.langGroup
 
 function handleClick() {
-  if (containerRef.value && languagesGroup) {
+  if (containerRef.value && props.projectItem.exists) {
     const rect = containerRef.value.getBoundingClientRect()
 
     const top = rect.top + window.scrollY - 3
     const left = rect.left + window.scrollX - 5
 
-    showPop(languagesGroup, top, left)
+    showPop(props.projectItem, top, left)
   }
 }
-
-watch(() => props.langGroup, (newLangGroup, oldLangGroup) => {
-  if (newLangGroup !== oldLangGroup) {
-    languagesGroup = newLangGroup
-  }
-}, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
 </script>
 
 <template>
@@ -38,8 +29,8 @@ watch(() => props.langGroup, (newLangGroup, oldLangGroup) => {
       flex="~ items-center" gap="5px"
       @mousedown.stop @mouseup.stop
     >
-      <JeColorIcon type="circle" :custom-color="mainLangColor ?? '#ccc'" />
-      {{ mainLang }}
+      <JeColorIcon type="circle" :custom-color="projectItem.mainLangColor ?? '#ccc'" />
+      {{ projectItem.mainLang }}
     </JeTransparentButton>
   </div>
 </template>

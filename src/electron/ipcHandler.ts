@@ -1,5 +1,6 @@
 import { exec } from 'node:child_process'
 import * as path from 'node:path'
+import process from 'node:process'
 
 import { dialog, ipcMain, shell } from 'electron'
 import fs from 'fs-extra'
@@ -64,9 +65,28 @@ ipcMain.handle('analyze-folder', async (_, folderPath): Promise<LinguistResult |
   }
 })
 
+// 检查路径是否存在
+ipcMain.handle('check-path-existence', async (_, path: string): Promise<{ exists: boolean, error?: string }> => {
+  try {
+    const exists = await fs.pathExists(path)
+    return { exists }
+  }
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error checking path existence:', error.message)
+      return { exists: false, error: error.message }
+    }
+    else {
+      console.error('Unknown error:', error)
+      return { exists: false, error: 'Unknown error occurred' }
+    }
+  }
+})
+
 // 保存数据到本地
 ipcMain.handle('save-project-data', async (_, data: string): Promise<{ success: boolean, error?: string }> => {
   try {
+    await fs.ensureFile(dataFilePath) // 确保文件存在
     await fs.writeJSON(dataFilePath, JSON.parse(data), { spaces: 2 })
     return { success: true }
   }
@@ -103,6 +123,7 @@ ipcMain.handle('load-project-data', async (): Promise<{ success: boolean, data?:
 // 保存设置数据到本地
 ipcMain.handle('save-settings-data', async (_, data: string): Promise<{ success: boolean, error?: string }> => {
   try {
+    await fs.ensureFile(settingsFilePath) // 确保文件存在
     await fs.writeJSON(settingsFilePath, JSON.parse(data), { spaces: 2 })
     return { success: true }
   }
@@ -161,6 +182,49 @@ ipcMain.handle('open-project', async (_, idePath: string, projectPath: string): 
   catch (err) {
     console.error(err)
     throw new Error('打开项目时发生错误')
+  }
+})
+
+// 使用资源管理器打开路径
+ipcMain.handle('open-in-explorer', (_, folderPath): void => {
+  const resolvedPath = path.resolve(folderPath)
+  // 使用系统默认的资源管理器打开文件夹
+  shell.openPath(resolvedPath).catch((err) => {
+    console.error('打开资源管理器失败:', err)
+  })
+})
+
+// 使用终端打开路径
+ipcMain.handle('open-in-terminal', (_, folderPath): void => {
+  const resolvedPath = path.resolve(folderPath)
+  // 根据操作系统选择合适的终端命令
+  const isWindows = process.platform === 'win32'
+  const isMac = process.platform === 'darwin'
+  const isLinux = process.platform === 'linux'
+
+  if (isWindows) {
+    exec(`start cmd.exe /K "cd ${resolvedPath}"`, (err) => {
+      if (err) {
+        console.error('打开终端失败:', err)
+      }
+    })
+  }
+  else if (isMac) {
+    exec(`open -a Terminal ${resolvedPath}`, (err) => {
+      if (err) {
+        console.error('打开终端失败:', err)
+      }
+    })
+  }
+  else if (isLinux) {
+    exec(`gnome-terminal --working-directory=${resolvedPath}`, (err) => {
+      if (err) {
+        console.error('打开终端失败:', err)
+      }
+    })
+  }
+  else {
+    console.error('不支持的操作系统')
   }
 })
 

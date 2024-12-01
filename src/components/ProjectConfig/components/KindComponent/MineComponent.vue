@@ -24,7 +24,7 @@ watch(isTestProjectLocal, (newValue) => {
       class="checkbox-setting"
       w-fit
     >
-      {{ t('new_project.kind.test') }}
+      {{ t('project_config.kind.test') }}
     </JeCheckbox>
   </div>
 </template>

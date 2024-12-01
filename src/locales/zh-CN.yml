@@ -65,29 +65,11 @@ license_pop:
   description_from: 信息来源
   no_description_desc: 没有描述
 project_card:
-  update: 更新
+  open_in_explorer: 在资源管理器中打开
+  open_in_terminal: 在终端中打开
+  edit: 编辑
   delete: 删除
-delete_project_dialog:
-  dialog_title: 确认删除
-  dialog_desc: '你确定要删除项目 "{name}" 吗？'
-  cancel: 取消
-  delete: 删除
-home:
-  side_panel:
-    projects: 项目
-    languages: 语言
-    kinds:
-      all: 全部
-      mine: 个人
-      fork: Fork
-      clone: Clone
-      test: 测试
-  header:
-    add_item: 添加项目
-    search_project: 搜索项目
-  overview:
-    empty_desc: 没有要显示的内容
-new_project:
+project_config:
   name: 名称
   directory: 位置
   kind:
@@ -106,8 +88,33 @@ new_project:
   lang_tooltip: 语言不能为空
   open_tooltip: 打开方式不能为空
   create: 创建
-  update: 更新
+  finish: 完成
   cancel: 取消
+delete_project_dialog:
+  dialog_title: 确认删除
+  dialog_desc: '你确定要删除项目 "{name}" 吗？'
+  cancel: 取消
+  delete: 删除
+no_ide_path_dialog:
+  dialog_title: IDE 路径未设置
+  dialog_desc: 请设置 IDE 路径
+  cancel: 取消
+  set: 设置路径
+home:
+  side_panel:
+    projects: 项目
+    languages: 语言
+    kinds:
+      all: 全部
+      mine: 个人
+      fork: Fork
+      clone: Clone
+      test: 测试
+  header:
+    add_item: 添加项目
+    search_project: 搜索项目
+  overview:
+    empty_desc: 没有要显示的内容
 settings:
   appearance:
     title: 外观

@@ -24,12 +24,16 @@ const defaultLocalProjectState: Readonly<NullableLocalProject> = {
 export const localProjectItem: Ref<NullableLocalProject> = ref({ ...defaultLocalProjectState }) // 创建副本
 export const isUpdateProject = ref(false)
 
+function mergeWithDefaults(newState: Partial<NullableLocalProject>) {
+  localProjectItem.value = { ...defaultLocalProjectState, ...newState }
+}
+
 /**
  * 初始化新建项目的状态
  * @param initialState - 可选的初始状态对象，部分字段可传入
  */
 export function initializeNewProjectState(initialState: Partial<NullableLocalProject> = {}) {
-  localProjectItem.value = { ...defaultLocalProjectState, ...initialState } // 初始化为默认状态并合并传入状态
+  mergeWithDefaults(initialState) // 初始化为默认状态并合并传入状态
   isUpdateProject.value = false // 新建项目时标记为 false
 }
 
@@ -38,6 +42,6 @@ export function initializeNewProjectState(initialState: Partial<NullableLocalPro
  * @param updatedState - 必须提供的更新状态对象
  */
 export function initializeUpdateProjectState(updatedState: LocalProject) {
-  localProjectItem.value = { ...updatedState } as NullableLocalProject // 用传入的更新状态覆盖现有状态
+  mergeWithDefaults(updatedState) // 用传入的更新状态覆盖现有状态
   isUpdateProject.value = true // 更新项目时标记为 true
 }

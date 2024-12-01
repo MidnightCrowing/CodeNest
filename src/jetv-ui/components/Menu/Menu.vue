@@ -145,7 +145,19 @@ function checkMenuPosition() {
           >
             <div class="je-menu__option-item-left">
               <!-- Option Icon -->
-              <span v-show="hasIcon" class="je-menu__option-icon" :class="option.icon" />
+              <span
+                v-show="hasIcon"
+                class="je-menu__option-icon"
+                :class="[
+                  option.icon,
+                  option.iconColor && !option.iconColor.startsWith('#') ? option.iconColor : '',
+                ]"
+                :style="{
+                  width: option.iconSize,
+                  height: option.iconSize,
+                  backgroundColor: option.iconColor?.startsWith('#') ? option.iconColor : undefined,
+                }"
+              />
 
               <!-- Option Label -->
               <span
@@ -230,7 +242,19 @@ function checkMenuPosition() {
                 >
                   <div class="je-menu__option-item-left">
                     <!-- Option Icon -->
-                    <span v-show="hasIcon" class="je-menu__option-icon" :class="groupOption.icon" />
+                    <span
+                      v-show="hasIcon"
+                      class="je-menu__option-icon"
+                      :class="[
+                        groupOption.icon,
+                        groupOption.iconColor && !groupOption.iconColor.startsWith('#') ? groupOption.iconColor : '',
+                      ]"
+                      :style="{
+                        width: groupOption.iconSize,
+                        height: groupOption.iconSize,
+                        backgroundColor: groupOption.iconColor?.startsWith('#') ? groupOption.iconColor : undefined,
+                      }"
+                    />
 
                     <!-- Option Label -->
                     <span
@@ -329,7 +353,7 @@ function checkMenuPosition() {
 }
 
 .je-menu__option-icon {
-  @apply size-0.7rem;
+  @apply size-1rem;
 }
 
 .je-menu__option-label:not(.custom-color) {

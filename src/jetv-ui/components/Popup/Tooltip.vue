@@ -259,4 +259,8 @@ withDefaults(defineProps<JeTooltipProps>(), {
     @apply light:i-jet:error dark:i-jet:error-dark;
   }
 }
+
+.je-tooltip__content {
+  @apply grow;
+}
 </style>

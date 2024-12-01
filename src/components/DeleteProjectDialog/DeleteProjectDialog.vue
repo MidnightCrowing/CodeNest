@@ -26,11 +26,11 @@ function confirmDelete() {
       <h3>{{ t('delete_project_dialog.dialog_title') }}</h3>
       <p>{{ t('delete_project_dialog.dialog_desc', { name: projectToDelete?.name }) }}</p>
       <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
-        <JeButton type="secondary" @click="hideDeleteDialog">
-          {{ t('delete_project_dialog.cancel') }}
-        </JeButton>
-        <JeButton class="confirm-button" type="secondary" @click="confirmDelete">
+        <JeButton class="confirm-button" type="secondary" order-2 @click="confirmDelete">
           {{ t('delete_project_dialog.delete') }}
+        </JeButton>
+        <JeButton type="secondary" order-1 @click="hideDeleteDialog">
+          {{ t('delete_project_dialog.cancel') }}
         </JeButton>
       </div>
     </JePopup>

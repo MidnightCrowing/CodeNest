@@ -9,6 +9,7 @@ import { eventBus } from '~/utils/eventBus'
 import AboutPage from './pages/About.vue'
 import AppearancePage from './pages/Appearance.vue'
 import IdesPage from './pages/Ides.vue'
+import { activatedPage } from './SettingsProvider'
 
 const { t } = useI18n()
 
@@ -19,7 +20,6 @@ const menuItems = computed(() => [
   { value: SettingPageEnum.About, label: t('settings.about.title') },
 ])
 
-const activatedPage: Ref<SettingPageEnum> = ref(SettingPageEnum.Appearance)
 const PageComponents: Record<SettingPageEnum, Component> = {
   [SettingPageEnum.Appearance]: AppearancePage,
   [SettingPageEnum.Ides]: IdesPage,
@@ -54,6 +54,10 @@ function changeHomeView() {
 onMounted(() => {
   settings.loadSettings()
   eventBus.emit('updateSettings')
+})
+
+onUnmounted(() => {
+  activatedPage.value = SettingPageEnum.Appearance
 })
 
 provide('unsaveChanges', unsaveChanges)
@@ -95,7 +99,9 @@ provide('unsaveChanges', unsaveChanges)
       </JeFrame>
 
       <JeFrame type="secondary" grow overflow-auto>
-        <Component :is="PageComponents[activatedPage]" />
+        <Transition name="page-fade">
+          <Component :is="PageComponents[activatedPage]" />
+        </Transition>
       </JeFrame>
     </div>
 

@@ -34,4 +34,5 @@ export interface LocalProject {
   langGroup: languagesGroupItem[]
   defaultOpen: CodeEditorEnum
   license?: LicenseEnum
+  exists?: boolean // 项目是否存在
 }

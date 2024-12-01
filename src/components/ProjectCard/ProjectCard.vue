@@ -7,7 +7,8 @@ import { ViewEnum } from '~/constants/appEnums'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import { JeLink, JeMiniMenu, JeTransparentToolButton } from '~/jetv-ui'
+import type { JeMenuOptionProps } from '~/jetv-ui'
+import { JeLink, JeMenu, JeTransparentToolButton } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 import LanguageButton from './LanguageButton.vue'
@@ -23,11 +24,10 @@ const {
   kind: projectKind,
   fromUrl: projectFromUrl,
   fromName: projectFromName,
-  mainLang: projectMainLang,
-  mainLangColor: projectMainLangColor,
   langGroup: projectLangGroup,
   defaultOpen: projectDefaultOpen,
   license: projectLicense,
+  exists: projectExists,
 } = toRefs(props.projectItem)
 
 const { t } = useI18n()
@@ -52,6 +52,37 @@ watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
 }, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
 
 // ==================== More Button ====================
+const projectActions = computed<JeMenuOptionProps[]>(() => [
+  {
+    value: 'open-in-explorer',
+    label: t('project_card.open_in_explorer'),
+    onClick: () => window.api.openInExplorer(projectPath.value),
+  },
+  {
+    value: 'open-in-terminal',
+    label: t('project_card.open_in_terminal'),
+    icon: 'light:i-jet:terminal dark:i-jet:terminal-dark',
+    onClick: () => window.api.openInTerminal(projectPath.value),
+  },
+  { value: 'line', isLine: true },
+  {
+    value: 'edit',
+    label: t('project_card.edit'),
+    icon: 'light:i-jet:edit dark:i-jet:edit-dark',
+    onClick: () => {
+      initializeUpdateProjectState(props.projectItem)
+      changeHomeView()
+    },
+  },
+  {
+    value: 'delete',
+    label: t('project_card.delete'),
+    labelColor: 'light:color-$red-4 dark:color-$red-6',
+    icon: 'light:i-jet:delete?mask dark:i-jet:delete-dark?mask',
+    iconColor: 'light:color-$red-4 dark:color-$red-6',
+    onClick: () => showDeleteDialog(props.projectItem),
+  },
+])
 const menuVisible = ref(false)
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 
@@ -62,15 +93,6 @@ function changeHomeView() {
 
 function showMenu() {
   menuVisible.value = true
-}
-
-function updateProject() {
-  initializeUpdateProjectState(props.projectItem)
-  changeHomeView()
-}
-
-function deleteProject() {
-  showDeleteDialog(props.projectItem)
 }
 </script>
 
@@ -88,7 +110,11 @@ function deleteProject() {
     @mousedown="handleClick(projectPath)"
     @mouseup="handleClicked"
   >
-    <div flex="~ col justify-between" gap="8px" overflow-x-hidden>
+    <div
+      :class=" { 'opacity-30': projectExists === false }"
+      flex="~ col justify-between" gap="8px"
+      overflow-x-hidden
+    >
       <!-- Info -->
       <div flex="~ col" gap="5px">
         <!-- Title -->
@@ -131,9 +157,7 @@ function deleteProject() {
       <!-- Button -->
       <div flex="~ row" gap="15px">
         <LanguageButton
-          :main-lang="projectMainLang"
-          :main-lang-color="projectMainLangColor"
-          :lang-group="langGroup"
+          :project-item="projectItem"
         />
 
         <LicenseButton
@@ -145,6 +169,7 @@ function deleteProject() {
 
     <div flex="~ row items-center" gap="10px">
       <OpenButton
+        v-if="projectExists !== false"
         class="group-hover/item:block"
         :default-open="projectDefaultOpen"
         :project-path="projectPath"
@@ -159,20 +184,11 @@ function deleteProject() {
         @click="showMenu"
         @mousedown.stop @mouseup.stop
       />
-      <JeMiniMenu
+      <JeMenu
         v-model:visible="menuVisible"
-        :options="[
-          { value: 'update',
-            label: t('project_card.update'),
-            icon: 'light:i-jet:edit dark:i-jet:edit-dark',
-            onClick: () => updateProject() },
-          { value: 'delete',
-            label: t('project_card.delete'),
-            labelColor: 'light:color-$red-4 dark:color-$red-6',
-            icon: 'light:i-jet:delete dark:i-jet:delete-dark',
-            onClick: () => deleteProject() },
-        ]"
+        :options="projectActions"
         absolute translate-y="45px" right="5px"
+        @mousedown.stop @mouseup.stop
       />
     </div>
   </div>

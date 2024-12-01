@@ -7,7 +7,7 @@ import { JeLink, JeTooltip } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 // noinspection ES6UnusedImports
-import { license, popupVisible, position } from './licensePopProvider'
+import { license, popupVisible, position } from './LicensePopProvider'
 
 const { t } = useI18n()
 

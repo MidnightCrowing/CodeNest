@@ -73,29 +73,11 @@ license_pop:
   description_from: Description from
   no_description_desc: Not has description
 project_card:
-  update: Update
+  open_in_explorer: Open in Explorer
+  open_in_terminal: Open in Terminal
+  edit: Edit
   delete: Delete
-delete_project_dialog:
-  dialog_title: Confirm Deletion
-  dialog_desc: 'Are you sure you want to delete the project "{name}"?'
-  cancel: Cancel
-  delete: Delete
-home:
-  side_panel:
-    projects: Projects
-    languages: Languages
-    kinds:
-      all: All
-      mine: Mine
-      fork: Fork
-      clone: Clone
-      test: Test
-  header:
-    add_item: Add Item
-    search_project: Search Project
-  overview:
-    empty_desc: No content to display
-new_project:
+project_config:
   name: Name
   directory: Directory
   kind:
@@ -114,8 +96,33 @@ new_project:
   lang_tooltip: Language cannot be empty
   open_tooltip: Opening method cannot be empty
   create: Create
-  update: Update
+  finish: Finish
   cancel: Cancel
+delete_project_dialog:
+  dialog_title: Confirm Deletion
+  dialog_desc: 'Are you sure you want to delete the project "{name}"?'
+  cancel: Cancel
+  delete: Delete
+no_ide_path_dialog:
+  dialog_title: IDE Path Not Set
+  dialog_desc: IDE path is not set, please set it in the settings
+  cancel: Cancel
+  set: Set
+home:
+  side_panel:
+    projects: Projects
+    languages: Languages
+    kinds:
+      all: All
+      mine: Mine
+      fork: Fork
+      clone: Clone
+      test: Test
+  header:
+    add_item: Add Item
+    search_project: Search Project
+  overview:
+    empty_desc: No content to display
 settings:
   appearance:
     title: Appearance

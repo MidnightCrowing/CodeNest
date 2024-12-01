@@ -29,17 +29,17 @@ function fillProjectName() {
 }
 
 // ==================== KindButtons ====================
-const kindButtons: { label: string, value: ProjectKind }[] = [
-  { label: 'Mine', value: ProjectKind.MINE },
-  { label: 'Fork', value: ProjectKind.FORK },
-  { label: 'Clone', value: ProjectKind.CLONE },
-]
-const kindSelected: Ref<ProjectKind> = ref(localProjectItem.value.kind as ProjectKind)
+const kindButtons = reactive([
+  { label: t('home.side_panel.kinds.mine'), value: ProjectKind.MINE },
+  { label: t('home.side_panel.kinds.fork'), value: ProjectKind.FORK },
+  { label: t('home.side_panel.kinds.clone'), value: ProjectKind.CLONE },
+])
 const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncComponent>>> = {
   [ProjectKind.MINE]: MineComponent,
   [ProjectKind.FORK]: ForkAndCloneComponent,
   [ProjectKind.CLONE]: ForkAndCloneComponent,
 }
+const kindSelected: Ref<ProjectKind> = ref(localProjectItem.value.kind as ProjectKind)
 const isTestProject = ref(false)
 
 function updateProjectFromUrl(newKind: string) {
@@ -54,6 +54,28 @@ function updateProjectFromName(newKind: string) {
 const projectLangInputValidated = ref(false)
 const mainLanguageOptions = ref<JeComboboxOptionProps[]>([])
 const mainLanguageLoading = ref(false)
+
+// 获取下拉选项
+async function fetchLanguageOptions(path: string) {
+  if (!path)
+    return
+
+  mainLanguageLoading.value = true
+  try {
+    const analyzer = new LanguageAnalyzer(path)
+    const success = await analyzer.analyze()
+
+    if (success) {
+      mainLanguageOptions.value = analyzer.mainLanguageOptions
+    }
+  }
+  catch (error) {
+    console.error('Analysis error:', error)
+  }
+  finally {
+    mainLanguageLoading.value = false
+  }
+}
 
 // ==================== DefaultOpen ====================
 const projectDefaultOpenInputValidated = ref(false)
@@ -127,7 +149,7 @@ function convertLicensesToDropdownOptions(licenseEnum: typeof LicenseEnum): (JeD
     ...commonOptions,
     {
       value: 'other',
-      groupLabel: t('new_project.license_other'),
+      groupLabel: t('project_config.license_other'),
       options: otherOptions,
       isExpand: false,
     },
@@ -140,6 +162,16 @@ function cleanConfigValue() {
   mainLanguageOptions.value = []
   localProjectItem.value.defaultOpen = null
 }
+
+onMounted(() => {
+  if (localProjectItem.value.path) {
+    fetchLanguageOptions(localProjectItem.value.path)
+  }
+  if (localProjectItem.value.kind === ProjectKind.TEST) {
+    kindSelected.value = ProjectKind.MINE
+    isTestProject.value = true
+  }
+})
 
 watch(() => localProjectItem.value.path, async (newValue) => {
   if (newValue === null) {
@@ -265,6 +297,13 @@ function updateProject() {
   }
 
   // 更新项目
+  localProjectItem.value.kind = (kindSelected.value === ProjectKind.MINE && isTestProject.value)
+    ? ProjectKind.TEST
+    : kindSelected.value
+  localProjectItem.value = {
+    ...localProjectItem.value,
+    ...getDynamicFields(),
+  }
   projectManager.updateProject(
     localProjectItem.value.appendTime as number,
     localProjectItem.value as LocalProject,
@@ -288,18 +327,18 @@ function updateProject() {
     >
       <!-- ProjectInfo -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.directory" />
+        <ConfigItemTitle title="project_config.directory" />
         <JeFileInputField
           v-model="localProjectItem.path"
           :validated="projectPathInputValidated"
-          :validated-tooltip="t('new_project.path_tooltip')"
+          :validated-tooltip="t('project_config.path_tooltip')"
           grow
         />
-        <ConfigItemTitle title="new_project.name" />
+        <ConfigItemTitle title="project_config.name" />
         <JeInputField
           v-model="localProjectItem.name"
           :validated="projectNameInputValidated"
-          :validated-tooltip="t('new_project.name_tooltip')"
+          :validated-tooltip="t('project_config.name_tooltip')"
           spellcheck="false" w="200px"
         />
 
@@ -310,14 +349,14 @@ function updateProject() {
         >
           <span text="secondary" truncate>{{ repositoryFolderName }}</span>
           <JeLink :on-click="fillProjectName">
-            {{ t('new_project.kind.fill') }}
+            {{ t('project_config.kind.fill') }}
           </JeLink>
         </div>
       </ConfigItem>
 
       <!-- KindButtons -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.kind.source" />
+        <ConfigItemTitle title="project_config.kind.source" />
         <JeSegmentedControl
           v-model="kindSelected"
           :labels="kindButtons"
@@ -336,31 +375,31 @@ function updateProject() {
 
       <!-- MainLanguage -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.main_lang" />
+        <ConfigItemTitle title="project_config.main_lang" />
         <JeCombobox
           v-model="localProjectItem.mainLang"
           :options="mainLanguageOptions"
           :loading="mainLanguageLoading"
           :validated="projectLangInputValidated"
-          :validated-tooltip="t('new_project.lang_tooltip')"
+          :validated-tooltip="t('project_config.lang_tooltip')"
         />
       </ConfigItem>
 
       <!-- DefaultOpen -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.open_method" />
+        <ConfigItemTitle title="project_config.open_method" />
         <JeDropdown
           v-model="localProjectItem.defaultOpen"
           :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
           :loading="defaultOpenLoading"
           :validated="projectDefaultOpenInputValidated"
-          :validated-tooltip="t('new_project.open_tooltip')"
+          :validated-tooltip="t('project_config.open_tooltip')"
         />
       </ConfigItem>
 
       <!-- License -->
       <ConfigItem>
-        <ConfigItemTitle title="new_project.license" />
+        <ConfigItemTitle title="project_config.license" />
         <JeDropdown
           v-model="localProjectItem.license"
           :options="convertLicensesToDropdownOptions(LicenseEnum)"
@@ -378,21 +417,21 @@ function updateProject() {
         order-2
         @click="addNewProject"
       >
-        {{ t('new_project.create') }}
+        {{ t('project_config.create') }}
       </JeButton>
       <JeButton
         v-else
         order-2
         @click="updateProject"
       >
-        {{ t('new_project.update') }}
+        {{ t('project_config.finish') }}
       </JeButton>
       <JeButton
         type="secondary-alt"
         order-1
         @click="changeHomeView"
       >
-        {{ t('new_project.cancel') }}
+        {{ t('project_config.cancel') }}
       </JeButton>
     </JeFrame>
   </JeFrame>
