@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeFrame } from '~/jetv-ui'
+import { JeFrame } from '@jetv/ui'
 
 import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
 import SidePanel from './SidePanel.vue'

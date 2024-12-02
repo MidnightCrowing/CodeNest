@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
+
 import { JeLink, JeTransparentToolButton } from '../Button'
 import type { JeBannerActionProps, JeBannerProps } from './types'
 

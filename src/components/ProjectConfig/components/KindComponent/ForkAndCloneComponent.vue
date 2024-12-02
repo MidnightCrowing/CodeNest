@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+import { JeInputField, JeLink } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import type { LocalProject } from '~/constants/localProject'
-import { JeInputField, JeLink } from '~/jetv-ui'
 
 import ConfigItemTitle from '../common/ConfigItemTitle.vue'
 

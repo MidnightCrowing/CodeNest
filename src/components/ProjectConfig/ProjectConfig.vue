@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '@jetv/ui'
+import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
@@ -8,8 +10,6 @@ import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer, projectManager } from '~/core/main'
-import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
-import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from '~/jetv-ui'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'

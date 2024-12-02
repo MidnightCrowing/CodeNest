@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+import { JeCard, JeDropdown } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import { LanguageType, ThemeEnum } from '~/constants/appEnums'
 import { settings } from '~/core/settings'
-import { JeCard, JeDropdown } from '~/jetv-ui'
 import { currentTheme } from '~/utils/theme'
 
 const { locale } = useI18n()

@@ -3,6 +3,7 @@ import '../styles/light.scss'
 import '../styles/dark.scss'
 import '../styles/transitionAndTransitionGroup.scss'
 
+import { JeFrame } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import DeleteProjectDialog from '~/components/DeleteProjectDialog/DeleteProjectDialog.vue'
@@ -12,7 +13,6 @@ import WindowHeader from '~/components/WindowHeader.vue'
 import type { ThemeEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
 import { settings } from '~/core/settings'
-import { JeFrame } from '~/jetv-ui'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'

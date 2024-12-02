@@ -12,15 +12,25 @@ import { analyzeFolder } from './utils/linguist.js'
 import { formatPaths, openLocalFile } from './utils/pathUtils.js'
 
 // 设置主题
-ipcMain.handle('set-theme', (event, theme: string): void => {
-  const colorSettings = theme === 'dark'
-    ? { color: '#2B2D30', symbolColor: '#DFE1E5' }
-    : { color: '#F2F2F2', symbolColor: '#222323' }
+ipcMain.handle('set-theme', async (_, theme: string) => {
+  const win = getMainWindow()
+  if (!win)
+    return
 
-  getMainWindow().setTitleBarOverlay({
-    color: colorSettings.color,
-    symbolColor: colorSettings.symbolColor,
-  })
+  try {
+    if (typeof win.setTitleBarOverlay === 'function') {
+      win.setTitleBarOverlay({
+        color: theme === 'dark' ? '#1E1E1E' : '#FFFFFF',
+        symbolColor: theme === 'dark' ? '#FFFFFF' : '#000000',
+      })
+    }
+    // 即使 setTitleBarOverlay 不可用，也要返回成功
+    return true
+  }
+  catch (error) {
+    console.warn('Failed to set title bar overlay:', error)
+    return false
+  }
 })
 
 // 打开文件夹选择对话框
@@ -106,10 +116,16 @@ ipcMain.handle('save-project-data', async (_, data: string): Promise<{ success: 
 ipcMain.handle('load-project-data', async (): Promise<{ success: boolean, data?: string, error?: string }> => {
   try {
     const data = await fs.readJSON(dataFilePath)
+    if (!Array.isArray(data)) {
+      return { success: true, data: JSON.stringify([]) }
+    }
     return { success: true, data: JSON.stringify(data) }
   }
   catch (error: unknown) {
     if (error instanceof Error) {
+      if ((error as any).code === 'ENOENT') {
+        return { success: true, data: JSON.stringify([]) }
+      }
       console.error('Error loading project data:', error.message)
       return { success: false, error: error.message }
     }
