@@ -3,9 +3,9 @@ import { onClickOutside } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
 import { LicenseInfo } from '~/constants/license'
-import { JeLink, JeTooltip } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
+import { JeLink, JeTooltip } from '../../../../jetv-ui'
 // noinspection ES6UnusedImports
 import { license, popupVisible, position } from './LicensePopProvider'
 

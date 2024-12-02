@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 
-import { JeColorIcon, JeLoader, JeTooltip } from '~/jetv-ui'
-
+import { JeColorIcon, JeLoader, JeTooltip } from '../../../../jetv-ui'
 // noinspection ES6UnusedImports
 import { languagesGroup, popupVisible, position } from './LanguagePopProvider'
 

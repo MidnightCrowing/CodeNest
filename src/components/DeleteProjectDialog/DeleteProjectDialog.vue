@@ -2,8 +2,8 @@
 import { useI18n } from 'vue-i18n'
 
 import { projectManager } from '~/core/main'
-import { JeButton, JePopup } from '~/jetv-ui'
 
+import { JeButton, JePopup } from 'jetv-ui'
 import { hideDeleteDialog, isDialogVisible, projectToDelete } from './DeleteProjectDialogProvider'
 
 const { t } = useI18n()

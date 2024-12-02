@@ -2,9 +2,9 @@
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
-import { JeButton, JePopup } from '~/jetv-ui'
 import { activatedPage } from '~/views/Settings/SettingsProvider'
 
+import { JeButton, JePopup } from 'jetv-ui'
 import { hideNoIdePathDialog, isDialogVisible } from './NoIdePathDialogProvider'
 
 const { t } = useI18n()

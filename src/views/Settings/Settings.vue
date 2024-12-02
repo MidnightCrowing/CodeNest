@@ -3,9 +3,9 @@ import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
 import { settings } from '~/core/settings'
-import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from '~/jetv-ui'
 import { eventBus } from '~/utils/eventBus'
 
+import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from 'jetv-ui'
 import AboutPage from './pages/About.vue'
 import AppearancePage from './pages/Appearance.vue'
 import IdesPage from './pages/Ides.vue'

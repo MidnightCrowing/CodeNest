@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { LicensePop, mainLangPop, ProjectCard } from '~/components/ProjectCard'
 import { ProjectKind } from '~/constants/localProject'
 import { projectManager } from '~/core/main'
-import { JeFrame, JeLine } from '~/jetv-ui'
 
+import { JeFrame, JeLine } from '../../../../jetv-ui'
 import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
 
 const props = defineProps<{

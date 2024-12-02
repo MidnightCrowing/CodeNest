@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "declaration": true,           // 开启声明文件生成
+    "declarationDir": "./dist",    // 声明文件的输出目录
+    "outDir": "./dist",            // 编译后的 JavaScript 输出目录
+    "moduleResolution": "node",    // 模块解析策略
+    "strict": true,                // 启用严格模式
+    "esModuleInterop": true,       // 启用对 CommonJS 和 ES Modules 的互操作性
+    "incremental": false,
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    "baseUrl": "./",
+    "module": "ESNext",
+    "paths": {
+      "~/*": ["../src/*"]
+    },
+    "types": [
+      "vite/client"
+    ],
+    "noUnusedLocals": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "build",
+    "dist",
+    "./node_modules"
+  ]
+}

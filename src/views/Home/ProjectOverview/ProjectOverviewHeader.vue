@@ -2,7 +2,8 @@
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
-import { JeSearchField, JeSlimButton } from '~/jetv-ui'
+
+import { JeSearchField, JeSlimButton } from '../../../../jetv-ui'
 
 const props = defineProps<{
   searchValue: string

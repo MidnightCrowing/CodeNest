@@ -2,8 +2,9 @@ import { reactive } from 'vue'
 
 import type { LinguistLanguageResult, LinguistResult } from '~/components/ProjectConfig/types'
 import type { languagesGroupItem, LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
-import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from '~/jetv-ui'
 import { t } from '~/utils/i18n'
+
+import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from '../../jetv-ui'
 
 /**
  * 用于分析项目语言的工具类

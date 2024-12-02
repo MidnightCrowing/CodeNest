@@ -55,9 +55,9 @@ export default defineConfig({
     },
   },
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true, // 是否清空输出目录
     minify: 'terser',
-    outDir: r('dist/app'), // 是否清空输出目录
+    outDir: r('dist/app'),
     rollupOptions: {
       input: r('src/index.html'),
       external: ['electron'],

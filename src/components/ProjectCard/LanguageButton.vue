@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { LocalProject } from '~/constants/localProject'
-import { JeColorIcon, JeTransparentButton } from '~/jetv-ui'
 
+import { JeColorIcon, JeTransparentButton } from 'jetv-ui'
 import { showPop } from './LanguagePop/LanguagePopProvider'
 
 const props = defineProps<{
