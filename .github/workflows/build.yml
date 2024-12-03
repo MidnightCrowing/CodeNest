@@ -48,7 +48,7 @@ jobs:
           run_install: |
             - args: [--frozen-lockfile]
 
-      - name: Update /JetV-ui
+      - name: Update JetV-ui
         run: pnpm update jetv-ui
 
       - name: Lint
@@ -70,4 +70,3 @@ jobs:
             build/*Setup*.exe
             build/*.dmg
             build/*.AppImage
-          if: startsWith(matrix.os, 'windows') || startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')

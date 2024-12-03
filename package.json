@@ -72,9 +72,20 @@
     "appId": "MidnightCrowing.codenest",
     "productName": "CodeNest",
     "copyright": "Copyright © year ${author}",
-    "icon": "src/assets/app.ico",
     "directories": {
       "output": "build"
+    },
+    "win": {
+      "icon": "src/assets/app.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
     },
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -93,14 +104,16 @@
         }
       ]
     },
-    "win": {
+    "linux": {
+      "icon": "src/assets/app.png",
       "target": [
         {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "snap",
+          "arch": ["x64"]
         }
       ]
     },
