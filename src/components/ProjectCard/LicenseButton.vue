@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { JeTransparentButton } from 'jetv-ui'
+
 import type { LicenseEnum } from '~/constants/license'
-import { JeTransparentButton } from '~/jetv-ui'
 
 import { showPop } from './LicensePop/LicensePopProvider'
 

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
+import { JeLink, JeTooltip } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { LicenseInfo } from '~/constants/license'
-import { JeLink, JeTooltip } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 // noinspection ES6UnusedImports

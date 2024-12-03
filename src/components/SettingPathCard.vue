@@ -1,7 +1,6 @@
 <script lang="ts" setup>
+import { JeCard, JeInputField, JeTransparentButton, JeTransparentToolButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
-
-import { JeCard, JeInputField, JeTransparentButton, JeTransparentToolButton } from '~/jetv-ui'
 
 const props = defineProps<{
   modelValue: string | null

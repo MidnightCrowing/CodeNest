@@ -27,12 +27,20 @@ export default antfu(
       'perfectionist/sort-imports': 'off',
     },
     eslint: {
-      ignorePatterns: [
+      ignores: [
+        // 略打包输出目录
         'dist',
         'build',
+
+        // 忽略依赖目录
         'node_modules',
-        'public',
+
+        // 忽略其他目录
         'data',
+        'icons',
+
+        // 忽略特定文件类型
+        '**/*.ico',
       ],
     },
   },

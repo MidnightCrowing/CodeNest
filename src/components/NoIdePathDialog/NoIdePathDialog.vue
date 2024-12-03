@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+import { JeButton, JePopup } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
-import { JeButton, JePopup } from '~/jetv-ui'
 import { activatedPage } from '~/views/Settings/SettingsProvider'
 
 import { hideNoIdePathDialog, isDialogVisible } from './NoIdePathDialogProvider'

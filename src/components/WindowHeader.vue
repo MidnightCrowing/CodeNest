@@ -1,7 +1,7 @@
 <!-- https://www.electronjs.org/zh/docs/latest/tutorial/window-customization -->
 
 <script lang="ts" setup>
-import { JeFrame } from '~/jetv-ui'
+import { JeFrame } from 'jetv-ui'
 </script>
 
 <template>

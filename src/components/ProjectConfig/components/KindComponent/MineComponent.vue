@@ -1,7 +1,6 @@
 <script lang="ts" setup>
+import { JeCheckbox } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
-
-import { JeCheckbox } from '~/jetv-ui'
 
 const props = defineProps<{
   isTestProject: boolean

@@ -21,6 +21,8 @@
   "exclude": [
     "../build",
     "../dist",
+    "../icons-svg",
+    "../scripts",
     "../node_modules"
   ]
 }

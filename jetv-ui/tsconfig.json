@@ -1,0 +1,37 @@
+{
+  "compilerOptions": { // 启用严格模式
+    "incremental": false,
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    "baseUrl": ".",
+    "module": "ESNext", // 指定编译后的 JavaScript 输出目录
+    "moduleResolution": "node",
+    "paths": {
+      "~/*": ["../src/*"]
+    }, // 指定声明文件的输出目录
+    "resolveJsonModule": true,
+    "types": [
+      "vite/client"
+    ],
+    "strict": true, // 模块解析策略
+    "noUnusedLocals": true,
+    "declaration": true, // 开启声明文件生成
+    "declarationDir": "./dist",
+    "outDir": "./dist",
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "src/**/*.vue",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "icons",
+    "scripts",
+    "node_modules"
+  ]
+}

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { JeMenuOptionProps } from 'jetv-ui'
+import { JeLink, JeMenu, JeTransparentToolButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { showDeleteDialog } from '~/components/DeleteProjectDialog/DeleteProjectDialogProvider'
@@ -7,8 +9,6 @@ import { ViewEnum } from '~/constants/appEnums'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import type { JeMenuOptionProps } from '~/jetv-ui'
-import { JeLink, JeMenu, JeTransparentToolButton } from '~/jetv-ui'
 import { openLink } from '~/utils/main'
 
 import LanguageButton from './LanguageButton.vue'
