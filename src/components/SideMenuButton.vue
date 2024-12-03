@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeColorIcon } from '~/jetv-ui'
+import { JeColorIcon } from '@jetv/ui'
 
 defineProps<{
   active: boolean

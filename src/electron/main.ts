@@ -30,17 +30,16 @@ function createWindow() {
     minWidth: WINDOW_WIDTH,
     height: WINDOW_HEIGHT,
     minHeight: WINDOW_HEIGHT,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      height: 40,
-    },
+    // eslint-disable-next-line node/prefer-global/process
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+    trafficLightPosition: { x: 10, y: 10 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      // nodeIntegration: true,
-      // contextIsolation: false,
-      contextIsolation: true, // 启用上下文隔离
-      nodeIntegration: false, // 禁用 Node.js 集成（如果不需要）
-      sandbox: true, // 启用沙箱
+      nodeIntegration: true,
+      contextIsolation: true,
+      sandbox: true,
+      webSecurity: false,
+      devTools: !isPackaged,
     },
   })
 
@@ -50,6 +49,7 @@ function createWindow() {
   // 是否是生产环境
   if (!isPackaged) {
     loadURLWithRetry(DEV_URL)
+    mainWindow.webContents.openDevTools()
   }
   else {
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)

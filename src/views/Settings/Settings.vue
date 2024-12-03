@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
 import { settings } from '~/core/settings'
-import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from '~/jetv-ui'
 import { eventBus } from '~/utils/eventBus'
 
 import AboutPage from './pages/About.vue'

@@ -2,30 +2,22 @@ import { ThemeEnum } from '~/constants/appEnums'
 
 export const currentTheme: Ref<ThemeEnum> = ref(ThemeEnum.Light)
 
-export async function applyTheme(theme?: ThemeEnum) {
-  const rootElement = document.documentElement // 获取 :root，即 <html> 元素
-  if (!rootElement) {
-    console.warn('Root element not found. Theme application aborted.')
-    return
-  }
-
-  // 更新 HTML 的 className
-  const newTheme = theme ?? currentTheme.value
-  if (rootElement.className !== newTheme) {
-    rootElement.className = newTheme
-  }
-
-  // 同步更新 currentTheme
-  if (theme) {
-    currentTheme.value = theme
-  }
-
-  // 更新 Electron 窗口主题样式
+export async function applyTheme(theme: string) {
   try {
-    window.api.setWindowTheme(currentTheme.value)
+    // 检查 setTitleBarOverlay 方法是否存在
+    const win = await window.electron.getMainWindow()
+    if (win && typeof win.setTitleBarOverlay === 'function') {
+      await window.electron.invoke('set-theme', theme)
+    }
+    else {
+      // 降级处理：仅设置主题类名
+      document.documentElement.className = theme
+    }
   }
   catch (error) {
-    console.error('Failed to set window theme:', error)
+    console.warn('Failed to set window theme:', error)
+    // 降级处理：仅设置主题类名
+    document.documentElement.className = theme
   }
 }
 

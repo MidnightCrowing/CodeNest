@@ -1,8 +1,8 @@
 <script lang="ts" setup>
+import { JeTransparentButton } from '@jetv/ui'
 import { useI18n } from 'vue-i18n'
 
 import { projectManager } from '~/core/main'
-import { JeTransparentButton } from '~/jetv-ui'
 
 import { version } from '../../../../package.json'
 
