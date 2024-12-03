@@ -3,6 +3,6 @@ dist/
 node_modules/
 *.log
 *.zip
-jet-icons.json
+/jet-icons.json
 tsconfig.tsbuildinfo
 vite.config.ts.timestamp*.mjs

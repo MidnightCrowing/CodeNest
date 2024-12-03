@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
+    "@iconify/json",
+    "uno.css",
+    "lint-staged"
+  ],
+  "ignoreBinaries": ["gh", "xcrun"],
+  "rules": {
+    "types": "off",
+    "enumMembers": "off",
+    "exports": "off"
+  }
+}

@@ -14,7 +14,7 @@
     "jet-icons.json"
   ],
   "scripts": {
-    "build": "vue-tsc -b && pnpm icon:build && vite build",
+    "build": "vue-tsc -b && vite build",
     "icon:build": "node scripts/build-icons.js",
     "prepare:icons": "node scripts/copy-file.js",
     "postbuild": "pnpm prepare:icons"
