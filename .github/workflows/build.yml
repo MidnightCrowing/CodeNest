@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         node: [lts/*, lts/-1]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -62,11 +62,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
 
-      - name: Upload Installer
+      - name: Upload Windows Installer
+        if: matrix.node == 'lts/*' && matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: installer
-          path: |
-            build/*Setup*.exe
-            build/*.dmg
-            build/*.AppImage
+          name: windows-installer
+          path: build/*Setup*.exe
+
+      - name: Upload macOS Installer
+        if: matrix.node == 'lts/*' && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-installer
+          path: build/*.dmg
+
+      - name: Upload Linux Installer
+        if: matrix.node == 'lts/*' && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-installer
+          path: build/*.AppImage
