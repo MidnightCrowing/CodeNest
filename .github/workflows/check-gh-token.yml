@@ -1,0 +1,23 @@
+name: Check GH_TOKEN
+
+on:
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  check-token:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo Start Message
+        run: echo "Starting to check GH_TOKEN existence."
+
+      - name: Check GH_TOKEN
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "Error: GH_TOKEN is not set in Secrets."
+            exit 1
+          else
+            echo "GH_TOKEN is set and ready to use."
+          fi
