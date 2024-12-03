@@ -76,7 +76,7 @@
       "output": "build"
     },
     "win": {
-      "icon": "src/assets/app.ico",
+      "icon": "src/assets/app-icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -88,6 +88,7 @@
       ]
     },
     "mac": {
+      "icon": "path/to/app-icon.icns",
       "category": "public.app-category.developer-tools",
       "target": [
         {
@@ -105,7 +106,7 @@
       ]
     },
     "linux": {
-      "icon": "src/assets/app.png",
+      "icon": "src/assets/app-icon.png",
       "target": [
         {
           "target": "AppImage",
