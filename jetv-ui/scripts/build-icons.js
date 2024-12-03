@@ -1,8 +1,14 @@
 import fs from 'node:fs'
-import path from 'node:path'
 
-const sourcePath = path.join(__dirname, 'src', 'assets', 'jet-icons.json')
-const destPath = path.join(__dirname, 'jet-icons.json')
+import { importDirectory } from '@iconify/tools'
 
-fs.copyFileSync(sourcePath, destPath)
-console.log('File copied successfully')
+async function generateIconSet() {
+  const iconSet = await importDirectory('./icons', {
+    prefix: 'jet',
+  })
+
+  // 导出 JSON 文件
+  fs.writeFileSync('./src/assets/jet-icons.json', JSON.stringify(iconSet.export(), null, 2))
+}
+
+generateIconSet().then(() => {})
