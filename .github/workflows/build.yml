@@ -70,7 +70,7 @@ jobs:
           path: build/*Setup*.exe
 
       - name: Upload macOS Installer
-        if: matrix.node == 'lts/*' && matrix.os == 'ubuntu-latest'
+        if: matrix.node == 'lts/*' && matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v3
         with:
           name: mac-installer
