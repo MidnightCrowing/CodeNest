@@ -58,4 +58,6 @@ jobs:
         run: pnpm run typecheck
 
       - name: Build the project
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
