@@ -61,3 +61,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer
+          path: |
+            build/*Setup*.exe
+            build/*.dmg
+            build/*.AppImage
+          if: startsWith(matrix.os, 'windows') || startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
