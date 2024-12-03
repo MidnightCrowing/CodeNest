@@ -48,6 +48,9 @@ jobs:
           run_install: |
             - args: [--frozen-lockfile]
 
+      - name: Update /JetV-ui
+        run: pnpm update jetv-ui
+
       - name: Lint
         run: pnpm run lint
 
