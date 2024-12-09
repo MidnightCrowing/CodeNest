@@ -127,7 +127,7 @@ provide('unsaveChanges', unsaveChanges)
           {{ t('settings.save') }}
         </JeButton>
         <JeButton
-          class="cancel-button" type="secondary"
+          class="cancel-button" type="secondary-alt"
           order-1
           @click="changeHomeView"
         >
