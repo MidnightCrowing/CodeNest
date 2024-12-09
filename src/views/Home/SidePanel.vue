@@ -7,15 +7,17 @@ import { ViewEnum } from '~/constants/appEnums'
 import { ProjectKind } from '~/constants/localProject'
 import { projectManager } from '~/core/main'
 
+import type { SidePanelActive } from './types'
+
 const props = defineProps<{
-  activatedItem: string
+  activatedItem: SidePanelActive
 }>()
 const emit = defineEmits(['updateActivatedItem'])
 
 const { t } = useI18n()
 
 // 通过点击更新激活项
-function updateActivatedItem(itemMark: string) {
+function updateActivatedItem(itemMark: SidePanelActive) {
   if (props.activatedItem !== itemMark) {
     emit('updateActivatedItem', itemMark)
   }
@@ -23,14 +25,13 @@ function updateActivatedItem(itemMark: string) {
 
 // ==================== Kind Group ====================
 const kinds = computed(() => [
-  { kind: 'all', label: t('home.side_panel.kinds.all') },
-  { kind: 'mine', label: t('home.side_panel.kinds.mine'), projectKind: ProjectKind.MINE },
-  { kind: 'fork', label: t('home.side_panel.kinds.fork'), projectKind: ProjectKind.FORK },
-  { kind: 'clone', label: t('home.side_panel.kinds.clone'), projectKind: ProjectKind.CLONE },
-  { kind: 'test', label: t('home.side_panel.kinds.test'), projectKind: ProjectKind.TEST },
+  { kind: 'all' as const, label: t('home.side_panel.kinds.all') },
+  { kind: 'mine' as const, label: t('home.side_panel.kinds.mine'), projectKind: ProjectKind.MINE },
+  { kind: 'fork' as const, label: t('home.side_panel.kinds.fork'), projectKind: ProjectKind.FORK },
+  { kind: 'clone' as const, label: t('home.side_panel.kinds.clone'), projectKind: ProjectKind.CLONE },
 ])
 // 使用 map 方法动态生成 Kind Group 数据
-const kindMenuGroups = computed(() =>
+const kindMenuGroup1 = computed(() =>
   kinds.value.map(({ kind, label, projectKind }) => ({
     kind,
     label,
@@ -39,9 +40,9 @@ const kindMenuGroups = computed(() =>
       : projectManager.getProjects().length,
   })),
 )
-// 分组 Kind Group1 和 Kind Group2
-const kindMenuGroup1 = computed(() => kindMenuGroups.value.slice(0, 4)) // 包含 all, mine, fork, clone
-const kindMenuGroup2 = computed(() => kindMenuGroups.value.slice(4)) // 包含 test
+const kindMenuGroup2 = computed(() => [
+  { kind: 'temp', label: t('home.side_panel.temporary'), count: projectManager.getTempProjects().length },
+]) // temporary
 
 // ==================== Language Group ====================
 const languagesGroup = computed(() => {
@@ -75,26 +76,28 @@ function changeSettingsView() {
         {{ t('home.side_panel.projects') }}
       </header>
       <main flex="~ col" gap="1px">
-        <SideMenuButton
-          v-for="kindItem in kindMenuGroup1"
-          :key="kindItem.kind"
-          :active="activatedItem === `k-${kindItem.kind}`"
-          :tag-value="kindItem.count"
-          @click="updateActivatedItem(`k-${kindItem.kind}`)"
-          @keydown.enter="updateActivatedItem(`k-${kindItem.kind}`)"
-        >
-          {{ kindItem.label }}
-        </SideMenuButton>
+        <template v-for="kindItem in kindMenuGroup1" :key="kindItem.kind">
+          <SideMenuButton
+            :active="activatedItem === `k-${kindItem.kind}`"
+            :tag-value="kindItem.count"
+            @click="updateActivatedItem(`k-${kindItem.kind}`)"
+            @keydown.enter="updateActivatedItem(`k-${kindItem.kind}`)"
+          >
+            {{ kindItem.label }}
+          </SideMenuButton>
+        </template>
+
         <JeLine mx-10px />
-        <SideMenuButton
-          v-for="kindItem in kindMenuGroup2"
-          :key="kindItem.kind"
-          :active="activatedItem === `k-${kindItem.kind}`"
-          :tag-value="kindItem.count"
-          @click="updateActivatedItem(`k-${kindItem.kind}`)"
-        >
-          {{ kindItem.label }}
-        </SideMenuButton>
+
+        <template v-for="kindItem in kindMenuGroup2" :key="kindItem.kind">
+          <SideMenuButton
+            :active="activatedItem === `temp`"
+            :tag-value="kindItem.count"
+            @click="updateActivatedItem(`temp`)"
+          >
+            {{ kindItem.label }}
+          </SideMenuButton>
+        </template>
       </main>
 
       <!-- Language Group -->

@@ -3,12 +3,13 @@ import { JeFrame } from 'jetv-ui'
 
 import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
 import SidePanel from './SidePanel.vue'
+import type { SidePanelActive } from './types'
 
 // 管理左侧菜单选中的项
-const activatedItem = ref('k-all')
+const activatedItem: Ref<SidePanelActive> = ref('k-all')
 
 // 更新激活的菜单项
-function updateActivatedItem(itemMark: string) {
+function updateActivatedItem(itemMark: SidePanelActive) {
   activatedItem.value = itemMark
 }
 </script>
