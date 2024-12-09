@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
-import { JeButton, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from 'jetv-ui'
+import { JeButton, JeCheckbox, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
@@ -14,7 +14,6 @@ import { LanguageAnalyzer, projectManager } from '~/core/main'
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
 import ForkAndCloneComponent from './components/KindComponent/ForkAndCloneComponent.vue'
-import MineComponent from './components/KindComponent/MineComponent.vue'
 import { initializeNewProjectState, isUpdateProject, localProjectItem } from './ProjectConfigProvider'
 
 const { t } = useI18n()
@@ -29,25 +28,14 @@ function fillProjectName() {
 }
 
 // ==================== KindButtons ====================
-const kindButtons = reactive([
+const kindButtonLabels = reactive([
   { label: t('home.side_panel.kinds.mine'), value: ProjectKind.MINE },
   { label: t('home.side_panel.kinds.fork'), value: ProjectKind.FORK },
   { label: t('home.side_panel.kinds.clone'), value: ProjectKind.CLONE },
 ])
 const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncComponent>>> = {
-  [ProjectKind.MINE]: MineComponent,
   [ProjectKind.FORK]: ForkAndCloneComponent,
   [ProjectKind.CLONE]: ForkAndCloneComponent,
-}
-const kindSelected: Ref<ProjectKind> = ref(localProjectItem.value.kind as ProjectKind)
-const isTestProject = ref(false)
-
-function updateProjectFromUrl(newKind: string) {
-  localProjectItem.value.fromUrl = newKind
-}
-
-function updateProjectFromName(newKind: string) {
-  localProjectItem.value.fromName = newKind
 }
 
 // ==================== Language ====================
@@ -167,10 +155,6 @@ onMounted(() => {
   if (localProjectItem.value.path) {
     fetchLanguageOptions(localProjectItem.value.path)
   }
-  if (localProjectItem.value.kind === ProjectKind.TEST) {
-    kindSelected.value = ProjectKind.MINE
-    isTestProject.value = true
-  }
 })
 
 watch(() => localProjectItem.value.path, async (newValue) => {
@@ -273,17 +257,9 @@ function addNewProject() {
 
   // 添加项目
   projectManager.addProject({
-    appendTime: Date.now(), // 添加创建时间
-    path: localProjectItem.value.path,
-    name: localProjectItem.value.name,
-    kind: (kindSelected.value === ProjectKind.MINE && isTestProject.value)
-      ? ProjectKind.TEST
-      : kindSelected.value,
-    mainLang: localProjectItem.value.mainLang,
-    mainLangColor: localProjectItem.value.mainLangColor,
-    langGroup: localProjectItem.value.langGroup,
-    defaultOpen: localProjectItem.value.defaultOpen,
+    ...localProjectItem.value,
     ...getDynamicFields(),
+    appendTime: Date.now(), // 添加创建时间
   } as LocalProject)
 
   // 返回主页
@@ -297,9 +273,6 @@ function updateProject() {
   }
 
   // 更新项目
-  localProjectItem.value.kind = (kindSelected.value === ProjectKind.MINE && isTestProject.value)
-    ? ProjectKind.TEST
-    : kindSelected.value
   localProjectItem.value = {
     ...localProjectItem.value,
     ...getDynamicFields(),
@@ -358,19 +331,29 @@ function updateProject() {
       <ConfigItem>
         <ConfigItemTitle title="project_config.kind.source" />
         <JeSegmentedControl
-          v-model="kindSelected"
-          :labels="kindButtons"
+          v-model="localProjectItem.kind"
+          :labels="kindButtonLabels"
         />
 
         <KeepAlive>
           <Component
-            :is="kindComponents[kindSelected]"
-            v-model:is-test-project="isTestProject"
+            :is="kindComponents[localProjectItem.kind]"
             :local-project-item="localProjectItem"
-            @update:project-from-url="updateProjectFromUrl"
-            @update:project-from-name="updateProjectFromName"
+            @update:project-from-url="(newKind: string) => { localProjectItem.fromUrl = newKind }"
+            @update:project-from-name="(newKind: string) => { localProjectItem.fromName = newKind }"
           />
         </KeepAlive>
+
+        <!-- Temporary -->
+        <div col-start="2">
+          <JeCheckbox
+            v-model="localProjectItem.isTemporary"
+            class="checkbox-setting"
+            w-fit
+          >
+            {{ t('project_config.temporary') }}
+          </JeCheckbox>
+        </div>
       </ConfigItem>
 
       <!-- MainLanguage -->

@@ -5,8 +5,10 @@ import { ProjectKind } from '~/constants/localProject'
 type Nullable<T> = {
   [K in keyof T]: T[K] | null;
 }
-export type NullableLocalProject = Nullable<Omit<LocalProject, 'license'>> & {
+export type NullableLocalProject = Omit<Nullable<LocalProject>, 'kind' | 'license' | 'isTemporary'> & {
+  kind: ProjectKind
   license: LicenseEnum | string
+  isTemporary: boolean
 }
 
 // 默认的 LocalProject 状态
@@ -19,6 +21,7 @@ const defaultLocalProjectState: Readonly<NullableLocalProject> = {
   langGroup: null,
   defaultOpen: null,
   license: LicenseEnum.NONE,
+  isTemporary: false,
 }
 
 export const localProjectItem: Ref<NullableLocalProject> = ref({ ...defaultLocalProjectState }) // 创建副本
