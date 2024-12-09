@@ -4,7 +4,7 @@
     "module": "CommonJS"
   },
   "include": [
-    "../src/electron/preload.ts"
+    "../electron/preload.ts"
   ],
   "exclude": []
 }

@@ -7,9 +7,9 @@
     "outDir": "../dist/electron"
   },
   "include": [
-    "../src/electron/**/*.ts"
+    "../electron/**/*.ts"
   ],
   "exclude": [
-    "../src/electron/preload.ts"
+    "../electron/preload.ts"
   ]
 }
