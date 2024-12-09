@@ -12,7 +12,7 @@ const props = defineProps<{
 const containerRef = ref<HTMLElement | null>(null)
 
 function handleClick() {
-  if (containerRef.value && props.projectItem.exists) {
+  if (containerRef.value && props.projectItem.isExists) {
     const rect = containerRef.value.getBoundingClientRect()
 
     const top = rect.top + window.scrollY - 3
