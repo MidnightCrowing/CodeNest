@@ -27,7 +27,8 @@ const {
   langGroup: projectLangGroup,
   defaultOpen: projectDefaultOpen,
   license: projectLicense,
-  exists: projectExists,
+  isTemporary: projectIsTemporary,
+  isExists: projectExists,
 } = toRefs(props.projectItem)
 
 const { t } = useI18n()
@@ -123,7 +124,7 @@ function showMenu() {
 
           <!-- Test Mark -->
           <span
-            v-if="(projectKind === ProjectKind.TEST)"
+            v-if="projectIsTemporary"
             text="medium"
             color="light:$yellow-5 dark:$yellow-9"
             b="solid 1px light:$yellow-5 dark:$yellow-9" rounded-full
@@ -135,7 +136,7 @@ function showMenu() {
 
         <!-- Link -->
         <span
-          v-if="(projectKind === (ProjectKind.FORK || ProjectKind.CLONE)) && (projectFromUrl || projectFromName)"
+          v-if="(projectKind === ProjectKind.FORK || projectKind === ProjectKind.CLONE) && (projectFromUrl || projectFromName)"
           truncate text="secondary"
         >
           {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
