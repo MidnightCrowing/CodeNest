@@ -1,4 +1,4 @@
-import './ipcHandler.js'
+import './ipcHandler'
 
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,7 +15,6 @@ const WINDOW_HEIGHT = 650
 
 let mainWindow: BrowserWindow
 let retryCount = 0
-let isOpenDevTools = false
 
 // 检查是否为生产环境
 const isPackaged = app.isPackaged
@@ -50,6 +49,7 @@ function createWindow() {
   // 是否是生产环境
   if (!isPackaged) {
     loadURLWithRetry(DEV_URL)
+    mainWindow.webContents.openDevTools()
   }
   else {
     mainWindow.loadURL(`file://${path.join(__dirname, '../app/index.html')}`)
@@ -103,14 +103,7 @@ function setGlobalShortcut() {
 
   // F11: 打开开发者工具
   globalShortcut.register('F11', () => {
-    if (!isOpenDevTools) {
-      mainWindow.webContents.openDevTools()
-      isOpenDevTools = true
-    }
-    else {
-      mainWindow.webContents.closeDevTools()
-      isOpenDevTools = false
-    }
+    mainWindow.webContents.openDevTools()
   })
 }
 
