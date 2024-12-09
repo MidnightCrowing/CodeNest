@@ -162,6 +162,7 @@ class ProjectManager {
   // 添加项目到列表头部
   async addProject(newProject: LocalProject): Promise<void> {
     this.projectItems.unshift(newProject)
+    await this.checkProjectExistence(newProject)
     await this.saveProjects()
   }
 
@@ -178,6 +179,11 @@ class ProjectManager {
   // 获取指定语言的项目
   getProjectsByLang(lang: ProjectLanguage): LocalProject[] {
     return this.projectItems.filter(project => project.mainLang === lang)
+  }
+
+  // 获取临时项目
+  getTempProjects(): LocalProject[] {
+    return this.projectItems.filter(project => project.isTemporary)
   }
 
   // 获取主要语言的统计信息
@@ -219,6 +225,8 @@ class ProjectManager {
       // 更新项目的字段，保留原有的字段
       Object.assign(project, updatedProject)
 
+      await this.checkProjectExistence(project)
+
       // 保存项目列表
       await this.saveProjects()
 
@@ -253,7 +261,7 @@ class ProjectManager {
   async saveProjects(): Promise<void> {
     try {
       const dataToSave = JSON.stringify(this.projectItems, (key, value) => {
-        if (key === 'langGroup' || key === 'exists')
+        if (key === 'langGroup' || key === 'isExists')
           return undefined // 不保存 langGroup 和 exists
         return value
       })
@@ -276,15 +284,20 @@ class ProjectManager {
 
         for (const project of this.projectItems) {
           // 补充exists字段
-          window.api.checkPathExistence(project.path).then((res) => {
-            project.exists = res.exists
-          })
+          this.checkProjectExistence(project)
         }
       }
     }
     catch (error: any) {
       console.error('Error loading project data:', error)
     }
+  }
+
+  // 检查项目是否存在
+  async checkProjectExistence(project: LocalProject): Promise<boolean> {
+    const { exists } = await window.api.checkPathExistence(project.path)
+    project.isExists = exists
+    return exists
   }
 }
 
