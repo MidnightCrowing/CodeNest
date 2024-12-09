@@ -11,12 +11,13 @@
   "scripts": {
     "dev": "concurrently --kill-others \"pnpm dev:vue\" \"pnpm dev:electron\"",
     "dev:vue": "vite",
-    "dev:electron": "pnpm tsc:electron && electron .",
+    "dev:electron": "pnpm tsc:electron && node scripts/add-suffix-js.js && electron .",
     "build": "pnpm build:vue && pnpm build:electron",
     "build:vue": "vue-tsc --build && vite build",
-    "build:electron": "pnpm tsc:electron && electron-builder",
+    "build:electron": "pnpm tsc:electron && node scripts/add-suffix-js.js && electron-builder",
     "icon:build": "node scripts/build-icons.js",
-    "tsc:electron": "tsc -p tsconfig/tsconfig.electron.json && tsc -p tsconfig/tsconfig.electron.preload.json",
+    "tsc:electron": "tsc -p tsconfig/tsconfig.electron.json & tsc -p tsconfig/tsconfig.electron.preload.json",
+    "update:ui": "pnpm update jetv-ui",
     "postinstall": "electron-builder install-app-deps",
     "preinstall": "pnpm --filter jetv-ui install",
     "prepare": "pnpm --filter jetv-ui build",
@@ -28,7 +29,7 @@
   "dependencies": {
     "@vueuse/core": "^11.2.0",
     "fs-extra": "^11.2.0",
-    "linguist-js": "^2.8.0",
+    "linguist-js": "^2.8.1",
     "mitt": "^3.0.1",
     "vue": "^3.5.13",
     "vue-i18n": "^10.0.4"
@@ -110,11 +111,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "snap",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
