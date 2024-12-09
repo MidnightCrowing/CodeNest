@@ -209,7 +209,7 @@ watch(() => props.modelValue, (newValue) => {
 }
 
 .je-dropdown__icon {
-  @apply size-0.7rem;
+  @apply text-1rem;
 }
 
 .je-dropdown__label {
