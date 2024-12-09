@@ -3,7 +3,7 @@ import { onClickOutside } from '@vueuse/core'
 import { JeColorIcon, JeLoader, JeTooltip } from 'jetv-ui'
 
 // noinspection ES6UnusedImports
-import { languagesGroup, popupVisible, position } from './LanguagePopProvider'
+import { getAnalyzeError, languagesGroup, popupVisible, position } from './LanguagePopProvider'
 
 const popupRef = ref<HTMLElement | null>(null)
 
@@ -21,7 +21,8 @@ onClickOutside(popupRef, () => {
   >
     <template v-if="!languagesGroup">
       <div m="6px">
-        <JeLoader />
+        <JeLoader v-if="!getAnalyzeError" />
+        <span v-else>无法获取分析结果</span>
       </div>
     </template>
 

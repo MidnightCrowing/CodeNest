@@ -8,6 +8,7 @@ const project: Ref<LocalProject | null> = ref(null)
 export const mainLang: Ref<ProjectLanguage | null | undefined> = ref<ProjectLanguage | null>(null)
 export const mainLangColor: Ref<`#${string}` | undefined> = ref<`#${string}` | undefined>(undefined)
 export const languagesGroup: Ref<languagesGroupItem[] | undefined> = ref<languagesGroupItem[] | undefined>(undefined)
+export const getAnalyzeError: Ref<boolean | null> = ref(null)
 
 export function showPop(newProjectItem: LocalProject, top: number, left: number) {
   project.value = newProjectItem
@@ -18,7 +19,10 @@ export function showPop(newProjectItem: LocalProject, top: number, left: number)
   position.left = left
   popupVisible.value = true
 
+  getAnalyzeError.value = null
+
   if (!languagesGroup.value || languagesGroup.value.length === 0) {
+    getAnalyzeError.value = false
     loadLanguageAnalyzer()
   }
 }
@@ -52,7 +56,8 @@ function loadLanguageAnalyzer() {
       }
     }
     else {
-      console.warn(`Error analyzing folder for project at ${folderPath}`)
+      getAnalyzeError.value = true
+      console.error(`Error analyzing folder for project at ${folderPath}`)
     }
   })
 }
