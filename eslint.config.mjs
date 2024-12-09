@@ -27,7 +27,7 @@ export default antfu(
       'perfectionist/sort-imports': 'off',
     },
     eslint: {
-      ignores: [
+      ignorePatterns: [
         // 略打包输出目录
         'dist',
         'build',
