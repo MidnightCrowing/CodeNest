@@ -42,7 +42,7 @@ class Settings {
     try {
       const result = await window.api.loadSettingsData()
       if (result.success && result.data) {
-        const loadedData = JSON.parse(result.data) as Partial<SettingsData>
+        const loadedData: Partial<SettingsData> = JSON.parse(result.data)
 
         // 遍历现有的设置结构，动态适配加载的数据
         for (const key of Object.keys(this.settingsData)) {
@@ -59,7 +59,7 @@ class Settings {
               const loadedPaths = (loadedData.codeEditorsPath || {}) as Record<CodeEditorEnum, string>
 
               this.settingsData.codeEditorsPath = Object.keys(defaultPaths).reduce(
-                (adapted, editor) => {
+                (adapted: Record<CodeEditorEnum, string>, editor: string) => {
                   adapted[editor as CodeEditorEnum] = loadedPaths[editor as CodeEditorEnum] ?? ''
                   return adapted
                 },
