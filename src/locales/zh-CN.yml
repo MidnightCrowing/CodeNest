@@ -74,10 +74,10 @@ project_config:
   directory: 位置
   kind:
     source: 项目来源
-    test: 测试项目
     url: 项目网址
     name: 项目名称
     fill: 填入
+  temporary: 临时项目
   main_lang: 主要语言
   lang_info: '类型: {type}, 字节: {bytes}, 行数: {lines}'
   open_method: 打开方式
@@ -106,10 +106,10 @@ home:
     languages: 语言
     kinds:
       all: 全部
-      mine: 个人
+      mine: 我的
       fork: Fork
       clone: Clone
-      test: 测试
+    temporary: 临时
   header:
     add_item: 添加项目
     search_project: 搜索项目

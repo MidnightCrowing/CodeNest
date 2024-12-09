@@ -82,10 +82,10 @@ project_config:
   directory: Directory
   kind:
     source: Project Source
-    test: Test Project
     url: Project URL
     name: Project Name
     fill: Fill In
+  temporary: Temporary Project
   main_lang: Main Language
   lang_info: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
   open_method: Opening Method
@@ -117,7 +117,7 @@ home:
       mine: Mine
       fork: Fork
       clone: Clone
-      test: Test
+    temporary: Temporary
   header:
     add_item: Add Item
     search_project: Search Project
