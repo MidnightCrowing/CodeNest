@@ -5,11 +5,11 @@ import process from 'node:process'
 import { dialog, ipcMain, shell } from 'electron'
 import fs from 'fs-extra'
 
-import { getMainWindow } from './main.js'
-import { dataFilePath, settingsFilePath } from './utils/dataPath.js'
-import type { LinguistResult } from './utils/linguist.js'
-import { analyzeFolder } from './utils/linguist.js'
-import { formatPaths, openLocalFile } from './utils/pathUtils.js'
+import { getMainWindow } from './main'
+import { dataFilePath, settingsFilePath } from './utils/dataPath'
+import type { LinguistResult } from './utils/linguist'
+import { analyzeFolder } from './utils/linguist'
+import { formatPaths, openLocalFile } from './utils/pathUtils'
 
 // 设置主题
 ipcMain.handle('set-theme', (event, theme: string): void => {
@@ -280,9 +280,26 @@ ipcMain.handle('export-data', async () => {
 
 // 打开设置 JSON 文件
 ipcMain.handle('open-settings-json', async (): Promise<boolean> => {
-  if (!fs.existsSync(settingsFilePath)) {
-    console.error(`Settings file not found: ${settingsFilePath}`)
+  try {
+    // 如果文件不存在，创建一个新的 JSON 文件
+    if (!fs.existsSync(settingsFilePath)) {
+      console.warn(`Settings file not found. Creating new file at: ${settingsFilePath}`)
+
+      // 创建文件夹路径（如果不存在）
+      const dir = path.dirname(settingsFilePath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+
+      // 创建一个默认设置文件
+      fs.writeFileSync(settingsFilePath, JSON.stringify({}), 'utf8')
+    }
+
+    // 打开文件
+    return openLocalFile(settingsFilePath)
+  }
+  catch (error) {
+    console.error(`Failed to open or create settings file: ${error}`)
     return false
   }
-  return openLocalFile(settingsFilePath)
 })
