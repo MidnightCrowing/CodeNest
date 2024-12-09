@@ -6,7 +6,6 @@ import { useI18n } from 'vue-i18n'
 
 import DeleteProjectDialog from '~/components/DeleteProjectDialog/DeleteProjectDialog.vue'
 import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
-import NewProject from '~/components/ProjectConfig/ProjectConfig.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { ThemeEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
@@ -14,15 +13,14 @@ import { settings } from '~/core/settings'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
-import Settings from './Settings/Settings.vue'
 
 const { locale } = useI18n()
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Home]: Home,
-  [ViewEnum.NewProject]: NewProject,
-  [ViewEnum.Settings]: Settings,
+  [ViewEnum.NewProject]: defineAsyncComponent(() => import('~/components/ProjectConfig/ProjectConfig.vue')),
+  [ViewEnum.Settings]: defineAsyncComponent(() => import('./Settings/Settings.vue')),
 }
 
 async function applyLanguage(lang: string) {
@@ -66,5 +64,9 @@ html,
   @apply m-0 p-0;
   @apply size-full;
   @apply overflow-hidden;
+}
+
+::selection {
+  @apply light:bg-$gray-11 dark:bg-$gray-5;
 }
 </style>
