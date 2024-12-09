@@ -62,7 +62,7 @@ export default defineConfig({
       input: r('src/index.html'),
       external: ['electron'],
       output: {
-        format: 'cjs',
+        format: 'es',
       },
     }, // 是否生成 source map
     sourcemap: false, // 使用 Terser 进行代码压缩
