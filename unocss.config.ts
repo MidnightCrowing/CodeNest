@@ -18,6 +18,19 @@ export default defineConfig({
       },
     }),
   ],
+  shortcuts: {
+    // Typography
+    'text-h1': 'text-20px lh-24px font-semibold',
+    'text-h2': 'text-16px lh-20px font-semibold',
+    'text-default': 'text-13px lh-16px font-medium',
+    'text-default-semibold': 'text-13px lh-16px font-semibold',
+    'text-paragraph': 'text-13px lh-18px font-medium',
+    'text-medium': 'text-12px lh-16px font-medium',
+    'text-medium-semibold': 'text-12px lh-16px font-semibold',
+    // Color
+    'text-primary': 'light:color-$gray-1 dark:color-$gray-12',
+    'text-secondary': 'color-$gray-7',
+  },
   safelist: editorIconClasses,
   transformers: [transformerDirectives()],
 })
