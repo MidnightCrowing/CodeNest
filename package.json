@@ -1,7 +1,7 @@
 {
   "name": "codenest",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@9.5.0",
   "description": "模仿JetBrains Toolbox做的一个多项目管理工具",
