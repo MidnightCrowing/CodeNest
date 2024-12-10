@@ -64,4 +64,11 @@ CodeNest 会自动检测并显示每个项目的主要编程语言，这些信�
 
 ## 鸣谢
 
+- **UI设计**：基于 [JetBrains Int UI Kit](https://www.figma.com/community/file/1227732692272811382/int-ui-kit)
+- **图标资源**：
+    - [JetBrains Icons](https://jetbrains.github.io/ui/resources/icons_list/)
+    - 部分图标来自 [Unicons](https://icones.js.org/collection/uil)
+    - 部分图标来自 [Tabler lcons](https://icones.js.org/collection/tabler)
+- **软件图标** - by [StevenArai](https://github.com/StevenArai)
+
 感谢开源社区以及所有为该项目做出贡献的开发者！

@@ -62,4 +62,11 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING_EN.md) for more information.
 
 ## Acknowledgments
 
+- **UI Design**: Based on [JetBrains Int UI Kit](https://www.figma.com/community/file/1227732692272811382/int-ui-kit)
+- **Icon Resources**:
+    - [JetBrains Icons](https://jetbrains.github.io/ui/resources/icons_list/)
+    - Some icons from [Unicons](https://icones.js.org/collection/uil)
+    - Some icons from [Tabler Icons](https://icones.js.org/collection/tabler)
+- **App Icon** - by [StevenArai](https://github.com/StevenArai)
+
 Special thanks to the open-source community and all the developers who have contributed to this project!
