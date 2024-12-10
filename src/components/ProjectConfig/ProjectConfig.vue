@@ -100,33 +100,35 @@ function transformCodeEditorOptionsToDropdownOptions(
 
 // ==================== License ====================
 
-// 定义常用的 License
+// 常用的 License
 const commonLicenses: LicenseEnum[] = [LicenseEnum.MIT, LicenseEnum.GPLV3]
 
 /**
  * 将 License 枚举转换为 JeDropdownOptionProps 列表
  * 常用的 License 放在前面，不常用的归类到分组中
- * @param licenseEnum - LicenseEnum 枚举
+ * @param licenseEnums - LicenseEnum 枚举
  * @returns {(JeDropdownOptionProps | JeDropdownOptionGroupProps)[]} 转换后的菜单选项数组
  */
-function convertLicensesToDropdownOptions(licenseEnum: typeof LicenseEnum): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
+function convertLicensesToDropdownOptions(licenseEnums: typeof LicenseEnum): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
   const commonOptions: JeDropdownOptionProps[] = []
   const otherOptions: JeDropdownOptionProps[] = []
 
-  Object.entries(licenseEnum).forEach(([, value]) => {
-    const option = {
-      value,
-      label: value,
-      icon: 'light:i-custom:license dark:i-custom:license-dark',
-    }
+  Object.entries(licenseEnums)
+    .filter(([, value]) => value !== LicenseEnum.NONE)
+    .forEach(([, value]) => {
+      const option = {
+        value,
+        label: value,
+        icon: 'light:i-custom:license dark:i-custom:license-dark',
+      }
 
-    if (commonLicenses.includes(value as LicenseEnum)) {
-      commonOptions.push(option)
-    }
-    else {
-      otherOptions.push(option)
-    }
-  })
+      if (commonLicenses.includes(value)) {
+        commonOptions.push(option)
+      }
+      else {
+        otherOptions.push(option)
+      }
+    })
 
   // 返回带分组的选项数组
   return [
