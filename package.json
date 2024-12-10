@@ -4,9 +4,24 @@
   "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@9.5.0",
-  "description": "模仿JetBrains Toolbox做的一个多项目管理工具",
+  "description": "一个没啥用的管理项目路径的工具",
   "author": "MidnightCrowing",
+  "license": "MIT",
   "homepage": "https://github.com/MidnightCrowing/CodeNest",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MidnightCrowing/CodeNest.git"
+  },
+  "bugs": "https://github.com/MidnightCrowing/CodeNest/issues",
+  "keywords": [
+    "codenest",
+    "cross-platform",
+    "desktop-application",
+    "project-management",
+    "developer-tools"
+  ],
+  "release": "https://github.com/MidnightCrowing/CodeNest/releases",
+  "readme": "https://github.com/MidnightCrowing/CodeNest/blob/main/README.md",
   "main": "dist/electron/main.js",
   "scripts": {
     "dev": "concurrently --kill-others \"pnpm dev:vue\" \"pnpm dev:electron\"",
