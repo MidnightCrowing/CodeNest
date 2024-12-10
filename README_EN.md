@@ -2,7 +2,9 @@
 
 [简体中文](README.md) | English
 
-![Interface](/docs/source/Interface_EN.png)
+<p align="center" style="margin-bottom: 0px !important;">
+<img width="600" alt="CodeNest Interface" src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_EN.png"><br/>
+</p>
 
 ## Introduction
 
@@ -32,19 +34,19 @@ CodeNest will automatically detect and display the main programming language for
 
 Click the "Open" button next to a project in the project list, and CodeNest will launch the configured IDE and open the project directly.
 
-> ![NOTE]
+> [!NOTE]
 > If the IDE path is not configured, please complete the configuration in the "Settings" page first.
 
 ### 5. Mark Temporary Projects
 
 For projects used temporarily, you can select "Edit" from the project menu and mark them as "Temporary Projects" in the pop-up window. These projects will be automatically placed into the "Temporary Projects" category for easy management.
 
-### 6. Delete a Project
+### 6. Remove/Delete Project from the List
 
-Select "Delete" from the project menu to remove the project from the list.
+Select the “Remove”/“Delete” option from the project menu to remove the project from the list.
 
-> ![CAUTION]
-> Deleting temporary projects will also remove their local files. Please ensure you are certain before proceeding.
+> [!CAUTION]
+> For non-temporary projects, you can only remove them from the list and not delete their local files. For temporary projects, removing them will also delete their local files. Please ensure this action is correct before proceeding.
 
 ## Feedback
 
