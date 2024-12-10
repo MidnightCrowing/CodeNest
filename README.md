@@ -2,7 +2,9 @@
 
 简体中文 | [English](README_EN.md)
 
-![Interface](/docs/source/Interface_CN.png)
+<p align="center" style="margin-bottom: 0px !important;">
+<img width="600" alt="CodeNest Interface" src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_CN.png"><br/>
+</p>
 
 ## 简介
 
@@ -33,19 +35,19 @@ CodeNest 会自动检测并显示每个项目的主要编程语言，这些信�
 
 在项目列表中点击项目旁的“打开”按钮，CodeNest 将启动配置好的 IDE 并直接打开该项目。
 
-> ![NOTE]
+> [!NOTE]
 > 如果未配置 IDE 路径，请先在“设置”页面完成相关配置。
 
 ### 5. 标记临时项目
 
 对于短期使用的项目，可通过项目菜单选择“编辑”，并在弹出的窗口中将其标记为“临时项目”。这些项目会自动归入“临时项目”分类，方便管理。
 
-### 6. 删除项目
+### 6. 从列表中移除/删除项目
 
-在项目菜单中选择“删除”项即可从列表中移除项目。
+在项目菜单中选择“移除”/“删除”项即可从列表中移除项目。
 
-> ![CAUTION]
-> 删除临时项目时会同时删除其本地文件，请确认无误后操作。
+> [!CAUTION]
+> 对于非临时项目，只能从列表中移除，而不能删除本地文件。对于临时项目，移除时会同时删除其本地文件，请确认无误后操作。
 
 ## 反馈
 
