@@ -65,6 +65,7 @@ license_pop:
   description_from: 信息来源
   no_description_desc: 没有描述
 project_card:
+  temporary: 临时
   open_in_explorer: 在资源管理器中打开
   open_in_terminal: 在终端中打开
   edit: 编辑

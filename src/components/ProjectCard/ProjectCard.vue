@@ -122,7 +122,7 @@ function showMenu() {
         <span flex="~ items-center" gap="5px">
           <span truncate>{{ projectName }}</span>
 
-          <!-- Test Mark -->
+          <!-- Temporary Mark -->
           <span
             v-if="projectIsTemporary"
             text="medium"
@@ -130,7 +130,7 @@ function showMenu() {
             b="solid 1px light:$yellow-5 dark:$yellow-9" rounded-full
             p="x-4px"
           >
-            Test
+            {{ t('project_card.temporary') }}
           </span>
         </span>
 

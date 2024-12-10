@@ -73,6 +73,7 @@ license_pop:
   description_from: Description from
   no_description_desc: Not has description
 project_card:
+  temporary: Temporary
   open_in_explorer: Open in Explorer
   open_in_terminal: Open in Terminal
   edit: Edit
