@@ -257,9 +257,9 @@ ipcMain.handle('delete-project', async (_, projectPath: string) => {
 
       return { success: true, message: '项目已直接删除' }
     }
-    catch (deleteError) {
+    catch (deleteError: any) {
       console.error('直接删除失败:', deleteError)
-      return { success: false, message: '删除项目失败', error: deleteError.message }
+      return { success: false, message: '删除项目失败', error: (deleteError as Error).message }
     }
   }
 })
