@@ -4,8 +4,8 @@ import '../styles/transitionAndTransitionGroup.scss'
 import { JeFrame } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import DeleteProjectDialog from '~/components/DeleteProjectDialog/DeleteProjectDialog.vue'
 import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
+import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectDialog.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { ThemeEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
@@ -52,7 +52,7 @@ provide('activatedView', activatedView)
     <Component :is="viewComponents[activatedView]" grow />
 
     <!-- Dialog -->
-    <DeleteProjectDialog />
+    <RemoveProjectDialog />
     <NoIdePathDialog />
   </JeFrame>
 </template>

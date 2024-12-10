@@ -4,6 +4,7 @@ import process from 'node:process'
 
 import { dialog, ipcMain, shell } from 'electron'
 import fs from 'fs-extra'
+import trash from 'trash'
 
 import { getMainWindow } from './main'
 import { dataFilePath, settingsFilePath } from './utils/dataPath'
@@ -186,7 +187,7 @@ ipcMain.handle('open-project', async (_, idePath: string, projectPath: string): 
 })
 
 // 使用资源管理器打开路径
-ipcMain.handle('open-in-explorer', (_, folderPath): void => {
+ipcMain.handle('open-in-explorer', (_, folderPath: string): void => {
   const resolvedPath = path.resolve(folderPath)
   // 使用系统默认的资源管理器打开文件夹
   shell.openPath(resolvedPath).catch((err) => {
@@ -195,7 +196,7 @@ ipcMain.handle('open-in-explorer', (_, folderPath): void => {
 })
 
 // 使用终端打开路径
-ipcMain.handle('open-in-terminal', (_, folderPath): void => {
+ipcMain.handle('open-in-terminal', (_, folderPath: string): void => {
   const resolvedPath = path.resolve(folderPath)
   // 根据操作系统选择合适的终端命令
   const isWindows = process.platform === 'win32'
@@ -225,6 +226,41 @@ ipcMain.handle('open-in-terminal', (_, folderPath): void => {
   }
   else {
     console.error('不支持的操作系统')
+  }
+})
+
+// 删除项目
+ipcMain.handle('delete-project', async (_, projectPath: string) => {
+  try {
+    if (!fs.existsSync(projectPath)) {
+      throw new Error('项目路径不存在')
+    }
+
+    // 尝试将文件移动到回收站
+    await trash([projectPath])
+
+    return { success: true, message: '项目已移至回收站' }
+  }
+  catch (error) {
+    console.error('删除项目失败:', error)
+
+    // 如果无法移至回收站，则尝试直接删除
+    try {
+      const stats = fs.lstatSync(projectPath)
+
+      if (stats.isDirectory()) {
+        fs.rmSync(projectPath, { recursive: true, force: true })
+      }
+      else {
+        fs.unlinkSync(projectPath)
+      }
+
+      return { success: true, message: '项目已直接删除' }
+    }
+    catch (deleteError) {
+      console.error('直接删除失败:', deleteError)
+      return { success: false, message: '删除项目失败', error: deleteError.message }
+    }
   }
 })
 

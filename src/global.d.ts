@@ -17,6 +17,7 @@ declare global {
       openProject: (idePath: string, projectPath: string) => Promise<string>
       openInExplorer: (path: string) => void
       openInTerminal: (path: string) => void
+      deleteProject: (projectPath: string) => Promise<boolean>
       importData: () => Promise<boolean>
       exportData: () => Promise<boolean>
       openSettingsJSON: () => Promise<boolean>

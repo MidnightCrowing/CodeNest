@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('api', {
   openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('open-project', idePath, projectPath),
   openInExplorer: (path: string) => ipcRenderer.invoke('open-in-explorer', path),
   openInTerminal: (path: string) => ipcRenderer.invoke('open-in-terminal', path),
+  deleteProject: (projectPath: string) => ipcRenderer.invoke('delete-project', projectPath),
   importData: () => ipcRenderer.invoke('import-data'),
   exportData: () => ipcRenderer.invoke('export-data'),
   openSettingsJSON: () => ipcRenderer.invoke('open-settings-json'),

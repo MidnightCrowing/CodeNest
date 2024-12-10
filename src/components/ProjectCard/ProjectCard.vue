@@ -3,8 +3,8 @@ import type { JeMenuOptionProps } from 'jetv-ui'
 import { JeLink, JeMenu, JeTransparentToolButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { showDeleteDialog } from '~/components/DeleteProjectDialog/DeleteProjectDialogProvider'
 import { initializeUpdateProjectState } from '~/components/ProjectConfig/ProjectConfigProvider'
+import { showRemoveDialog } from '~/components/RemoveProjectDialog/RemoveProjectDialogProvider'
 import { ViewEnum } from '~/constants/appEnums'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
@@ -77,11 +77,11 @@ const projectActions = computed<JeMenuOptionProps[]>(() => [
   },
   {
     value: 'delete',
-    label: t('project_card.delete'),
+    label: (projectIsTemporary?.value === true) ? t('project_card.delete') : t('project_card.remove'),
     labelColor: 'light:color-$red-4 dark:color-$red-6',
     icon: 'light:i-jet:delete?mask dark:i-jet:delete-dark?mask',
     iconColor: 'light:color-$red-4 dark:color-$red-6',
-    onClick: () => showDeleteDialog(props.projectItem),
+    onClick: () => showRemoveDialog(props.projectItem),
   },
 ])
 const menuVisible = ref(false)

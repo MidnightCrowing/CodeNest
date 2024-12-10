@@ -69,6 +69,7 @@ project_card:
   open_in_explorer: 在资源管理器中打开
   open_in_terminal: 在终端中打开
   edit: 编辑
+  remove: 移除
   delete: 删除
 project_config:
   name: 名称
@@ -91,10 +92,15 @@ project_config:
   create: 创建
   finish: 完成
   cancel: 取消
-delete_project_dialog:
-  dialog_title: 确认删除
-  dialog_desc: '你确定要删除项目 "{name}" 吗？'
+remove_project_dialog:
+  dialog_title:
+    remove: 确认移除
+    delete: 确认删除
+  dialog_desc:
+    remove: '你确定要将项目 "{name}" 从列表中移除吗？'
+    delete: "你确定要删除项目 \"{name}\" 吗？\n注意：这会同时删除项目文件，且无法恢复。"
   cancel: 取消
+  remove: 移除
   delete: 删除
 no_ide_path_dialog:
   dialog_title: IDE 路径未设置

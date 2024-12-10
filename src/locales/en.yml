@@ -77,6 +77,7 @@ project_card:
   open_in_explorer: Open in Explorer
   open_in_terminal: Open in Terminal
   edit: Edit
+  remove: Remove
   delete: Delete
 project_config:
   name: Name
@@ -99,10 +100,15 @@ project_config:
   create: Create
   finish: Finish
   cancel: Cancel
-delete_project_dialog:
-  dialog_title: Confirm Deletion
-  dialog_desc: 'Are you sure you want to delete the project "{name}"?'
+remove_project_dialog:
+  dialog_title:
+    remove: Confirm Removal
+    delete: Confirm Deletion
+  dialog_desc:
+    remove: 'Are you sure you want to remove the project "{name}" from the list?'
+    delete: "Are you sure you want to delete the project \"{name}\"?\nNote: This will also delete the project files and cannot be recovered."
   cancel: Cancel
+  remove: Remove
   delete: Delete
 no_ide_path_dialog:
   dialog_title: IDE Path Not Set
