@@ -65,21 +65,21 @@ jobs:
 
       - name: Upload Windows Installer
         if: matrix.node == 'lts/*' && matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: build/*Setup*.exe
 
       - name: Upload macOS Installer
         if: matrix.node == 'lts/*' && matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac-installer
           path: build/*.dmg
 
       - name: Upload Linux Installer
         if: matrix.node == 'lts/*' && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-installer
           path: build/*.AppImage
