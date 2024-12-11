@@ -13,6 +13,7 @@
       "pnpm update jetv-ui",
       "pnpm run lint",
       "git status --porcelain",
+      "git diff pnpm-lock.yaml",
       "pnpm run typecheck"
     ],
     "after:bump": [
