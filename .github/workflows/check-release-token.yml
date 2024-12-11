@@ -1,0 +1,23 @@
+name: Check RELEAS_TOKEN
+
+on:
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  check-token:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo Start Message
+        run: echo "Starting to check RELEAS_TOKEN existence."
+
+      - name: Check RELEAS_TOKEN
+        env:
+          RELEAS_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -z "$RELEAS_TOKEN" ]; then
+            echo "Error: RELEAS_TOKEN is not set in Secrets."
+            exit 1
+          else
+            echo "RELEAS_TOKEN is set and ready to use."
+          fi
