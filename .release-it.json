@@ -12,6 +12,7 @@
     "before:init": [
       "pnpm update jetv-ui",
       "pnpm run lint",
+      "git status --porcelain",
       "pnpm run typecheck"
     ],
     "after:bump": [
