@@ -17,11 +17,49 @@ on:
           - patch
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  quality-check:
+    runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          run_install: |
+            - args: [--frozen-lockfile]
+
+      - name: Update JetV-ui
+        run: pnpm update jetv-ui
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Build the project
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: pnpm build
+
+  release-ubuntu:
+    runs-on: ubuntu-latest
+    needs: quality-check
+    env:
+      PLATFORM: ubuntu
+    outputs:
+      latest_tag: ${{ steps.get_tag.outputs.latest_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,7 +83,83 @@ jobs:
           run_install: |
             - args: [--frozen-lockfile]
 
+      - name: Update JetV-ui
+        run: pnpm update jetv-ui
+
       - name: Release
         run: npx release-it ${{ inputs.increment }} --verbose
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Upload Ubuntu Installer
+        run: gh release upload $(git describe --tags --abbrev=0) build/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get the latest tag
+        id: get_tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "Intermediate tag: $latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+  release-other-platforms:
+    runs-on: ${{ matrix.platform }}
+    needs: release-ubuntu
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+    env:
+      PLATFORM: ${{ matrix.platform == 'windows-latest' && 'windows' || matrix.platform == 'macos-latest' && 'mac' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "110297461+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          run_install: |
+            - args: [--frozen-lockfile]
+
+      - name: Update JetV-ui
+        run: pnpm update jetv-ui
+
+      - name: Update Version
+        run: pnpm version ${{ inputs.increment }} --no-git-tag-version
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build the project
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: pnpm build
+
+      - name: Get the latest tag
+        run: |
+          echo "Latest tag is: ${{ needs.release-ubuntu.outputs.latest_tag }}"
+
+      - name: Upload Windows Installer
+        if: matrix.platform == 'windows-latest'
+        run: gh release upload "${{ needs.release-ubuntu.outputs.latest_tag }}" build/*.exe
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS Installer
+        if: matrix.platform == 'macos-latest'
+        run: gh release upload "${{ needs.release-ubuntu.outputs.latest_tag }}" build/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
