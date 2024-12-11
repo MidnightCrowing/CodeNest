@@ -19,6 +19,7 @@ const props = defineProps<{
   projectItem: LocalProject
 }>()
 const {
+  appendTime: projectAppendTime,
   path: projectPath,
   name: projectName,
   kind: projectKind,
@@ -44,6 +45,13 @@ function handleClick(path: string) {
 
 function handleClicked() {
   projectCardActive.value = false
+}
+
+function handleDragStart(event: DragEvent) {
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', projectAppendTime.value.toString())
+  }
 }
 
 watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
@@ -108,8 +116,10 @@ function showMenu() {
     flex="~ row justify-between" gap="10px"
     transition-all duration="150" ease-in-out
     cursor-pointer
+    draggable="true"
     @mousedown="handleClick(projectPath)"
     @mouseup="handleClicked"
+    @dragstart="handleDragStart"
   >
     <div
       :class=" { 'opacity-30': projectExists === false }"

@@ -171,6 +171,11 @@ class ProjectManager {
     return this.projectItems
   }
 
+  // 获取指定时间的项目
+  getProjectByAppendTime(appendTime: number): LocalProject | undefined {
+    return this.projectItems.find(project => project.appendTime === appendTime)
+  }
+
   // 获取指定类型的项目
   getProjectsByKind(kind: ProjectKind): LocalProject[] {
     return this.projectItems.filter(project => project.kind === kind)
@@ -263,6 +268,13 @@ class ProjectManager {
       const dataToSave = JSON.stringify(this.projectItems, (key, value) => {
         if (key === 'langGroup' || key === 'isExists')
           return undefined // 不保存 langGroup 和 exists
+
+        if (key === 'isTemporary' && value !== true)
+          return undefined // 仅当 isTemporary 为 true 时保存
+
+        if (key === 'license' && value === 'None')
+          return undefined // 当 license 为 None 时不保存
+
         return value
       })
       await window.api.saveProjectData(dataToSave)
@@ -283,6 +295,9 @@ class ProjectManager {
         this.projectItems.splice(0, this.projectItems.length, ...loadedProjects)
 
         for (const project of this.projectItems) {
+          // 如果 isTemporary 不存在，则设置为 false
+          project.isTemporary = !!project.isTemporary
+
           // 补充exists字段
           this.checkProjectExistence(project)
         }
@@ -291,6 +306,11 @@ class ProjectManager {
     catch (error: any) {
       console.error('Error loading project data:', error)
     }
+  }
+
+  // 检查路径是否存在项目列表中
+  checkPathExistenceInProjects(path: string): boolean {
+    return this.projectItems.some(project => project.path === path)
   }
 
   // 检查项目是否存在

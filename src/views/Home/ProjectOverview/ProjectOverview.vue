@@ -66,6 +66,40 @@ const filteredProjects = computed(() => {
 
   return result
 })
+
+function handleDrop(event: DragEvent) {
+  if (!event.dataTransfer) {
+    console.error('dataTransfer is null')
+    return
+  }
+
+  const draggedItemId = Number(event.dataTransfer.getData('text/plain'))
+  const draggedItemIndex = filteredProjects.value.findIndex(
+    item => item.appendTime === draggedItemId,
+  )
+
+  if (draggedItemIndex === -1) {
+    console.error('Dropped item not found')
+    return
+  }
+
+  const currentTarget = event.currentTarget as HTMLElement
+  if (currentTarget && event.target) {
+    const targetElement = event.target as Element
+    const targetIndex = Array.from(currentTarget.children).indexOf(targetElement)
+
+    if (targetIndex !== -1) {
+      const draggedItem = filteredProjects.value.splice(draggedItemIndex, 1)[0]
+      // 插入到目标位置
+      filteredProjects.value.splice(targetIndex, 0, draggedItem)
+
+      projectManager.saveProjects()
+    }
+  }
+  else {
+    console.error('event.currentTarget or event.target is null')
+  }
+}
 </script>
 
 <template>
@@ -76,6 +110,8 @@ const filteredProjects = computed(() => {
       m="x-15px t-5px b-10px" p="y-5px r-3px"
       grow flex="~ col" gap="10px"
       overflow-auto
+      @dragover.prevent
+      @drop="handleDrop"
     >
       <!-- Empty -->
       <span
