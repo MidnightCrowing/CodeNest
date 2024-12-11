@@ -12,8 +12,8 @@
     "before:init": [
       "pnpm update jetv-ui",
       "pnpm run lint",
-      "git status --porcelain",
-      "git diff pnpm-lock.yaml",
+      "git add .",
+      "git commit -m \"chore: prepare for release\"",
       "pnpm run typecheck"
     ],
     "after:bump": [
