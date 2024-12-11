@@ -1,0 +1,24 @@
+{
+  "plugins": {
+    "release-it-pnpm": {
+      "publishCommand": "echo 'skipping publish'"
+    }
+  },
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}"
+  },
+  "hooks": {
+    "before:init": [
+      "pnpm update jetv-ui",
+      "pnpm run lint",
+      "pnpm run typecheck"
+    ],
+    "after:bump": [
+      "pnpm run build"
+    ],
+    "after:release": [
+      "gh release upload v${version} build/*Setup*.exe build/*.dmg build/*.AppImage"
+    ]
+  }
+}

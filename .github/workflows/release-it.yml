@@ -1,0 +1,51 @@
+name: Release
+
+permissions:
+  contents: write
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        required: true
+        default: patch
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "110297461+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          run_install: |
+            - args: [--frozen-lockfile]
+
+      - name: Release
+        run: npx release-it ${{ inputs.increment }} --verbose
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
