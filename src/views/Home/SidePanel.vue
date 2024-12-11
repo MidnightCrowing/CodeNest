@@ -40,9 +40,19 @@ const kindMenuGroup1 = computed(() =>
       : projectManager.getProjects().length,
   })),
 )
-const kindMenuGroup2 = computed(() => [
-  { kind: 'temp', label: t('home.side_panel.temporary'), count: projectManager.getTempProjects().length },
-]) // temporary
+
+function handleTempDrop(event: DragEvent) {
+  const data = event.dataTransfer?.getData('text/plain')
+  if (data) {
+    const appendTime = Number(data) // 转换为数字
+
+    const project = projectManager.getProjectByAppendTime(appendTime)
+    if (project) {
+      project.isTemporary = !project.isTemporary
+      projectManager.updateProject(appendTime, project)
+    }
+  }
+}
 
 // ==================== Language Group ====================
 const languagesGroup = computed(() => {
@@ -89,15 +99,17 @@ function changeSettingsView() {
 
         <JeLine mx-10px />
 
-        <template v-for="kindItem in kindMenuGroup2" :key="kindItem.kind">
-          <SideMenuButton
-            :active="activatedItem === `temp`"
-            :tag-value="kindItem.count"
-            @click="updateActivatedItem(`temp`)"
-          >
-            {{ kindItem.label }}
-          </SideMenuButton>
-        </template>
+        <!-- Temporary -->
+        <SideMenuButton
+          :active="activatedItem === 'temp'"
+          :tag-value="projectManager.getTempProjects().length"
+          @click="updateActivatedItem('temp')"
+          @keydown.enter="updateActivatedItem('temp')"
+          @dragover.prevent
+          @drop="handleTempDrop"
+        >
+          {{ t('home.side_panel.temporary') }}
+        </SideMenuButton>
       </main>
 
       <!-- Language Group -->
