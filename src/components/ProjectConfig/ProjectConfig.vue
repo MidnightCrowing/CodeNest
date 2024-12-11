@@ -309,6 +309,17 @@ function updateProject() {
           :validated-tooltip="t('project_config.path_tooltip')"
           grow
         />
+
+        <div
+          v-if="localProjectItem.path && projectManager.checkPathExistenceInProjects(localProjectItem.path)"
+          col-start="2"
+          flex="~ items-center" gap="2px"
+          color="light:$yellow-4 dark:$yellow-6"
+        >
+          <span i-jet="light:warning dark:warning-dark" />
+          {{ t('project_config.path_in_list', { path: localProjectItem.path }) }}
+        </div>
+
         <ConfigItemTitle title="project_config.name" />
         <JeInputField
           v-model="localProjectItem.name"
@@ -324,7 +335,7 @@ function updateProject() {
         >
           <span text="secondary" truncate>{{ repositoryFolderName }}</span>
           <JeLink :on-click="fillProjectName">
-            {{ t('project_config.kind.fill') }}
+            {{ t('project_config.fill') }}
           </JeLink>
         </div>
       </ConfigItem>

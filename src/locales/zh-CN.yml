@@ -74,17 +74,18 @@ project_card:
 project_config:
   name: 名称
   directory: 位置
+  fill: 填入
   kind:
     source: 项目来源
     url: 项目网址
     name: 项目名称
-    fill: 填入
   temporary: 临时项目
   main_lang: 主要语言
   lang_info: '类型: {type}, 字节: {bytes}, 行数: {lines}'
   open_method: 打开方式
   license: 许可证
   license_other: 其他许可证
+  path_in_list: '路径“{path}”已经存在于项目列表中'
   path_tooltip: 路径不能为空
   name_tooltip: 名称不能为空
   lang_tooltip: 语言不能为空

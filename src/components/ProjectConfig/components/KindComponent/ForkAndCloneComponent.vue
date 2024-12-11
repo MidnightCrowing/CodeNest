@@ -52,7 +52,7 @@ watch(projectNameInputValue, (newValue) => {
   >
     <span text="secondary" truncate>{{ repositoryPath }}</span>
     <JeLink :on-click="fillProjectName">
-      {{ t('project_config.kind.fill') }}
+      {{ t('project_config.fill') }}
     </JeLink>
   </div>
 </template>

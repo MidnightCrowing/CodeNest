@@ -82,17 +82,18 @@ project_card:
 project_config:
   name: Name
   directory: Directory
+  fill: Fill In
   kind:
     source: Project Source
     url: Project URL
     name: Project Name
-    fill: Fill In
   temporary: Temporary Project
   main_lang: Main Language
   lang_info: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
   open_method: Opening Method
   license: License
   license_other: Other Licenses
+  path_in_list: 'Path "{path}" already exists in the project list'
   path_tooltip: Path cannot be empty
   name_tooltip: Name cannot be empty
   lang_tooltip: Language cannot be empty
