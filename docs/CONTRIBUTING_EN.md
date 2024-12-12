@@ -9,11 +9,14 @@ Ensure that [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) are inst
 ## Installing Dependencies
 
 ```bash
-# Install dependencies
-pnpm install
+# Install the component library dependencies
+pnpm ui:install
 
-# Update the component library dependencies
-pnpm update jetv-ui
+# Build the component library
+pnpm ui:build
+
+# Install the project dependencies
+pnpm install
 
 # Run the project
 pnpm dev
