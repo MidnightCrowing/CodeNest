@@ -115,64 +115,64 @@ export const editorIconClasses = Object.values(codeEditors)
 
 export const languageToEditorMap: Record<string, CodeEditorEnum> = {
   // IntellijIdea
-  'Gradle': CodeEditorEnum.IntellijIdea,
-  'Java': CodeEditorEnum.IntellijIdea,
-  'Kotlin': CodeEditorEnum.IntellijIdea,
-  'Spring': CodeEditorEnum.IntellijIdea,
+  'gradle': CodeEditorEnum.IntellijIdea,
+  'java': CodeEditorEnum.IntellijIdea,
+  'kotlin': CodeEditorEnum.IntellijIdea,
+  'spring': CodeEditorEnum.IntellijIdea,
 
   // PyCharm
-  'Django': CodeEditorEnum.PyCharm,
-  'Jupyter': CodeEditorEnum.PyCharm,
-  'Pip Requirements': CodeEditorEnum.PyCharm,
-  'Python': CodeEditorEnum.PyCharm,
+  'django': CodeEditorEnum.PyCharm,
+  'jupyter': CodeEditorEnum.PyCharm,
+  'pip requirements': CodeEditorEnum.PyCharm,
+  'python': CodeEditorEnum.PyCharm,
 
   // PhpStorm
-  'Laravel': CodeEditorEnum.PhpStorm,
-  'PHP': CodeEditorEnum.PhpStorm,
-  'Symfony': CodeEditorEnum.PhpStorm,
+  'laravel': CodeEditorEnum.PhpStorm,
+  'php': CodeEditorEnum.PhpStorm,
+  'symfony': CodeEditorEnum.PhpStorm,
 
   // GoLand
-  'Go': CodeEditorEnum.GoLand,
+  'go': CodeEditorEnum.GoLand,
 
   // Rider
-  '.NET': CodeEditorEnum.Rider,
-  'ASP.NET': CodeEditorEnum.Rider,
-  'C#': CodeEditorEnum.Rider,
+  '.net': CodeEditorEnum.Rider,
+  'asp.net': CodeEditorEnum.Rider,
+  'c#': CodeEditorEnum.Rider,
 
   // Clion
-  'C': CodeEditorEnum.Clion,
-  'C++': CodeEditorEnum.Clion,
-  'CMake': CodeEditorEnum.Clion,
+  'c': CodeEditorEnum.Clion,
+  'c++': CodeEditorEnum.Clion,
+  'cmake': CodeEditorEnum.Clion,
 
   // RustRover
-  'Rust': CodeEditorEnum.RustRover,
-  'SQL': CodeEditorEnum.RustRover,
-  'TOML': CodeEditorEnum.RustRover,
+  'rust': CodeEditorEnum.RustRover,
+  'sql': CodeEditorEnum.RustRover,
+  'toml': CodeEditorEnum.RustRover,
 
   // WebStorm
-  'Angular': CodeEditorEnum.WebStorm,
-  'CSS': CodeEditorEnum.WebStorm,
-  'HTML': CodeEditorEnum.WebStorm,
-  'JavaScript': CodeEditorEnum.WebStorm,
-  'Less': CodeEditorEnum.WebStorm,
-  'React': CodeEditorEnum.WebStorm,
-  'Sass': CodeEditorEnum.WebStorm,
-  'SCSS': CodeEditorEnum.WebStorm,
-  'Stylus': CodeEditorEnum.WebStorm,
-  'TypeScript': CodeEditorEnum.WebStorm,
-  'Vue': CodeEditorEnum.WebStorm,
+  'angular': CodeEditorEnum.WebStorm,
+  'css': CodeEditorEnum.WebStorm,
+  'html': CodeEditorEnum.WebStorm,
+  'javascript': CodeEditorEnum.WebStorm,
+  'less': CodeEditorEnum.WebStorm,
+  'react': CodeEditorEnum.WebStorm,
+  'sass': CodeEditorEnum.WebStorm,
+  'scss': CodeEditorEnum.WebStorm,
+  'stylus': CodeEditorEnum.WebStorm,
+  'typescript': CodeEditorEnum.WebStorm,
+  'vue': CodeEditorEnum.WebStorm,
 
   // RubyMine
-  'RoR': CodeEditorEnum.RubyMine,
-  'Ruby on Rails': CodeEditorEnum.RubyMine,
-  'Ruby': CodeEditorEnum.RubyMine,
+  'ror': CodeEditorEnum.RubyMine,
+  'ruby on rails': CodeEditorEnum.RubyMine,
+  'ruby': CodeEditorEnum.RubyMine,
 
   // Visual Studio Code
-  'INI': CodeEditorEnum.VisualStudioCode,
-  'JSON': CodeEditorEnum.VisualStudioCode,
-  'Markdown': CodeEditorEnum.VisualStudioCode,
-  'SVG': CodeEditorEnum.VisualStudioCode,
-  'Text': CodeEditorEnum.VisualStudioCode,
-  'XML': CodeEditorEnum.VisualStudioCode,
-  'YAML': CodeEditorEnum.VisualStudioCode,
+  'ini': CodeEditorEnum.VisualStudioCode,
+  'json': CodeEditorEnum.VisualStudioCode,
+  'markdown': CodeEditorEnum.VisualStudioCode,
+  'svg': CodeEditorEnum.VisualStudioCode,
+  'text': CodeEditorEnum.VisualStudioCode,
+  'xml': CodeEditorEnum.VisualStudioCode,
+  'yaml': CodeEditorEnum.VisualStudioCode,
 }
