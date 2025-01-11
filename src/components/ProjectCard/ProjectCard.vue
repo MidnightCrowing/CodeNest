@@ -38,6 +38,12 @@ const projectCard = ref<HTMLDivElement | null>(null)
 const projectCardActive = ref(false)
 const langGroup = ref(projectLangGroup)
 
+const formattedPath = ref('')
+
+async function formatPath(path: string) {
+  return window.api.formatPath(path)
+}
+
 // eslint-disable-next-line unused-imports/no-unused-vars
 function handleClick(path: string) {
   projectCardActive.value = true
@@ -59,6 +65,10 @@ watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
     langGroup.value = newLangGroup
   }
 }, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
+
+onMounted(async () => {
+  formattedPath.value = await formatPath(projectPath.value)
+})
 
 // ==================== More Button ====================
 function getDeleteLabel() {
@@ -171,7 +181,7 @@ function showMenu() {
         </span>
 
         <!-- Path -->
-        <span truncate text="secondary">{{ projectPath }}</span>
+        <span truncate text="secondary">{{ formattedPath }}</span>
       </div>
 
       <!-- Button -->

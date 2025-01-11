@@ -8,6 +8,7 @@ declare global {
       openFolderDialog: () => Promise<string[]>
       openFileDialog: (fileTypes?: { name: string, extensions: string[] }[]) => Promise<string[]>
       openExternal: (url: string) => void
+      formatPath: (filePath: string) => string
       analyzeFolder: (folderPath: string) => Promise<LinguistResult | { error: string }>
       checkPathExistence: (path: string) => Promise<{ exists: boolean, error?: string }>
       saveProjectData: (data: string) => Promise<{ success: boolean, error?: string }>

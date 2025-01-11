@@ -10,7 +10,7 @@ import { getMainWindow } from './main'
 import { dataFilePath, settingsFilePath } from './utils/dataPath'
 import type { LinguistResult } from './utils/linguist'
 import { analyzeFolder } from './utils/linguist'
-import { formatPaths, openLocalFile } from './utils/pathUtils'
+import { formatPath, openLocalFile } from './utils/pathUtils'
 
 // 设置主题
 ipcMain.handle('set-theme', (event, theme: string): void => {
@@ -29,7 +29,7 @@ ipcMain.handle('open-folder-dialog', async (): Promise<string[]> => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory'], // 只能选择文件夹
   })
-  return formatPaths(result.filePaths)
+  return result.filePaths
 })
 
 // 打开文件选择对话框
@@ -38,7 +38,7 @@ ipcMain.handle('open-file-dialog', async (_, fileTypes: { name: string, extensio
     properties: ['openFile'], // 只能选择文件
     filters: fileTypes.length > 0 ? fileTypes : undefined, // 如果有文件类型，设置过滤器
   })
-  return formatPaths(result.filePaths)
+  return result.filePaths
 })
 
 // 在系统默认浏览器中打开链接
@@ -46,6 +46,11 @@ ipcMain.handle('open-external', (_, url: string): void => {
   shell.openExternal(url)
     .then(() => {})
     .catch(err => console.error('Failed to open link:', err))
+})
+
+// 格式化文件路径
+ipcMain.handle('format-path', (_, filePath: string): string => {
+  return formatPath(filePath)
 })
 
 // 传入项目根目录，获取项目各编程语言的占比
