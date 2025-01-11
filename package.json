@@ -145,13 +145,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
-    },
-    "extraResources": [
-      {
-        "from": "./data",
-        "to": "./data"
-      }
-    ]
+    }
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"
