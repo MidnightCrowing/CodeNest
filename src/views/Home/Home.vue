@@ -5,6 +5,10 @@ import ProjectOverview from './ProjectOverview/ProjectOverview.vue'
 import SidePanel from './SidePanel.vue'
 import type { SidePanelActive } from './types'
 
+defineOptions({
+  name: 'Home',
+})
+
 // 管理左侧菜单选中的项
 const activatedItem: Ref<SidePanelActive> = ref('k-all')
 

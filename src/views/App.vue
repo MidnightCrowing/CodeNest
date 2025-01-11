@@ -49,7 +49,9 @@ provide('activatedView', activatedView)
     caret="theme-text-caret" select-none
   >
     <WindowHeader shrink-0 />
-    <Component :is="viewComponents[activatedView]" grow />
+    <KeepAlive include="Home,Settings">
+      <Component :is="viewComponents[activatedView]" grow />
+    </KeepAlive>
 
     <!-- Dialog -->
     <RemoveProjectDialog />

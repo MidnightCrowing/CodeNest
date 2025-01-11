@@ -11,6 +11,10 @@ import AppearancePage from './pages/Appearance.vue'
 import IdesPage from './pages/Ides.vue'
 import { activatedPage } from './SettingsProvider'
 
+defineOptions({
+  name: 'Settings',
+})
+
 const { t } = useI18n()
 
 // ==================== Side Menu ====================
