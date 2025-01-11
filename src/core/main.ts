@@ -309,8 +309,10 @@ class ProjectManager {
   }
 
   // 检查路径是否存在项目列表中
-  checkPathExistenceInProjects(path: string): boolean {
-    return this.projectItems.some(project => project.path === path)
+  checkPathExistenceInProjects(path: string, excludedPaths: string[] = []): boolean {
+    return this.projectItems.some(
+      project => project.path === path && !excludedPaths.includes(project.path),
+    )
   }
 
   // 检查项目是否存在

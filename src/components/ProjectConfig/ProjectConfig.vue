@@ -1,6 +1,16 @@
 <script lang="ts" setup>
 import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
-import { JeButton, JeCheckbox, JeCombobox, JeDropdown, JeFileInputField, JeFrame, JeInputField, JeLink, JeSegmentedControl } from 'jetv-ui'
+import {
+  JeButton,
+  JeCheckbox,
+  JeCombobox,
+  JeDropdown,
+  JeFileInputField,
+  JeFrame,
+  JeInputField,
+  JeLink,
+  JeSegmentedControl,
+} from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
@@ -22,6 +32,7 @@ const { t } = useI18n()
 const projectPathInputValidated = ref(false)
 const projectNameInputValidated = ref(false)
 const repositoryFolderName = ref('')
+const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
 
 function fillProjectName() {
   localProjectItem.value.name = repositoryFolderName.value
@@ -203,7 +214,7 @@ watch(() => localProjectItem.value.mainLang, (newValue) => {
 
   // 查找匹配的默认打开项
   localProjectItem.value.defaultOpen = newValue
-    ? languageToEditorMap[newValue] || null
+    ? languageToEditorMap[newValue.toLowerCase()] || null
     : null
 })
 
@@ -311,7 +322,7 @@ function updateProject() {
         />
 
         <div
-          v-if="localProjectItem.path && projectManager.checkPathExistenceInProjects(localProjectItem.path)"
+          v-if="localProjectItem.path && projectManager.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)"
           col-start="2"
           flex="~ items-center" gap="2px"
           color="light:$yellow-4 dark:$yellow-6"
