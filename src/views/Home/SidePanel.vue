@@ -56,7 +56,14 @@ function handleTempDrop(event: DragEvent) {
 
 // ==================== Language Group ====================
 const languagesGroup = computed(() => {
-  return projectManager.getMainLangSummary()
+  return projectManager
+    .getMainLangSummary()
+    .sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count // 按 count 降序
+      }
+      return a.text.localeCompare(b.text) // 如果 count 相同，则按 text 升序
+    })
 })
 
 // ==================== Settings Bottom ====================
