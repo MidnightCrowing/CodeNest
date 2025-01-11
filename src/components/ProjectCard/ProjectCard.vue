@@ -61,6 +61,15 @@ watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
 }, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
 
 // ==================== More Button ====================
+function getDeleteLabel() {
+  if (projectExists?.value === false) {
+    return t('project_card.remove')
+  }
+  return projectIsTemporary?.value === true
+    ? t('project_card.delete')
+    : t('project_card.remove')
+}
+
 const projectActions = computed<JeMenuOptionProps[]>(() => [
   {
     value: 'open-in-explorer',
@@ -85,7 +94,7 @@ const projectActions = computed<JeMenuOptionProps[]>(() => [
   },
   {
     value: 'delete',
-    label: (projectIsTemporary?.value === true) ? t('project_card.delete') : t('project_card.remove'),
+    label: getDeleteLabel(),
     labelColor: 'light:color-$red-4 dark:color-$red-6',
     icon: 'light:i-jet:delete?mask dark:i-jet:delete-dark?mask',
     iconColor: 'light:color-$red-4 dark:color-$red-6',

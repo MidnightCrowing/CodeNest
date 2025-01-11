@@ -8,9 +8,16 @@ import { hideRemoveDialog, isDialogVisible, projectToRemove } from './RemoveProj
 
 const { t } = useI18n()
 
+function isRemove() {
+  if (projectToRemove.value?.isExists === false) {
+    return true
+  }
+  return projectToRemove.value?.isTemporary !== true
+}
+
 function confirmRemove() {
   if (projectToRemove.value) {
-    if (projectToRemove.value.isTemporary) {
+    if (!isRemove()) {
       window.api.deleteProject(projectToRemove.value.path)
     }
 
@@ -28,7 +35,7 @@ function confirmRemove() {
     bg="light:black/30 dark:black/50"
   >
     <JePopup p="20px" rounded="8px" w="400px">
-      <template v-if="!projectToRemove?.isTemporary">
+      <template v-if="isRemove()">
         <!-- 非临时项目 -->
         <h3>{{ t('remove_project_dialog.dialog_title.remove') }}</h3>
         <p>{{ t('remove_project_dialog.dialog_desc.remove', { name: projectToRemove?.name }) }}</p>
@@ -43,7 +50,7 @@ function confirmRemove() {
 
       <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
         <JeButton class="confirm-button" type="secondary" order-2 @click="confirmRemove">
-          {{ projectToRemove?.isTemporary ? t('remove_project_dialog.delete') : t('remove_project_dialog.remove') }}
+          {{ isRemove() ? t('remove_project_dialog.remove') : t('remove_project_dialog.delete') }}
         </JeButton>
         <JeButton type="secondary" order-1 @click="hideRemoveDialog">
           {{ t('remove_project_dialog.cancel') }}
