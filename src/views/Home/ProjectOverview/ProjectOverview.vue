@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import Fuse from 'fuse.js'
 import { JeFrame, JeLine } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
@@ -57,11 +58,14 @@ const filteredProjects = computed(() => {
 
   if (searchValue.value) {
     // 根据搜索值过滤项目
-    result = result.filter((project) => {
-      const projectName = project.name.toLowerCase()
-      const searchQuery = searchValue.value.toLowerCase()
-      return projectName.includes(searchQuery)
+    const fuse = new Fuse(result, {
+      keys: ['name', 'path'], // 指定需要搜索的字段
+      threshold: 0.5, // 模糊匹配的阈值（0 完全匹配，1 匹配宽松）
+      shouldSort: true, // 是否按匹配度排序
     })
+
+    // 根据搜索值进行模糊匹配
+    result = fuse.search(searchValue.value).map(res => res.item)
   }
 
   return result
