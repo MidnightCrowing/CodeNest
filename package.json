@@ -89,7 +89,7 @@
     "vue-tsc": "^2.2.0"
   },
   "build": {
-    "appId": "MidnightCrowing.codenest",
+    "appId": "MidnightCrowing.CodeNest",
     "productName": "CodeNest",
     "copyright": "Copyright © year ${author}",
     "directories": {
@@ -145,8 +145,15 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "deleteAppDataOnUninstall": false
-    }
+      "deleteAppDataOnUninstall": true,
+      "license": "LICENSE.txt"
+    },
+    "extraResources": [
+      {
+        "from": "./LICENSE.txt",
+        "to": "../LICENSE.txt"
+      }
+    ]
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"
