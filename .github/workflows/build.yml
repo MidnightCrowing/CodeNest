@@ -8,7 +8,7 @@ on:
     paths-ignore:
       # Changes involving the following path files will not trigger the workflow
       # 涉及以下路径文件的更改不会触发工作流
-      - LICENSE
+      - LICENSE.txt
       - README.md
       - README_EN.md
       - docs/**
@@ -20,7 +20,7 @@ on:
     paths-ignore:
       # Changes involving the following path files will not trigger the workflow
       # 涉及以下路径文件的更改不会触发工作流
-      - LICENSE
+      - LICENSE.txt
       - README.md
       - README_EN.md
       - docs/**

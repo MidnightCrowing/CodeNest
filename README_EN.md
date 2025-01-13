@@ -54,7 +54,7 @@ If you have any questions or suggestions, please visit the [GitHub Issues page o
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.txt).
 
 ## Contributing and Building the Project
 
