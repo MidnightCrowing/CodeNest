@@ -129,7 +129,7 @@ home:
       clone: Clone
     temporary: Temporary
   header:
-    add_item: Add Item
+    add_item: Add Project
     search_project: Search Project
   overview:
     empty_desc: No content to display
