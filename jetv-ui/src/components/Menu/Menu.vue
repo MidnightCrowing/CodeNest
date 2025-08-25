@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 
-import { capitalize, toUpperCase } from '../../utils/main'
+import { capitalize, toUpperCase } from '../../utils/common'
 import { JeLine } from '../Frame'
 import { JeGroup } from '../Group'
 import { JePopup } from '../Popup'
