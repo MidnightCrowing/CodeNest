@@ -29,6 +29,8 @@ export interface LocalProject {
   path: string
   // 项目的名称
   name: string
+  // 所属组
+  group: string
 
   // 项目的类型，例如 Web、Mobile 等（使用枚举 ProjectKind 表示）
   kind: ProjectKind

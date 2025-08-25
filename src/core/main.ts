@@ -266,6 +266,9 @@ class ProjectManager {
   async saveProjects(): Promise<void> {
     try {
       const dataToSave = JSON.stringify(this.projectItems, (key, value) => {
+        if (key === 'group' && value === '')
+          return undefined // 当 group 为空时不保存
+
         if (key === 'langGroup' || key === 'isExists')
           return undefined // 不保存 langGroup 和 exists
 
@@ -295,6 +298,8 @@ class ProjectManager {
         this.projectItems.splice(0, this.projectItems.length, ...loadedProjects)
 
         for (const project of this.projectItems) {
+          // 补充 group 字段
+          project.group = project.group || ''
           // 如果 isTemporary 不存在，则设置为 false
           project.isTemporary = !!project.isTemporary
 

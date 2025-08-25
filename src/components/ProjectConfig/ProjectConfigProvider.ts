@@ -16,6 +16,7 @@ const defaultLocalProjectState: Readonly<NullableLocalProject> = {
   appendTime: null,
   path: null,
   name: null,
+  group: null,
   kind: ProjectKind.MINE,
   mainLang: null,
   langGroup: null,

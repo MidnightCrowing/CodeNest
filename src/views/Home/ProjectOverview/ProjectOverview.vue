@@ -59,7 +59,7 @@ const filteredProjects = computed(() => {
   if (searchValue.value) {
     // 根据搜索值过滤项目
     const fuse = new Fuse(result, {
-      keys: ['name', 'path'], // 指定需要搜索的字段
+      keys: ['name', 'group', 'path'], // 指定需要搜索的字段
       threshold: 0.5, // 模糊匹配的阈值（0 完全匹配，1 匹配宽松）
       shouldSort: true, // 是否按匹配度排序
     })

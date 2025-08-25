@@ -81,6 +81,8 @@ project_card:
   delete: Delete
 project_config:
   name: Name
+  group: Project Group
+  optional: Optional
   directory: Directory
   fill: Fill In
   kind:

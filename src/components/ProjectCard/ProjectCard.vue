@@ -22,6 +22,7 @@ const {
   appendTime: projectAppendTime,
   path: projectPath,
   name: projectName,
+  group: projectGroup,
   kind: projectKind,
   fromUrl: projectFromUrl,
   fromName: projectFromName,
@@ -149,6 +150,11 @@ function showMenu() {
       <div flex="~ col" gap="5px">
         <!-- Title -->
         <span flex="~ items-center" gap="5px">
+          <template v-if="projectGroup">
+            <span color="light:$yellow-5 dark:$yellow-9">{{ projectGroup }}</span>
+            <span>/</span>
+          </template>
+
           <span truncate>{{ projectName }}</span>
 
           <!-- Temporary Mark -->

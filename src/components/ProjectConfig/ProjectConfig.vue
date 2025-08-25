@@ -339,6 +339,15 @@ function updateProject() {
           spellcheck="false" w="200px"
         />
 
+        <ConfigItemTitle title="project_config.group" />
+        <div flex="~ row items-center" gap="10px">
+          <JeInputField
+            v-model="localProjectItem.group"
+            spellcheck="false" w="200px"
+          />
+          <span text="secondary">({{ t('project_config.optional') }})</span>
+        </div>
+
         <div
           v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
           col-start="2" flex gap="2px"

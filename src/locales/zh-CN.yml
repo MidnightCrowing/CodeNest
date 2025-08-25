@@ -73,6 +73,8 @@ project_card:
   delete: 删除
 project_config:
   name: 名称
+  group: 项目组
+  optional: 可选
   directory: 位置
   fill: 填入
   kind:
