@@ -1,5 +1,5 @@
 import type { languagesGroupItem, LocalProject, ProjectLanguage } from '~/constants/localProject'
-import { LanguageAnalyzer } from '~/core/main'
+import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 
 export const popupVisible: Ref<boolean> = ref(false)
 export const position: { top: number, left: number } = reactive({ top: 0, left: 0 })

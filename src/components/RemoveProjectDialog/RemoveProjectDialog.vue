@@ -2,7 +2,7 @@
 import { JeButton, JePopup } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { projectManager } from '~/core/main'
+import { projectManager } from '~/services/projectManager'
 
 import { hideRemoveDialog, isDialogVisible, projectToRemove } from './RemoveProjectDialogProvider'
 

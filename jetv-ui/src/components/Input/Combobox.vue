@@ -57,6 +57,7 @@ function openMenu() {
       class="je-combobox__input"
       :disabled="disabled"
       :value="modelValue"
+      :spellcheck="spellcheck"
       :tabindex="disabled ? -1 : 0"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     >
@@ -93,7 +94,7 @@ function openMenu() {
 
 <style lang="scss" scoped>
 .je-combobox {
-  @apply m-2px outline outline-2px rounded-3px;
+  @apply m-2px h-26px outline outline-2px rounded-3px;
   @apply flex items-center;
   @apply relative;
   @apply light:outline-$gray-9 dark:outline-$gray-5;
@@ -173,6 +174,6 @@ function openMenu() {
 }
 
 .je-combobox__menu {
-  @apply w-full max-h-300px left-0 top-full;
+  @apply w-full max-h-300px left-0 top-full z-2;
 }
 </style>

@@ -15,7 +15,7 @@ export enum ThemeEnum {
   Dark = 'dark',
 }
 
-export enum LanguageType {
+export enum LanguageEnum {
   English = 'en',
   zh_CN = 'zh-CN',
   // zh_TW = 'zh-TW',

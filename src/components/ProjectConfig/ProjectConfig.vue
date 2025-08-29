@@ -19,7 +19,8 @@ import { codeEditors, languageToEditorMap } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import { LanguageAnalyzer, projectManager } from '~/core/main'
+import { LanguageAnalyzer } from '~/services/languageAnalyzer'
+import { projectManager } from '~/services/projectManager'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
@@ -298,6 +299,19 @@ function updateProject() {
   // 返回主页
   changeHomeView()
 }
+
+onMounted(() => {
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      changeHomeView()
+    }
+  }
+  window.addEventListener('keydown', escHandler)
+  // 组件卸载时移除
+  onUnmounted(() => {
+    window.removeEventListener('keydown', escHandler)
+  })
+})
 </script>
 
 <template>
@@ -311,8 +325,8 @@ function updateProject() {
       grow flex="~ col" gap="y-15px"
       overflow-auto scrollbar-default
     >
-      <!-- ProjectInfo -->
       <ConfigItem>
+        <!-- Directory -->
         <ConfigItemTitle title="project_config.directory" />
         <JeFileInputField
           v-model="localProjectItem.path"
@@ -331,6 +345,7 @@ function updateProject() {
           {{ t('project_config.path_in_list', { path: localProjectItem.path }) }}
         </div>
 
+        <!-- Name -->
         <ConfigItemTitle title="project_config.name" />
         <JeInputField
           v-model="localProjectItem.name"
@@ -338,15 +353,6 @@ function updateProject() {
           :validated-tooltip="t('project_config.name_tooltip')"
           spellcheck="false" w="200px"
         />
-
-        <ConfigItemTitle title="project_config.group" />
-        <div flex="~ row items-center" gap="10px">
-          <JeInputField
-            v-model="localProjectItem.group"
-            spellcheck="false" w="200px"
-          />
-          <span text="secondary">({{ t('project_config.optional') }})</span>
-        </div>
 
         <div
           v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
@@ -357,6 +363,18 @@ function updateProject() {
           <JeLink :on-click="fillProjectName">
             {{ t('project_config.fill') }}
           </JeLink>
+        </div>
+
+        <!-- Group -->
+        <ConfigItemTitle title="project_config.group" />
+        <div flex="~ row items-center" gap="10px">
+          <JeCombobox
+            v-model="localProjectItem.group"
+            :options="mainLanguageOptions"
+            :spellcheck="false"
+            w="200px"
+          />
+          <span text="secondary">({{ t('project_config.optional') }})</span>
         </div>
       </ConfigItem>
 
@@ -398,6 +416,7 @@ function updateProject() {
           :loading="mainLanguageLoading"
           :validated="projectLangInputValidated"
           :validated-tooltip="t('project_config.lang_tooltip')"
+          :spellcheck="false"
         />
       </ConfigItem>
 

@@ -2,29 +2,28 @@
 import { JeCard, JeDropdown } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { LanguageType, ThemeEnum } from '~/constants/appEnums'
-import { settings } from '~/core/settings'
-import { currentTheme } from '~/utils/theme'
+import { LanguageEnum, ThemeEnum } from '~/constants/appEnums'
+import { useSettingsStore } from '~/stores/settings'
+import { applyTheme } from '~/utils/theme'
 
+const settings = useSettingsStore()
 const { locale } = useI18n()
 const { t } = useI18n()
 
-const appLanguage = ref(locale.value)
+const appTheme = ref<ThemeEnum>(settings.theme)
+const appLanguage = ref<LanguageEnum>(settings.language)
 
-function setLanguage(lang: string) {
-  locale.value = lang
+function setTheme(theme: ThemeEnum) {
+  settings.theme = theme
+  applyTheme(theme)
+  settings.saveSettings()
 }
 
-watch(currentTheme, (newTheme) => {
-  settings.updateSetting('theme', newTheme)
+function setLanguage(lang: LanguageEnum) {
+  settings.language = lang
+  locale.value = lang
   settings.saveSettings()
-})
-
-watch(appLanguage, (newLang) => {
-  setLanguage(newLang)
-  settings.updateSetting('language', newLang)
-  settings.saveSettings()
-})
+}
 </script>
 
 <template>
@@ -38,12 +37,13 @@ watch(appLanguage, (newLang) => {
     <JeCard p="15px" flex="~ items-center justify-between">
       {{ t('settings.appearance.app_theme.title') }}
       <JeDropdown
-        v-model="currentTheme"
+        v-model="appTheme"
         :options="[
           { value: ThemeEnum.Light, label: t('settings.appearance.app_theme.light') },
           { value: ThemeEnum.Dark, label: t('settings.appearance.app_theme.dark') },
         ]"
         w-150px
+        @update:model-value="setTheme"
       />
     </JeCard>
 
@@ -53,10 +53,11 @@ watch(appLanguage, (newLang) => {
       <JeDropdown
         v-model="appLanguage"
         :options="[
-          { value: LanguageType.English, label: 'English' },
-          { value: LanguageType.zh_CN, label: '简体中文' },
+          { value: LanguageEnum.English, label: 'English' },
+          { value: LanguageEnum.zh_CN, label: '简体中文' },
         ]"
         w-150px
+        @update:model-value="setLanguage"
       />
     </JeCard>
   </div>

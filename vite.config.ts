@@ -55,8 +55,8 @@ export default defineConfig({
     },
   },
   build: {
-    emptyOutDir: false,
-    minify: 'terser',
+    emptyOutDir: true,
+    minify: 'terser', // 使用 Terser 进行代码压缩
     outDir: r('dist/app'), // 是否清空输出目录
     rollupOptions: {
       input: r('src/index.html'),
@@ -64,8 +64,8 @@ export default defineConfig({
       output: {
         format: 'es',
       },
-    }, // 是否生成 source map
-    sourcemap: false, // 使用 Terser 进行代码压缩
+    },
+    sourcemap: false, // 是否生成 source map
     terserOptions: {
       mangle: true, // 是否混淆变量名
       compress: {

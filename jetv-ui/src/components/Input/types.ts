@@ -62,7 +62,18 @@ export interface JeComboboxProps {
    */
   options: JeComboboxOptionProps[]
 
+  /**
+   * 是否显示加载状态
+   * 如果为 true，则显示加载指示器
+   * （可选，默认值为 false）
+   */
   loading?: boolean
+
+  /**
+   * 是否启用拼写检查功能
+   * （可选，默认值为 false）
+   */
+  spellcheck?: boolean
 
   /**
    * 是否启用验证状态
@@ -178,6 +189,11 @@ export interface JeDropdownProps {
    */
   options: (JeDropdownOptionProps | JeDropdownOptionGroupProps)[]
 
+  /**
+   * 是否正在加载中。
+   *
+   * 如果设置为 `true`，表示下拉菜单正在加载数据，通常用于显示加载状态。
+   */
   loading?: boolean
 
   /**

@@ -1,6 +1,7 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import typescript from '@rollup/plugin-typescript'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -38,6 +39,7 @@ export default defineConfig({
     UnoCSS(),
   ],
   build: {
+    emptyOutDir: true,
     lib: {
       entry: 'src/index.ts',
       name: 'jetv-ui',
@@ -52,10 +54,15 @@ export default defineConfig({
         },
         assetFileNames: 'jetv-ui.[ext]',
       },
+      plugins: [
+        typescript({
+          tsconfig: './tsconfig.json',
+        }),
+      ],
     },
     minify: 'terser',
     outDir: r('dist'),
-    sourcemap: false, // 使用 Terser 进行代码压缩
+    sourcemap: true,
     terserOptions: {
       mangle: true, // 是否混淆变量名
       compress: {
@@ -64,7 +71,7 @@ export default defineConfig({
         // pure_funcs: ['console.log'], // 删除特定的函数调用，如 console.log
       },
       format: {
-        comments: true, // 是否保留注释
+        comments: false, // 是否保留注释
       },
     },
   },

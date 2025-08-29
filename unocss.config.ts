@@ -9,7 +9,7 @@ export default defineConfig({
     presetTypography(),
     presetIcons({
       collections: {
-        jet: () => import('./jetv-ui/jet-icons.json').then(i => i.default),
+        jet: () => import('./jetv-ui/dist/jet-icons.json').then(i => i.default),
         custom: () => import('./src/assets/icons.json').then(i => i.default),
       },
       extraProperties: {

@@ -2,33 +2,14 @@
 import { useI18n } from 'vue-i18n'
 
 import SettingPathCard from '~/components/SettingPathCard.vue'
-import { type CodeEditorEnum, codeEditors } from '~/constants/codeEditor'
-import { settings } from '~/core/settings'
-import { eventBus } from '~/utils/eventBus'
+import type { CodeEditorEnum } from '~/constants/codeEditor'
+import { codeEditors } from '~/constants/codeEditor'
+import { useSettingsStore } from '~/stores/settings'
 
+const settings = useSettingsStore()
 const { t } = useI18n()
 
-const unsaveChanges = inject('unsaveChanges') as Ref<boolean>
-
-const originalCodeEditorsPaths = structuredClone(settings.getSetting('codeEditorsPath')) as Record<CodeEditorEnum, string>
-const codeEditorsPaths = ref<Record<CodeEditorEnum, string>>(
-  structuredClone(originalCodeEditorsPaths) as Record<CodeEditorEnum, string>,
-)
-
-function updateCodeEditorsPaths() {
-  codeEditorsPaths.value = structuredClone(settings.getSetting('codeEditorsPath')) as Record<CodeEditorEnum, string>
-}
-
-function savePathSetting() {
-  settings.updateSetting('codeEditorsPath', toRaw(codeEditorsPaths.value))
-}
-
-watch(codeEditorsPaths, (newValue) => {
-  unsaveChanges.value = JSON.stringify(newValue) !== JSON.stringify(originalCodeEditorsPaths)
-}, { deep: true })
-
-eventBus.on('updateSettings', updateCodeEditorsPaths)
-eventBus.on('saveSettings', savePathSetting)
+const codeEditorsPaths = ref(settings.codeEditorsPath)
 </script>
 
 <template>

@@ -1,19 +1,18 @@
 <script lang="ts" setup>
-import '../styles/transitionAndTransitionGroup.scss'
-
 import { JeFrame } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
 import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectDialog.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
-import type { ThemeEnum } from '~/constants/appEnums'
+import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
-import { settings } from '~/core/settings'
+import { useSettingsStore } from '~/stores/settings'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
 
+const settings = useSettingsStore()
 const { locale } = useI18n()
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
@@ -23,19 +22,16 @@ const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Settings]: defineAsyncComponent(() => import('./Settings/Settings.vue')),
 }
 
-async function applyLanguage(lang: string) {
+async function applyLanguage(lang: LanguageEnum) {
   locale.value = lang
 }
 
 onMounted(async () => {
   await settings.loadSettings()
 
-  const themeSetting = settings.getSetting('theme' as ThemeEnum)
-  const languageSetting = settings.getSetting('language')
-
   await Promise.all([
-    applyTheme(themeSetting),
-    applyLanguage(languageSetting),
+    applyTheme(settings.theme),
+    applyLanguage(settings.language),
   ])
 })
 
@@ -49,7 +45,7 @@ provide('activatedView', activatedView)
     caret="theme-text-caret" select-none
   >
     <WindowHeader shrink-0 />
-    <KeepAlive include="Home,Settings">
+    <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />
     </KeepAlive>
 

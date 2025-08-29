@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<JeDropdownProps>(), {
 const emit = defineEmits(['update:modelValue'])
 
 const selectOption = ref<JeMenuOptionProps | null>(null)
-const isMenuOpen = ref(false)
+const isMenuOpen = ref<boolean>(false)
 
 // 辅助函数：处理单个选项
 function transformOption(option: JeDropdownOptionProps): JeMenuOptionProps {

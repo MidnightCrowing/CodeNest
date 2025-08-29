@@ -3,8 +3,7 @@ import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
-import { settings } from '~/core/settings'
-import { eventBus } from '~/utils/eventBus'
+import { useSettingsStore } from '~/stores/settings'
 
 import AboutPage from './pages/About.vue'
 import AppearancePage from './pages/Appearance.vue'
@@ -15,6 +14,7 @@ defineOptions({
   name: 'Settings',
 })
 
+const settings = useSettingsStore()
 const { t } = useI18n()
 
 // ==================== Side Menu ====================
@@ -38,33 +38,46 @@ const searchValue = ref('')
 
 // ==================== Bottom Menu ====================
 const activatedView = inject('activatedView') as Ref<ViewEnum>
-const unsaveChanges = ref(false)
 
 function openSettingsJSON() {
   window.api.openSettingsJSON()
 }
 
 function saveAllSettings() {
-  eventBus.emit('saveSettings')
   settings.saveSettings()
   changeHomeView()
 }
 
-function changeHomeView() {
-  if (activatedView)
-    activatedView.value = ViewEnum.Home
+function cancelChanges() {
+  // Reset unsaved changes
+  settings.loadSettings()
+  changeHomeView()
 }
 
-onMounted(() => {
-  settings.loadSettings()
-  eventBus.emit('updateSettings')
+function changeHomeView() {
+  if (activatedView) {
+    activatedView.value = ViewEnum.Home
+  }
+}
+
+onMounted(async () => {
+  await settings.loadSettings()
+
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      changeHomeView()
+    }
+  }
+  window.addEventListener('keydown', escHandler)
+  // 组件卸载时移除
+  onUnmounted(() => {
+    window.removeEventListener('keydown', escHandler)
+  })
 })
 
 onUnmounted(() => {
   activatedPage.value = SettingPageEnum.Appearance
 })
-
-provide('unsaveChanges', unsaveChanges)
 </script>
 
 <template>
@@ -133,9 +146,9 @@ provide('unsaveChanges', unsaveChanges)
         <JeButton
           class="cancel-button" type="secondary-alt"
           order-1
-          @click="changeHomeView"
+          @click="cancelChanges"
         >
-          {{ unsaveChanges ? t('settings.discard_changes') : t('settings.cancel') }}
+          {{ t('settings.cancel') }}
         </JeButton>
       </div>
     </JeFrame>

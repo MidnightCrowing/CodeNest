@@ -83,8 +83,9 @@ function resetPath() {
 
     <!-- 折叠面板 -->
     <div
-      class="collapsible-panel" overflow-hidden max-h-0
-      :class="{ open: isPanelOpen }"
+      transition-max-height duration-300 ease-in-out
+      overflow-hidden max-h-0 rounded-2px
+      :class="{ 'max-h-100px': isPanelOpen }"
     >
       <div class="panel-content" bg="light:$gray-12 dark:$gray-3" p="15px" flex="~ row items-center" gap="10px">
         <JeInputField
@@ -106,14 +107,6 @@ function resetPath() {
 </template>
 
 <style lang="scss" scoped>
-.collapsible-panel {
-  transition: max-height 0.3s ease-in-out;
-
-  &.open {
-    max-height: 100px;
-  }
-}
-
 .browse-button {
   @apply light:bg-$gray-10 dark:bg-$gray-5 hover:bg-$toolbar-hover active:bg-$toolbar-active;
 }
@@ -121,10 +114,10 @@ function resetPath() {
 
 <style lang="scss">
 .toggle-button .je-transparent-tool-button__icon {
-  transition: transform 0.3s ease-in-out;
+  @apply transition-transform duration-300 ease-in-out;
 }
 
 .toggle-button.rotated .je-transparent-tool-button__icon {
-  transform: rotate(180deg);
+  @apply rotate-180;
 }
 </style>

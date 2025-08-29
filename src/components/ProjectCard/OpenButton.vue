@@ -2,20 +2,24 @@
 import { showNoIdePathDialog } from '~/components/NoIdePathDialog/NoIdePathDialogProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
-import { settings } from '~/core/settings'
+import { useSettingsStore } from '~/stores/settings'
 
 defineProps<{
   defaultOpen: CodeEditorEnum
   projectPath: string
 }>()
 
-function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
-  const idePath = settings.getSetting('codeEditorsPath')[codeEditor]
+const settings = useSettingsStore()
 
-  if (!idePath)
+function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
+  const idePath = settings.codeEditorsPath[codeEditor]
+
+  if (!idePath) {
     showNoIdePathDialog()
-  else
+  }
+  else {
     window.api.openProject(idePath, projectPath)
+  }
 }
 </script>
 

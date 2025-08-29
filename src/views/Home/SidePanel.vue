@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import SideMenuButton from '~/components/SideMenuButton.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import { ProjectKind } from '~/constants/localProject'
-import { projectManager } from '~/core/main'
+import { projectManager } from '~/services/projectManager'
 
 import type { SidePanelActive } from './types'
 

@@ -261,6 +261,8 @@ export interface JeTagProps {
 
 // JeTransparentButton
 export interface JeTransparentButtonProps {
+  className?: string
+
   /**
    * 是否禁用复选框，使复选框不可交互。
    * - 如果设置为 `true`，复选框将显示为不可点击。
