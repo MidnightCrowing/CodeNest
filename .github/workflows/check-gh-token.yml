@@ -21,3 +21,11 @@ jobs:
           else
             echo "GH_TOKEN is set and ready to use."
           fi
+
+      - name: Validate GH_TOKEN
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token $GH_TOKEN" \
+            https://api.github.com/user
