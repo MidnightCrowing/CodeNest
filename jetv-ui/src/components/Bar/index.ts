@@ -1,6 +1,6 @@
-import JeColorIcon from './ColorIcon.vue'
 import { JeBarColorSchemeEnum } from './constant'
-import JeGradient from './Gradient.vue'
+import JeColorIcon from './JeColorIcon.vue'
+import JeGradient from './JeGradient.vue'
 import type { JeColorIconProps, JeGradientProps } from './types.ts'
 
 export { JeColorIcon, JeGradient }

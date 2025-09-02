@@ -8,8 +8,8 @@
     "module": "ESNext", // 指定编译后的 JavaScript 输出目录
     "moduleResolution": "node",
     "paths": {
-      "~/*": ["../src/*"]
-    }, // 指定声明文件的输出目录
+      "~/*": ["src/*"]
+    },
     "resolveJsonModule": true,
     "types": [
       "vite/client"

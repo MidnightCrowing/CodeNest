@@ -3,7 +3,7 @@ import { capitalize } from '../../utils/common'
 import type { JeShortcutProps } from './types.ts'
 
 withDefaults(defineProps<JeShortcutProps>(), {
-  type: 'outline',
+  type: 'default',
 })
 </script>
 

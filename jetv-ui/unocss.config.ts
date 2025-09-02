@@ -1,10 +1,18 @@
-import { defineConfig, presetAttributify, presetIcons, presetTypography, presetUno, transformerDirectives } from 'unocss'
+import {
+  defineConfig,
+  presetAttributify,
+  presetIcons,
+  presetTypography,
+  presetWind3,
+  transformerDirectives,
+  transformerVariantGroup,
+} from 'unocss'
 
-import { scrollbarApplyRules, scrollbarApplyVariants } from './src/style/unocss/scrollbarApply'
+import { scrollbarApplyRules, scrollbarApplyVariants } from './src/styles/unocss/scrollbarApply'
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind3(),
     presetAttributify(),
     presetTypography(),
     presetIcons({
@@ -32,5 +40,8 @@ export default defineConfig({
   },
   variants: scrollbarApplyVariants,
   rules: scrollbarApplyRules,
-  transformers: [transformerDirectives()],
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
 })

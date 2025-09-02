@@ -7,14 +7,14 @@ const props = withDefaults(defineProps<JeTagProps>(), {
   select: false,
   disabled: false,
 })
-const emit = defineEmits(['remove', 'select'])
+const emit = defineEmits(['remove', 'update:select'])
 
 const isSelected = ref(props.select)
 
 function toggleSelect() {
   if (props.selectAble) {
     isSelected.value = !isSelected.value
-    emit('select', isSelected.value)
+    emit('update:select', isSelected.value)
   }
 }
 

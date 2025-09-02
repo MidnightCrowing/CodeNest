@@ -1,6 +1,5 @@
-import 'uno.css'
-import './style/light.scss'
-import './style/dark.scss'
+import './styles/light.scss'
+import './styles/dark.scss'
 
 import type { JeBannerActionProps, JeBannerProps } from './components/Banner'
 import { JeBanner } from './components/Banner'

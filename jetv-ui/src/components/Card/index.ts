@@ -1,4 +1,4 @@
-import JeCard from './Card.vue'
-import JeSimpleCard from './SimpleCard.vue'
+import JeCard from './JeCard.vue'
+import JeSimpleCard from './JeSimpleCard.vue'
 
 export { JeCard, JeSimpleCard }

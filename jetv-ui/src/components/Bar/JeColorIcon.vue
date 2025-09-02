@@ -14,7 +14,7 @@ withDefaults(defineProps<JeColorIconProps>(), {
       `je-color-icon--color-scheme-${colorScheme}`,
       { 'je-color-icon--color-scheme': colorScheme && !customColor },
     ]"
-    :style="{ backgroundColor: customColor }"
+    :style="{ background: customColor }"
   >
     <span v-if="type === 'default'" class="je-color-icon__text">
       <slot />

@@ -204,10 +204,10 @@ function checkMenuPosition() {
               >
                 <Menu
                   class="child"
-                  :visible="true"
+                  visible
+                  is-child-menu
                   :title="option.childMenu.title"
                   :options="option.childMenu.options"
-                  :is-child-menu="true"
                   @close="closeMenu"
                 />
               </div>
@@ -301,10 +301,10 @@ function checkMenuPosition() {
                     >
                       <Menu
                         class="je-menu__child"
-                        :visible="true"
+                        visible
+                        is-child-menu
                         :title="groupOption.childMenu.title"
                         :options="groupOption.childMenu.options"
-                        :is-child-menu="true"
                         @close="closeMenu"
                       />
                     </div>

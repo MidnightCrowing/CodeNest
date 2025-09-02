@@ -11,3 +11,8 @@ export interface JeFrameProps {
    */
   type?: 'primary' | 'secondary' | null
 }
+
+// JeLine
+export interface JeLineProps {
+  vertical?: boolean
+}

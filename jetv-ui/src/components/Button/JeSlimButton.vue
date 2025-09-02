@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import JeButton from './Button.vue'
+import JeButton from './JeButton.vue'
 import type { JeSlimButtonProps } from './types.ts'
 
 withDefaults(defineProps<JeSlimButtonProps>(), {

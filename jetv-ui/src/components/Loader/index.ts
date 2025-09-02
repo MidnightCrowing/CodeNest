@@ -1,3 +1,3 @@
-import JeLoader from './Loader.vue'
+import JeLoader from './JeLoader.vue'
 
 export { JeLoader }

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import JeCard from './Card.vue'
+import JeCard from './JeCard.vue'
 </script>
 
 <template>

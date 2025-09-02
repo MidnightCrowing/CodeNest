@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import JeInputField from './InputField.vue'
+import JeInputField from './JeInputField.vue'
 import type { JeFileInputFieldProps } from './types.ts'
 
 const props = withDefaults(defineProps<JeFileInputFieldProps>(), {
@@ -55,7 +55,7 @@ async function openFolder() {
 
 <style lang="scss" scoped>
 .je-file-input-filed {
-  @apply relative;
+  @apply relative flex-items-center;
 }
 
 .je-file-input-filed__icon-wrapper {
