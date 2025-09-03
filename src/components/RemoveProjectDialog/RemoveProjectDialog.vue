@@ -2,11 +2,12 @@
 import { JeButton, JePopup } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { projectManager } from '~/services/projectManager'
+import { useProjectsStore } from '~/stores/projects'
 
 import { hideRemoveDialog, isDialogVisible, projectToRemove } from './RemoveProjectDialogProvider'
 
 const { t } = useI18n()
+const projects = useProjectsStore()
 
 function isRemove() {
   if (projectToRemove.value?.isExists === false) {
@@ -21,7 +22,7 @@ function confirmRemove() {
       window.api.deleteProject(projectToRemove.value.path)
     }
 
-    projectManager.removeProject(projectToRemove.value.appendTime)
+    projects.removeProject(projectToRemove.value.appendTime)
   }
   hideRemoveDialog()
 }

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.3",
   "private": true,
-  "packageManager": "pnpm@9.5.0",
+  "packageManager": "pnpm@10.15.1",
   "description": "跨平台开发项目管理工具",
   "author": "MidnightCrowing",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "@vueuse/core": "^13.8.0",
     "fs-extra": "^11.3.1",
     "fuse.js": "^7.1.0",
+    "jetv-ui": "file:jetv-ui",
     "linguist-js": "^2.9.2",
     "pinia": "^3.0.3",
     "trash": "^9.0.0",
@@ -72,7 +73,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-vue": "^10.4.0",
-    "jetv-ui": "file:jetv-ui",
     "jsdom": "^26.1.0",
     "knip": "^5.63.0",
     "lint-staged": "^16.1.5",
@@ -91,7 +91,15 @@
   "pnpm": {
     "overrides": {
       "@electron/node-gyp": "git+https://github.com/electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "electron",
+      "electron-winstaller",
+      "esbuild",
+      "oxc-resolver",
+      "simple-git-hooks"
+    ]
   },
   "build": {
     "appId": "MidnightCrowing.CodeNest",

@@ -83,14 +83,13 @@ const childMenuOptions = [
 
     <!-- Child Menu -->
     <GalleryCard title="Menu with Submenu">
-      <div relative>
+      <div>
         <JeButton @click="showChildMenu = !showChildMenu">
           Toggle Child Menu
         </JeButton>
         <JeMenu
           v-model:visible="showChildMenu"
           :options="childMenuOptions"
-          class="absolute top-12 left-0"
         />
       </div>
     </GalleryCard>

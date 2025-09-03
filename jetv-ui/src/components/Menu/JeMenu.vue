@@ -202,8 +202,8 @@ function checkMenuPosition() {
                 class="je-menu__child-menu-wrapper"
                 :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
               >
-                <Menu
-                  class="child"
+                <JeMenu
+                  class="je-menu__child"
                   visible
                   is-child-menu
                   :title="option.childMenu.title"
@@ -299,7 +299,7 @@ function checkMenuPosition() {
                       class="je-menu__child-menu-wrapper"
                       :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
                     >
-                      <Menu
+                      <JeMenu
                         class="je-menu__child"
                         visible
                         is-child-menu

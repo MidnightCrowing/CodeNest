@@ -2,11 +2,12 @@
 import { JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { projectManager } from '~/services/projectManager'
+import { useProjectsStore } from '~/stores/projects'
 
 import { version } from '../../../../package.json'
 
 const { t } = useI18n()
+const projects = useProjectsStore()
 
 function openGithub() {
   window.api.openExternal('https://github.com/MidnightCrowing/CodeNest')
@@ -14,7 +15,7 @@ function openGithub() {
 
 async function importProjects() {
   await window.api.importData()
-  await projectManager.loadProjects()
+  await projects.loadProjects()
 }
 
 function exportProjects() {

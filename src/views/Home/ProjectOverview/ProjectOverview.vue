@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 
 import { LicensePop, mainLangPop, ProjectCard } from '~/components/ProjectCard'
 import type { ProjectKind } from '~/constants/localProject'
-import { projectManager } from '~/services/projectManager'
+import { useProjectsStore } from '~/stores/projects'
 
 import type { SidePanelActive } from '../types'
 import ProjectOverviewHeader from './ProjectOverviewHeader.vue'
@@ -15,11 +15,12 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const projects = useProjectsStore()
 
 const searchValue = ref('')
 
 // 根据选择的 kind、temp 和 lang 获取项目列表
-const projects = computed(() => {
+const projectsFiltered = computed(() => {
   const activatedItem = props.activatedItem
 
   // 匹配以 k- 开头的字符串
@@ -27,16 +28,16 @@ const projects = computed(() => {
     const content = activatedItem.slice(2) // 去掉前面的 "k-"
 
     if (content === 'all') {
-      return projectManager.getProjects()
+      return projects.allProjects
     }
     else {
-      return projectManager.getProjectsByKind(content as ProjectKind)
+      return projects.getProjectsByKind(content as ProjectKind)
     }
   }
 
   // 匹配 temp 字符串
   else if (activatedItem === 'temp') {
-    return projectManager.getTempProjects()
+    return projects.tempProjects
   }
 
   // 匹配以 l- 开头的字符串
@@ -44,7 +45,7 @@ const projects = computed(() => {
     const content = activatedItem.slice(2) // 去掉前面的 "l-"
 
     // 如果有语言参数，返回指定语言的项目
-    return projectManager.getProjectsByLang(content)
+    return projects.getProjectsByLang(content)
   }
 
   else {
@@ -54,7 +55,7 @@ const projects = computed(() => {
 
 // 过滤项目
 const filteredProjects = computed(() => {
-  let result = projects.value
+  let result = projectsFiltered.value
 
   if (searchValue.value) {
     // 根据搜索值过滤项目
@@ -97,7 +98,7 @@ function handleDrop(event: DragEvent) {
       // 插入到目标位置
       filteredProjects.value.splice(targetIndex, 0, draggedItem)
 
-      projectManager.saveProjects()
+      projects.saveProjects()
     }
   }
   else {

@@ -1,10 +1,18 @@
-import { defineConfig, presetAttributify, presetIcons, presetTypography, presetUno, transformerDirectives } from 'unocss'
+import {
+  defineConfig,
+  presetAttributify,
+  presetIcons,
+  presetTypography,
+  presetWind3,
+  transformerDirectives,
+  transformerVariantGroup,
+} from 'unocss'
 
 import { editorIconClasses } from './src/constants/codeEditor'
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind3(),
     presetAttributify(),
     presetTypography(),
     presetIcons({
@@ -32,5 +40,8 @@ export default defineConfig({
     'text-secondary': 'color-$gray-7',
   },
   safelist: editorIconClasses,
-  transformers: [transformerDirectives()],
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
 })

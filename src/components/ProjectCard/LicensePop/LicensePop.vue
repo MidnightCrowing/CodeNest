@@ -4,7 +4,7 @@ import { JeLink, JeTooltip } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { LicenseInfo } from '~/constants/license'
-import { openLink } from '~/utils/main'
+import { openLink } from '~/utils/common'
 
 // noinspection ES6UnusedImports
 import { license, popupVisible, position } from './LicensePopProvider'

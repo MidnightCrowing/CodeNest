@@ -20,7 +20,7 @@ import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
-import { projectManager } from '~/services/projectManager'
+import { useProjectsStore } from '~/stores/projects'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
@@ -28,6 +28,7 @@ import ForkAndCloneComponent from './components/KindComponent/ForkAndCloneCompon
 import { initializeNewProjectState, isUpdateProject, localProjectItem } from './ProjectConfigProvider'
 
 const { t } = useI18n()
+const projects = useProjectsStore()
 
 // ==================== ProjectInfo ====================
 const projectPathInputValidated = ref(false)
@@ -270,7 +271,7 @@ function addNewProject() {
   }
 
   // 添加项目
-  projectManager.addProject({
+  projects.addProject({
     ...localProjectItem.value,
     ...getDynamicFields(),
     appendTime: Date.now(), // 添加创建时间
@@ -291,7 +292,7 @@ function updateProject() {
     ...localProjectItem.value,
     ...getDynamicFields(),
   }
-  projectManager.updateProject(
+  projects.updateProject(
     localProjectItem.value.appendTime as number,
     localProjectItem.value as LocalProject,
   )
@@ -336,7 +337,7 @@ onMounted(() => {
         />
 
         <div
-          v-if="localProjectItem.path && projectManager.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)"
+          v-if="localProjectItem.path && projects.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)"
           col-start="2"
           flex="~ items-center" gap="2px"
           color="light:$yellow-4 dark:$yellow-6"

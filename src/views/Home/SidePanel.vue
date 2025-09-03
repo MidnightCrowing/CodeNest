@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import SideMenuButton from '~/components/SideMenuButton.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import { ProjectKind } from '~/constants/localProject'
-import { projectManager } from '~/services/projectManager'
+import { useProjectsStore } from '~/stores/projects'
 
 import type { SidePanelActive } from './types'
 
@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits(['updateActivatedItem'])
 
 const { t } = useI18n()
+const projects = useProjectsStore()
 
 // 通过点击更新激活项
 function updateActivatedItem(itemMark: SidePanelActive) {
@@ -36,8 +37,8 @@ const kindMenuGroup1 = computed(() =>
     kind,
     label,
     count: projectKind
-      ? projectManager.getProjectsByKind(projectKind).length
-      : projectManager.getProjects().length,
+      ? projects.getProjectsByKind(projectKind).length
+      : projects.allProjects.length,
   })),
 )
 
@@ -46,18 +47,17 @@ function handleTempDrop(event: DragEvent) {
   if (data) {
     const appendTime = Number(data) // 转换为数字
 
-    const project = projectManager.getProjectByAppendTime(appendTime)
+    const project = projects.getProjectByAppendTime(appendTime)
     if (project) {
       project.isTemporary = !project.isTemporary
-      projectManager.updateProject(appendTime, project)
+      projects.updateProject(appendTime, project)
     }
   }
 }
 
 // ==================== Language Group ====================
 const languagesGroup = computed(() => {
-  return projectManager
-    .getMainLangSummary()
+  return [...projects.mainLangSummary]
     .sort((a, b) => {
       if (b.count !== a.count) {
         return b.count - a.count // 按 count 降序
@@ -109,7 +109,7 @@ function changeSettingsView() {
         <!-- Temporary -->
         <SideMenuButton
           :active="activatedItem === 'temp'"
-          :tag-value="projectManager.getTempProjects().length"
+          :tag-value="projects.tempProjects.length"
           @click="updateActivatedItem('temp')"
           @keydown.enter="updateActivatedItem('temp')"
           @dragover.prevent

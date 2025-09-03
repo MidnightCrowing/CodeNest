@@ -7,18 +7,20 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
+import { useProjectsStore } from '~/stores/projects'
 import { useSettingsStore } from '~/stores/settings'
 import { applyTheme } from '~/utils/theme'
 
 import Home from './Home/Home.vue'
 
+const projects = useProjectsStore()
 const settings = useSettingsStore()
 const { locale } = useI18n()
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Home]: Home,
-  [ViewEnum.NewProject]: defineAsyncComponent(() => import('~/components/ProjectConfig/ProjectConfig.vue')),
+  [ViewEnum.NewProject]: defineAsyncComponent(() => import('./ProjectConfig/ProjectConfig.vue')),
   [ViewEnum.Settings]: defineAsyncComponent(() => import('./Settings/Settings.vue')),
 }
 
@@ -27,11 +29,15 @@ async function applyLanguage(lang: LanguageEnum) {
 }
 
 onMounted(async () => {
-  await settings.loadSettings()
-
   await Promise.all([
-    applyTheme(settings.theme),
-    applyLanguage(settings.language),
+    (async () => {
+      await settings.loadSettings()
+      await Promise.all([
+        applyTheme(settings.theme),
+        applyLanguage(settings.language),
+      ])
+    })(),
+    projects.loadProjects(),
   ])
 })
 

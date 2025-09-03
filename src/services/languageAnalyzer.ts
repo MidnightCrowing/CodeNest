@@ -1,8 +1,8 @@
 import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
 
-import type { LinguistLanguageResult, LinguistResult } from '~/components/ProjectConfig/types'
 import type { languagesGroupItem } from '~/constants/localProject'
 import { t } from '~/utils/i18n'
+import type { LinguistLanguageResult, LinguistResult } from '~/views/ProjectConfig/types'
 
 /**
  * 用于分析项目语言的工具类
