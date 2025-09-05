@@ -329,8 +329,8 @@ packages:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
     engines: {node: '>=12'}
 
-  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90':
-    resolution: {commit: 0453f4fe4656c63277185b35feedec5716a27d90, repo: git@github.com:electron/node-gyp.git, type: git}
+  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90':
+    resolution: {tarball: https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90}
     version: 10.2.0-electron.2
     engines: {node: '>=12.13.0'}
     hasBin: true
@@ -5314,7 +5314,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90':
+  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90':
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.2
@@ -5351,7 +5351,7 @@ snapshots:
 
   '@electron/rebuild@3.7.0':
     dependencies:
-      '@electron/node-gyp': git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90
+      '@electron/node-gyp': https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90
       '@malept/cross-spawn-promise': 2.0.0
       chalk: 4.1.2
       debug: 4.4.1
