@@ -17,7 +17,9 @@ const codeEditorsPaths = ref(settings.codeEditorsPath)
     flex="~ col" gap="8px"
     p="10px"
   >
-    <h3>{{ t('settings.ides_path.title') }}</h3>
+    <h3 text="h2">
+      {{ t('settings.ides_path.title') }}
+    </h3>
     <SettingPathCard
       v-for="[editor, value] in Object.entries(codeEditors)"
       :key="editor"

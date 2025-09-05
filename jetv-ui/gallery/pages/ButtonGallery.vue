@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { JeButton, JeSlimButton } from '../../src'
+import { JeButton, JeSlimButton, JeTransparentButton } from '../../src'
 import GalleryCard from '../components/GalleryCard.vue'
 import ShowcaseFrame from '../components/ShowcaseFrame.vue'
 </script>
@@ -63,6 +63,13 @@ import ShowcaseFrame from '../components/ShowcaseFrame.vue'
           </JeSlimButton>
         </div>
       </div>
+    </GalleryCard>
+
+    <GalleryCard title="Transparent">
+      <JeTransparentButton>Default</JeTransparentButton>
+      <JeTransparentButton type="subtle">
+        Subtle
+      </JeTransparentButton>
     </GalleryCard>
   </showcaseframe>
 </template>

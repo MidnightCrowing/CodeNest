@@ -7,6 +7,7 @@ export enum ViewEnum {
 export enum SettingPageEnum {
   Appearance = 'Appearance',
   Ides = 'Ides',
+  AutoScan = 'AutoScan',
   About = 'About',
 }
 
@@ -18,5 +19,4 @@ export enum ThemeEnum {
 export enum LanguageEnum {
   English = 'en',
   zh_CN = 'zh-CN',
-  // zh_TW = 'zh-TW',
 }

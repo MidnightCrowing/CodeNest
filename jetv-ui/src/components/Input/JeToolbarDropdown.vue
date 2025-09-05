@@ -6,21 +6,16 @@ import type { JeToolbarDropdownProps } from './types.ts'
 const props = withDefaults(defineProps<JeToolbarDropdownProps>(), {
   disabled: false,
 })
+const emit = defineEmits(['update:modelValue'])
 
 const selectOption = ref<JeMenuOptionProps | null>(null)
 const isMenuOpen = ref(false)
 
 // 初始化时选择默认值
 if (props.options && props.options.length > 0) {
-  const defaultOption = props.options.find(option => option.value === props.defaultSelectedValue)
+  const defaultOption = props.options.find(option => option.value === props.modelValue)
   selectOption.value = defaultOption || null
 }
-
-// 监听 defaultSelectedValue 的变化
-watch(() => props.defaultSelectedValue, (newValue) => {
-  const defaultOption = props.options.find(option => option.value === newValue)
-  selectOption.value = defaultOption || null
-})
 
 function openDropdownMenu() {
   if (!props.disabled) {
@@ -47,6 +42,7 @@ const menuOptions = computed(() => {
       else {
         // 否则执行选择行为
         selectOption.value = option
+        emit('update:modelValue', option.value)
       }
     },
     ellipsis: option.ellipsis,
@@ -96,17 +92,12 @@ const menuOptions = computed(() => {
   // Default 状态样式
   &:not(&--disabled) {
     .je-toolbar-dropdown__label {
-      @apply color-$gray-7;
+      @apply light:color-$gray-1 dark:color-$gray-13;
     }
 
     .je-toolbar-dropdown__text {
       @apply light:color-$gray-1 dark:color-$gray-12;
     }
-  }
-
-  // Hover 状态样式
-  &:not(&--disabled):hover .je-toolbar-dropdown__label {
-    @apply light:color-$gray-1 dark:color-$gray-13;
   }
 
   // Active 状态样式

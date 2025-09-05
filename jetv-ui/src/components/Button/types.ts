@@ -261,7 +261,10 @@ export interface JeTagProps {
 
 // JeTransparentButton
 export interface JeTransparentButtonProps {
-  className?: string
+  /**
+   * 按钮的类型，用于定义按钮的视觉样式。
+   */
+  type?: 'default' | 'subtle'
 
   /**
    * 是否禁用复选框，使复选框不可交互。

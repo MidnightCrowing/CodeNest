@@ -1,4 +1,4 @@
-import './ipcHandler'
+import './ipc/index'
 
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'

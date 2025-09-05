@@ -101,9 +101,11 @@ remove_project_dialog:
     delete: 确认删除
   dialog_desc:
     remove: '你确定要将项目 "{name}" 从列表中移除吗？'
-    delete: "你确定要删除项目 \"{name}\" 吗？\n注意：这会同时删除项目文件，且无法恢复。"
+    delete: '你确定要删除项目 "{name}" 吗？'
+    delete_note: 注意：这会同时删除项目文件，且无法恢复。
   cancel: 取消
   remove: 移除
+  remove_from_list: 移除项目 (保留文件)
   delete: 删除
 no_ide_path_dialog:
   dialog_title: IDE 路径未设置
@@ -137,6 +139,14 @@ settings:
     title: IDE 路径
     none: 无
     browse: 浏览...
+  auto_scan:
+    title: 自动扫描项目
+    desc: 启动时自动扫描项目根路径下的项目。
+    add_folder: 添加项目根
+    default_open_mode: 默认打开方式
+    auto_select_program: 根据语言自动选择程序
+    always_use_custom_program: 始终使用指定程序
+    temp_project_name_rule: 临时项目名称规则
   about:
     title: 关于
     version: 版本

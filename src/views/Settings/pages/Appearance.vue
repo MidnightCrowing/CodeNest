@@ -31,7 +31,9 @@ function setLanguage(lang: LanguageEnum) {
     flex="~ col" gap="8px"
     p="10px"
   >
-    <h3>{{ t('settings.appearance.title') }}</h3>
+    <h3 text="h2">
+      {{ t('settings.appearance.title') }}
+    </h3>
 
     <!-- 程序主题 -->
     <JeCard p="15px" flex="~ items-center justify-between">
@@ -62,7 +64,3 @@ function setLanguage(lang: LanguageEnum) {
     </JeCard>
   </div>
 </template>
-
-<style lang="scss" scoped>
-
-</style>

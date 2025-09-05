@@ -64,7 +64,7 @@ export class LanguageAnalyzer {
    * @returns {Promise<Record<string, LinguistLanguageResult>>} - 语言分析结果
    */
   private async getLanguagesResult(): Promise<Record<string, LinguistLanguageResult>> {
-    const { languages } = await window.api.analyzeFolder(this.folderPath) as { languages: LinguistResult['languages'] }
+    const { languages } = await window.api.analyzeProject(this.folderPath) as { languages: LinguistResult['languages'] }
     return languages.results
   }
 

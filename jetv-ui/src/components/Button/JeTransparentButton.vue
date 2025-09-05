@@ -2,6 +2,7 @@
 import type { JeTransparentButtonProps } from './types.ts'
 
 withDefaults(defineProps<JeTransparentButtonProps>(), {
+  type: 'default',
   disabled: false,
 })
 </script>
@@ -9,6 +10,7 @@ withDefaults(defineProps<JeTransparentButtonProps>(), {
 <template>
   <button
     class="je-transparent-button"
+    :class="`je-transparent-button--${type}`"
     :disabled="disabled"
   >
     <slot />
@@ -24,5 +26,10 @@ withDefaults(defineProps<JeTransparentButtonProps>(), {
   @apply outline outline-2px outline-none;
   @apply px-14px py-3px b-0 rounded-4px;
   @apply min-w-72px;
+
+  &--subtle {
+    @apply light:bg-$gray-12 dark:bg-$gray-3;
+    @apply hover:bg-$toolbar-hover active:bg-$toolbar-active;
+  }
 }
 </style>

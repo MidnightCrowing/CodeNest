@@ -49,10 +49,12 @@ export const useProjectsStore = defineStore('projects', () => {
   // -------------------------
 
   // 添加项目到列表头部
-  async function addProject(newProject: LocalProject) {
+  async function addProject(newProject: LocalProject, save?: boolean) {
     projects.value.unshift(newProject)
     await checkProjectExistence(newProject)
-    await saveProjects()
+    if (save) {
+      await saveProjects()
+    }
   }
 
   // 根据 appendTime 获取项目

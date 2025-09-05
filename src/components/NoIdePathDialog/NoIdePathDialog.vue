@@ -12,8 +12,9 @@ const { t } = useI18n()
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 
 function changeSettingsView() {
-  if (activatedView)
+  if (activatedView) {
     activatedView.value = ViewEnum.Settings
+  }
   activatedPage.value = SettingPageEnum.Ides
   hideNoIdePathDialog()
 }
@@ -30,7 +31,7 @@ function changeSettingsView() {
       <h3>{{ t('no_ide_path_dialog.dialog_title') }}</h3>
       <p>{{ t('no_ide_path_dialog.dialog_desc') }}</p>
       <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
-        <JeButton type="secondary" order-2 @click="changeSettingsView">
+        <JeButton order-2 @click="changeSettingsView">
           {{ t('no_ide_path_dialog.set') }}
         </JeButton>
         <JeButton type="secondary" order-1 @click="hideNoIdePathDialog">

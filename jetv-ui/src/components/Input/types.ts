@@ -352,6 +352,8 @@ export interface JeToolbarDropdownOptionProps {
 }
 
 export interface JeToolbarDropdownProps {
+  modelValue: string | number
+
   /**
    * 下拉菜单的标签文本。
    *
@@ -366,14 +368,6 @@ export interface JeToolbarDropdownProps {
    * 该数组用于填充下拉菜单的所有可选项。
    */
   options: JeToolbarDropdownOptionProps[]
-
-  /**
-   * 默认选中的值。
-   *
-   * 用于设置下拉菜单初始时显示的选项，通常为 `options` 中某个选项的 `value`。
-   * 该值可以是字符串或数字，表示下拉菜单选项的唯一标识符。
-   */
-  defaultSelectedValue: string | number
 
   /**
    * 是否禁用下拉菜单。

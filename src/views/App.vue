@@ -7,6 +7,7 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
+import { addNewProjects } from '~/services/projectScanner'
 import { useProjectsStore } from '~/stores/projects'
 import { useSettingsStore } from '~/stores/settings'
 import { applyTheme } from '~/utils/theme'
@@ -37,7 +38,12 @@ onMounted(async () => {
         applyLanguage(settings.language),
       ])
     })(),
-    projects.loadProjects(),
+    (async () => {
+      await projects.loadProjects()
+      requestAnimationFrame(() => {
+        void addNewProjects()
+      })
+    })(),
   ])
 })
 

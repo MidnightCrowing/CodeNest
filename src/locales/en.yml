@@ -109,9 +109,11 @@ remove_project_dialog:
     delete: Confirm Deletion
   dialog_desc:
     remove: 'Are you sure you want to remove the project "{name}" from the list?'
-    delete: "Are you sure you want to delete the project \"{name}\"?\nNote: This will also delete the project files and cannot be recovered."
+    delete: 'Are you sure you want to delete the project "{name}"?'
+    delete_note: 'Note: This will also delete the project files and cannot be recovered.'
   cancel: Cancel
   remove: Remove
+  remove_from_list: Remove from List (Keep files)
   delete: Delete
 no_ide_path_dialog:
   dialog_title: IDE Path Not Set
@@ -145,6 +147,14 @@ settings:
     title: IDEs Path
     none: None
     browse: Browse...
+  auto_scan:
+    title: Auto Scanner Project
+    desc: Automatically scans project root paths at startup.
+    add_folder: Add Project Root
+    default_open_mode: Default Opening Method
+    auto_select_program: Automatically select program based on language
+    always_use_custom_program: Always use the specified program
+    temp_project_name_rule: Temporary Project Name Rule
   about:
     title: About
     version: Version

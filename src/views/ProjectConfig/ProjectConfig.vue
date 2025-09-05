@@ -31,9 +31,9 @@ const { t } = useI18n()
 const projects = useProjectsStore()
 
 // ==================== ProjectInfo ====================
-const projectPathInputValidated = ref(false)
-const projectNameInputValidated = ref(false)
-const repositoryFolderName = ref('')
+const projectPathInputValidated = ref<boolean>(false)
+const projectNameInputValidated = ref<boolean>(false)
+const repositoryFolderName = ref<string>('')
 const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
 
 function fillProjectName() {
@@ -275,7 +275,7 @@ function addNewProject() {
     ...localProjectItem.value,
     ...getDynamicFields(),
     appendTime: Date.now(), // 添加创建时间
-  } as LocalProject)
+  } as LocalProject, true)
 
   // 返回主页
   changeHomeView()

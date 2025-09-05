@@ -1,22 +1,36 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('api', {
-  setWindowTheme: (currentTheme: 'light' | 'dark') => ipcRenderer.invoke('set-theme', currentTheme),
-  openFolderDialog: () => ipcRenderer.invoke('open-folder-dialog'),
-  openFileDialog: (fileTypes: { name: string, extensions: string[] }[] = []) => ipcRenderer.invoke('open-file-dialog', fileTypes),
-  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
-  formatPath: (filePath: string) => ipcRenderer.invoke('format-path', filePath),
-  analyzeFolder: (folderPath: string) => ipcRenderer.invoke('analyze-folder', folderPath),
-  checkPathExistence: (path: string) => ipcRenderer.invoke('check-path-existence', path),
-  saveProjectData: (data: string) => ipcRenderer.invoke('save-project-data', data),
-  loadProjectData: () => ipcRenderer.invoke('load-project-data'),
-  saveSettingsData: (data: string) => ipcRenderer.invoke('save-settings-data', data),
-  loadSettingsData: () => ipcRenderer.invoke('load-settings-data'),
-  openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('open-project', idePath, projectPath),
-  openInExplorer: (path: string) => ipcRenderer.invoke('open-in-explorer', path),
-  openInTerminal: (path: string) => ipcRenderer.invoke('open-in-terminal', path),
-  deleteProject: (projectPath: string) => ipcRenderer.invoke('delete-project', projectPath),
-  importData: () => ipcRenderer.invoke('import-data'),
-  exportData: () => ipcRenderer.invoke('export-data'),
-  openSettingsJSON: () => ipcRenderer.invoke('open-settings-json'),
+  // dialog
+  openFolderDialog: () => ipcRenderer.invoke('dialog:open-folder'),
+  openFileDialog: (fileTypes: { name: string, extensions: string[] }[] = []) => ipcRenderer.invoke('dialog:open-file', fileTypes),
+
+  // folder
+  getFolderList: (folderPath: string) => ipcRenderer.invoke('folder:get-list', folderPath),
+
+  // path
+  formatPath: (filePath: string) => ipcRenderer.invoke('path:format', filePath),
+  checkPathExistence: (path: string) => ipcRenderer.invoke('path:check-existence', path),
+
+  // project
+  analyzeProject: (folderPath: string) => ipcRenderer.invoke('project:analyze', folderPath),
+  saveProjectData: (data: string) => ipcRenderer.invoke('project:save-data', data),
+  loadProjectData: () => ipcRenderer.invoke('project:load-data'),
+  openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('project:open', idePath, projectPath),
+  deleteProject: (projectPath: string) => ipcRenderer.invoke('project:delete', projectPath),
+  importProject: () => ipcRenderer.invoke('project:import'),
+  exportProject: () => ipcRenderer.invoke('project:export'),
+
+  // settings
+  saveSettingsData: (data: string) => ipcRenderer.invoke('settings:save', data),
+  loadSettingsData: () => ipcRenderer.invoke('settings:load'),
+  openSettingsJSON: () => ipcRenderer.invoke('settings:open-json'),
+
+  // system
+  openExternal: (url: string) => ipcRenderer.invoke('external:open', url),
+  openInExplorer: (path: string) => ipcRenderer.invoke('explorer:open', path),
+  openInTerminal: (path: string) => ipcRenderer.invoke('terminal:open', path),
+
+  // theme
+  setWindowTheme: (currentTheme: 'light' | 'dark') => ipcRenderer.invoke('theme:set', currentTheme),
 })

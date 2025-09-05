@@ -32,7 +32,7 @@ export interface LocalProject {
   // 所属组
   group: string
 
-  // 项目的类型，例如 Web、Mobile 等（使用枚举 ProjectKind 表示）
+  // 项目的类型，例如 MINE、FORK 等（使用枚举 ProjectKind 表示）
   kind: ProjectKind
   // （可选）项目来源的 URL
   fromUrl?: string

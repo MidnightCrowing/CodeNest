@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { LanguageEnum, ThemeEnum } from '~/constants/appEnums'
-import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { codeEditors } from '~/constants/codeEditor'
+import { CodeEditorEnum, codeEditors } from '~/constants/codeEditor'
 
 export const useSettingsStore = defineStore('settings', () => {
   // --- 配置项 ---
@@ -11,6 +10,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const codeEditorsPath = reactive<Record<CodeEditorEnum, string>>(
     Object.fromEntries(Object.keys(codeEditors).map(key => [key, ''])) as Record<CodeEditorEnum, string>,
   )
+  const projectScannerRoots = ref<string[]>([])
+  const projectScannerOpenMode = ref<'auto' | 'specified'>('auto')
+  const projectScannerEditor = ref<CodeEditorEnum>(CodeEditorEnum.VisualStudioCode)
+  const projectScannerNamePattern = ref<string>('(demo|test)')
 
   // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
@@ -21,6 +24,12 @@ export const useSettingsStore = defineStore('settings', () => {
 
         theme.value = loadedData.theme ?? theme.value
         language.value = loadedData.language ?? language.value
+        projectScannerRoots.value = Array.isArray(loadedData.projectScannerRoots)
+          ? loadedData.projectScannerRoots
+          : []
+        projectScannerOpenMode.value = loadedData.projectScannerOpenMode ?? projectScannerOpenMode.value
+        projectScannerEditor.value = loadedData.projectScannerEditor ?? projectScannerEditor.value
+        projectScannerNamePattern.value = loadedData.projectScannerNamePattern ?? projectScannerNamePattern.value
 
         if (loadedData.codeEditorsPath) {
           for (const editor of Object.keys(codeEditorsPath) as CodeEditorEnum[]) {
@@ -41,6 +50,10 @@ export const useSettingsStore = defineStore('settings', () => {
         theme: theme.value,
         language: language.value,
         codeEditorsPath,
+        projectScannerRoots: projectScannerRoots.value,
+        projectScannerOpenMode: projectScannerOpenMode.value,
+        projectScannerEditor: projectScannerEditor.value,
+        projectScannerNamePattern: projectScannerNamePattern.value,
       })
       await window.api.saveSettingsData(dataToSave)
     }
@@ -53,6 +66,10 @@ export const useSettingsStore = defineStore('settings', () => {
     theme,
     language,
     codeEditorsPath,
+    projectScannerRoots,
+    projectScannerOpenMode,
+    projectScannerEditor,
+    projectScannerNamePattern,
     loadSettings,
     saveSettings,
   }

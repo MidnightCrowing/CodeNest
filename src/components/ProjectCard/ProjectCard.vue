@@ -83,12 +83,12 @@ function getDeleteLabel() {
 
 const projectActions = computed<JeMenuOptionProps[]>(() => [
   {
-    value: 'open-in-explorer',
+    value: 'explorer:open',
     label: t('project_card.open_in_explorer'),
     onClick: () => window.api.openInExplorer(projectPath.value),
   },
   {
-    value: 'open-in-terminal',
+    value: 'terminal:open',
     label: t('project_card.open_in_terminal'),
     icon: 'light:i-jet:terminal dark:i-jet:terminal-dark',
     onClick: () => window.api.openInTerminal(projectPath.value),

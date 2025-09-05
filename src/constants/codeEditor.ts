@@ -154,12 +154,14 @@ export const languageToEditorMap: Record<string, CodeEditorEnum> = {
   'css': CodeEditorEnum.WebStorm,
   'html': CodeEditorEnum.WebStorm,
   'javascript': CodeEditorEnum.WebStorm,
+  'jsx': CodeEditorEnum.WebStorm,
   'less': CodeEditorEnum.WebStorm,
   'react': CodeEditorEnum.WebStorm,
   'sass': CodeEditorEnum.WebStorm,
   'scss': CodeEditorEnum.WebStorm,
   'stylus': CodeEditorEnum.WebStorm,
   'typescript': CodeEditorEnum.WebStorm,
+  'tsx': CodeEditorEnum.WebStorm,
   'vue': CodeEditorEnum.WebStorm,
 
   // RubyMine

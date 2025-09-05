@@ -1,0 +1,7 @@
+import './theme'
+import './dialog'
+import './folder'
+import './path'
+import './project'
+import './settings'
+import './system'

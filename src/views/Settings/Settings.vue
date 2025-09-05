@@ -7,6 +7,7 @@ import { useSettingsStore } from '~/stores/settings'
 
 import AboutPage from './pages/About.vue'
 import AppearancePage from './pages/Appearance.vue'
+import AutoProjectScanner from './pages/AutoProjectScanner.vue'
 import IdesPage from './pages/Ides.vue'
 import { activatedPage } from './SettingsProvider'
 
@@ -18,15 +19,17 @@ const settings = useSettingsStore()
 const { t } = useI18n()
 
 // ==================== Side Menu ====================
-const menuItems = computed(() => [
+const menuItems: ComputedRef<{ value: SettingPageEnum, label: string }[]> = computed(() => [
   { value: SettingPageEnum.Appearance, label: t('settings.appearance.title') },
   { value: SettingPageEnum.Ides, label: t('settings.ides_path.title') },
+  { value: SettingPageEnum.AutoScan, label: t('settings.auto_scan.title') },
   { value: SettingPageEnum.About, label: t('settings.about.title') },
 ])
 
 const PageComponents: Record<SettingPageEnum, Component> = {
   [SettingPageEnum.Appearance]: AppearancePage,
   [SettingPageEnum.Ides]: IdesPage,
+  [SettingPageEnum.AutoScan]: AutoProjectScanner,
   [SettingPageEnum.About]: AboutPage,
 }
 
@@ -34,7 +37,7 @@ function updateActivatedPage(page: SettingPageEnum) {
   activatedPage.value = page
 }
 
-const searchValue = ref('')
+const searchValue = ref<string>('')
 
 // ==================== Bottom Menu ====================
 const activatedView = inject('activatedView') as Ref<ViewEnum>
