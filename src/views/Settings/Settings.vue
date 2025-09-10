@@ -94,7 +94,9 @@ onUnmounted(() => {
             :class="{ active: activatedPage === item.value }"
             :tabindex="0"
             b="solid x-0 y-2px transparent" p="x-20px y-6px"
-            focus-visible:b="light:$blue-4 dark:$blue-6" focus-visible:outline-0
+            focus-visible:b="light:$blue-4 dark:$blue-6"
+            focus-visible:bg="light:$blue-12 dark:$blue-1"
+            focus-visible:outline-0
             @click="updateActivatedPage(item.value)"
             @keydown.enter="updateActivatedPage(item.value)"
           >
