@@ -44,6 +44,17 @@ export const useProjectsStore = defineStore('projects', () => {
     }))
   })
 
+  // 所有组别
+  const allGroups = computed(() => {
+    const groupSet = new Set<string>()
+    for (const project of projects.value) {
+      if (project.group && project.group.trim() !== '') {
+        groupSet.add(project.group)
+      }
+    }
+    return Array.from(groupSet).sort((a, b) => a.localeCompare(b))
+  })
+
   // -------------------------
   // Actions
   // -------------------------
@@ -169,6 +180,7 @@ export const useProjectsStore = defineStore('projects', () => {
     allProjects,
     tempProjects,
     mainLangSummary,
+    allGroups,
 
     // actions
     addProject,

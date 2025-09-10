@@ -35,6 +35,7 @@ const projectPathInputValidated = ref<boolean>(false)
 const projectNameInputValidated = ref<boolean>(false)
 const repositoryFolderName = ref<string>('')
 const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
+const groupOptions = ref<JeComboboxOptionProps[]>(projects.allGroups.map(group => ({ label: group, value: group })))
 
 function fillProjectName() {
   localProjectItem.value.name = repositoryFolderName.value
@@ -358,7 +359,7 @@ function updateProject() {
         <div flex="~ row items-center" gap="10px">
           <JeCombobox
             v-model="localProjectItem.group"
-            :options="mainLanguageOptions"
+            :options="groupOptions"
             :spellcheck="false"
             w="200px"
           />
