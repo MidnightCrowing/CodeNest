@@ -3,8 +3,9 @@ import { languageToEditorMap } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
-import { useProjectsStore } from '~/stores/projects'
-import { useSettingsStore } from '~/stores/settings'
+import { useProjectScannerStore } from '~/stores/projectScannerStore'
+import { useProjectsStore } from '~/stores/projectsStore'
+import { useSettingsStore } from '~/stores/settingsStore'
 
 function toRegExp(pattern: string): RegExp | null {
   try {
@@ -26,12 +27,25 @@ function toRegExp(pattern: string): RegExp | null {
  * 获取新增的项目目录列表
  * @returns 新增的项目目录数组
  */
-export async function getNewProjectRoots(): Promise<string[]> {
+export async function getNewProjectRoots(): Promise<Set<string>> {
   const projects = useProjectsStore()
+  if (projects.allProjects.length === 0) {
+    // 如果当前项目列表为空，则不扫描新增项目，避免误添加过多项目
+    return new Set<string>()
+  }
+
+  const projectScanner = useProjectScannerStore()
   const settings = useSettingsStore()
 
-  const existingPaths = new Set(projects.allProjects.map(project => project.path))
-  const newProjectRoots: string[] = []
+  await projectScanner.loadProjectScannerData()
+
+  // 将现有项目路径加入已扫描列表，避免重复扫描
+  projects.allProjects.forEach((project) => {
+    projectScanner.addScannedPath(project.path)
+  })
+
+  const existingPaths = projectScanner.allHistoryScannedPaths
+  const newProjectRoots = new Set<string>()
 
   for (const root of settings.projectScannerRoots) {
     const { folders, error } = await window.api.getFolderList(root)
@@ -42,10 +56,13 @@ export async function getNewProjectRoots(): Promise<string[]> {
 
     folders.forEach((fullPath) => {
       if (!existingPaths.has(fullPath)) {
-        newProjectRoots.push(fullPath)
+        newProjectRoots.add(fullPath)
+        projectScanner.addScannedPath(fullPath)
       }
     })
   }
+
+  await projectScanner.saveProjectScannerData()
 
   return newProjectRoots
 }
@@ -85,6 +102,7 @@ export async function addNewProjects() {
       langGroup,
       defaultOpen,
       isTemporary,
+      isExists: true,
     }
 
     await projects.addProject(newProject, false)

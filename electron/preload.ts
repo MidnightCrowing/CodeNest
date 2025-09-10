@@ -14,17 +14,18 @@ contextBridge.exposeInMainWorld('api', {
 
   // project
   analyzeProject: (folderPath: string) => ipcRenderer.invoke('project:analyze', folderPath),
-  saveProjectData: (data: string) => ipcRenderer.invoke('project:save-data', data),
-  loadProjectData: () => ipcRenderer.invoke('project:load-data'),
   openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('project:open', idePath, projectPath),
   deleteProject: (projectPath: string) => ipcRenderer.invoke('project:delete', projectPath),
   importProject: () => ipcRenderer.invoke('project:import'),
   exportProject: () => ipcRenderer.invoke('project:export'),
 
   // settings
-  saveSettingsData: (data: string) => ipcRenderer.invoke('settings:save', data),
-  loadSettingsData: () => ipcRenderer.invoke('settings:load'),
   openSettingsJSON: () => ipcRenderer.invoke('settings:open-json'),
+
+  // data
+  saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => ipcRenderer.invoke('data:save', fileType, data),
+  loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => ipcRenderer.invoke('data:load', fileType),
+  deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => ipcRenderer.invoke('data:delete', fileType),
 
   // system
   openExternal: (url: string) => ipcRenderer.invoke('external:open', url),

@@ -18,7 +18,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
     try {
-      const result = await window.api.loadSettingsData()
+      const result = await window.api.loadData('settings')
       if (result.success && result.data) {
         const loadedData = JSON.parse(result.data)
 
@@ -55,7 +55,7 @@ export const useSettingsStore = defineStore('settings', () => {
         projectScannerEditor: projectScannerEditor.value,
         projectScannerNamePattern: projectScannerNamePattern.value,
       })
-      await window.api.saveSettingsData(dataToSave)
+      await window.api.saveData('settings', dataToSave)
     }
     catch (error: any) {
       console.error('Error saving settings data:', error)

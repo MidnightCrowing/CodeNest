@@ -17,17 +17,18 @@ declare global {
 
       // project
       analyzeProject: (folderPath: string) => Promise<LinguistResult | { error: string }>
-      saveProjectData: (data: string) => Promise<{ success: boolean, error?: string }>
-      loadProjectData: () => Promise<{ success: boolean, data?: string, error?: string }>
       openProject: (idePath: string, projectPath: string) => Promise<string>
       deleteProject: (projectPath: string) => Promise<boolean>
       importProject: () => Promise<boolean>
       exportProject: () => Promise<boolean>
 
       // settings
-      saveSettingsData: (data: string) => Promise<{ success: boolean, error?: string }>
-      loadSettingsData: () => Promise<{ success: boolean, data?: string, error?: string }>
       openSettingsJSON: () => Promise<boolean>
+
+      // data
+      saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => Promise<{ success: boolean, error?: string }>
+      loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{ success: boolean, data?: string, error?: string }>
+      deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{ success: boolean, error?: string }>
 
       // system
       openExternal: (url: string) => void

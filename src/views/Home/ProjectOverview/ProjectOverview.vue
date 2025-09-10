@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 
 import { LicensePop, mainLangPop, ProjectCard } from '~/components/ProjectCard'
 import type { ProjectKind } from '~/constants/localProject'
-import { useProjectsStore } from '~/stores/projects'
+import { useProjectsStore } from '~/stores/projectsStore'
 
 import type { SidePanelActive } from '../types'
 import ProjectOverviewHeader from './ProjectOverviewHeader.vue'

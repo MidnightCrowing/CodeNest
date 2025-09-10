@@ -4,8 +4,8 @@ import './styles/transitionAndTransitionGroup.scss'
 
 import { createPinia } from 'pinia'
 
+import App from './App.vue'
 import { i18n } from './utils/i18n'
-import App from './views/App.vue'
 
 const app = createApp(App)
 const pinia = createPinia()

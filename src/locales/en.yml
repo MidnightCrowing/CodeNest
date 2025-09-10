@@ -155,6 +155,11 @@ settings:
     auto_select_program: Automatically select program based on language
     always_use_custom_program: Always use the specified program
     temp_project_name_rule: Temporary Project Name Rule
+    clear_history: Clear Scan History
+    clear_history_desc: This will delete all scanned project records.
+    clear_history_warning: 'Warning: After deletion, the program will re-scan all project folders on next startup, which may cause a short freeze. Please proceed with caution.'
+    confirm: Yes
+    cancel: No
   about:
     title: About
     version: Version

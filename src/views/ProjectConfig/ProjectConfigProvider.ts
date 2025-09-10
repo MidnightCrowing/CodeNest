@@ -23,6 +23,7 @@ const defaultLocalProjectState: Readonly<NullableLocalProject> = {
   defaultOpen: null,
   license: LicenseEnum.NONE,
   isTemporary: false,
+  isExists: true,
 }
 
 export const localProjectItem: Ref<NullableLocalProject> = ref({ ...defaultLocalProjectState }) // 创建副本

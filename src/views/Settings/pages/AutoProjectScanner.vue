@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { JeDropdownOptionProps } from 'jetv-ui'
-import { JeFrame, JeInputField, JeLine, JeRadio, JeToolbarDropdown, JeTransparentButton } from 'jetv-ui'
+import { JeButton, JeFrame, JeInputField, JeLine, JePopup, JeRadio, JeSlimButton, JeToolbarDropdown, JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { codeEditors } from '~/constants/codeEditor'
-import { useSettingsStore } from '~/stores/settings'
+import { useSettingsStore } from '~/stores/settingsStore'
 
 const settings = useSettingsStore()
 const { t } = useI18n()
@@ -15,6 +15,8 @@ const editorOptions: JeDropdownOptionProps[] = Object.entries(codeEditors).map((
   value,
   label: editor.label,
 }))
+
+const showDialog = ref<boolean>(false)
 
 async function openFolder() {
   const selectedPaths = await window.api.openFolderDialog()
@@ -28,6 +30,11 @@ function removeRoot(root: string) {
   if (index !== -1) {
     projectRoots.value.splice(index, 1)
   }
+}
+
+function deleteScanData() {
+  window.api.deleteData('projectScanner')
+  showDialog.value = false
 }
 
 watch(defaultOpenMode, (newValue) => {
@@ -64,7 +71,7 @@ watch(defaultOpenMode, (newValue) => {
       type="secondary"
       grow flex="~ col"
       b="solid 1px light:$gray-12 dark:$gray-3"
-      max-h="300px" overflow-auto
+      min-h="200px" max-h="300px" overflow-auto
     >
       <div
         v-for="root in projectRoots" :key="root"
@@ -126,5 +133,34 @@ watch(defaultOpenMode, (newValue) => {
 
       <JeInputField v-model="settings.projectScannerNamePattern" spellcheck="false" w="300px" />
     </div>
+
+    <div m="t-10px" flex="~ row items-center" gap="10px">
+      <JeSlimButton type="alt" @click="showDialog = true">
+        {{ t('settings.auto_scan.clear_history') }}
+      </JeSlimButton>
+    </div>
+  </div>
+
+  <div
+    v-if="showDialog"
+    pos="fixed top-40px bottom-0 left-0 right-0"
+    flex="~ items-center justify-center"
+    bg="light:black/30 dark:black/50"
+  >
+    <JePopup p="20px" rounded="8px" w="400px">
+      <h3>{{ t('settings.auto_scan.clear_history') }}</h3>
+      <p>{{ t('settings.auto_scan.clear_history_desc') }}</p>
+      <p color="light:$red-4 dark:$red-6">
+        {{ t('settings.auto_scan.clear_history_warning') }}
+      </p>
+      <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
+        <JeButton order-2 @click="deleteScanData">
+          {{ t('settings.auto_scan.confirm') }}
+        </JeButton>
+        <JeButton type="secondary" order-1 @click="showDialog = false">
+          {{ t('settings.auto_scan.cancel') }}
+        </JeButton>
+      </div>
+    </JePopup>
   </div>
 </template>

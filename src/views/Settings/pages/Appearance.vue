@@ -3,7 +3,7 @@ import { JeCard, JeDropdown } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { LanguageEnum, ThemeEnum } from '~/constants/appEnums'
-import { useSettingsStore } from '~/stores/settings'
+import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
 
 const settings = useSettingsStore()

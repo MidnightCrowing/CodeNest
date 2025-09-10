@@ -27,43 +27,6 @@ ipcMain.handle('project:analyze', async (_, folderPath): Promise<LinguistResult 
   }
 })
 
-// 保存数据到本地
-ipcMain.handle('project:save-data', async (_, data: string): Promise<{ success: boolean, error?: string }> => {
-  try {
-    await fs.ensureFile(projectsFilePath) // 确保文件存在
-    await fs.writeJSON(projectsFilePath, JSON.parse(data), { spaces: 2 })
-    return { success: true }
-  }
-  catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error saving project data:', error.message)
-      return { success: false, error: error.message }
-    }
-    else {
-      console.error('Unknown error:', error)
-      return { success: false, error: 'Unknown error occurred' }
-    }
-  }
-})
-
-// 从本地读取数据
-ipcMain.handle('project:load-data', async (): Promise<{ success: boolean, data?: string, error?: string }> => {
-  try {
-    const data = await fs.readJSON(projectsFilePath)
-    return { success: true, data: JSON.stringify(data) }
-  }
-  catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error loading project data:', error.message)
-      return { success: false, error: error.message }
-    }
-    else {
-      console.error('Unknown error:', error)
-      return { success: false, error: 'Unknown error occurred' }
-    }
-  }
-})
-
 // 使用IDE打开项目
 ipcMain.handle('project:open', async (_, idePath: string, projectPath: string): Promise<string> => {
   if (!idePath || !projectPath) {

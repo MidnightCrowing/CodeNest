@@ -20,7 +20,7 @@ import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
-import { useProjectsStore } from '~/stores/projects'
+import { useProjectsStore } from '~/stores/projectsStore'
 
 import ConfigItem from './components/common/ConfigItem.vue'
 import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
@@ -300,19 +300,6 @@ function updateProject() {
   // 返回主页
   changeHomeView()
 }
-
-onMounted(() => {
-  const escHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      changeHomeView()
-    }
-  }
-  window.addEventListener('keydown', escHandler)
-  // 组件卸载时移除
-  onUnmounted(() => {
-    window.removeEventListener('keydown', escHandler)
-  })
-})
 </script>
 
 <template>

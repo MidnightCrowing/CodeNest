@@ -7,12 +7,12 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
-import { addNewProjects } from '~/services/projectScanner'
-import { useProjectsStore } from '~/stores/projects'
-import { useSettingsStore } from '~/stores/settings'
+import { addNewProjects } from '~/services/projectScannerService'
+import { useProjectsStore } from '~/stores/projectsStore'
+import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
 
-import Home from './Home/Home.vue'
+import Home from './views/Home/Home.vue'
 
 const projects = useProjectsStore()
 const settings = useSettingsStore()
@@ -21,8 +21,8 @@ const { locale } = useI18n()
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Home]: Home,
-  [ViewEnum.NewProject]: defineAsyncComponent(() => import('./ProjectConfig/ProjectConfig.vue')),
-  [ViewEnum.Settings]: defineAsyncComponent(() => import('./Settings/Settings.vue')),
+  [ViewEnum.NewProject]: defineAsyncComponent(() => import('./views/ProjectConfig/ProjectConfig.vue')),
+  [ViewEnum.Settings]: defineAsyncComponent(() => import('./views/Settings/Settings.vue')),
 }
 
 async function applyLanguage(lang: LanguageEnum) {
@@ -31,6 +31,7 @@ async function applyLanguage(lang: LanguageEnum) {
 
 onMounted(async () => {
   await Promise.all([
+    // settings
     (async () => {
       await settings.loadSettings()
       await Promise.all([
@@ -38,6 +39,8 @@ onMounted(async () => {
         applyLanguage(settings.language),
       ])
     })(),
+
+    // projects
     (async () => {
       await projects.loadProjects()
       requestAnimationFrame(() => {

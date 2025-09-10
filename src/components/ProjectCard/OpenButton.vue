@@ -2,7 +2,7 @@
 import { showNoIdePathDialog } from '~/components/NoIdePathDialog/NoIdePathDialogProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
-import { useSettingsStore } from '~/stores/settings'
+import { useSettingsStore } from '~/stores/settingsStore'
 
 defineProps<{
   defaultOpen: CodeEditorEnum

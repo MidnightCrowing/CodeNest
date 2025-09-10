@@ -73,7 +73,7 @@ onMounted(async () => {
 
 // ==================== More Button ====================
 function getDeleteLabel() {
-  if (projectExists?.value === false) {
+  if (!projectExists.value) {
     return t('project_card.remove')
   }
   return projectIsTemporary?.value === true

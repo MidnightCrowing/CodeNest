@@ -3,12 +3,8 @@ import { JeButton, JeFrame, JeSearchField, JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
-import { useSettingsStore } from '~/stores/settings'
+import { useSettingsStore } from '~/stores/settingsStore'
 
-import AboutPage from './pages/About.vue'
-import AppearancePage from './pages/Appearance.vue'
-import AutoProjectScanner from './pages/AutoProjectScanner.vue'
-import IdesPage from './pages/Ides.vue'
 import { activatedPage } from './SettingsProvider'
 
 defineOptions({
@@ -27,10 +23,10 @@ const menuItems: ComputedRef<{ value: SettingPageEnum, label: string }[]> = comp
 ])
 
 const PageComponents: Record<SettingPageEnum, Component> = {
-  [SettingPageEnum.Appearance]: AppearancePage,
-  [SettingPageEnum.Ides]: IdesPage,
-  [SettingPageEnum.AutoScan]: AutoProjectScanner,
-  [SettingPageEnum.About]: AboutPage,
+  [SettingPageEnum.Appearance]: defineAsyncComponent(() => import('./pages/Appearance.vue')),
+  [SettingPageEnum.Ides]: defineAsyncComponent(() => import('./pages/Ides.vue')),
+  [SettingPageEnum.AutoScan]: defineAsyncComponent(() => import('./pages/AutoProjectScanner.vue')),
+  [SettingPageEnum.About]: defineAsyncComponent(() => import('./pages/About.vue')),
 }
 
 function updateActivatedPage(page: SettingPageEnum) {
@@ -65,17 +61,6 @@ function changeHomeView() {
 
 onMounted(async () => {
   await settings.loadSettings()
-
-  const escHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      changeHomeView()
-    }
-  }
-  window.addEventListener('keydown', escHandler)
-  // 组件卸载时移除
-  onUnmounted(() => {
-    window.removeEventListener('keydown', escHandler)
-  })
 })
 
 onUnmounted(() => {

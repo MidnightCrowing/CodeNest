@@ -147,6 +147,11 @@ settings:
     auto_select_program: 根据语言自动选择程序
     always_use_custom_program: 始终使用指定程序
     temp_project_name_rule: 临时项目名称规则
+    clear_history: 清除扫描记录
+    clear_history_desc: 这将删除所有已扫描的项目记录。
+    clear_history_warning: 警告：删除后，程序将在下次启动时重新检查所有项目文件夹，可能会导致程序短暂卡顿，请谨慎操作。
+    confirm: 是
+    cancel: 否
   about:
     title: 关于
     version: 版本

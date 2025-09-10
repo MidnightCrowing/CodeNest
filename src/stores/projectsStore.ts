@@ -51,7 +51,7 @@ export const useProjectsStore = defineStore('projects', () => {
   // 添加项目到列表头部
   async function addProject(newProject: LocalProject, save?: boolean) {
     projects.value.unshift(newProject)
-    await checkProjectExistence(newProject)
+    newProject.isExists = await checkProjectExistence(newProject)
     if (save) {
       await saveProjects()
     }
@@ -80,7 +80,9 @@ export const useProjectsStore = defineStore('projects', () => {
 
     Object.assign(projects.value[index], updatedProject)
 
-    await checkProjectExistence(projects.value[index])
+    const project = projects.value[index]
+    project.isExists = await checkProjectExistence(project)
+
     await saveProjects()
     return true
   }
@@ -115,7 +117,7 @@ export const useProjectsStore = defineStore('projects', () => {
           return undefined
         return value
       })
-      await window.api.saveProjectData(dataToSave)
+      await window.api.saveData('projects', dataToSave)
     }
     catch (error) {
       console.error('Error saving project data:', error)
@@ -125,17 +127,17 @@ export const useProjectsStore = defineStore('projects', () => {
   // 从本地加载项目
   async function loadProjects() {
     try {
-      const result = await window.api.loadProjectData()
+      const result = await window.api.loadData('projects')
       if (result.success && result.data) {
         const loadedProjects: LocalProject[] = JSON.parse(result.data)
 
-        projects.value.splice(0, projects.value.length, ...loadedProjects)
-
-        for (const project of projects.value) {
+        for (const project of loadedProjects) {
           project.group = project.group || ''
           project.isTemporary = !!project.isTemporary
-          checkProjectExistence(project)
+          project.isExists = await checkProjectExistence(project)
         }
+
+        projects.value.splice(0, projects.value.length, ...loadedProjects)
       }
     }
     catch (error) {
@@ -151,9 +153,8 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // 检查单个项目是否存在
-  async function checkProjectExistence(project: LocalProject) {
+  async function checkProjectExistence(project: LocalProject): Promise<boolean> {
     const { exists } = await window.api.checkPathExistence(project.path)
-    project.isExists = exists
     return exists
   }
 

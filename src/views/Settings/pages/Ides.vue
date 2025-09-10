@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import SettingPathCard from '~/components/SettingPathCard.vue'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
-import { useSettingsStore } from '~/stores/settings'
+import { useSettingsStore } from '~/stores/settingsStore'
 
 const settings = useSettingsStore()
 const { t } = useI18n()

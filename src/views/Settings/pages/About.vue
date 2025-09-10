@@ -2,7 +2,7 @@
 import { JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { useProjectsStore } from '~/stores/projects'
+import { useProjectsStore } from '~/stores/projectsStore'
 
 import { version } from '../../../../package.json'
 
