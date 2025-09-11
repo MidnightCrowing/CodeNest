@@ -66,6 +66,9 @@ license:
     description_url: https://choosealicense.com/licenses/ms-pl/
   ms_rl:
     description_url: https://choosealicense.com/licenses/ms-rl/
+language_pop:
+  analyze_failed: Failed to get analysis result
+  overall_label: Languages used in this project
 license_pop:
   permissions: Permissions
   limitations: Limitations
@@ -176,3 +179,10 @@ settings:
   open_json_file: Open JSON file
   save: Save
   cancel: Cancel
+status:
+  project_scanner:
+    scanning: Scanning projects
+    found_one: Found 1 new project
+    found_many: Found {count} new projects
+    done: Scan completed
+    error: Scan failed

@@ -3,6 +3,7 @@ import { JeFrame, JeLine, JeTransparentToolButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import SideMenuButton from '~/components/SideMenuButton.vue'
+import StateBar from '~/components/StateBar/StateBar.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import { ProjectKind } from '~/constants/localProject'
 import { useProjectsStore } from '~/stores/projectsStore'
@@ -140,7 +141,7 @@ function changeSettingsView() {
       </template>
     </JeFrame>
 
-    <div p="4px t-2px">
+    <div flex="~ row items-center justify-between" p="4px t-2px">
       <JeTransparentToolButton
         p="6px"
         icon="light:i-jet:settings dark:i-jet:settings-dark"
@@ -148,6 +149,8 @@ function changeSettingsView() {
         @click="changeSettingsView"
         @keydown.enter="changeSettingsView"
       />
+
+      <StateBar />
     </div>
   </JeFrame>
 </template>

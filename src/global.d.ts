@@ -26,9 +26,19 @@ declare global {
       openSettingsJSON: () => Promise<boolean>
 
       // data
-      saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => Promise<{ success: boolean, error?: string }>
-      loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{ success: boolean, data?: string, error?: string }>
-      deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{ success: boolean, error?: string }>
+      saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => Promise<{
+        success: boolean
+        error?: string
+      }>
+      loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{
+        success: boolean
+        data?: string
+        error?: string
+      }>
+      deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{
+        success: boolean
+        error?: string
+      }>
 
       // system
       openExternal: (url: string) => void
@@ -46,6 +56,33 @@ declare global {
         publishedAt?: string
         error?: string
       }>
+
+      // scanner (batch)
+      scanProjects: (payload: { roots: string[], existingPaths: string[] }) => Promise<Array<{
+        path: string
+        name: string
+        mainLang?: string
+        mainLangColor?: `#${string}`
+        langGroup?: Array<{ text: string, color: `#${string}`, percentage: number }>
+        error?: string
+      }>>
+
+      // scanner (stream)
+      startProjectScan: (payload: { roots: string[], existingPaths: string[] }) => Promise<{ sessionId: number }>
+      stopProjectScan: (sessionId: number) => Promise<{ stopped: boolean }>
+      onScannerItem: (cb: (data: {
+        sessionId: number
+        item: {
+          path: string
+          name: string
+          mainLang?: string
+          mainLangColor?: `#${string}`
+          langGroup?: Array<{ text: string, color: `#${string}`, percentage: number }>
+          error?: string
+        }
+      }) => void) => () => void
+      onScannerDone: (cb: (data: { sessionId: number }) => void) => () => void
+      onScannerError: (cb: (data: { sessionId: number, error: string }) => void) => () => void
 
       // theme
       setWindowTheme: (currentTheme: ThemeEnum) => void

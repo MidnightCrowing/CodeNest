@@ -18,26 +18,26 @@ import OpenButton from './OpenButton.vue'
 const props = defineProps<{
   projectItem: LocalProject
 }>()
-const {
-  appendTime: projectAppendTime,
-  path: projectPath,
-  name: projectName,
-  group: projectGroup,
-  kind: projectKind,
-  fromUrl: projectFromUrl,
-  fromName: projectFromName,
-  langGroup: projectLangGroup,
-  defaultOpen: projectDefaultOpen,
-  license: projectLicense,
-  isTemporary: projectIsTemporary,
-  isExists: projectExists,
-} = toRefs(props.projectItem)
+const projectItem = toRef(props, 'projectItem')
+
+const projectAppendTime = computed(() => projectItem.value.appendTime)
+const projectPath = computed(() => projectItem.value.path)
+const projectName = computed(() => projectItem.value.name)
+const projectGroup = computed(() => projectItem.value.group)
+const projectKind = computed(() => projectItem.value.kind)
+const projectFromUrl = computed(() => projectItem.value.fromUrl)
+const projectFromName = computed(() => projectItem.value.fromName)
+const projectLangGroup = computed(() => projectItem.value.langGroup)
+const projectDefaultOpen = computed(() => projectItem.value.defaultOpen)
+const projectLicense = computed(() => projectItem.value.license)
+const projectIsTemporary = computed(() => projectItem.value.isTemporary)
+const projectExists = computed(() => projectItem.value.isExists)
 
 const { t } = useI18n()
 
 const projectCard = ref<HTMLDivElement | null>(null)
 const projectCardActive = ref(false)
-const langGroup = ref(projectLangGroup)
+const langGroup = ref(projectLangGroup.value)
 
 const formattedPath = ref('')
 
@@ -142,7 +142,7 @@ function showMenu() {
     @dragstart="handleDragStart"
   >
     <div
-      :class=" { 'opacity-30': projectExists === false }"
+      :class=" { 'opacity-30': !projectExists }"
       flex="~ col justify-between" gap="8px"
       overflow-x-hidden
     >
@@ -205,7 +205,7 @@ function showMenu() {
 
     <div flex="~ row items-center" gap="10px">
       <OpenButton
-        v-if="projectExists !== false"
+        v-if="projectExists"
         class="group-hover/item:block"
         :default-open="projectDefaultOpen"
         :project-path="projectPath"

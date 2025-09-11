@@ -35,6 +35,27 @@ contextBridge.exposeInMainWorld('api', {
   // update
   checkUpdate: () => ipcRenderer.invoke('update:check'),
 
+  // scanner (batch)
+  scanProjects: (payload: { roots: string[], existingPaths: string[] }) => ipcRenderer.invoke('scanner:scan', payload),
+  // scanner (stream)
+  startProjectScan: (payload: { roots: string[], existingPaths: string[] }) => ipcRenderer.invoke('scanner:start', payload),
+  stopProjectScan: (sessionId: number) => ipcRenderer.invoke('scanner:stop', sessionId),
+  onScannerItem: (cb: (data: { sessionId: number, item: any }) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on('scanner:item', handler)
+    return () => ipcRenderer.removeListener('scanner:item', handler)
+  },
+  onScannerDone: (cb: (data: { sessionId: number }) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on('scanner:done', handler)
+    return () => ipcRenderer.removeListener('scanner:done', handler)
+  },
+  onScannerError: (cb: (data: { sessionId: number, error: string }) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on('scanner:error', handler)
+    return () => ipcRenderer.removeListener('scanner:error', handler)
+  },
+
   // theme
   setWindowTheme: (currentTheme: 'light' | 'dark') => ipcRenderer.invoke('theme:set', currentTheme),
 })

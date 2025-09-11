@@ -1,20 +1,20 @@
+import { unref } from 'vue'
+
+import { clearState, setState } from '~/components/StateBar/StateBarProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { languageToEditorMap } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { t } from '~/utils/i18n'
 
 function toRegExp(pattern: string): RegExp | null {
   try {
-    // 提取 /.../flags 形式的输入
     const match = pattern.match(/^\/(.*)\/([gimsuy]*)$/)
-    if (match) {
+    if (match)
       return new RegExp(match[1], match[2])
-    }
-    // 如果用户没加 /.../，就直接当正文
     return new RegExp(pattern)
   }
   catch (e) {
@@ -24,67 +24,66 @@ function toRegExp(pattern: string): RegExp | null {
 }
 
 /**
- * 获取新增的项目目录列表
- * @returns 新增的项目目录数组
+ * 在主进程 Worker 中扫描并分析新增项目目录（流式），边扫边加入项目列表
  */
-export async function getNewProjectRoots(): Promise<Set<string>> {
+export async function addNewProjectsInWorker() {
   const projects = useProjectsStore()
-  if (projects.allProjects.length === 0) {
-    // 如果当前项目列表为空，则不扫描新增项目，避免误添加过多项目
-    return new Set<string>()
-  }
-
-  const projectScanner = useProjectScannerStore()
   const settings = useSettingsStore()
+  const scanner = useProjectScannerStore()
 
-  await projectScanner.loadProjectScannerData()
+  await scanner.loadProjectScannerData()
+  await projects.loadProjects()
 
-  // 将现有项目路径加入已扫描列表，避免重复扫描
-  projects.allProjects.forEach((project) => {
-    projectScanner.addScannedPath(project.path)
+  projects.allProjects.forEach(p => scanner.addScannedPath(p.path))
+
+  const roots = Array.isArray(unref(settings.projectScannerRoots))
+    ? [...unref(settings.projectScannerRoots) as string[]]
+    : []
+  const existingPaths = Array.from(unref(scanner.allHistoryScannedPaths))
+
+  // 初始状态：扫描中
+  setState('projectScanner', t('status.project_scanner.scanning'), true)
+
+  // 启动扫描（异步）
+  const { sessionId } = await window.api.startProjectScan({
+    roots,
+    existingPaths,
   })
 
-  const existingPaths = projectScanner.allHistoryScannedPaths
-  const newProjectRoots = new Set<string>()
+  // 先声明，再在 finalize 中使用，避免 no-use-before-define
+  let offItem: (() => void) | null = null
+  let offDone: (() => void) | null = null
+  let offError: (() => void) | null = null
+  let finalized = false
+  let foundCount = 0
 
-  for (const root of settings.projectScannerRoots) {
-    const { folders, error } = await window.api.getFolderList(root)
-    if (error) {
-      console.error(`Error fetching folders for root ${root}:`, error)
-      continue
-    }
-
-    folders.forEach((fullPath) => {
-      if (!existingPaths.has(fullPath)) {
-        newProjectRoots.add(fullPath)
-        projectScanner.addScannedPath(fullPath)
-      }
-    })
+  const finalize = async () => {
+    if (finalized)
+      return
+    finalized = true
+    offItem?.()
+    offDone?.()
+    offError?.()
+    offItem = offDone = offError = null
+    await Promise.all([
+      projects.saveProjects(),
+      scanner.saveProjectScannerData(),
+    ])
+    clearState('projectScanner')
   }
 
-  await projectScanner.saveProjectScannerData()
+  // 订阅事件（逐条写入）
+  offItem = window.api.onScannerItem(async ({ sessionId: sid, item }) => {
+    if (sid !== sessionId)
+      return
 
-  return newProjectRoots
-}
+    const path = item.path as string
+    const name = (item.name as string) || 'Unnamed Project'
 
-/**
- * 获取新增的项目目录并添加到项目列表
- */
-export async function addNewProjects() {
-  const projects = useProjectsStore()
-  const settings = useSettingsStore()
-  const newProjectRoots = await getNewProjectRoots()
+    // 记录扫描历史
+    scanner.addScannedPath(path)
 
-  for (const path of newProjectRoots) {
-    const parts = path.split(/[\\/]/)
-    const name = parts[parts.length - 1] || 'Unnamed Project'
-
-    const analyzer: LanguageAnalyzer = new LanguageAnalyzer(path)
-    const success: boolean = await analyzer.analyze()
-    const mainLang: string = success ? analyzer.mainLang || 'unknown' : 'unknown'
-    const mainLangColor = success ? analyzer.mainLangColor || undefined : undefined
-    const langGroup = success ? analyzer.langGroup || [] : []
-
+    const mainLang = (item.mainLang || 'unknown') as string
     const defaultOpen: CodeEditorEnum = settings.projectScannerOpenMode === 'specified'
       ? settings.projectScannerEditor
       : languageToEditorMap[mainLang.toLowerCase()] || settings.projectScannerEditor
@@ -98,15 +97,39 @@ export async function addNewProjects() {
       group: '',
       kind: ProjectKind.MINE,
       mainLang,
-      mainLangColor,
-      langGroup,
+      mainLangColor: item.mainLangColor,
+      langGroup: item.langGroup || [],
       defaultOpen,
       isTemporary,
       isExists: true,
     }
 
     await projects.addProject(newProject, false)
-  }
 
-  await projects.saveProjects()
+    // 更新“已发现 N 个新项目”
+    foundCount += 1
+    setState(
+      'projectScanner',
+      foundCount === 1
+        ? t('status.project_scanner.found_one')
+        : t('status.project_scanner.found_many', { count: foundCount }),
+      true,
+    )
+  })
+
+  offDone = window.api.onScannerDone(async ({ sessionId: sid }) => {
+    if (sid !== sessionId)
+      return
+    // 完成
+    setState('projectScanner', t('status.project_scanner.done'), false)
+    await finalize()
+  })
+
+  offError = window.api.onScannerError(async ({ sessionId: sid }) => {
+    if (sid !== sessionId)
+      return
+    // 失败
+    setState('projectScanner', t('status.project_scanner.error'), false)
+    await finalize()
+  })
 }

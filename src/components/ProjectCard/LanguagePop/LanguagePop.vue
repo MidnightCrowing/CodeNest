@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 import { JeColorIcon, JeLoader, JeTooltip } from 'jetv-ui'
+import { useI18n } from 'vue-i18n'
 
 // noinspection ES6UnusedImports
 import { getAnalyzeError, languagesGroup, popupVisible, position } from './LanguagePopProvider'
@@ -10,6 +11,8 @@ const popupRef = ref<HTMLElement | null>(null)
 onClickOutside(popupRef, () => {
   popupVisible.value = false
 })
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -22,7 +25,7 @@ onClickOutside(popupRef, () => {
     <template v-if="!languagesGroup">
       <div m="6px">
         <JeLoader v-if="!getAnalyzeError" />
-        <span v-else>无法获取分析结果</span>
+        <span v-else>{{ t('language_pop.analyze_failed') }}</span>
       </div>
     </template>
 
@@ -32,6 +35,7 @@ onClickOutside(popupRef, () => {
           inline-block size-full
           rounded="8px" overflow-hidden
           flex="~ row" gap="0.6px"
+          :aria-label="t('language_pop.overall_label')"
         >
           <span
             v-for="languageItem in languagesGroup"

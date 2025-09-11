@@ -58,6 +58,9 @@ license:
     description_url: https://choosealicense.cc/licenses/ms-pl/
   ms_rl:
     description_url: https://choosealicense.cc/licenses/ms-rl/
+language_pop:
+  analyze_failed: 无法获取分析结果
+  overall_label: 该项目所用语言
 license_pop:
   permissions: 允许
   limitations: 禁止
@@ -168,3 +171,10 @@ settings:
   open_json_file: 打开 JSON 文件
   save: 保存
   cancel: 取消
+status:
+  project_scanner:
+    scanning: 正在扫描项目
+    found_one: 已发现 1 个新项目
+    found_many: 已发现 {count} 个新项目
+    done: 扫描完成
+    error: 扫描失败

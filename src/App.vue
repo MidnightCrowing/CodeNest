@@ -9,7 +9,7 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
-import { addNewProjects } from '~/services/projectScannerService'
+import { addNewProjectsInWorker } from '~/services/projectScannerService'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
@@ -45,9 +45,7 @@ onMounted(async () => {
     // projects
     (async () => {
       await projects.loadProjects()
-      requestAnimationFrame(() => {
-        void addNewProjects()
-      })
+      void addNewProjectsInWorker()
     })(),
   ])
 })
