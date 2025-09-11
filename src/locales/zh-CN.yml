@@ -154,7 +154,12 @@ settings:
     cancel: 否
   about:
     title: 关于
-    version: 版本
+    version:
+      title: 版本
+      check_update: 检查更新
+      checking_update: 正在检查更新...
+      is_latest: 已是最新版本
+      found_new: 发现新版本
     link: 链接
     import_export:
       title: 导入/导出

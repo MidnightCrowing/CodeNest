@@ -5,7 +5,7 @@ import { ProjectKind } from '~/constants/localProject'
 type Nullable<T> = {
   [K in keyof T]: T[K] | null;
 }
-export type NullableLocalProject = Omit<Nullable<LocalProject>, 'kind' | 'license' | 'isTemporary'> & {
+export type NullableLocalProject = Nullable<LocalProject> & {
   kind: ProjectKind
   license: LicenseEnum | string
   isTemporary: boolean

@@ -162,7 +162,12 @@ settings:
     cancel: No
   about:
     title: About
-    version: Version
+    version:
+      title: Version
+      check_update: Check for updates
+      checking_update: Checking for updates...
+      is_latest: You are on the latest version
+      found_new: New version available
     link: Link
     import_export:
       title: Import/Export

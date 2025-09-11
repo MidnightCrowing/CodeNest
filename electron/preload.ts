@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('api', {
   openInExplorer: (path: string) => ipcRenderer.invoke('explorer:open', path),
   openInTerminal: (path: string) => ipcRenderer.invoke('terminal:open', path),
 
+  // update
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+
   // theme
   setWindowTheme: (currentTheme: 'light' | 'dark') => ipcRenderer.invoke('theme:set', currentTheme),
 })

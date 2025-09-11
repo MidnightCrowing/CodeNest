@@ -35,6 +35,18 @@ declare global {
       openInExplorer: (path: string) => void
       openInTerminal: (path: string) => void
 
+      // update
+      checkUpdate: () => Promise<{
+        hasUpdate: boolean
+        currentVersion: string
+        latestVersion?: string
+        url?: string
+        name?: string
+        notes?: string
+        publishedAt?: string
+        error?: string
+      }>
+
       // theme
       setWindowTheme: (currentTheme: ThemeEnum) => void
     }
