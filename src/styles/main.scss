@@ -1,0 +1,11 @@
+body,
+html,
+#app {
+  @apply m-0 p-0;
+  @apply size-full;
+  @apply overflow-hidden;
+}
+
+::selection {
+  @apply light:bg-$gray-11 dark:bg-$gray-5;
+}

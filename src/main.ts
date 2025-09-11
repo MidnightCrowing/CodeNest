@@ -1,7 +1,3 @@
-import 'uno.css'
-import 'jetv-ui/dist/jetv-ui.css'
-import './styles/transitionAndTransitionGroup.scss'
-
 import { createPinia } from 'pinia'
 
 import App from './App.vue'

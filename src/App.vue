@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import '~/styles'
+
 import { JeFrame } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
@@ -69,17 +71,3 @@ provide('activatedView', activatedView)
     <NoIdePathDialog />
   </JeFrame>
 </template>
-
-<style lang="scss">
-body,
-html,
-#app {
-  @apply m-0 p-0;
-  @apply size-full;
-  @apply overflow-hidden;
-}
-
-::selection {
-  @apply light:bg-$gray-11 dark:bg-$gray-5;
-}
-</style>
