@@ -2,7 +2,7 @@ import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
 
 import type { languagesGroupItem } from '~/constants/localProject'
 import { t } from '~/utils/i18n'
-import type { LinguistLanguageResult, LinguistResult } from '~/views/ProjectConfig/types'
+import type { LinguistLanguageResult } from '~/views/ProjectConfig/types'
 
 /**
  * 用于分析项目语言的工具类
@@ -64,8 +64,10 @@ export class LanguageAnalyzer {
    * @returns {Promise<Record<string, LinguistLanguageResult>>} - 语言分析结果
    */
   private async getLanguagesResult(): Promise<Record<string, LinguistLanguageResult>> {
-    const { languages } = await window.api.analyzeProject(this.folderPath) as { languages: LinguistResult['languages'] }
-    return languages.results
+    const res = await window.api.analyzeProject(this.folderPath) as any
+    if (!res || 'error' in res || !res.languages)
+      return {}
+    return res.languages.results as Record<string, LinguistLanguageResult>
   }
 
   /**

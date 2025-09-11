@@ -17,6 +17,7 @@ declare global {
 
       // project
       analyzeProject: (folderPath: string) => Promise<LinguistResult | { error: string }>
+      onProjectAnalyzeProgress: (cb: (data: { folderPath: string, stage: 'start' | 'checking' | 'analyzing' | 'done' }) => void) => () => void
       openProject: (idePath: string, projectPath: string) => Promise<string>
       deleteProject: (projectPath: string) => Promise<boolean>
       importProject: () => Promise<boolean>

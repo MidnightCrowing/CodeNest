@@ -21,7 +21,7 @@ ipcMain.handle('scanner:scan', async (_event, payload: ScanPayload): Promise<Sca
   return new Promise((resolve, reject) => {
     try {
       const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
-      const worker = new Worker(workerUrl, { type: 'module', workerData: payload })
+      const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
 
       const items: ScanResultItem[] = []
       const cleanup = () => worker.removeAllListeners()
@@ -62,7 +62,7 @@ let nextSessionId = 1
 ipcMain.handle('scanner:start', (event, payload: ScanPayload): { sessionId: number } => {
   const sessionId = nextSessionId++
   const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
-  const worker = new Worker(workerUrl, { type: 'module', workerData: payload })
+  const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
 
   sessions.set(sessionId, worker)
 

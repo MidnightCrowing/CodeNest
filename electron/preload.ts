@@ -14,6 +14,11 @@ contextBridge.exposeInMainWorld('api', {
 
   // project
   analyzeProject: (folderPath: string) => ipcRenderer.invoke('project:analyze', folderPath),
+  onProjectAnalyzeProgress: (cb: (data: { folderPath: string, stage: 'start' | 'checking' | 'analyzing' | 'done' }) => void) => {
+    const handler = (_: any, data: any) => cb(data)
+    ipcRenderer.on('project:analyze:progress', handler)
+    return () => ipcRenderer.removeListener('project:analyze:progress', handler)
+  },
   openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('project:open', idePath, projectPath),
   deleteProject: (projectPath: string) => ipcRenderer.invoke('project:delete', projectPath),
   importProject: () => ipcRenderer.invoke('project:import'),

@@ -1,5 +1,6 @@
 import { exec } from 'node:child_process'
 import path from 'node:path'
+import { Worker } from 'node:worker_threads'
 
 import { dialog, ipcMain } from 'electron'
 import fs from 'fs-extra'
@@ -7,24 +8,54 @@ import trash from 'trash'
 
 import { projectsFilePath } from '../utils/dataPath'
 import type { LinguistResult } from '../utils/linguist'
-import { analyzeFolder } from '../utils/linguist'
 
 // 传入项目根目录，获取项目各编程语言的占比
-ipcMain.handle('project:analyze', async (_, folderPath): Promise<LinguistResult | { error: string }> => {
-  try {
-    const stat = await fs.stat(folderPath)
+ipcMain.handle('project:analyze', async (event, folderPath): Promise<LinguistResult | { error: string }> => {
+  return await new Promise((resolve) => {
+    try {
+      const workerUrl = new URL('../workers/linguistAnalyze.worker.js', import.meta.url)
+      const worker = new Worker(workerUrl, { type: 'module', workerData: { folderPath } } as any)
 
-    // 检查是否是目录
-    if (!stat.isDirectory()) {
-      return { error: 'Provided path is not a directory' }
+      const cleanup = () => worker.removeAllListeners()
+      const send = (stage: 'start' | 'checking' | 'analyzing' | 'done') => {
+        try {
+          event.sender.send('project:analyze:progress', {
+            folderPath,
+            stage,
+          })
+        }
+        catch {}
+      }
+
+      worker.on('message', (msg: any) => {
+        if (msg?.type === 'progress') {
+          send(msg.stage)
+        }
+        else if (msg?.type === 'result') {
+          cleanup()
+          resolve(msg.result as LinguistResult)
+        }
+        else if (msg?.type === 'error') {
+          cleanup()
+          resolve({ error: msg.error || 'analyze error' })
+        }
+      })
+
+      worker.once('error', (err) => {
+        cleanup()
+        resolve({ error: String(err) })
+      })
+      worker.once('exit', (code) => {
+        if (code !== 0) {
+          cleanup()
+          resolve({ error: `analyze worker exited with code ${code}` })
+        }
+      })
     }
-
-    // 如果路径是有效的目录，继续分析
-    return analyzeFolder(folderPath)
-  }
-  catch (error) {
-    return { error: `Error checking folder path:${error}` }
-  }
+    catch (e) {
+      resolve({ error: `Error starting analyze worker: ${String(e)}` })
+    }
+  })
 })
 
 // 使用IDE打开项目
