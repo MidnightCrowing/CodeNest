@@ -43,7 +43,7 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-permission" />
-              {{ t(permission) }}
+              {{ t(`license.info.${permission}`) }}
             </li>
           </ul>
         </div>
@@ -61,7 +61,7 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-limitation" />
-              {{ t(limitation) }}
+              {{ t(`license.info.${limitation}`) }}
             </li>
           </ul>
         </div>
@@ -79,7 +79,7 @@ onClickOutside(popupRef, () => {
               flex="~ items-center" gap="5px"
             >
               <span size="0.9rem" i-custom="license-condition" />
-              {{ t(condition) }}
+              {{ t(`license.info.${condition}`) }}
             </li>
           </ul>
         </div>

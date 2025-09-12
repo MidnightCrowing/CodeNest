@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('project:analyze:progress', handler)
     return () => ipcRenderer.removeListener('project:analyze:progress', handler)
   },
+  readProjectLicense: (folderPath: string, maxLines = 20) => ipcRenderer.invoke('project:read-license', folderPath, maxLines),
   openProject: (idePath: string, projectPath: string) => ipcRenderer.invoke('project:open', idePath, projectPath),
   deleteProject: (projectPath: string) => ipcRenderer.invoke('project:delete', projectPath),
   importProject: () => ipcRenderer.invoke('project:import'),

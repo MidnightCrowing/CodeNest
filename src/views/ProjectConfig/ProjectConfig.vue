@@ -20,6 +20,7 @@ import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
+import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useProjectsStore } from '~/stores/projectsStore'
 
 import ConfigItem from './components/common/ConfigItem.vue'
@@ -167,6 +168,44 @@ function cleanConfigValue() {
   localProjectItem.value.defaultOpen = null
 }
 
+async function analyzeAndSetLanguage(projectPath: string) {
+  const analyzer = new LanguageAnalyzer(projectPath)
+  try {
+    const success = await analyzer.analyze()
+    if (success) {
+      mainLanguageOptions.value = analyzer.mainLanguageOptions
+      localProjectItem.value.mainLang = analyzer.mainLang
+      localProjectItem.value.mainLangColor = analyzer.mainLangColor
+      localProjectItem.value.langGroup = analyzer.langGroup
+    }
+  }
+  catch (error) {
+    console.error('Analysis error:', error)
+  }
+}
+
+async function analyzeAndSetLicense(projectPath: string) {
+  const currentLicense = localProjectItem.value.license
+
+  // 仅当未选择或为 NONE 时自动填充
+  if (currentLicense && currentLicense !== LicenseEnum.NONE)
+    return
+
+  try {
+    const res = await window.api.readProjectLicense(projectPath)
+    if (!res?.success || !res.snippet)
+      return
+
+    const { license, score } = detectLicenseBySnippet(res.snippet)
+    if (license && score > 0) {
+      localProjectItem.value.license = license
+    }
+  }
+  catch (e) {
+    console.error('License detect error:', e)
+  }
+}
+
 onMounted(() => {
   if (localProjectItem.value.path) {
     fetchLanguageOptions(localProjectItem.value.path)
@@ -189,24 +228,16 @@ watch(() => localProjectItem.value.path, async (newValue) => {
     mainLanguageLoading.value = true
     defaultOpenLoading.value = true
 
-    // 获取项目编程语言分析结果
-    const analyzer = new LanguageAnalyzer(newValue)
-    analyzer.analyze()
-      .then((success) => {
-        if (success) {
-          mainLanguageOptions.value = analyzer.mainLanguageOptions
-          localProjectItem.value.mainLang = analyzer.mainLang
-          localProjectItem.value.mainLangColor = analyzer.mainLangColor
-          localProjectItem.value.langGroup = analyzer.langGroup
-        }
-      })
-      .catch((error) => {
-        console.error('Analysis error:', error)
-      })
-      .finally(() => {
+    await Promise.all([
+      // 获取项目编程语言分析结果
+      analyzeAndSetLanguage(newValue).finally(() => {
         mainLanguageLoading.value = false
         defaultOpenLoading.value = false
-      })
+      }),
+
+      // 获取许可证分析结果
+      analyzeAndSetLicense(newValue),
+    ])
   }
 })
 

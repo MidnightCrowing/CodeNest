@@ -18,6 +18,13 @@ declare global {
       // project
       analyzeProject: (folderPath: string) => Promise<LinguistResult | { error: string }>
       onProjectAnalyzeProgress: (cb: (data: { folderPath: string, stage: 'start' | 'checking' | 'analyzing' | 'done' }) => void) => () => void
+      readProjectLicense: (folderPath: string, maxLines?: number) => Promise<{
+        success: boolean
+        filename?: string
+        snippet?: string
+        lines?: number
+        message?: string
+      }>
       openProject: (idePath: string, projectPath: string) => Promise<string>
       deleteProject: (projectPath: string) => Promise<boolean>
       importProject: () => Promise<boolean>

@@ -38,15 +38,27 @@ export enum LicenseEnum {
 
 interface LicenseDescription { fromUrl: string, permissions?: string[], conditions?: string[], limitations?: string[] }
 
-export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, description?: LicenseDescription } } = {
+export const LicenseInfo: Record<LicenseEnum, {
+  name: string
+  url: string
+  description?: LicenseDescription
+  // 匹配识别的正则列表
+  detect?: { patterns: RegExp[] }
+}> = {
   [LicenseEnum.MIT]: {
     name: 'MIT License',
     url: 'https://opensource.org/licenses/MIT',
     description: {
       fromUrl: 'license.mit.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /permission is hereby granted, free of charge/i,
+        /without restriction, including without limitation the rights to use, copy, modify/i,
+      ],
     },
   },
   [LicenseEnum.APACHE_2_0]: {
@@ -54,9 +66,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.apache.org/licenses/LICENSE-2.0',
     description: {
       fromUrl: 'license.apache_2_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['license_and_copyright_notice', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /licensed under the apache license,? version 2\.0/i,
+        /http(s)?:\/\/www\.apache\.org\/licenses\/license-2\.0/i,
+      ],
     },
   },
   [LicenseEnum.BSD_2_CLAUSE]: {
@@ -64,9 +82,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/BSD-2-Clause',
     description: {
       fromUrl: 'license.bsd_2_clause.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /redistribution and use in source and binary forms, with or without modification/i,
+        /this software is provided by the copyright holders and contributors "as is"/i,
+      ],
     },
   },
   [LicenseEnum.BSD_3_CLAUSE]: {
@@ -74,9 +98,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/BSD-3-Clause',
     description: {
       fromUrl: 'license.bsd_3_clause.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /redistribution and use in source and binary forms, with or without modification/i,
+        /neither the name of the .* nor the names of its contributors may be used/i,
+      ],
     },
   },
   [LicenseEnum.GPLV2]: {
@@ -84,9 +114,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html',
     description: {
       fromUrl: 'license.gplv2.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /gnu general public license/i,
+        /version 2(\.0)?/i,
+      ],
     },
   },
   [LicenseEnum.GPLV3]: {
@@ -94,9 +130,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.gnu.org/licenses/gpl-3.0.en.html',
     description: {
       fromUrl: 'license.gplv3.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /gnu general public license/i,
+        /version 3(\.0)?/i,
+      ],
     },
   },
   [LicenseEnum.LGPLV2_1]: {
@@ -104,9 +146,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html',
     description: {
       fromUrl: 'license.lgplv2_1.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license_library', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license_library', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /gnu lesser general public license/i,
+        /version 2\.1/i,
+      ],
     },
   },
   [LicenseEnum.LGPLV3]: {
@@ -114,9 +162,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.gnu.org/licenses/lgpl-3.0.en.html',
     description: {
       fromUrl: 'license.lgplv3.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license_library', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license_library', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /gnu lesser general public license/i,
+        /version 3(\.0)?/i,
+      ],
     },
   },
   [LicenseEnum.AGPLV3]: {
@@ -124,9 +178,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.gnu.org/licenses/agpl-3.0.en.html',
     description: {
       fromUrl: 'license.agplv3.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.network_use_is_distribution', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'network_use_is_distribution', 'same_license', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /gnu affero general public license/i,
+        /version 3(\.0)?/i,
+      ],
     },
   },
   [LicenseEnum.MPL_2_0]: {
@@ -134,9 +194,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.mozilla.org/en-US/MPL/2.0/',
     description: {
       fromUrl: 'license.mpl_2_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license_file'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license_file'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /this source code form is subject to the terms of the mozilla public license,? v?\.? 2\.0/i,
+      ],
     },
   },
   [LicenseEnum.ECLIPSE_2_0]: {
@@ -144,9 +209,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.eclipse.org/legal/epl-2.0/',
     description: {
       fromUrl: 'license.eclipse_2_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /eclipse public license -? v?\s*2\.0/i,
+      ],
     },
   },
   [LicenseEnum.CDDL_1_0]: {
@@ -162,9 +232,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://www.boost.org/LICENSE_1_0.txt',
     description: {
       fromUrl: 'license.boost_1_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice_for_source'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice_for_source'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /boost software license -? version 1\.0/i,
+      ],
     },
   },
   [LicenseEnum.CC0_1_0]: {
@@ -172,8 +247,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://creativecommons.org/publicdomain/zero/1.0/',
     description: {
       fromUrl: 'license.cc0_1_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      limitations: ['license.info.liability', 'license.info.patent_use', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      limitations: ['liability', 'patent_use', 'trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /creative commons zero v?1\.0/i,
+        /cc0 1\.0/i,
+      ],
     },
   },
   [LicenseEnum.UNLICENSE]: {
@@ -181,8 +262,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://unlicense.org/',
     description: {
       fromUrl: 'license.unlicense.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /this is free and unencumbered software released into the public domain/i,
+        /the unlicense/i,
+      ],
     },
   },
   [LicenseEnum.WTFPL]: {
@@ -190,7 +277,13 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'http://www.wtfpl.net/',
     description: {
       fromUrl: 'license.wtfpl.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+    },
+    detect: {
+      patterns: [
+        /do what the f\*?uck you want to public license/i,
+        /wtfpl/i,
+      ],
     },
   },
   [LicenseEnum.ZLIB]: {
@@ -198,9 +291,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/Zlib',
     description: {
       fromUrl: 'license.zlib.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice_for_source', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice_for_source', 'state_changes'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /this software is provided ['"]?as-?is['"]?, without any express or implied warranty/i,
+        /the origin of this software must not be misrepresented/i,
+      ],
     },
   },
   [LicenseEnum.ISC]: {
@@ -208,9 +307,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/ISC',
     description: {
       fromUrl: 'license.isc.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /permission to use, copy, modify, and\/or distribute this software for any purpose with or without fee/i,
+        /the software is provided ['"]?as is['"]/i,
+      ],
     },
   },
   [LicenseEnum.ARTISTIC_2_0]: {
@@ -218,9 +323,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/Artistic-2.0',
     description: {
       fromUrl: 'license.artistic_2_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['license_and_copyright_notice', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /artistic license 2\.0/i,
+      ],
     },
   },
   [LicenseEnum.AFL_3_0]: {
@@ -228,9 +338,14 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/AFL-3.0',
     description: {
       fromUrl: 'license.afl_3_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['license_and_copyright_notice', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /academic free license v?3\.0/i,
+      ],
     },
   },
   [LicenseEnum.OSL_3_0]: {
@@ -238,9 +353,9 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/OSL-3.0',
     description: {
       fromUrl: 'license.osl_3_0.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.network_use_is_distribution', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'network_use_is_distribution', 'same_license', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
     },
   },
   [LicenseEnum.NPOSL_3_0]: {
@@ -252,9 +367,9 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12',
     description: {
       fromUrl: 'license.eupl_1_1.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.network_use_is_distribution', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'network_use_is_distribution', 'same_license', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
     },
   },
   [LicenseEnum.EUPL_1_2]: {
@@ -262,9 +377,9 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12',
     description: {
       fromUrl: 'license.eupl_1_2.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.network_use_is_distribution', 'license.info.same_license', 'license.info.state_changes'],
-      limitations: ['license.info.liability', 'license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'network_use_is_distribution', 'same_license', 'state_changes'],
+      limitations: ['liability', 'trademark_use', 'warranty'],
     },
   },
   [LicenseEnum.CECILL_2_1]: {
@@ -292,9 +407,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/OFL-1.1',
     description: {
       fromUrl: 'license.open_font_1_1.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice', 'license.info.same_license'],
-      limitations: ['license.info.liability', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'private_use'],
+      conditions: ['license_and_copyright_notice', 'same_license'],
+      limitations: ['liability', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /s(i?)l open font license 1\.1/i,
+        /sil open font license/i,
+      ],
     },
   },
   [LicenseEnum.MS_PL]: {
@@ -302,9 +423,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/MS-PL',
     description: {
       fromUrl: 'license.ms_pl.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.license_and_copyright_notice'],
-      limitations: ['license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['license_and_copyright_notice'],
+      limitations: ['trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /microsoft public license/i,
+        /ms-pl/i,
+      ],
     },
   },
   [LicenseEnum.MS_RL]: {
@@ -312,9 +439,15 @@ export const LicenseInfo: { [key in LicenseEnum]: { name: string, url: string, d
     url: 'https://opensource.org/licenses/MS-RL',
     description: {
       fromUrl: 'license.ms_rl.description_url',
-      permissions: ['license.info.commercial_use', 'license.info.distribution', 'license.info.modification', 'license.info.patent_use', 'license.info.private_use'],
-      conditions: ['license.info.disclose_source', 'license.info.license_and_copyright_notice', 'license.info.same_license_file'],
-      limitations: ['license.info.trademark_use', 'license.info.warranty'],
+      permissions: ['commercial_use', 'distribution', 'modification', 'patent_use', 'private_use'],
+      conditions: ['disclose_source', 'license_and_copyright_notice', 'same_license_file'],
+      limitations: ['trademark_use', 'warranty'],
+    },
+    detect: {
+      patterns: [
+        /microsoft reciprocal license/i,
+        /ms-rl/i,
+      ],
     },
   },
   [LicenseEnum.OTHER]: {

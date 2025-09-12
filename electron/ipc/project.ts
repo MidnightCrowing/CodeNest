@@ -58,6 +58,70 @@ ipcMain.handle('project:analyze', async (event, folderPath): Promise<LinguistRes
   })
 })
 
+// 读取项目许可证的前若干行
+ipcMain.handle('project:read-license', async (_evt, folderPath: string, maxLines = 20) => {
+  try {
+    if (!folderPath || typeof folderPath !== 'string')
+      return { success: false, message: 'Invalid project path' }
+
+    const stat = await fs.stat(folderPath).catch(() => null)
+    if (!stat || !stat.isDirectory())
+      return { success: false, message: 'Project path does not exist or is not a directory' }
+
+    const entries = await fs.readdir(folderPath)
+    const candidates = entries.filter((name) => {
+      const lower = name.toLowerCase()
+      return (
+        // 常见文件名：license/licence/copying/unlicense，允许有扩展名
+        lower.startsWith('license')
+        || lower.startsWith('licence')
+        || lower.startsWith('copying')
+        || lower.startsWith('unlicense')
+      )
+    })
+
+    if (!candidates.length)
+      return { success: false, message: 'License file not found' }
+
+    const rank = (filename: string) => {
+      const f = filename.toLowerCase()
+      const ext = path.extname(f)
+      const base = f.replace(ext, '')
+      // 优先级：license > licence > copying > unlicense；无扩展名 > .md > .txt > 其他
+      const baseScore = base.startsWith('license')
+        ? 0
+        : base.startsWith('licence')
+          ? 1
+          : base.startsWith('copying')
+            ? 2
+            : base.startsWith('unlicense')
+              ? 3
+              : 9
+      const extScore = ext === '' ? 0 : ext === '.md' ? 1 : ext === '.txt' ? 2 : 3
+      return baseScore * 10 + extScore
+    }
+
+    const picked = candidates.sort((a, b) => rank(a) - rank(b))[0]
+    const full = path.join(folderPath, picked)
+    const fileStat = await fs.stat(full)
+    if (!fileStat.isFile())
+      return { success: false, message: 'License file is not a regular file' }
+
+    const content = await fs.readFile(full, 'utf8')
+    const lines = content.split(/\r?\n/).slice(0, Math.max(1, Math.min(100, maxLines)))
+
+    return {
+      success: true,
+      filename: picked,
+      snippet: lines.join('\n'),
+      lines: lines.length,
+    }
+  }
+  catch (e: any) {
+    return { success: false, message: String(e?.message || e) }
+  }
+})
+
 // 使用IDE打开项目
 ipcMain.handle('project:open', async (_, idePath: string, projectPath: string): Promise<string> => {
   if (!idePath || !projectPath) {

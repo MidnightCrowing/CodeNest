@@ -3,8 +3,10 @@ import { unref } from 'vue'
 import { clearState, setState } from '~/components/StateBar/StateBarProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { languageToEditorMap } from '~/constants/codeEditor'
+import type { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
+import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -84,6 +86,16 @@ export async function addNewProjectsInWorker() {
     scanner.addScannedPath(path)
 
     const mainLang = (item.mainLang || 'unknown') as string
+
+    let license: LicenseEnum | undefined
+    const res = await window.api.readProjectLicense(path)
+    if (res?.success && res.snippet) {
+      const { license: detected, score } = detectLicenseBySnippet(res.snippet)
+      if (detected && score > 0) {
+        license = detected
+      }
+    }
+
     const defaultOpen: CodeEditorEnum = settings.projectScannerOpenMode === 'specified'
       ? settings.projectScannerEditor
       : languageToEditorMap[mainLang.toLowerCase()] || settings.projectScannerEditor
@@ -99,6 +111,7 @@ export async function addNewProjectsInWorker() {
       mainLang,
       mainLangColor: item.mainLangColor,
       langGroup: item.langGroup || [],
+      license,
       defaultOpen,
       isTemporary,
       isExists: true,
