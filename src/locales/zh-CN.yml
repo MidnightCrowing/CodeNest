@@ -10,7 +10,7 @@ license:
     network_use_is_distribution: 使用网络分发
     same_license: 使用相同协议
     same_license_library: 使用相同协议(library)
-    same_license_file: 使用相同协议(file)
+    same_license_file: 使用���同协议(file)
     state_changes: 声明变更
     liability: 承担责任
     trademark_use: 使用商标
@@ -69,6 +69,7 @@ license_pop:
   no_description_desc: 没有描述
 project_card:
   temporary: 临时
+  opening: 正在打开...
   open_in_explorer: 在资源管理器中打开
   open_in_terminal: 在终端中打开
   edit: 编辑
@@ -178,3 +179,5 @@ status:
     found_many: 已发现 {count} 个新项目
     done: 扫描完成
     error: 扫描失败
+project:
+  opening: 正在打开...

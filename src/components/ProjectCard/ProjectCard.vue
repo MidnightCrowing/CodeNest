@@ -206,10 +206,8 @@ function showMenu() {
     <div flex="~ row items-center" gap="10px">
       <OpenButton
         v-if="projectExists"
-        class="group-hover/item:block"
         :default-open="projectDefaultOpen"
         :project-path="projectPath"
-        hidden
       />
 
       <!-- More Button -->

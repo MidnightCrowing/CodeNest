@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import { JeButton } from 'jetv-ui'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 import { showNoIdePathDialog } from '~/components/NoIdePathDialog/NoIdePathDialogProvider'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
@@ -9,36 +13,48 @@ defineProps<{
   projectPath: string
 }>()
 
+const { t } = useI18n()
+
 const settings = useSettingsStore()
+const isOpening = ref(false)
 
 function handleClick(codeEditor: CodeEditorEnum, projectPath: string) {
+  if (isOpening.value)
+    return // 防止多次点击
+
   const idePath = settings.codeEditorsPath[codeEditor]
 
   if (!idePath) {
     showNoIdePathDialog()
+    return
   }
-  else {
-    window.api.openProject(idePath, projectPath)
-  }
+
+  isOpening.value = true
+  window.api.openProject(idePath, projectPath)
+
+  // 模拟反馈
+  setTimeout(() => {
+    isOpening.value = false
+  }, 2000)
 }
 </script>
 
 <template>
-  <button
-    font-sans text="13px" lh="26px" whitespace-nowrap
-    p="x-14px y-3px" b-0 rounded="4px"
-    light:bg="$blue-4 hover:$blue-3 active:$blue-2"
-    dark:bg="$blue-6 hover:$blue-5 active:$blue-4"
+  <div v-if="isOpening" text="default">
+    {{ t('project.opening') }}
+  </div>
+  <JeButton
+    v-else
+    class="group-hover/item:block"
+    type="primary"
+    hidden
+    :disabled="isOpening"
     @click="handleClick(defaultOpen, projectPath)"
     @mousedown.stop @mouseup.stop
   >
-    <span
-      flex="~ items-center" gap="5px"
-      color="$gray-12"
-    >
-      <!-- 使用 text-color 动态适配 -->
+    <span flex="~ items-center" gap="5px" color="$gray-12">
       <span :class="codeEditors[defaultOpen].icon" />
       <span>{{ codeEditors[defaultOpen].label }}</span>
     </span>
-  </button>
+  </JeButton>
 </template>

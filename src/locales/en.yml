@@ -77,6 +77,7 @@ license_pop:
   no_description_desc: Not has description
 project_card:
   temporary: Temporary
+  opening: Opening...
   open_in_explorer: Open in Explorer
   open_in_terminal: Open in Terminal
   edit: Edit
@@ -186,3 +187,5 @@ status:
     found_many: Found {count} new projects
     done: Scan completed
     error: Scan failed
+project:
+  opening: Opening...
