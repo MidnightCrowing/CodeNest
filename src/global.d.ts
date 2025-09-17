@@ -12,7 +12,7 @@ declare global {
       getFolderList: (folderPath: string) => Promise<{ folders: string[], error?: string }>
 
       // path
-      formatPath: (filePath: string) => string
+      formatPath: (filePath: string) => Promise<string>
       checkPathExistence: (path: string) => Promise<{ exists: boolean, error?: string }>
 
       // project
@@ -34,7 +34,10 @@ declare global {
       openSettingsJSON: () => Promise<boolean>
 
       // data
-      saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => Promise<{
+      saveData: (
+        fileType: 'projects' | 'projectScanner' | 'settings',
+        data: string
+      ) => Promise<{
         success: boolean
         error?: string
       }>
@@ -66,29 +69,36 @@ declare global {
       }>
 
       // scanner (batch)
-      scanProjects: (payload: { roots: string[], existingPaths: string[] }) => Promise<Array<{
-        path: string
-        name: string
-        mainLang?: string
-        mainLangColor?: `#${string}`
-        langGroup?: Array<{ text: string, color: `#${string}`, percentage: number }>
-        error?: string
-      }>>
-
-      // scanner (stream)
-      startProjectScan: (payload: { roots: string[], existingPaths: string[] }) => Promise<{ sessionId: number }>
-      stopProjectScan: (sessionId: number) => Promise<{ stopped: boolean }>
-      onScannerItem: (cb: (data: {
-        sessionId: number
-        item: {
+      scanProjects: (payload: { roots: string[], existingPaths: string[] }) => Promise<
+        Array<{
           path: string
           name: string
           mainLang?: string
           mainLangColor?: `#${string}`
           langGroup?: Array<{ text: string, color: `#${string}`, percentage: number }>
           error?: string
-        }
-      }) => void) => () => void
+        }>
+      >
+
+      // scanner (stream)
+      startProjectScan: (payload: {
+        roots: string[]
+        existingPaths: string[]
+      }) => Promise<{ sessionId: number }>
+      stopProjectScan: (sessionId: number) => Promise<{ stopped: boolean }>
+      onScannerItem: (
+        cb: (data: {
+          sessionId: number
+          item: {
+            path: string
+            name: string
+            mainLang?: string
+            mainLangColor?: `#${string}`
+            langGroup?: Array<{ text: string, color: `#${string}`, percentage: number }>
+            error?: string
+          }
+        }) => void
+      ) => () => void
       onScannerDone: (cb: (data: { sessionId: number }) => void) => () => void
       onScannerError: (cb: (data: { sessionId: number, error: string }) => void) => () => void
 

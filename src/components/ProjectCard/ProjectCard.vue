@@ -41,7 +41,7 @@ const openButtonRef = ref<OpenButtonExpose | null>(null)
 const projectCardActive = ref<boolean>(false)
 const langGroup = ref(projectLangGroup.value)
 
-const formattedPath = computed(() => window.api.formatPath(projectPath.value))
+const formattedPath = ref<string>('')
 
 function handleClick() {
   openButtonRef.value?.handleClick()
@@ -63,6 +63,14 @@ watch(
   },
   { deep: true },
 ) // 使用 deep 监听 langGroup 的内部变化
+
+watchEffect(async () => {
+  if (!projectPath.value) {
+    formattedPath.value = ''
+    return
+  }
+  formattedPath.value = await window.api.formatPath(projectPath.value)
+})
 
 // ==================== More Button ====================
 function getDeleteLabel() {
@@ -134,7 +142,7 @@ function showMenu() {
     cursor-pointer
     tabindex="0"
     draggable="true"
-    @click.self="handleClick"
+    @click="handleClick"
     @dragstart="handleDragStart"
   >
     <div
@@ -177,7 +185,12 @@ function showMenu() {
           text="secondary"
         >
           {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
-          <JeLink v-if="projectFromUrl" type="web" :on-click="() => openLink(projectFromUrl)">
+          <JeLink
+            v-if="projectFromUrl"
+            type="web"
+            :on-click="() => openLink(projectFromUrl)"
+            @click.stop
+          >
             {{ projectFromName || projectFromUrl }}
           </JeLink>
           <span v-else>{{ projectFromName }}</span>
@@ -189,11 +202,12 @@ function showMenu() {
 
       <!-- Button -->
       <div flex="~ row" gap="15px">
-        <LanguageButton :project-item="projectItem" />
+        <LanguageButton :project-item="projectItem" @click.stop />
 
         <LicenseButton
           v-if="projectLicense && projectLicense !== LicenseEnum.NONE"
           :license="projectLicense"
+          @click.stop
         />
       </div>
     </div>
@@ -205,6 +219,7 @@ function showMenu() {
         :append-time="projectAppendTime"
         :default-open="projectDefaultOpen"
         :project-path="projectPath"
+        @click.stop
       />
 
       <!-- More Button -->
@@ -212,7 +227,7 @@ function showMenu() {
         p="3px"
         icon="light:i-jet:more-vertical dark:i-jet:more-vertical-dark"
         icon-size="17px"
-        @click="showMenu"
+        @click.stop="showMenu"
       />
       <JeMenu
         v-model:visible="menuVisible"
@@ -220,6 +235,7 @@ function showMenu() {
         absolute
         translate-y="45px"
         right="5px"
+        @click.stop
       />
     </div>
   </div>
