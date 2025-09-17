@@ -3,13 +3,13 @@ import type { JeMenuOptionProps } from 'jetv-ui'
 import { JeLink, JeMenu, JeTransparentToolButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
-import { showRemoveDialog } from '~/components/RemoveProjectDialog/RemoveProjectDialogProvider'
+import { showRemoveDialog } from '~/components/RemoveProjectDialog'
 import { ViewEnum } from '~/constants/appEnums'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { openLink } from '~/utils/common'
-import { initializeUpdateProjectState } from '~/views/ProjectConfig/ProjectConfigProvider'
+import { initializeUpdateProjectState } from '~/views/ProjectEditorView'
 
 import LanguageButton from './LanguageButton.vue'
 import LicenseButton from './LicenseButton.vue'
@@ -35,7 +35,8 @@ const projectExists = computed(() => projectItem.value.isExists)
 
 const { t } = useI18n()
 
-const projectCard = ref<HTMLDivElement | null>(null)
+const projectCardRef = ref<HTMLDivElement | null>(null)
+const openButtonRef = ref<HTMLDivElement | null>(null)
 const projectCardActive = ref(false)
 const langGroup = ref(projectLangGroup.value)
 
@@ -45,15 +46,6 @@ async function formatPath(path: string) {
   return window.api.formatPath(path)
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-function handleClick(path: string) {
-  projectCardActive.value = true
-}
-
-function handleClicked() {
-  projectCardActive.value = false
-}
-
 function handleDragStart(event: DragEvent) {
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
@@ -61,11 +53,19 @@ function handleDragStart(event: DragEvent) {
   }
 }
 
-watch(() => props.projectItem.langGroup, (newLangGroup, oldLangGroup) => {
-  if (newLangGroup !== oldLangGroup) {
-    langGroup.value = newLangGroup
-  }
-}, { deep: true }) // 使用 deep 监听 langGroup 的内部变化
+function handleClick() {
+  openButtonRef.value?.handleClick()
+}
+
+watch(
+  () => props.projectItem.langGroup,
+  (newLangGroup, oldLangGroup) => {
+    if (newLangGroup !== oldLangGroup) {
+      langGroup.value = newLangGroup
+    }
+  },
+  { deep: true },
+) // 使用 deep 监听 langGroup 的内部变化
 
 onMounted(async () => {
   formattedPath.value = await formatPath(projectPath.value)
@@ -76,9 +76,7 @@ function getDeleteLabel() {
   if (!projectExists.value) {
     return t('project_card.remove')
   }
-  return projectIsTemporary?.value === true
-    ? t('project_card.delete')
-    : t('project_card.remove')
+  return projectIsTemporary?.value === true ? t('project_card.delete') : t('project_card.remove')
 }
 
 const projectActions = computed<JeMenuOptionProps[]>(() => [
@@ -112,12 +110,12 @@ const projectActions = computed<JeMenuOptionProps[]>(() => [
     onClick: () => showRemoveDialog(props.projectItem),
   },
 ])
-const menuVisible = ref(false)
+const menuVisible = ref<boolean>(false)
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 
 function changeHomeView() {
   if (activatedView)
-    activatedView.value = ViewEnum.NewProject
+    activatedView.value = ViewEnum.ProjectEditor
 }
 
 function showMenu() {
@@ -127,23 +125,29 @@ function showMenu() {
 
 <template>
   <div
-    ref="projectCard"
+    ref="projectCardRef"
     class="project-card group/item"
     :class="{ active: projectCardActive }"
     relative
     hover:bg="light:$gray-12 dark:$gray-3"
-    p="10px" rounded="5px"
-    flex="~ row justify-between" gap="10px"
-    transition-all duration="150" ease-in-out
+    active:bg="light:$gray-13 dark:$gray-2"
+    p="10px"
+    rounded="5px"
+    flex="~ row justify-between"
+    gap="10px"
+    transition-all
+    duration="150"
+    ease-in-out
     cursor-pointer
+    tabindex="0"
     draggable="true"
-    @mousedown="handleClick(projectPath)"
-    @mouseup="handleClicked"
     @dragstart="handleDragStart"
+    @click.self="handleClick"
   >
     <div
-      :class=" { 'opacity-30': !projectExists }"
-      flex="~ col justify-between" gap="8px"
+      :class="{ 'opacity-30': !projectExists }"
+      flex="~ col justify-between"
+      gap="8px"
       overflow-x-hidden
     >
       <!-- Info -->
@@ -162,7 +166,8 @@ function showMenu() {
             v-if="projectIsTemporary"
             text="medium"
             color="light:$yellow-5 dark:$yellow-9"
-            b="solid 1px light:$yellow-5 dark:$yellow-9" rounded-full
+            b="solid 1px light:$yellow-5 dark:$yellow-9"
+            rounded-full
             p="x-4px"
           >
             {{ t('project_card.temporary') }}
@@ -171,15 +176,18 @@ function showMenu() {
 
         <!-- Link -->
         <span
-          v-if="(projectKind === ProjectKind.FORK || projectKind === ProjectKind.CLONE) && (projectFromUrl || projectFromName)"
-          truncate text="secondary"
+          v-if="
+            (projectKind === ProjectKind.FORK || projectKind === ProjectKind.CLONE)
+              && (projectFromUrl || projectFromName)
+          "
+          truncate
+          text="secondary"
         >
           {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
           <JeLink
             v-if="projectFromUrl"
             type="web"
-            :on-click=" () => openLink(projectFromUrl) "
-            @mousedown.stop @mouseup.stop
+            :on-click="() => openLink(projectFromUrl)"
           >
             {{ projectFromName || projectFromUrl }}
           </JeLink>
@@ -192,9 +200,7 @@ function showMenu() {
 
       <!-- Button -->
       <div flex="~ row" gap="15px">
-        <LanguageButton
-          :project-item="projectItem"
-        />
+        <LanguageButton :project-item="projectItem" />
 
         <LicenseButton
           v-if="projectLicense && projectLicense !== LicenseEnum.NONE"
@@ -206,6 +212,8 @@ function showMenu() {
     <div flex="~ row items-center" gap="10px">
       <OpenButton
         v-if="projectExists"
+        ref="openButtonRef"
+        :append-time="projectAppendTime"
         :default-open="projectDefaultOpen"
         :project-path="projectPath"
       />
@@ -216,23 +224,19 @@ function showMenu() {
         icon="light:i-jet:more-vertical dark:i-jet:more-vertical-dark"
         icon-size="17px"
         @click="showMenu"
-        @mousedown.stop @mouseup.stop
       />
       <JeMenu
         v-model:visible="menuVisible"
         :options="projectActions"
-        absolute translate-y="45px" right="5px"
-        @mousedown.stop @mouseup.stop
+        absolute
+        translate-y="45px"
+        right="5px"
       />
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.project-card.active {
-  @apply active:light:bg-$gray-13 active:dark:bg-$gray-2;
-}
-
 .je-link:not(.disabled) {
   @apply dark:color-$blue-6;
 }
