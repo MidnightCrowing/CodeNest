@@ -69,7 +69,7 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // 根据 appendTime 获取项目
-  function getProjectByAppendTime(appendTime: number) {
+  function getProjectByAppendTime(appendTime: LocalProject['appendTime']) {
     return projects.value.find(project => project.appendTime === appendTime)
   }
 
@@ -84,10 +84,14 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // 更新项目
-  async function updateProject(appendTime: number, updatedProject: LocalProject) {
+  async function updateProject(
+    appendTime: LocalProject['appendTime'],
+    updatedProject: LocalProject,
+  ) {
     const index = projects.value.findIndex(p => p.appendTime === appendTime)
-    if (index === -1)
+    if (index === -1) {
       return false
+    }
 
     Object.assign(projects.value[index], updatedProject)
 
@@ -99,7 +103,7 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // 移除项目
-  async function removeProject(appendTime: number) {
+  async function removeProject(appendTime: LocalProject['appendTime']) {
     const index = projects.value.findIndex(p => p.appendTime === appendTime)
     if (index === -1)
       return false
@@ -157,16 +161,29 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // 检查路径是否存在于项目中
-  function checkPathExistenceInProjects(path: string, excludedPaths: string[] = []) {
-    return projects.value.some(
-      p => p.path === path && !excludedPaths.includes(p.path),
-    )
+  function checkPathExistenceInProjects(
+    path: LocalProject['path'],
+    excludedPaths: LocalProject['path'][] = [],
+  ) {
+    return projects.value.some(p => p.path === path && !excludedPaths.includes(p.path))
   }
 
   // 检查单个项目是否存在
   async function checkProjectExistence(project: LocalProject): Promise<boolean> {
     const { exists } = await window.api.checkPathExistence(project.path)
     return exists
+  }
+
+  // 将项目移动到顶部
+  async function moveProjectToTopByTime(appendTime: LocalProject['appendTime']) {
+    const index = projects.value.findIndex(p => p.appendTime === appendTime)
+    if (index <= 0) {
+      return
+    }
+    const [item] = projects.value.splice(index, 1)
+    projects.value.unshift(item)
+    // 异步持久化顺序变化
+    void saveProjects()
   }
 
   // -------------------------
@@ -194,5 +211,6 @@ export const useProjectsStore = defineStore('projects', () => {
     loadProjects,
     checkPathExistenceInProjects,
     checkProjectExistence,
+    moveProjectToTopByTime,
   }
 })
