@@ -8,7 +8,7 @@ type Nullable<T> = {
 export type NullableLocalProject = Nullable<LocalProject> & {
   kind: ProjectKind
   license: LicenseEnum | string
-  isTemporary: boolean
+  isTemporary: LocalProject['isTemporary']
 }
 
 // 默认的 LocalProject 状态

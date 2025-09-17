@@ -1,6 +1,6 @@
 import { unref } from 'vue'
 
-import { clearState, setState } from '~/components/StateBar/StateBarProvider'
+import { clearState, setState } from '~/components/StateBar'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { languageToEditorMap } from '~/constants/codeEditor'
 import type { LicenseEnum } from '~/constants/license'

@@ -1,6 +1,6 @@
 export enum ViewEnum {
   Home = 'Home',
-  NewProject = 'NewProject',
+  ProjectEditor = 'ProjectEditor',
   Settings = 'Settings',
 }
 

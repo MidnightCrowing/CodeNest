@@ -15,8 +15,9 @@ const activatedView = inject('activatedView') as Ref<ViewEnum>
 const searchInputValue = ref(props.searchValue)
 
 function changeNewProjectView() {
-  if (activatedView)
-    activatedView.value = ViewEnum.NewProject
+  if (activatedView) {
+    activatedView.value = ViewEnum.ProjectEditor
+  }
 }
 
 watch(searchInputValue, (newSearchValue) => {

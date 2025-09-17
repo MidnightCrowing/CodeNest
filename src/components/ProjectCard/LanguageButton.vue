@@ -28,7 +28,6 @@ function handleClick() {
     <JeTransparentButton
       class="lang-button"
       flex="~ items-center" gap="5px"
-      @mousedown.stop @mouseup.stop
     >
       <JeColorIcon type="circle" :custom-color="projectItem.mainLangColor ?? '#ccc'" />
       {{ projectItem.mainLang }}

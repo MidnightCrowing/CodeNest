@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import type { JeComboboxOptionProps, JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
+import type {
+  JeComboboxOptionProps,
+  JeDropdownOptionGroupProps,
+  JeDropdownOptionProps,
+} from 'jetv-ui'
 import {
   JeButton,
   JeCheckbox,
@@ -23,10 +27,14 @@ import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useProjectsStore } from '~/stores/projectsStore'
 
-import ConfigItem from './components/common/ConfigItem.vue'
-import ConfigItemTitle from './components/common/ConfigItemTitle.vue'
-import ForkAndCloneComponent from './components/KindComponent/ForkAndCloneComponent.vue'
-import { initializeNewProjectState, isUpdateProject, localProjectItem } from './ProjectConfigProvider'
+import EditorItem from './components/EditorItem.vue'
+import EditorTitle from './components/EditorTitle.vue'
+import ForkAndCloneComponent from './components/ForkAndCloneComponent.vue'
+import {
+  initializeNewProjectState,
+  isUpdateProject,
+  localProjectItem,
+} from './ProjectEditorViewProvider'
 
 const { t } = useI18n()
 const projects = useProjectsStore()
@@ -36,7 +44,9 @@ const projectPathInputValidated = ref<boolean>(false)
 const projectNameInputValidated = ref<boolean>(false)
 const repositoryFolderName = ref<string>('')
 const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
-const groupOptions = ref<JeComboboxOptionProps[]>(projects.allGroups.map(group => ({ label: group, value: group })))
+const groupOptions = ref<JeComboboxOptionProps[]>(
+  projects.allGroups.map(group => ({ label: group, value: group })),
+)
 
 function fillProjectName() {
   localProjectItem.value.name = repositoryFolderName.value
@@ -124,7 +134,9 @@ const commonLicenses: LicenseEnum[] = [LicenseEnum.MIT, LicenseEnum.GPLV3]
  * @param licenseEnums - LicenseEnum 枚举
  * @returns {(JeDropdownOptionProps | JeDropdownOptionGroupProps)[]} 转换后的菜单选项数组
  */
-function convertLicensesToDropdownOptions(licenseEnums: typeof LicenseEnum): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
+function convertLicensesToDropdownOptions(
+  licenseEnums: typeof LicenseEnum,
+): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
   const commonOptions: JeDropdownOptionProps[] = []
   const otherOptions: JeDropdownOptionProps[] = []
 
@@ -212,45 +224,51 @@ onMounted(() => {
   }
 })
 
-watch(() => localProjectItem.value.path, async (newValue) => {
-  if (newValue === null) {
-    return
-  }
+watch(
+  () => localProjectItem.value.path,
+  async (newValue) => {
+    if (newValue === null) {
+      return
+    }
 
-  // 清空设置项
-  cleanConfigValue()
+    // 清空设置项
+    cleanConfigValue()
 
-  // 提取路径的最后一个文件夹名称
-  const parts = newValue.split(/[\\/]/)
-  repositoryFolderName.value = parts[parts.length - 1] || ''
+    // 提取路径的最后一个文件夹名称
+    const parts = newValue.split(/[\\/]/)
+    repositoryFolderName.value = parts[parts.length - 1] || ''
 
-  if (newValue) {
-    mainLanguageLoading.value = true
-    defaultOpenLoading.value = true
+    if (newValue) {
+      mainLanguageLoading.value = true
+      defaultOpenLoading.value = true
 
-    await Promise.all([
-      // 获取项目编程语言分析结果
-      analyzeAndSetLanguage(newValue).finally(() => {
-        mainLanguageLoading.value = false
-        defaultOpenLoading.value = false
-      }),
+      await Promise.all([
+        // 获取项目编程语言分析结果
+        analyzeAndSetLanguage(newValue).finally(() => {
+          mainLanguageLoading.value = false
+          defaultOpenLoading.value = false
+        }),
 
-      // 获取许可证分析结果
-      analyzeAndSetLicense(newValue),
-    ])
-  }
-})
+        // 获取许可证分析结果
+        analyzeAndSetLicense(newValue),
+      ])
+    }
+  },
+)
 
-watch(() => localProjectItem.value.mainLang, (newValue) => {
-  // 查找匹配的语言组项
-  const languageItem = localProjectItem.value.langGroup?.find(item => item.text === newValue)
-  localProjectItem.value.mainLangColor = languageItem?.color || null
+watch(
+  () => localProjectItem.value.mainLang,
+  (newValue) => {
+    // 查找匹配的语言组项
+    const languageItem = localProjectItem.value.langGroup?.find(item => item.text === newValue)
+    localProjectItem.value.mainLangColor = languageItem?.color || null
 
-  // 查找匹配的默认打开项
-  localProjectItem.value.defaultOpen = newValue
-    ? languageToEditorMap[newValue.toLowerCase()] || null
-    : null
-})
+    // 查找匹配的默认打开项
+    localProjectItem.value.defaultOpen = newValue
+      ? languageToEditorMap[newValue.toLowerCase()] || null
+      : null
+  },
+)
 
 // ==================== Bottom Menu ====================
 const activatedView = inject('activatedView') as Ref<ViewEnum>
@@ -282,7 +300,8 @@ function validateFields(): boolean {
 function getDynamicFields(): Record<string, any> {
   return {
     // 根据条件动态添加 fromUrl 和 fromName
-    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
+    ...(localProjectItem.value.kind === ProjectKind.FORK
+      || localProjectItem.value.kind === ProjectKind.CLONE
       ? {
           fromUrl: localProjectItem.value.fromUrl,
           fromName: localProjectItem.value.fromName,
@@ -303,11 +322,14 @@ function addNewProject() {
   }
 
   // 添加项目
-  projects.addProject({
-    ...localProjectItem.value,
-    ...getDynamicFields(),
-    appendTime: Date.now(), // 添加创建时间
-  } as LocalProject, true)
+  projects.addProject(
+    {
+      ...localProjectItem.value,
+      ...getDynamicFields(),
+      appendTime: Date.now(), // 添加创建时间
+    } as LocalProject,
+    true,
+  )
 
   // 返回主页
   changeHomeView()
@@ -335,19 +357,14 @@ function updateProject() {
 </script>
 
 <template>
-  <JeFrame
-    size-full
-    bg="theme-panel-bgDialog"
-    flex="~ col"
-  >
+  <JeFrame size-full bg="theme-panel-bgDialog" flex="~ col">
     <JeFrame
-      type="secondary"
-      grow flex="~ col" gap="y-15px"
-      overflow-auto scrollbar-default
+      type="secondary" grow flex="~ col" gap="y-15px" overflow-auto
+      scrollbar-default
     >
-      <ConfigItem>
+      <EditorItem>
         <!-- Directory -->
-        <ConfigItemTitle title="project_config.directory" />
+        <EditorTitle title="project_config.directory" />
         <JeFileInputField
           v-model="localProjectItem.path"
           :validated="projectPathInputValidated"
@@ -356,9 +373,13 @@ function updateProject() {
         />
 
         <div
-          v-if="localProjectItem.path && projects.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)"
+          v-if="
+            localProjectItem.path
+              && projects.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)
+          "
           col-start="2"
-          flex="~ items-center" gap="2px"
+          flex="~ items-center"
+          gap="2px"
           color="light:$yellow-4 dark:$yellow-6"
         >
           <span i-jet="light:warning dark:warning-dark" />
@@ -366,17 +387,20 @@ function updateProject() {
         </div>
 
         <!-- Name -->
-        <ConfigItemTitle title="project_config.name" />
+        <EditorTitle title="project_config.name" />
         <JeInputField
           v-model="localProjectItem.name"
           :validated="projectNameInputValidated"
           :validated-tooltip="t('project_config.name_tooltip')"
-          spellcheck="false" w="200px"
+          spellcheck="false"
+          w="200px"
         />
 
         <div
           v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
-          col-start="2" flex gap="2px"
+          col-start="2"
+          flex
+          gap="2px"
           overflow-hidden
         >
           <span text="secondary" truncate>{{ repositoryFolderName }}</span>
@@ -386,7 +410,7 @@ function updateProject() {
         </div>
 
         <!-- Group -->
-        <ConfigItemTitle title="project_config.group" />
+        <EditorTitle title="project_config.group" />
         <div flex="~ row items-center" gap="10px">
           <JeCombobox
             v-model="localProjectItem.group"
@@ -396,40 +420,41 @@ function updateProject() {
           />
           <span text="secondary">({{ t('project_config.optional') }})</span>
         </div>
-      </ConfigItem>
+      </EditorItem>
 
       <!-- KindButtons -->
-      <ConfigItem>
-        <ConfigItemTitle title="project_config.kind.source" />
-        <JeSegmentedControl
-          v-model="localProjectItem.kind"
-          :labels="kindButtonLabels"
-        />
+      <EditorItem>
+        <EditorTitle title="project_config.kind.source" />
+        <JeSegmentedControl v-model="localProjectItem.kind" :labels="kindButtonLabels" />
 
         <KeepAlive>
           <Component
             :is="kindComponents[localProjectItem.kind]"
             :local-project-item="localProjectItem"
-            @update:project-from-url="(newKind: string) => { localProjectItem.fromUrl = newKind }"
-            @update:project-from-name="(newKind: string) => { localProjectItem.fromName = newKind }"
+            @update:project-from-url="
+              (newKind: string) => {
+                localProjectItem.fromUrl = newKind
+              }
+            "
+            @update:project-from-name="
+              (newKind: string) => {
+                localProjectItem.fromName = newKind
+              }
+            "
           />
         </KeepAlive>
 
         <!-- Temporary -->
         <div col-start="2">
-          <JeCheckbox
-            v-model="localProjectItem.isTemporary"
-            class="checkbox-setting"
-            w-fit
-          >
+          <JeCheckbox v-model="localProjectItem.isTemporary" class="checkbox-setting" w-fit>
             {{ t('project_config.temporary') }}
           </JeCheckbox>
         </div>
-      </ConfigItem>
+      </EditorItem>
 
       <!-- MainLanguage -->
-      <ConfigItem>
-        <ConfigItemTitle title="project_config.main_lang" />
+      <EditorItem>
+        <EditorTitle title="project_config.main_lang" />
         <JeCombobox
           v-model="localProjectItem.mainLang"
           :options="mainLanguageOptions"
@@ -438,11 +463,11 @@ function updateProject() {
           :validated-tooltip="t('project_config.lang_tooltip')"
           :spellcheck="false"
         />
-      </ConfigItem>
+      </EditorItem>
 
       <!-- DefaultOpen -->
-      <ConfigItem>
-        <ConfigItemTitle title="project_config.open_method" />
+      <EditorItem>
+        <EditorTitle title="project_config.open_method" />
         <JeDropdown
           v-model="localProjectItem.defaultOpen"
           :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
@@ -450,42 +475,32 @@ function updateProject() {
           :validated="projectDefaultOpenInputValidated"
           :validated-tooltip="t('project_config.open_tooltip')"
         />
-      </ConfigItem>
+      </EditorItem>
 
       <!-- License -->
-      <ConfigItem>
-        <ConfigItemTitle title="project_config.license" />
+      <EditorItem>
+        <EditorTitle title="project_config.license" />
         <JeDropdown
           v-model="localProjectItem.license"
           :options="convertLicensesToDropdownOptions(LicenseEnum)"
         />
-      </ConfigItem>
+      </EditorItem>
     </JeFrame>
 
     <JeFrame
       type="secondary"
-      b-t="solid 2px light:$gray-12 dark:$gray-3" p="8px"
-      flex="~ row-reverse" gap="8px"
+      b-t="solid 2px light:$gray-12 dark:$gray-3"
+      p="8px"
+      flex="~ row-reverse"
+      gap="8px"
     >
-      <JeButton
-        v-if="!isUpdateProject"
-        order-2
-        @click="addNewProject"
-      >
+      <JeButton v-if="!isUpdateProject" order-2 @click="addNewProject">
         {{ t('project_config.create') }}
       </JeButton>
-      <JeButton
-        v-else
-        order-2
-        @click="updateProject"
-      >
+      <JeButton v-else order-2 @click="updateProject">
         {{ t('project_config.finish') }}
       </JeButton>
-      <JeButton
-        type="secondary-alt"
-        order-1
-        @click="changeHomeView"
-      >
+      <JeButton type="secondary-alt" order-1 @click="changeHomeView">
         {{ t('project_config.cancel') }}
       </JeButton>
     </JeFrame>

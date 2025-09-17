@@ -1,5 +1,5 @@
 import type { ThemeEnum } from '~/constants/appEnums'
-import type { LinguistResult } from '~/views/NewProject/types'
+import type { LinguistResult } from '~/views/ProjectEditorView'
 
 declare global {
   interface Window {

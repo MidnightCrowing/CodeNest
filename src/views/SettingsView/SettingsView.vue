@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
 import { useSettingsStore } from '~/stores/settingsStore'
 
-import { activatedPage } from './SettingsProvider'
+import { activatedPage } from './SettingsViewProvider'
 
 defineOptions({
   name: 'Settings',

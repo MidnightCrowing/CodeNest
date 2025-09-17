@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import type { LocalProject } from '~/constants/localProject'
 
-import ConfigItemTitle from '../common/ConfigItemTitle.vue'
+import EditorTitle from './EditorTitle.vue'
 
 const props = defineProps<{
   isTestProject?: boolean
@@ -38,16 +38,17 @@ watch(projectNameInputValue, (newValue) => {
 </script>
 
 <template>
-  <ConfigItemTitle title="project_config.kind.url" />
+  <EditorTitle title="project_config.kind.url" />
   <JeInputField v-model="projectUrlInputValue" />
 
-  <ConfigItemTitle title="project_config.kind.name" />
+  <EditorTitle title="project_config.kind.name" />
   <JeInputField v-model="projectNameInputValue" />
 
   <div
     v-if="repositoryPath && projectNameInputValue !== repositoryPath"
     col-start="2"
-    flex gap="2px"
+    flex
+    gap="2px"
     overflow-hidden
   >
     <span text="secondary" truncate>{{ repositoryPath }}</span>

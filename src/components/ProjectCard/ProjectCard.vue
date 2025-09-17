@@ -13,6 +13,7 @@ import { initializeUpdateProjectState } from '~/views/ProjectEditorView'
 
 import LanguageButton from './LanguageButton.vue'
 import LicenseButton from './LicenseButton.vue'
+import type { OpenButtonExpose } from './OpenButton.exposed'
 import OpenButton from './OpenButton.vue'
 
 const props = defineProps<{
@@ -36,14 +37,14 @@ const projectExists = computed(() => projectItem.value.isExists)
 const { t } = useI18n()
 
 const projectCardRef = ref<HTMLDivElement | null>(null)
-const openButtonRef = ref<HTMLDivElement | null>(null)
-const projectCardActive = ref(false)
+const openButtonRef = ref<OpenButtonExpose | null>(null)
+const projectCardActive = ref<boolean>(false)
 const langGroup = ref(projectLangGroup.value)
 
-const formattedPath = ref('')
+const formattedPath = computed(() => window.api.formatPath(projectPath.value))
 
-async function formatPath(path: string) {
-  return window.api.formatPath(path)
+function handleClick() {
+  openButtonRef.value?.handleClick()
 }
 
 function handleDragStart(event: DragEvent) {
@@ -51,10 +52,6 @@ function handleDragStart(event: DragEvent) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', projectAppendTime.value.toString())
   }
-}
-
-function handleClick() {
-  openButtonRef.value?.handleClick()
 }
 
 watch(
@@ -66,10 +63,6 @@ watch(
   },
   { deep: true },
 ) // 使用 deep 监听 langGroup 的内部变化
-
-onMounted(async () => {
-  formattedPath.value = await formatPath(projectPath.value)
-})
 
 // ==================== More Button ====================
 function getDeleteLabel() {
@@ -141,8 +134,8 @@ function showMenu() {
     cursor-pointer
     tabindex="0"
     draggable="true"
-    @dragstart="handleDragStart"
     @click.self="handleClick"
+    @dragstart="handleDragStart"
   >
     <div
       :class="{ 'opacity-30': !projectExists }"
@@ -184,11 +177,7 @@ function showMenu() {
           text="secondary"
         >
           {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
-          <JeLink
-            v-if="projectFromUrl"
-            type="web"
-            :on-click="() => openLink(projectFromUrl)"
-          >
+          <JeLink v-if="projectFromUrl" type="web" :on-click="() => openLink(projectFromUrl)">
             {{ projectFromName || projectFromUrl }}
           </JeLink>
           <span v-else>{{ projectFromName }}</span>

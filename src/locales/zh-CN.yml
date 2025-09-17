@@ -179,5 +179,3 @@ status:
     found_many: 已发现 {count} 个新项目
     done: 扫描完成
     error: 扫描失败
-project:
-  opening: 正在打开...

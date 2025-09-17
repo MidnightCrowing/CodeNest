@@ -28,7 +28,6 @@ function handleClick(license: LicenseEnum) {
     <JeTransparentButton
       class="license-button"
       flex="~ items-center" gap="5px"
-      @mousedown.stop @mouseup.stop
     >
       <div
         size="13px"

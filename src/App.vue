@@ -13,8 +13,7 @@ import { addNewProjectsInWorker } from '~/services/projectScannerService'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
-
-import Home from './views/Home/Home.vue'
+import Home from '~/views/HomeView/HomeView.vue'
 
 const projects = useProjectsStore()
 const settings = useSettingsStore()
@@ -23,8 +22,12 @@ const { locale } = useI18n()
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Home]: Home,
-  [ViewEnum.NewProject]: defineAsyncComponent(() => import('./views/ProjectConfig/ProjectConfig.vue')),
-  [ViewEnum.Settings]: defineAsyncComponent(() => import('./views/Settings/Settings.vue')),
+  [ViewEnum.ProjectEditor]: defineAsyncComponent(
+    () => import('~/views/ProjectEditorView/ProjectEditorView.vue'),
+  ),
+  [ViewEnum.Settings]: defineAsyncComponent(
+    () => import('~/views/SettingsView/SettingsView.vue'),
+  ),
 }
 
 async function applyLanguage(lang: LanguageEnum) {
@@ -36,10 +39,7 @@ onMounted(async () => {
     // settings
     (async () => {
       await settings.loadSettings()
-      await Promise.all([
-        applyTheme(settings.theme),
-        applyLanguage(settings.language),
-      ])
+      await Promise.all([applyTheme(settings.theme), applyLanguage(settings.language)])
     })(),
 
     // projects
@@ -54,11 +54,7 @@ provide('activatedView', activatedView)
 </script>
 
 <template>
-  <JeFrame
-    size-full
-    flex="~ col"
-    caret="theme-text-caret" select-none
-  >
+  <JeFrame size-full flex="~ col" caret="theme-text-caret" select-none>
     <WindowHeader shrink-0 />
     <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />

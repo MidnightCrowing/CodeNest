@@ -187,5 +187,3 @@ status:
     found_many: Found {count} new projects
     done: Scan completed
     error: Scan failed
-project:
-  opening: Opening...

@@ -3,7 +3,7 @@ import { JeButton, JePopup } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
-import { activatedPage } from '~/views/Settings/SettingsProvider'
+import { activatedPage } from '~/views/SettingsView'
 
 import { hideNoIdePathDialog, isDialogVisible } from './NoIdePathDialogProvider'
 
