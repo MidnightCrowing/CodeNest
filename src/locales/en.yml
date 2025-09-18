@@ -78,11 +78,13 @@ license_pop:
 project_card:
   temporary: Temporary
   opening: Opening...
-  open_in_explorer: Open in Explorer
-  open_in_terminal: Open in Terminal
-  edit: Edit
-  remove: Remove
-  delete: Delete
+  actions:
+    open_in_explorer: Open in Explorer
+    open_in_terminal: Open in Terminal
+    copy_path: Copy Path
+    edit: Edit
+    remove: Remove
+    delete: Delete
 project_config:
   name: Name
   group: Project Group

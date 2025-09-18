@@ -73,29 +73,54 @@ watchEffect(async () => {
 })
 
 // ==================== More Button ====================
+async function copyProjectPath(): Promise<void> {
+  const text = projectPath.value
+  if (!text) {
+    return
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+    }
+  }
+  catch {}
+}
+
 function getDeleteLabel() {
   if (!projectExists.value) {
-    return t('project_card.remove')
+    return t('project_card.actions.remove')
   }
-  return projectIsTemporary?.value === true ? t('project_card.delete') : t('project_card.remove')
+  return projectIsTemporary?.value === true
+    ? t('project_card.actions.delete')
+    : t('project_card.actions.remove')
 }
 
 const projectActions = computed<JeMenuOptionProps[]>(() => [
   {
     value: 'explorer:open',
-    label: t('project_card.open_in_explorer'),
+    label: t('project_card.actions.open_in_explorer'),
+    disabled: !projectExists.value,
     onClick: () => window.api.openInExplorer(projectPath.value),
   },
   {
     value: 'terminal:open',
-    label: t('project_card.open_in_terminal'),
+    label: t('project_card.actions.open_in_terminal'),
     icon: 'light:i-jet:terminal dark:i-jet:terminal-dark',
+    disabled: !projectExists.value,
     onClick: () => window.api.openInTerminal(projectPath.value),
+  },
+  {
+    value: 'clipboard:copy',
+    label: t('project_card.actions.copy_path'),
+    icon: 'light:i-jet:copy dark:i-jet:copy-dark',
+    disabled: !projectPath.value,
+    onClick: copyProjectPath,
   },
   { value: 'line', isLine: true },
   {
     value: 'edit',
-    label: t('project_card.edit'),
+    label: t('project_card.actions.edit'),
     icon: 'light:i-jet:edit dark:i-jet:edit-dark',
     onClick: () => {
       initializeUpdateProjectState(props.projectItem)
@@ -183,14 +208,10 @@ function showMenu() {
           "
           truncate
           text="secondary"
+          @click.stop
         >
           {{ projectKind === ProjectKind.FORK ? 'Forked from' : 'Cloned from' }}
-          <JeLink
-            v-if="projectFromUrl"
-            type="web"
-            :on-click="() => openLink(projectFromUrl)"
-            @click.stop
-          >
+          <JeLink v-if="projectFromUrl" type="web" :on-click="() => openLink(projectFromUrl)">
             {{ projectFromName || projectFromUrl }}
           </JeLink>
           <span v-else>{{ projectFromName }}</span>

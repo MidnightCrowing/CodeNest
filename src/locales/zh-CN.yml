@@ -70,11 +70,13 @@ license_pop:
 project_card:
   temporary: 临时
   opening: 正在打开...
-  open_in_explorer: 在资源管理器中打开
-  open_in_terminal: 在终端中打开
-  edit: 编辑
-  remove: 移除
-  delete: 删除
+  actions:
+    open_in_explorer: 在资源管理器中打开
+    open_in_terminal: 在终端中打开
+    copy_path: 复制路径
+    edit: 编辑
+    remove: 移除
+    delete: 删除
 project_config:
   name: 名称
   group: 项目组
