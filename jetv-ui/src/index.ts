@@ -21,6 +21,8 @@ import type { JeTooltipProps } from './components/Popup'
 import { JePopup, JeTooltip } from './components/Popup'
 import type { JeShortcutProps } from './components/Shortcut'
 import { JeShortcut } from './components/Shortcut'
+import type { JeTabPaneProps, JeTabsProps } from './components/Tabs'
+import { JeTabPane, JeTabs } from './components/Tabs'
 
 // export components
 export {
@@ -53,6 +55,8 @@ export {
   JeSlimButton,
   JeSlimTag,
   JeSwitch,
+  JeTabPane,
+  JeTabs,
   JeTag,
   JeToolbarDropdown,
   JeTooltip,
@@ -89,6 +93,8 @@ export type {
   JeSlimButtonProps,
   JeSlimTagProps,
   JeSwitchProps,
+  JeTabPaneProps,
+  JeTabsProps,
   JeTagProps,
   JeToolbarDropdownOptionProps,
   JeToolbarDropdownProps,

@@ -23,6 +23,7 @@ import {
   SegmentedControl,
   Shortcut,
   Switch,
+  Tabs,
   Tag,
   Tooltip,
 } from './pages'
@@ -51,6 +52,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/shortcut', component: Shortcut, name: 'shortcut', meta: { label: 'Shortcut' } },
   { path: '/switch', component: Switch, name: 'switch', meta: { label: 'Switch' } },
   { path: '/tag', component: Tag, name: 'tag', meta: { label: 'Tag' } },
+  { path: '/tabs', component: Tabs, name: 'tabs', meta: { label: 'Tabs' } },
   { path: '/tooltip', component: Tooltip, name: 'tooltip', meta: { label: 'Tooltip' } },
 ]
 
