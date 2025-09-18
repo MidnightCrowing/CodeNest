@@ -113,68 +113,81 @@ export const editorIconClasses = Object.values(codeEditors)
   .map(option => option.icon)
   .filter(icon => icon !== undefined)
 
-export const languageToEditorMap: Record<string, CodeEditorEnum> = {
-  // IntellijIdea
-  'gradle': CodeEditorEnum.IntellijIdea,
-  'java': CodeEditorEnum.IntellijIdea,
-  'kotlin': CodeEditorEnum.IntellijIdea,
-  'spring': CodeEditorEnum.IntellijIdea,
-
-  // PyCharm
-  'django': CodeEditorEnum.PyCharm,
-  'jupyter': CodeEditorEnum.PyCharm,
-  'pip requirements': CodeEditorEnum.PyCharm,
-  'python': CodeEditorEnum.PyCharm,
-
-  // PhpStorm
-  'laravel': CodeEditorEnum.PhpStorm,
-  'php': CodeEditorEnum.PhpStorm,
-  'symfony': CodeEditorEnum.PhpStorm,
-
-  // GoLand
-  'go': CodeEditorEnum.GoLand,
-
-  // Rider
-  '.net': CodeEditorEnum.Rider,
-  'asp.net': CodeEditorEnum.Rider,
-  'c#': CodeEditorEnum.Rider,
-
-  // Clion
-  'c': CodeEditorEnum.Clion,
-  'c++': CodeEditorEnum.Clion,
-  'cmake': CodeEditorEnum.Clion,
-
-  // RustRover
-  'rust': CodeEditorEnum.RustRover,
-  'sql': CodeEditorEnum.RustRover,
-  'toml': CodeEditorEnum.RustRover,
-
-  // WebStorm
-  'angular': CodeEditorEnum.WebStorm,
-  'css': CodeEditorEnum.WebStorm,
-  'html': CodeEditorEnum.WebStorm,
-  'javascript': CodeEditorEnum.WebStorm,
-  'jsx': CodeEditorEnum.WebStorm,
-  'less': CodeEditorEnum.WebStorm,
-  'react': CodeEditorEnum.WebStorm,
-  'sass': CodeEditorEnum.WebStorm,
-  'scss': CodeEditorEnum.WebStorm,
-  'stylus': CodeEditorEnum.WebStorm,
-  'typescript': CodeEditorEnum.WebStorm,
-  'tsx': CodeEditorEnum.WebStorm,
-  'vue': CodeEditorEnum.WebStorm,
-
-  // RubyMine
-  'ror': CodeEditorEnum.RubyMine,
-  'ruby on rails': CodeEditorEnum.RubyMine,
-  'ruby': CodeEditorEnum.RubyMine,
-
-  // Visual Studio Code
-  'ini': CodeEditorEnum.VisualStudioCode,
-  'json': CodeEditorEnum.VisualStudioCode,
-  'markdown': CodeEditorEnum.VisualStudioCode,
-  'svg': CodeEditorEnum.VisualStudioCode,
-  'text': CodeEditorEnum.VisualStudioCode,
-  'xml': CodeEditorEnum.VisualStudioCode,
-  'yaml': CodeEditorEnum.VisualStudioCode,
+export const defaultEditorLangGroups: Record<CodeEditorEnum, string[]> = {
+  [CodeEditorEnum.IntellijIdea]: [
+    'gradle',
+    'java',
+    'kotlin',
+    'spring',
+    'maven pom',
+    'groovy',
+    'scala',
+  ],
+  [CodeEditorEnum.PyCharm]: [
+    'django',
+    'jupyter',
+    'pip requirements',
+    'python',
+    'flask',
+    'fastapi',
+    'pytest',
+  ],
+  [CodeEditorEnum.PhpStorm]: [
+    'laravel',
+    'php',
+    'symfony',
+    'wordpress',
+    'composer',
+    'twig',
+    'blade',
+  ],
+  [CodeEditorEnum.GoLand]: ['go'],
+  [CodeEditorEnum.Rider]: ['.net', 'asp.net', 'c#'],
+  [CodeEditorEnum.Clion]: ['c', 'c++', 'cmake', 'makefile', 'assembly', 'cuda'],
+  [CodeEditorEnum.RustRover]: ['rust', 'sql', 'toml', 'ron'],
+  [CodeEditorEnum.WebStorm]: [
+    'angular',
+    'css',
+    'html',
+    'javascript',
+    'jsx',
+    'less',
+    'react',
+    'sass',
+    'scss',
+    'stylus',
+    'typescript',
+    'tsx',
+    'vue',
+    'svelte',
+    'astro',
+    'pug',
+    'handlebars',
+    'ejs',
+    'graphql',
+    'mdx',
+  ],
+  [CodeEditorEnum.RubyMine]: ['ror', 'ruby on rails', 'ruby', 'erb', 'haml', 'slim'],
+  [CodeEditorEnum.Aqua]: ['selenium', 'playwright'],
+  [CodeEditorEnum.Fleet]: [],
+  [CodeEditorEnum.AndroidStudio]: ['android', 'dart'],
+  [CodeEditorEnum.VisualStudio]: ['f#', 'vb', 'vb.net'],
+  [CodeEditorEnum.VisualStudioCode]: [
+    'ini',
+    'json',
+    'markdown',
+    'svg',
+    'text',
+    'xml',
+    'yaml',
+    'bash',
+    'shell',
+    'powershell',
+    'dotenv',
+    'dockerfile',
+    'csv',
+    'tsv',
+    'json5',
+    'bicep',
+  ],
 }
