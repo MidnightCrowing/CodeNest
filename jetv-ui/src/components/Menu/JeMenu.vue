@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 
-import { capitalize, toUpperCase } from '../../utils/common'
+import { capitalize, toUpperCase } from '~/utils/common'
+
 import { JeLine } from '../Frame'
 import { JeGroup } from '../Group'
 import { JePopup } from '../Popup'
@@ -65,6 +66,10 @@ function setHoveredOption(index: string | number | null) {
  * @param option - 被点击的菜单项
  */
 function handleOptionClick(option: JeMenuOptionProps) {
+  // 禁用状态不响应点击
+  if (option.disabled)
+    return
+
   if (option.onClick) {
     option.onClick() // 调用选项的 onClick 回调函数
   }
@@ -137,11 +142,17 @@ function checkMenuPosition() {
           <li
             v-else
             class="je-menu__option-item"
-            :class="{ hovered: option.childMenu && hoveredOptionIndex === index }"
-            :tabindex="0"
+            :class="{
+              hovered: option.childMenu && hoveredOptionIndex === index && !option.disabled,
+              disabled: option.disabled,
+            }"
+            :tabindex="option.disabled ? -1 : 0"
+            role="menuitem"
+            :aria-disabled="option.disabled || undefined"
             @click="handleOptionClick(option)"
             @keydown.enter="handleOptionClick(option)"
-            @mouseenter="setHoveredOption(index)"
+            @mouseenter="!option.disabled && setHoveredOption(index)"
+            @mouseleave="setHoveredOption(null)"
           >
             <div class="je-menu__option-item-left">
               <!-- Option Icon -->
@@ -198,7 +209,7 @@ function checkMenuPosition() {
 
               <!-- 子菜单递归渲染 -->
               <div
-                v-if="option.childMenu && hoveredOptionIndex === index"
+                v-if="option.childMenu && !option.disabled && hoveredOptionIndex === index"
                 class="je-menu__child-menu-wrapper"
                 :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
               >
@@ -234,11 +245,17 @@ function checkMenuPosition() {
                 <li
                   v-else
                   class="je-menu__option-item"
-                  :class="{ hovered: groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}` }"
-                  :tabindex="0"
+                  :class="{
+                    hovered: groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}` && !groupOption.disabled,
+                    disabled: groupOption.disabled,
+                  }"
+                  :tabindex="groupOption.disabled ? -1 : 0"
+                  role="menuitem"
+                  :aria-disabled="groupOption.disabled || undefined"
                   @click="handleOptionClick(groupOption)"
                   @keydown.enter="handleOptionClick(groupOption)"
-                  @mouseenter="setHoveredOption(`${index}-${groupIndex}`)"
+                  @mouseenter="!groupOption.disabled && setHoveredOption(`${index}-${groupIndex}`)"
+                  @mouseleave="setHoveredOption(null)"
                 >
                   <div class="je-menu__option-item-left">
                     <!-- Option Icon -->
@@ -295,7 +312,7 @@ function checkMenuPosition() {
 
                     <!-- 子菜单递归渲染 -->
                     <div
-                      v-if="groupOption.childMenu && hoveredOptionIndex === `${index}-${groupIndex}`"
+                      v-if="groupOption.childMenu && !groupOption.disabled && hoveredOptionIndex === `${index}-${groupIndex}`"
                       class="je-menu__child-menu-wrapper"
                       :style="{ left: childMenuPosition === 'right' ? '100%' : 'auto', right: childMenuPosition === 'left' ? '100%' : 'auto' }"
                     >
@@ -345,6 +362,24 @@ function checkMenuPosition() {
   &:hover {
     @apply light:bg-$blue-11 dark:bg-$blue-2;
   }
+
+  &.disabled {
+    @apply opacity-60 cursor-not-allowed;
+    /* 禁用时禁用悬停高亮 */
+    &:hover {
+      @apply bg-transparent light:bg-transparent dark:bg-transparent;
+    }
+
+    .je-menu__option-label:not(.custom-color),
+    .je-menu__option-description,
+    .je-menu__option-shortcut {
+      @apply light:color-$gray-6 dark:color-$gray-8;
+    }
+
+    .je-menu__icon-drop-down {
+      @apply opacity-60;
+    }
+  }
 }
 
 .je-menu__option-item-left,
@@ -385,11 +420,11 @@ function checkMenuPosition() {
 }
 
 .je-menu__option-line {
-  JeLine {
+  :deep(.je-line) {
     @apply my-1px;
   }
 
-  &.je-menu__option-group JeLine {
+  &.je-menu__option-group :deep(.je-line) {
     @apply ml-6px;
   }
 }

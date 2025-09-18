@@ -25,9 +25,10 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/**/*",
+    "shims-vue.d.ts",
     "src/**/*.vue",
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.d.ts"
   ],
   "exclude": [
     "dist",

@@ -67,6 +67,13 @@ export interface JeMenuOptionProps {
   ellipsis?: boolean
 
   /**
+   * 是否禁用该选项。
+   *
+   * 如果设置为 `true`，该选项将不可点击，并且通常会以灰色显示以表示其禁用状态。
+   */
+  disabled?: boolean
+
+  /**
    * 是否为分割线，标识该选项是否作为分隔线使用。
    *
    * 通常用于视觉上分隔不同的菜单项组，改善菜单布局和可读性。

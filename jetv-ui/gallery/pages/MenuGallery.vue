@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
+import type { JeMenuOptionProps } from '../../src'
 import { JeButton, JeMenu } from '../../src'
 import GalleryCard from '../components/GalleryCard.vue'
 import ShowcaseFrame from '../components/ShowcaseFrame.vue'
@@ -9,11 +10,11 @@ const showDefaultMenu = ref(false)
 const showGroupMenu = ref(false)
 const showChildMenu = ref(false)
 
-const defaultOptions = [
+const defaultOptions: JeMenuOptionProps = [
   { value: 'new', label: 'New File', shortcutKey: ['Ctrl', 'N'] },
   { value: 'open', label: 'Open File', shortcutKey: ['Ctrl', 'O'] },
   { isLine: true, value: 'line1' },
-  { value: 'save', label: 'Save', shortcutKey: ['Ctrl', 'S'] },
+  { value: 'save', label: 'Save', shortcutKey: ['Ctrl', 'S'], disabled: true },
   { value: 'exit', label: 'Exit' },
 ]
 

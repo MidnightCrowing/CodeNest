@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { capitalize } from '../../utils/common'
+import { capitalize } from '~/utils/common'
+
 import type { JeShortcutProps } from './types.ts'
 
 withDefaults(defineProps<JeShortcutProps>(), {
