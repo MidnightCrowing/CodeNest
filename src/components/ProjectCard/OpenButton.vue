@@ -17,8 +17,8 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const settings = useSettingsStore()
-const projects = useProjectsStore()
+const settingsStore = useSettingsStore()
+const projectsStore = useProjectsStore()
 const isOpening = ref(false)
 
 function handleClick() {
@@ -26,7 +26,7 @@ function handleClick() {
     return // 防止多次点击
   }
 
-  const idePath = settings.codeEditorsPath[props.defaultOpen]
+  const idePath = settingsStore.codeEditorsPath[props.defaultOpen]
 
   if (!idePath) {
     showNoIdePathDialog()
@@ -44,7 +44,7 @@ function handleClick() {
   }, 2000)
 
   // 置顶项目
-  projects.moveProjectToTopByTime(props.appendTime)
+  projectsStore.moveProjectToTopByTime(props.appendTime)
 }
 
 defineExpose({

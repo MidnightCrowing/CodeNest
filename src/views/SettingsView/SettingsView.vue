@@ -11,7 +11,7 @@ defineOptions({
   name: 'Settings',
 })
 
-const settings = useSettingsStore()
+const settingsStore = useSettingsStore()
 const { t } = useI18n()
 
 // ==================== Side Menu ====================
@@ -43,13 +43,13 @@ function openSettingsJSON() {
 }
 
 function saveAllSettings() {
-  settings.saveSettings()
+  settingsStore.saveSettings()
   changeHomeView()
 }
 
 function cancelChanges() {
   // Reset unsaved changes
-  settings.loadSettings()
+  settingsStore.loadSettings()
   changeHomeView()
 }
 
@@ -60,7 +60,7 @@ function changeHomeView() {
 }
 
 onMounted(async () => {
-  await settings.loadSettings()
+  await settingsStore.loadSettings()
 })
 
 onUnmounted(() => {

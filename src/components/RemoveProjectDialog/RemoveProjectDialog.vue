@@ -7,7 +7,7 @@ import { useProjectsStore } from '~/stores/projectsStore'
 import { hideRemoveDialog, isDialogVisible, projectToRemove } from './RemoveProjectDialogProvider'
 
 const { t } = useI18n()
-const projects = useProjectsStore()
+const projectsStore = useProjectsStore()
 
 const isRemove = computed(() => {
   if (projectToRemove.value?.isExists === false) {
@@ -22,7 +22,7 @@ function confirmRemove(deleteFiles = false) {
       window.api.deleteProject(projectToRemove.value.path)
     }
 
-    projects.removeProject(projectToRemove.value.appendTime)
+    projectsStore.removeProject(projectToRemove.value.appendTime)
   }
   hideRemoveDialog()
 }

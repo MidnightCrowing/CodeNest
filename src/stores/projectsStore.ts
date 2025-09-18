@@ -2,6 +2,23 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 import type { LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
+import { createPersistence } from '~/stores/helpers/persistence'
+
+const projectsPersistence = createPersistence<LocalProject[]>({
+  key: 'projects',
+  serialize: data =>
+    JSON.stringify(data, (key, value) => {
+      if (key === 'group' && value === '')
+        return undefined
+      if (key === 'langGroup' || key === 'isExists')
+        return undefined
+      if (key === 'isTemporary' && value !== true)
+        return undefined
+      if (key === 'license' && value === 'None')
+        return undefined
+      return value
+    }),
+})
 
 export const useProjectsStore = defineStore('projects', () => {
   // -------------------------
@@ -121,18 +138,7 @@ export const useProjectsStore = defineStore('projects', () => {
   // 保存项目到本地
   async function saveProjects() {
     try {
-      const dataToSave = JSON.stringify(projects.value, (key, value) => {
-        if (key === 'group' && value === '')
-          return undefined
-        if (key === 'langGroup' || key === 'isExists')
-          return undefined
-        if (key === 'isTemporary' && value !== true)
-          return undefined
-        if (key === 'license' && value === 'None')
-          return undefined
-        return value
-      })
-      await window.api.saveData('projects', dataToSave)
+      await projectsPersistence.save(projects.value)
     }
     catch (error) {
       console.error('Error saving project data:', error)
@@ -142,17 +148,14 @@ export const useProjectsStore = defineStore('projects', () => {
   // 从本地加载项目
   async function loadProjects() {
     try {
-      const result = await window.api.loadData('projects')
-      if (result.success && result.data) {
-        const loadedProjects: LocalProject[] = JSON.parse(result.data)
-
-        for (const project of loadedProjects) {
+      const loaded = await projectsPersistence.load()
+      if (loaded) {
+        for (const project of loaded) {
           project.group = project.group || ''
           project.isTemporary = !!project.isTemporary
           project.isExists = await checkProjectExistence(project)
         }
-
-        projects.value.splice(0, projects.value.length, ...loadedProjects)
+        projects.value.splice(0, projects.value.length, ...loaded)
       }
     }
     catch (error) {

@@ -7,7 +7,7 @@ import { useProjectsStore } from '~/stores/projectsStore'
 import { version } from '../../../../package.json'
 
 const { t } = useI18n()
-const projects = useProjectsStore()
+const projectsStore = useProjectsStore()
 
 const checking = ref(false)
 const updateInfo = ref<{
@@ -48,7 +48,7 @@ async function onCheckUpdate() {
 
 async function importProjects() {
   await window.api.importProject()
-  await projects.loadProjects()
+  await projectsStore.loadProjects()
 }
 
 function exportProjects() {

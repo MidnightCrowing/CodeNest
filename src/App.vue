@@ -10,13 +10,13 @@ import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
 import { addNewProjectsInWorker } from '~/services/projectScannerService'
+import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
 import Home from '~/views/HomeView/HomeView.vue'
 
-const projects = useProjectsStore()
-const settings = useSettingsStore()
+const settingsStore = useSettingsStore()
 const { locale } = useI18n()
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
@@ -38,13 +38,16 @@ onMounted(async () => {
   await Promise.all([
     // settings
     (async () => {
-      await settings.loadSettings()
-      await Promise.all([applyTheme(settings.theme), applyLanguage(settings.language)])
+      await settingsStore.loadSettings()
+      await Promise.all([applyTheme(settingsStore.theme), applyLanguage(settingsStore.language)])
     })(),
 
     // projects
     (async () => {
-      await projects.loadProjects()
+      await Promise.all([
+        useProjectsStore().loadProjects(),
+        useEditorLangGroupsStore().loadEditorLangGroupsData(),
+      ])
       void addNewProjectsInWorker()
     })(),
   ])

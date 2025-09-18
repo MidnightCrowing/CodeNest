@@ -139,28 +139,29 @@ watch(defaultOpenMode, (newValue) => {
         {{ t('settings.auto_scan.clear_history') }}
       </JeSlimButton>
     </div>
-  </div>
 
-  <div
-    v-if="showDialog"
-    pos="fixed top-40px bottom-0 left-0 right-0"
-    flex="~ items-center justify-center"
-    bg="light:black/30 dark:black/50"
-  >
-    <JePopup p="20px" rounded="8px" w="400px">
-      <h3>{{ t('settings.auto_scan.clear_history') }}</h3>
-      <p>{{ t('settings.auto_scan.clear_history_desc') }}</p>
-      <p color="light:$red-4 dark:$red-6">
-        {{ t('settings.auto_scan.clear_history_warning') }}
-      </p>
-      <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
-        <JeButton order-2 @click="deleteScanData">
-          {{ t('settings.auto_scan.confirm') }}
-        </JeButton>
-        <JeButton type="secondary" order-1 @click="showDialog = false">
-          {{ t('settings.auto_scan.cancel') }}
-        </JeButton>
-      </div>
-    </JePopup>
+    <!-- Dialog -->
+    <div
+      v-if="showDialog"
+      pos="fixed top-40px bottom-0 left-0 right-0"
+      flex="~ items-center justify-center"
+      bg="light:black/30 dark:black/50"
+    >
+      <JePopup p="20px" rounded="8px" w="400px">
+        <h3>{{ t('settings.auto_scan.clear_history') }}</h3>
+        <p>{{ t('settings.auto_scan.clear_history_desc') }}</p>
+        <p color="light:$red-4 dark:$red-6">
+          {{ t('settings.auto_scan.clear_history_warning') }}
+        </p>
+        <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
+          <JeButton order-2 @click="deleteScanData">
+            {{ t('settings.auto_scan.confirm') }}
+          </JeButton>
+          <JeButton type="secondary" order-1 @click="showDialog = false">
+            {{ t('settings.auto_scan.cancel') }}
+          </JeButton>
+        </div>
+      </JePopup>
+    </div>
   </div>
 </template>

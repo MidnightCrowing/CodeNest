@@ -15,7 +15,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const projects = useProjectsStore()
+const projectsStore = useProjectsStore()
 
 const searchValue = ref('')
 
@@ -28,16 +28,16 @@ const projectsFiltered = computed(() => {
     const content = activatedItem.slice(2) // 去掉前面的 "k-"
 
     if (content === 'all') {
-      return projects.allProjects
+      return projectsStore.allProjects
     }
     else {
-      return projects.getProjectsByKind(content as ProjectKind)
+      return projectsStore.getProjectsByKind(content as ProjectKind)
     }
   }
 
   // 匹配 temp 字符串
   else if (activatedItem === 'temp') {
-    return projects.tempProjects
+    return projectsStore.tempProjects
   }
 
   // 匹配以 l- 开头的字符串
@@ -45,7 +45,7 @@ const projectsFiltered = computed(() => {
     const content = activatedItem.slice(2) // 去掉前面的 "l-"
 
     // 如果有语言参数，返回指定语言的项目
-    return projects.getProjectsByLang(content)
+    return projectsStore.getProjectsByLang(content)
   }
 
   else {
@@ -98,7 +98,7 @@ function handleDrop(event: DragEvent) {
       // 插入到目标位置
       filteredProjects.value.splice(targetIndex, 0, draggedItem)
 
-      projects.saveProjects()
+      projectsStore.saveProjects()
     }
   }
   else {

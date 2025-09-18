@@ -2,6 +2,11 @@ import { defineStore } from 'pinia'
 
 import { LanguageEnum, ThemeEnum } from '~/constants/appEnums'
 import { CodeEditorEnum, codeEditors } from '~/constants/codeEditor'
+import { createPersistence } from '~/stores/helpers/persistence'
+
+const settingsPersistence = createPersistence<any>({
+  key: 'settings',
+})
 
 export const useSettingsStore = defineStore('settings', () => {
   // --- 配置项 ---
@@ -18,18 +23,18 @@ export const useSettingsStore = defineStore('settings', () => {
   // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
     try {
-      const result = await window.api.loadData('settings')
-      if (result.success && result.data) {
-        const loadedData = JSON.parse(result.data)
-
+      const loadedData = await settingsPersistence.load()
+      if (loadedData) {
         theme.value = loadedData.theme ?? theme.value
         language.value = loadedData.language ?? language.value
         projectScannerRoots.value = Array.isArray(loadedData.projectScannerRoots)
           ? loadedData.projectScannerRoots
           : []
-        projectScannerOpenMode.value = loadedData.projectScannerOpenMode ?? projectScannerOpenMode.value
+        projectScannerOpenMode.value
+          = loadedData.projectScannerOpenMode ?? projectScannerOpenMode.value
         projectScannerEditor.value = loadedData.projectScannerEditor ?? projectScannerEditor.value
-        projectScannerNamePattern.value = loadedData.projectScannerNamePattern ?? projectScannerNamePattern.value
+        projectScannerNamePattern.value
+          = loadedData.projectScannerNamePattern ?? projectScannerNamePattern.value
 
         if (loadedData.codeEditorsPath) {
           for (const editor of Object.keys(codeEditorsPath) as CodeEditorEnum[]) {
@@ -38,7 +43,7 @@ export const useSettingsStore = defineStore('settings', () => {
         }
       }
     }
-    catch (error: any) {
+    catch (error) {
       console.error('Error loading settings data:', error)
     }
   }
@@ -46,7 +51,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // --- 保存配置 ---
   async function saveSettings(): Promise<void> {
     try {
-      const dataToSave = JSON.stringify({
+      await settingsPersistence.save({
         theme: theme.value,
         language: language.value,
         codeEditorsPath,
@@ -55,9 +60,8 @@ export const useSettingsStore = defineStore('settings', () => {
         projectScannerEditor: projectScannerEditor.value,
         projectScannerNamePattern: projectScannerNamePattern.value,
       })
-      await window.api.saveData('settings', dataToSave)
     }
-    catch (error: any) {
+    catch (error) {
       console.error('Error saving settings data:', error)
     }
   }

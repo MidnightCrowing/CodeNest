@@ -19,12 +19,13 @@ import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
-import { codeEditors, languageToEditorMap } from '~/constants/codeEditor'
+import { codeEditors } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { detectLicenseBySnippet } from '~/services/licenseDetector'
+import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 
 import EditorItem from './components/EditorItem.vue'
@@ -37,7 +38,8 @@ import {
 } from './ProjectEditorViewProvider'
 
 const { t } = useI18n()
-const projects = useProjectsStore()
+const projectsStore = useProjectsStore()
+const editorLangGroupsStore = useEditorLangGroupsStore()
 
 // ==================== ProjectInfo ====================
 const projectPathInputValidated = ref<boolean>(false)
@@ -45,7 +47,7 @@ const projectNameInputValidated = ref<boolean>(false)
 const repositoryFolderName = ref<string>('')
 const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
 const groupOptions = ref<JeComboboxOptionProps[]>(
-  projects.allGroups.map(group => ({ label: group, value: group })),
+  projectsStore.allGroups.map(group => ({ label: group, value: group })),
 )
 
 function fillProjectName() {
@@ -265,7 +267,7 @@ watch(
 
     // 查找匹配的默认打开项
     localProjectItem.value.defaultOpen = newValue
-      ? languageToEditorMap[newValue.toLowerCase()] || null
+      ? editorLangGroupsStore.getEditorByLanguage(newValue)
       : null
   },
 )
@@ -322,7 +324,7 @@ function addNewProject() {
   }
 
   // 添加项目
-  projects.addProject(
+  projectsStore.addProject(
     {
       ...localProjectItem.value,
       ...getDynamicFields(),
@@ -346,7 +348,7 @@ function updateProject() {
     ...localProjectItem.value,
     ...getDynamicFields(),
   }
-  projects.updateProject(
+  projectsStore.updateProject(
     localProjectItem.value.appendTime as number,
     localProjectItem.value as LocalProject,
   )
@@ -375,7 +377,7 @@ function updateProject() {
         <div
           v-if="
             localProjectItem.path
-              && projects.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)
+              && projectsStore.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)
           "
           col-start="2"
           flex="~ items-center"

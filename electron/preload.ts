@@ -29,9 +29,9 @@ contextBridge.exposeInMainWorld('api', {
   openSettingsJSON: () => ipcRenderer.invoke('settings:open-json'),
 
   // data
-  saveData: (fileType: 'projects' | 'projectScanner' | 'settings', data: string) => ipcRenderer.invoke('data:save', fileType, data),
-  loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => ipcRenderer.invoke('data:load', fileType),
-  deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => ipcRenderer.invoke('data:delete', fileType),
+  saveData: (fileType: string, data: string) => ipcRenderer.invoke('data:save', fileType, data),
+  loadData: (fileType: string) => ipcRenderer.invoke('data:load', fileType),
+  deleteData: (fileType: string) => ipcRenderer.invoke('data:delete', fileType),
 
   // system
   openExternal: (url: string) => ipcRenderer.invoke('external:open', url),

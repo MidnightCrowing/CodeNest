@@ -2,11 +2,11 @@ import { unref } from 'vue'
 
 import { clearState, setState } from '~/components/StateBar'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { languageToEditorMap } from '~/constants/codeEditor'
 import type { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { detectLicenseBySnippet } from '~/services/licenseDetector'
+import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -29,19 +29,20 @@ function toRegExp(pattern: string): RegExp | null {
  * 在主进程 Worker 中扫描并分析新增项目目录（流式），边扫边加入项目列表
  */
 export async function addNewProjectsInWorker() {
-  const projects = useProjectsStore()
-  const settings = useSettingsStore()
-  const scanner = useProjectScannerStore()
+  const projectsStore = useProjectsStore()
+  const settingsStore = useSettingsStore()
+  const scannerStore = useProjectScannerStore()
+  const editorLangGroupsStore = useEditorLangGroupsStore()
 
-  await scanner.loadProjectScannerData()
-  await projects.loadProjects()
+  await scannerStore.loadProjectScannerData()
+  await projectsStore.loadProjects()
 
-  projects.allProjects.forEach(p => scanner.addScannedPath(p.path))
+  projectsStore.allProjects.forEach(p => scannerStore.addScannedPath(p.path))
 
-  const roots = Array.isArray(unref(settings.projectScannerRoots))
-    ? [...unref(settings.projectScannerRoots) as string[]]
+  const roots = Array.isArray(unref(settingsStore.projectScannerRoots))
+    ? [...unref(settingsStore.projectScannerRoots) as string[]]
     : []
-  const existingPaths = Array.from(unref(scanner.allHistoryScannedPaths))
+  const existingPaths = Array.from(unref(scannerStore.allHistoryScannedPaths))
 
   // 初始状态：扫描中
   setState('projectScanner', t('status.project_scanner.scanning'), true)
@@ -68,8 +69,8 @@ export async function addNewProjectsInWorker() {
     offError?.()
     offItem = offDone = offError = null
     await Promise.all([
-      projects.saveProjects(),
-      scanner.saveProjectScannerData(),
+      projectsStore.saveProjects(),
+      scannerStore.saveProjectScannerData(),
     ])
     clearState('projectScanner')
   }
@@ -83,7 +84,7 @@ export async function addNewProjectsInWorker() {
     const name = (item.name as string) || 'Unnamed Project'
 
     // 记录扫描历史
-    scanner.addScannedPath(path)
+    scannerStore.addScannedPath(path)
 
     const mainLang = (item.mainLang || 'unknown') as string
 
@@ -96,11 +97,11 @@ export async function addNewProjectsInWorker() {
       }
     }
 
-    const defaultOpen: CodeEditorEnum = settings.projectScannerOpenMode === 'specified'
-      ? settings.projectScannerEditor
-      : languageToEditorMap[mainLang.toLowerCase()] || settings.projectScannerEditor
+    const defaultOpen: CodeEditorEnum = settingsStore.projectScannerOpenMode === 'specified'
+      ? settingsStore.projectScannerEditor
+      : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.projectScannerEditor) as CodeEditorEnum
 
-    const isTemporary: boolean = toRegExp(settings.projectScannerNamePattern)?.test(name) || false
+    const isTemporary: boolean = toRegExp(settingsStore.projectScannerNamePattern)?.test(name) || false
 
     const newProject: LocalProject = {
       appendTime: Date.now(),
@@ -117,7 +118,7 @@ export async function addNewProjectsInWorker() {
       isExists: true,
     }
 
-    await projects.addProject(newProject, false)
+    await projectsStore.addProject(newProject, false)
 
     // 更新“已发现 N 个新项目”
     foundCount += 1

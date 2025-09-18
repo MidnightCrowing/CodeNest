@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
+import { createPersistence } from '~/stores/helpers/persistence'
+
+const scannerPersistence = createPersistence<{
+  historyScannedPaths: string[]
+}>({
+  key: 'projectScanner',
+})
+
 export const useProjectScannerStore = defineStore('projectScanner', () => {
   const historyScannedPaths = ref<Set<string>>(new Set())
 
@@ -11,24 +19,16 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
   }
 
   async function loadProjectScannerData() {
-    const result = await window.api.loadData('projectScanner')
-    if (result.success && result.data) {
-      try {
-        const data = JSON.parse(result.data)
-        if (Array.isArray(data.historyScannedPaths)) {
-          historyScannedPaths.value = new Set(data.historyScannedPaths)
-        }
-      }
-      catch (error) {
-        console.error('Error parsing project scanner data:', error)
-      }
+    const data = await scannerPersistence.load()
+    if (data && Array.isArray(data.historyScannedPaths)) {
+      historyScannedPaths.value = new Set(data.historyScannedPaths)
     }
   }
 
   async function saveProjectScannerData() {
-    await window.api.saveData('projectScanner', JSON.stringify({
+    await scannerPersistence.save({
       historyScannedPaths: Array.from(historyScannedPaths.value),
-    }))
+    })
   }
 
   return {

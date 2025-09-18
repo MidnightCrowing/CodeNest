@@ -16,7 +16,7 @@ const props = defineProps<{
 const emit = defineEmits(['updateActivatedItem'])
 
 const { t } = useI18n()
-const projects = useProjectsStore()
+const projectsStore = useProjectsStore()
 
 // 通过点击更新激活项
 function updateActivatedItem(itemMark: SidePanelActive) {
@@ -38,8 +38,8 @@ const kindMenuGroup1 = computed(() =>
     kind,
     label,
     count: projectKind
-      ? projects.getProjectsByKind(projectKind).length
-      : projects.allProjects.length,
+      ? projectsStore.getProjectsByKind(projectKind).length
+      : projectsStore.allProjects.length,
   })),
 )
 
@@ -48,17 +48,17 @@ function handleTempDrop(event: DragEvent) {
   if (data) {
     const appendTime = Number(data) // 转换为数字
 
-    const project = projects.getProjectByAppendTime(appendTime)
+    const project = projectsStore.getProjectByAppendTime(appendTime)
     if (project) {
       project.isTemporary = !project.isTemporary
-      projects.updateProject(appendTime, project)
+      projectsStore.updateProject(appendTime, project)
     }
   }
 }
 
 // ==================== Language Group ====================
 const languagesGroup = computed(() => {
-  return [...projects.mainLangSummary]
+  return [...projectsStore.mainLangSummary]
     .sort((a, b) => {
       if (b.count !== a.count) {
         return b.count - a.count // 按 count 降序
@@ -110,7 +110,7 @@ function changeSettingsView() {
         <!-- Temporary -->
         <SideMenuButton
           :active="activatedItem === 'temp'"
-          :tag-value="projects.tempProjects.length"
+          :tag-value="projectsStore.tempProjects.length"
           @click="updateActivatedItem('temp')"
           @keydown.enter="updateActivatedItem('temp')"
           @dragover.prevent

@@ -34,22 +34,9 @@ declare global {
       openSettingsJSON: () => Promise<boolean>
 
       // data
-      saveData: (
-        fileType: 'projects' | 'projectScanner' | 'settings',
-        data: string
-      ) => Promise<{
-        success: boolean
-        error?: string
-      }>
-      loadData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{
-        success: boolean
-        data?: string
-        error?: string
-      }>
-      deleteData: (fileType: 'projects' | 'projectScanner' | 'settings') => Promise<{
-        success: boolean
-        error?: string
-      }>
+      saveData: (fileType: string, data: string) => Promise<{ success: boolean, error?: string }>
+      loadData: (fileType: string) => Promise<{ success: boolean, data?: string, error?: string }>
+      deleteData: (fileType: string) => Promise<{ success: boolean, error?: string }>
 
       // system
       openExternal: (url: string) => void
