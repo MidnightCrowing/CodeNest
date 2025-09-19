@@ -38,6 +38,8 @@ export default defineConfig({
     // Color
     'text-primary': 'light:color-$gray-1 dark:color-$gray-12',
     'text-secondary': 'color-$gray-7',
+    // Layout
+    'settings-section': 'pl-30px',
   },
   safelist: editorIconClasses,
   transformers: [

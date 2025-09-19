@@ -2,6 +2,8 @@ import { Worker } from 'node:worker_threads'
 
 import { ipcMain } from 'electron'
 
+import { detectVscodeStateDbPath } from '../utils/vscodeRecent'
+
 interface ScanPayload {
   roots: string[]
   existingPaths: string[]
@@ -103,7 +105,7 @@ ipcMain.handle('scanner:start', (event, payload: ScanPayload): { sessionId: numb
   return { sessionId }
 })
 
-ipcMain.handle('scanner:stop', (_event, sessionId: number) => {
+ipcMain.handle('scanner:stop', (_, sessionId: number) => {
   const worker = sessions.get(sessionId)
   if (worker) {
     try {
@@ -115,4 +117,8 @@ ipcMain.handle('scanner:stop', (_event, sessionId: number) => {
     return { stopped: true }
   }
   return { stopped: false }
+})
+
+ipcMain.handle('scanner:detect-vsc-state-db-path', (_) => {
+  return detectVscodeStateDbPath()
 })

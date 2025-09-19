@@ -2,11 +2,13 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('api', {
   // dialog
-  openFolderDialog: () => ipcRenderer.invoke('dialog:open-folder'),
-  openFileDialog: (fileTypes: { name: string, extensions: string[] }[] = []) => ipcRenderer.invoke('dialog:open-file', fileTypes),
-
-  // folder
-  getFolderList: (folderPath: string) => ipcRenderer.invoke('folder:get-list', folderPath),
+  openFolderDialog: (options?: {
+    title?: string
+  }) => ipcRenderer.invoke('dialog:open-folder', options),
+  openFileDialog: (options?: {
+    title?: string
+    fileTypes?: { name: string, extensions: string[] }[]
+  }) => ipcRenderer.invoke('dialog:open-file', options),
 
   // path
   formatPath: (filePath: string) => ipcRenderer.invoke('path:format', filePath),
@@ -61,6 +63,7 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('scanner:error', handler)
     return () => ipcRenderer.removeListener('scanner:error', handler)
   },
+  detectVscodeStateDbPath: () => ipcRenderer.invoke('scanner:detect-vsc-state-db-path'),
 
   // theme
   setWindowTheme: (currentTheme: 'light' | 'dark') => ipcRenderer.invoke('theme:set', currentTheme),

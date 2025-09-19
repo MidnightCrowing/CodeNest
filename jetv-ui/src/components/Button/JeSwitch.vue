@@ -9,7 +9,10 @@ const props = withDefaults(defineProps<JeSwitchProps>(), {
 })
 const emit = defineEmits(['update:modelValue'])
 
-const isOn = ref(props.modelValue)
+const isOn = computed({
+  get: () => props.modelValue,
+  set: val => emit('update:modelValue', val),
+})
 
 // 监听 `modelValue` 的变化，确保外部绑定的值保持一致
 watch(() => props.modelValue, (newVal) => {

@@ -5,11 +5,13 @@ declare global {
   interface Window {
     api: {
       // dialog
-      openFolderDialog: () => Promise<string[]>
-      openFileDialog: (fileTypes?: { name: string, extensions: string[] }[]) => Promise<string[]>
-
-      // folder
-      getFolderList: (folderPath: string) => Promise<{ folders: string[], error?: string }>
+      openFolderDialog: (options?: {
+        title?: string
+      }) => Promise<string[]>
+      openFileDialog: (options?: {
+        title?: string
+        fileTypes?: { name: string, extensions: string[] }[]
+      }) => Promise<string[]>
 
       // path
       formatPath: (filePath: string) => Promise<string>
@@ -88,6 +90,7 @@ declare global {
       ) => () => void
       onScannerDone: (cb: (data: { sessionId: number }) => void) => () => void
       onScannerError: (cb: (data: { sessionId: number, error: string }) => void) => () => void
+      detectVscodeStateDbPath: () => Promise<string | null>
 
       // theme
       setWindowTheme: (currentTheme: ThemeEnum) => void

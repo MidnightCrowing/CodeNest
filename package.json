@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.4",
   "private": true,
-  "packageManager": "pnpm@10.15.1",
+  "packageManager": "pnpm@10.17.0",
   "description": "跨平台开发项目管理工具",
   "author": "MidnightCrowing",
   "license": "MIT",
@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^13.8.0",
+    "better-sqlite3": "^12.2.0",
     "fs-extra": "^11.3.1",
     "fuse.js": "^7.1.0",
     "jetv-ui": "file:jetv-ui",
@@ -58,6 +59,7 @@
     "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@rushstack/eslint-patch": "^1.12.0",
     "@tsconfig/node20": "^20.1.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/fs-extra": "^11.0.4",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.3.0",
@@ -68,6 +70,7 @@
     "concurrently": "^9.2.1",
     "electron": "37.4.0",
     "electron-builder": "^26.0.12",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^9.34.0",
     "eslint-plugin-format": "^1.0.1",
     "eslint-plugin-node": "^11.1.0",
@@ -94,9 +97,11 @@
     },
     "onlyBuiltDependencies": [
       "@parcel/watcher",
+      "better-sqlite3",
       "electron",
       "electron-winstaller",
       "esbuild",
+      "lzma-native",
       "oxc-resolver",
       "simple-git-hooks"
     ]

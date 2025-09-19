@@ -76,11 +76,13 @@ onUnmounted(() => {
   >
     <div
       grow flex="~ row" gap="5px"
+      b-t="solid 2px light:$gray-12 dark:$gray-3"
       overflow-hidden
     >
       <JeFrame
         type="secondary"
         shrink-0 flex="~ col" w-200px
+        b-r="solid 2px light:$gray-14 dark:$gray-1"
         overflow-y-auto
       >
         <JeSearchField v-model="searchValue" class="search-input" />

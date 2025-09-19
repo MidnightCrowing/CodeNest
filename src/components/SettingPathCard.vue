@@ -23,7 +23,7 @@ async function openFolder() {
     { name: 'All Files', extensions: ['*'] },
   ]
 
-  const selectedPaths = await window.api.openFileDialog(fileTypes)
+  const selectedPaths = await window.api.openFileDialog({ fileTypes })
   if (selectedPaths.length > 0) {
     changePathValue(selectedPaths[0])
   }
@@ -110,14 +110,14 @@ function resetPath() {
 .browse-button {
   @apply light:bg-$gray-10 dark:bg-$gray-5 hover:bg-$toolbar-hover active:bg-$toolbar-active;
 }
-</style>
 
-<style lang="scss">
-.toggle-button .je-transparent-tool-button__icon {
-  @apply transition-transform duration-300 ease-in-out;
-}
+.toggle-button {
+  :deep(.je-transparent-tool-button__icon) {
+    @apply transition-transform duration-300 ease-in-out;
+  }
 
-.toggle-button.rotated .je-transparent-tool-button__icon {
-  @apply rotate-180;
+  &.rotated :deep(.je-transparent-tool-button__icon) {
+    @apply rotate-180;
+  }
 }
 </style>

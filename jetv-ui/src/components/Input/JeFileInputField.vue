@@ -5,22 +5,40 @@ import type { JeFileInputFieldProps } from './types.ts'
 const props = withDefaults(defineProps<JeFileInputFieldProps>(), {
   validated: false,
   disabled: false,
+  mode: 'folder',
 })
 const emit = defineEmits(['update:modelValue', 'update:validated'])
 
-const folderPath = ref(props.modelValue)
+const filePath = computed({
+  get: () => props.modelValue,
+  set: val => emit('update:modelValue', val),
+})
 
-// 监听 folderPath 的变化，将值传递回父组件
-watch(folderPath, (newValue) => {
+watch(filePath, (newValue) => {
   emit('update:modelValue', newValue)
 })
 
-// 打开文件夹选择对话框
-async function openFolder() {
-  if (!props.disabled) {
-    const selectedPaths = await window.api.openFolderDialog()
-    if (selectedPaths.length > 0) {
-      folderPath.value = selectedPaths[0]
+// 打开文件/文件夹选择对话框
+async function openPicker() {
+  if (props.disabled) {
+    return
+  }
+
+  if (props.mode === 'file') {
+    const selectedPaths = await window.api.openFileDialog({
+      title: props.dialogTitle,
+      fileTypes: props.fileTypes,
+    })
+    if (selectedPaths && selectedPaths.length > 0) {
+      filePath.value = selectedPaths[0]
+    }
+  }
+  else {
+    const selectedPaths = await window.api.openFolderDialog({
+      title: props.dialogTitle,
+    })
+    if (selectedPaths && selectedPaths.length > 0) {
+      filePath.value = selectedPaths[0]
     }
   }
 }
@@ -30,7 +48,7 @@ async function openFolder() {
   <span class="je-file-input-filed">
     <!-- Input -->
     <JeInputField
-      v-model="folderPath"
+      v-model="filePath"
       :validated="validated"
       :validated-tooltip="validatedTooltip"
       :disabled="disabled"
@@ -45,10 +63,14 @@ async function openFolder() {
         'je-file-input-filed__icon-wrapper--disabled': disabled,
       }"
       :tabindex="disabled ? -1 : 0"
-      @click="openFolder"
-      @keydown.enter="openFolder"
+      @click="openPicker"
+      @keydown.enter="openPicker"
     >
-      <span class="je-file-input-filed__icon-folder" />
+      <span
+        :class="mode === 'folder'
+          ? 'je-file-input-filed__icon-folder'
+          : 'je-file-input-filed__icon-file'"
+      />
     </span>
   </span>
 </template>
@@ -56,6 +78,10 @@ async function openFolder() {
 <style lang="scss" scoped>
 .je-file-input-filed {
   @apply relative flex-items-center;
+}
+
+.je-file-input-filed__input :deep(.je-input-field__input) {
+  @apply w-full pr-27px;
 }
 
 .je-file-input-filed__icon-wrapper {
@@ -88,10 +114,10 @@ async function openFolder() {
 
   @apply light:i-jet:folder dark:i-jet:folder-dark;
 }
-</style>
 
-<style lang="scss">
-.je-file-input-filed__input .je-input-field__input {
-  @apply w-full pr-27px;
+.je-file-input-filed__icon-file {
+  @apply text-17px;
+
+  @apply light:i-jet:anytype dark:i-jet:anytype-dark;
 }
 </style>

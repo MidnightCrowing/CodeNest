@@ -67,7 +67,7 @@ function confirmRemove(deleteFiles = false) {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .confirm-button.je-button.je-button--secondary {
   @apply light:color-$red-4 dark:color-$red-6;
 }

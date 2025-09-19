@@ -99,7 +99,7 @@ const sortedPanes = computed(() => [...panes].sort((a, b) => a.order - b.order))
             class="je-tabs__tab-icon"
             :class="pane.icon"
           />
-          <span class="je-tabs__tab-label truncate">{{ pane.label }}</span>
+          <span class="je-tabs__tab-label">{{ pane.label }}</span>
           <i
             v-if="(pane.closable ?? closable) && !pane.disabled"
             class="je-tabs__tab-close light:i-jet:close-small dark:i-jet:close-small-dark"
@@ -160,7 +160,7 @@ const sortedPanes = computed(() => [...panes].sort((a, b) => a.order - b.order))
   &--active {
     @apply light:bg-$gray-13 dark:bg-$gray-2; // 背景
     @apply light:color-$gray-1 dark:color-$gray-12; // 文本
-    @apply after:absolute after:bottom-0 after:left-0 after:right-0 after:h-2px after:content-empty;
+    @apply after:absolute after:bottom-0 after:left-0 after:right-0 after:h-4px after:content-empty;
     @apply light:after:bg-$blue-4 dark:after:bg-$blue-6; // 下划线指示
   }
 
@@ -171,7 +171,8 @@ const sortedPanes = computed(() => [...panes].sort((a, b) => a.order - b.order))
 }
 
 .je-tabs__tab-label {
-  @apply text-default;
+  @apply text-default truncate;
+  @apply pb-5px;
 }
 
 .je-tabs__tab-icon {
