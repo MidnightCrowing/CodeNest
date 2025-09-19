@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       increment:
+        description: 选择版本号递增方式
         required: true
         default: patch
         type: choice

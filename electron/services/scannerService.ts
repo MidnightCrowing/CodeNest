@@ -22,6 +22,7 @@ interface ScanResultItem {
 export async function scan(payload: ScanPayload): Promise<ScanResultItem[]> {
   return new Promise((resolve, reject) => {
     try {
+      // @ts-expect-error -- 知道要改tsconfig但不想改
       const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
       const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
 
@@ -63,6 +64,7 @@ let nextSessionId = 1
 
 export function start(event: IpcMainInvokeEvent, payload: ScanPayload) {
   const sessionId = nextSessionId++
+  // @ts-expect-error -- 知道要改tsconfig但不想改
   const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
   const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
 

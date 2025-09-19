@@ -2,7 +2,7 @@
 
 简体中文 | [English](README_EN.md)
 
-<p align="center" style="margin-bottom: 0px !important;">
+<p align="center" style="margin-bottom: 0 !important;">
 <img width="600" alt="CodeNest Interface" src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_CN.png"><br/>
 </p>
 
