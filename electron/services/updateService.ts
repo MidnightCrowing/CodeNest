@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron'
+import { app } from 'electron'
 
 interface CheckUpdateResult {
   hasUpdate: boolean
@@ -12,8 +12,9 @@ interface CheckUpdateResult {
 }
 
 function normalizeVersion(v: string | undefined): string {
-  if (!v)
+  if (!v) {
     return '0.0.0'
+  }
   // remove leading v/V and trim whitespace
   const cleaned = v.trim().replace(/^v/i, '')
   // drop pre-release/build metadata for comparison
@@ -34,7 +35,7 @@ function compareSemver(a: string, b: string): number {
   return 0
 }
 
-ipcMain.handle('update:check', async (): Promise<CheckUpdateResult> => {
+export async function checkUpdate(): Promise<CheckUpdateResult> {
   try {
     // robust version source for dev and packaged
     const currentVersion = app.getVersion() || '0.0.0'
@@ -77,4 +78,4 @@ ipcMain.handle('update:check', async (): Promise<CheckUpdateResult> => {
     const currentVersion = app.getVersion() || '0.0.0'
     return { hasUpdate: false, currentVersion, error: e?.message || String(e) }
   }
-})
+}

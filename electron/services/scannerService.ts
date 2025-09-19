@@ -1,14 +1,15 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
 import { Worker } from 'node:worker_threads'
 
-import { ipcMain } from 'electron'
-
-import { detectVscodeStateDbPath } from '../utils/vscodeRecent'
+import type { IpcMainInvokeEvent } from 'electron'
+import { app } from 'electron'
 
 interface ScanPayload {
   roots: string[]
   existingPaths: string[]
 }
-
 interface ScanResultItem {
   path: string
   name: string
@@ -18,8 +19,7 @@ interface ScanResultItem {
   error?: string
 }
 
-// 兼容的批量扫描（返回数组）
-ipcMain.handle('scanner:scan', async (_event, payload: ScanPayload): Promise<ScanResultItem[]> => {
+export async function scan(payload: ScanPayload): Promise<ScanResultItem[]> {
   return new Promise((resolve, reject) => {
     try {
       const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
@@ -55,13 +55,13 @@ ipcMain.handle('scanner:scan', async (_event, payload: ScanPayload): Promise<Sca
       reject(e)
     }
   })
-})
+}
 
 // 流式扫描：创建会话，逐条回推
 const sessions = new Map<number, Worker>()
 let nextSessionId = 1
 
-ipcMain.handle('scanner:start', (event, payload: ScanPayload): { sessionId: number } => {
+export function start(event: IpcMainInvokeEvent, payload: ScanPayload) {
   const sessionId = nextSessionId++
   const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
   const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
@@ -103,9 +103,9 @@ ipcMain.handle('scanner:start', (event, payload: ScanPayload): { sessionId: numb
   })
 
   return { sessionId }
-})
+}
 
-ipcMain.handle('scanner:stop', (_, sessionId: number) => {
+export function stop(sessionId: number) {
   const worker = sessions.get(sessionId)
   if (worker) {
     try {
@@ -117,8 +117,40 @@ ipcMain.handle('scanner:stop', (_, sessionId: number) => {
     return { stopped: true }
   }
   return { stopped: false }
-})
+}
 
-ipcMain.handle('scanner:detect-vsc-state-db-path', (_) => {
-  return detectVscodeStateDbPath()
-})
+/**
+ * 自动检测 VSCode state.vscdb 路径
+ * 全平台通用
+ */
+export function detectVscodeStateDbPath() {
+  let dbPath: string
+
+  switch (process.platform) {
+    case 'win32':
+      dbPath = path.join(app.getPath('appData'), 'Code', 'User', 'globalStorage', 'state.vscdb')
+      break
+    case 'darwin':
+      dbPath = path.join(
+        app.getPath('home'),
+        'Library',
+        'Application Support',
+        'Code',
+        'User',
+        'globalStorage',
+        'state.vscdb',
+      )
+      break
+    default: // linux
+      dbPath = path.join(
+        app.getPath('home'),
+        '.config',
+        'Code',
+        'User',
+        'globalStorage',
+        'state.vscdb',
+      )
+  }
+
+  return fs.existsSync(dbPath) ? dbPath : null
+}

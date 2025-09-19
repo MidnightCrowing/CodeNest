@@ -1,6 +1,5 @@
 import * as os from 'node:os'
 
-import { shell } from 'electron'
 import fs from 'fs-extra'
 
 /**
@@ -13,7 +12,7 @@ import fs from 'fs-extra'
  * - 输入: 'C:\\Users\\lenovo\\source', 'D:\\Documents\\project'
  * - 输出: '~\\source', 'D:\\Documents\\project'
  */
-export function formatPath(filePath: string): string {
+export function format(filePath: string): string {
   const userHomeDir = os.homedir()
 
   if (filePath.startsWith(userHomeDir)) {
@@ -22,22 +21,14 @@ export function formatPath(filePath: string): string {
   return filePath
 }
 
-/**
- * 使用系统默认方式打开指定文件
- * @param filePath - 要打开的文件路径
- * @returns 是否成功打开
- */
-export function openLocalFile(filePath: string): boolean {
-  if (!fs.existsSync(filePath)) {
-    console.error(`File not found: ${filePath}`)
-    return false
-  }
+// 检查路径是否存在
+export async function checkExistence(path: string) {
   try {
-    shell.openPath(filePath) // 使用系统默认应用打开文件
-    return true
+    const exists = await fs.pathExists(path)
+    return { exists }
   }
-  catch (error) {
-    console.error(`Failed to open file: ${filePath}`, error)
-    return false
+  catch (e: any) {
+    console.error('Error checking path existence:', e?.message || e)
+    return { exists: false, error: e?.message || String(e) }
   }
 }

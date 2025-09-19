@@ -39,7 +39,7 @@ const searchValue = ref<string>('')
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 
 function openSettingsJSON() {
-  window.api.openSettingsJSON()
+  window.api.openData('settings')
 }
 
 function saveAllSettings() {

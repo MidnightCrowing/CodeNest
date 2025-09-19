@@ -1,5 +1,4 @@
-import './ipc/index'
-import './utils/vscodeRecent'
+import './ipc'
 
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
