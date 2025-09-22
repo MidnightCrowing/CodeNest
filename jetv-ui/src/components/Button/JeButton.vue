@@ -41,7 +41,7 @@ withDefaults(defineProps<JeButtonProps>(), {
   // Secondary 按钮类型样式
   &--secondary:not(:disabled),
   &--secondary-alt:not(:disabled) {
-    @apply outline-offset-0;
+    @apply outline-offset--1px;
 
     // light
     @apply light:color-$gray-1;

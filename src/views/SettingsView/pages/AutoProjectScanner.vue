@@ -24,52 +24,79 @@ import { useSettingsStore } from '~/stores/settingsStore'
 const settings = useSettingsStore()
 const { t } = useI18n()
 
-const tabActive = ref<'filesystem' | 'ide'>('ide')
+const tabActive = ref<'filesystem' | 'ide'>('filesystem')
 
 // ==================== file system ====================
-const rootsEnabled = ref<boolean>(true)
-const projectRoots = ref<string[]>(settings.projectScannerRoots)
+const rootsEnabled = computed({
+  get: () => settings.scanner.rootsEnabled,
+  set: (v: boolean) => { settings.scanner.rootsEnabled = v },
+})
+const projectRoots = computed(() => settings.scanner.roots)
 
 async function openFolder() {
   const selectedPaths = await window.api.openFolderDialog()
   if (selectedPaths.length > 0) {
-    const uniqueRoots = Array.from(new Set([...projectRoots.value, ...selectedPaths])).sort()
-    projectRoots.value.splice(0, projectRoots.value.length, ...uniqueRoots)
+    const uniqueRoots = Array.from(new Set([...(settings.scanner.roots || []), ...selectedPaths])).sort()
+    settings.scanner.roots.splice(0, settings.scanner.roots.length, ...uniqueRoots)
   }
 }
 
 function removeRoot(root: string) {
-  const index = projectRoots.value.indexOf(root)
+  const index = settings.scanner.roots.indexOf(root)
   if (index !== -1) {
-    projectRoots.value.splice(index, 1)
+    settings.scanner.roots.splice(index, 1)
   }
 }
 
 // ==================== ide ====================
-const ideEnabled = ref<boolean>(true)
-const ideJbEnabled = ref<boolean>(true)
-const ideVscEnabled = ref<boolean>(true)
-const ideVsEnabled = ref<boolean>(false)
-const jetbrainsConfigPath = ref<string>('')
-const vscConfigPath = ref<string>('')
+const ideEnabled = computed({
+  get: () => settings.scanner.ideEnabled,
+  set: (v: boolean) => { settings.scanner.ideEnabled = v },
+})
+const ideJbEnabled = computed({
+  get: () => settings.scanner.jetbrains.enabled,
+  set: (v: boolean) => { settings.scanner.jetbrains.enabled = v },
+})
+const ideVscEnabled = computed({
+  get: () => settings.scanner.vscode.enabled,
+  set: (v: boolean) => { settings.scanner.vscode.enabled = v },
+})
+const ideVsEnabled = computed({
+  get: () => settings.scanner.visualStudio.enabled,
+  set: (v: boolean) => { settings.scanner.visualStudio.enabled = v },
+})
+const jetbrainsConfigPath = computed({
+  get: () => settings.scanner.jetbrains.configRootPath,
+  set: (v: string) => { settings.scanner.jetbrains.configRootPath = v },
+})
+const vscConfigPath = computed({
+  get: () => settings.scanner.vscode.stateDbPath,
+  set: (v: string) => { settings.scanner.vscode.stateDbPath = v },
+})
+
+async function handleDetectJbPath() {
+  const detectedPath = await window.api.detectJetBrainsConfigRootPath()
+  if (detectedPath) {
+    settings.scanner.jetbrains.configRootPath = detectedPath
+  }
+}
 
 async function handleDetectVscPath() {
   const detectedPath = await window.api.detectVscodeStateDbPath()
   if (detectedPath) {
-    vscConfigPath.value = detectedPath
+    settings.scanner.vscode.stateDbPath = detectedPath
   }
 }
 
 // ==================== 导入策略 ====================
-const defaultOpenMode = ref<'auto' | 'specified'>(settings.projectScannerOpenMode)
+const defaultOpenMode = computed({
+  get: () => settings.scanner.openMode,
+  set: (v: 'auto' | 'specified') => { settings.scanner.openMode = v },
+})
 const editorOptions: JeDropdownOptionProps[] = Object.entries(codeEditors).map(([value, editor]) => ({
   value,
   label: editor.label,
 }))
-
-watch(defaultOpenMode, (newValue) => {
-  settings.projectScannerOpenMode = newValue
-})
 
 // ==================== Clean dialog ====================
 const showDialog = ref<boolean>(false)
@@ -106,7 +133,6 @@ function deleteScanData() {
                 <JeTransparentButton
                   type="subtle"
                   flex="~ row items-center" gap="3px"
-                  :disabled="!rootsEnabled"
                   @click="openFolder"
                 >
                   <span i-jet="light:add dark:add-dark" />
@@ -165,7 +191,7 @@ function deleteScanData() {
             <div settings-section flex="~ col" gap="8px" w-full box-border>
               <!-- Jetbrains -->
               <div flex="~ col items-start" gap="5px">
-                <JeCheckbox v-model="ideJbEnabled">
+                <JeCheckbox v-model="ideJbEnabled" :disabled="!ideEnabled">
                   <div m="l-5px" flex="~ row items-center" gap="3px">
                     <span class="i-custom:jetbrains" />
                     Jetbrains IDEs：
@@ -184,10 +210,15 @@ function deleteScanData() {
                       <JeFileInputField
                         v-model="jetbrainsConfigPath"
                         mode="folder"
+                        :disabled="!ideEnabled || !ideJbEnabled"
                         dialog-title="选择 JetBrains IDE 配置根目录"
                         grow max-w="500px"
                       />
-                      <JeSlimButton type="alt">
+                      <JeSlimButton
+                        type="alt"
+                        :disabled="!ideEnabled || !ideJbEnabled"
+                        @click="handleDetectJbPath"
+                      >
                         自动检测
                       </JeSlimButton>
                     </div>
@@ -221,7 +252,7 @@ function deleteScanData() {
 
               <!-- VS Code -->
               <div flex="~ col items-start" gap="5px">
-                <JeCheckbox v-model="ideVscEnabled">
+                <JeCheckbox v-model="ideVscEnabled" :disabled="!ideEnabled">
                   <div m="l-5px" flex="~ row items-center" gap="3px">
                     <span class="i-custom:visual-studio-code" />
                     Visual Studio Code：
@@ -245,9 +276,14 @@ function deleteScanData() {
                           name: 'VS Code Database',
                           extensions: ['vscdb'], // 只允许选择 .vscdb 文件
                         }]"
+                        :disabled="!ideEnabled || !ideVscEnabled"
                         grow max-w="500px"
                       />
-                      <JeSlimButton type="alt" @click="handleDetectVscPath">
+                      <JeSlimButton
+                        type="alt"
+                        :disabled="!ideEnabled || !ideVscEnabled"
+                        @click="handleDetectVscPath"
+                      >
                         自动检测
                       </JeSlimButton>
                     </div>
@@ -313,7 +349,7 @@ function deleteScanData() {
           <div flex="~ items-center">
             {{ t('settings.auto_scan.always_use_custom_program') }}
             <JeToolbarDropdown
-              v-model="settings.projectScannerEditor"
+              v-model="settings.scanner.editor"
               label=""
               :options="editorOptions"
               :disabled="defaultOpenMode !== 'specified'"
@@ -327,7 +363,7 @@ function deleteScanData() {
           {{ t('settings.auto_scan.temp_project_name_rule') }}:
         </div>
 
-        <JeInputField v-model="settings.projectScannerNamePattern" spellcheck="false" w="250px" />
+        <JeInputField v-model="settings.scanner.namePattern" spellcheck="false" w="250px" />
       </div>
     </SettingsGroup>
 

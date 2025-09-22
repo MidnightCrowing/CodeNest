@@ -44,6 +44,7 @@
   "dependencies": {
     "@vueuse/core": "^13.9.0",
     "better-sqlite3": "^12.2.0",
+    "fast-xml-parser": "^5.2.5",
     "fs-extra": "^11.3.2",
     "fuse.js": "^7.1.0",
     "jetv-ui": "file:jetv-ui",

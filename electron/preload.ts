@@ -19,7 +19,7 @@ interface ProjectAnalyzeProgress {
   stage: ProjectAnalyzeStage
 }
 
-interface ScanStartPayload { roots: string[], existingPaths: string[] }
+interface ScanStartPayload { roots: string[], existingPaths: string[], projectPaths?: string[] }
 interface ScannerItemEvent { sessionId: number, item: any }
 interface ScannerDoneEvent { sessionId: number }
 interface ScannerErrorEvent { sessionId: number, error: string }
@@ -87,11 +87,7 @@ const api = {
   // ===== update =====
   checkUpdate: () => ipcRenderer.invoke('update:check'),
 
-  // ===== scanner (batch) =====
-  scanProjects: (payload: ScanStartPayload) =>
-    ipcRenderer.invoke('scanner:scan', payload),
-
-  // ===== scanner (stream) =====
+  // ===== scanner =====
   startProjectScan: (payload: ScanStartPayload) =>
     ipcRenderer.invoke('scanner:start', payload),
 
@@ -106,6 +102,9 @@ const api = {
 
   onScannerError: (cb: (data: ScannerErrorEvent) => void): Unlisten =>
     onIpc('scanner:error', cb),
+
+  detectJetBrainsConfigRootPath: () =>
+    ipcRenderer.invoke('scanner:detect-jb-config-root-path'),
 
   detectVscodeStateDbPath: () =>
     ipcRenderer.invoke('scanner:detect-vsc-state-db-path'),

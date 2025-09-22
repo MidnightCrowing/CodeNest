@@ -14,11 +14,6 @@ const isOn = computed({
   set: val => emit('update:modelValue', val),
 })
 
-// 监听 `modelValue` 的变化，确保外部绑定的值保持一致
-watch(() => props.modelValue, (newVal) => {
-  isOn.value = newVal
-})
-
 // 切换开关状态
 function toggleSwitch() {
   if (props.disabled)

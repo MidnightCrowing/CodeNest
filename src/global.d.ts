@@ -1,4 +1,6 @@
 import type { ThemeEnum } from '~/constants/appEnums'
+import type { DataFileEnum } from '~/stores/helpers/persistence'
+import type { ScannerSettings } from '~/stores/settingsStore'
 import type { LinguistResult } from '~/views/ProjectEditorView'
 
 /**
@@ -60,11 +62,6 @@ interface DataResult {
 }
 
 /**
- * 数据文件类型
- */
-type DataFileEnum = 'editorLangGroups' | 'projects' | 'projectScanner' | 'settings'
-
-/**
  * 更新检查
  */
 interface UpdateCheckResult {
@@ -92,10 +89,10 @@ interface ScanItem {
   mainLang?: string
   mainLangColor?: HexColor
   langGroup?: LangGroupItem[]
+  ide?: string | null // CodeEditorEnum，例如 "visual-studio-code"
   error?: string
 }
-interface ScanStartPayload {
-  roots: string[]
+export interface ScanStartPayload extends Omit<ScannerSettings, 'openMode', 'editor', 'namePattern'> {
   existingPaths: string[]
 }
 interface ScanSession {
@@ -147,15 +144,13 @@ declare global {
       // ========= update =========
       checkUpdate: () => Promise<UpdateCheckResult>
 
-      // ========= scanner (batch) =========
-      scanProjects: (payload: { roots: string[], existingPaths: string[] }) => Promise<ScanItem[]>
-
-      // ========= scanner (stream) =========
+      // ========= scanner =========
       startProjectScan: (payload: ScanStartPayload) => Promise<ScanSession>
       stopProjectScan: (sessionId: number) => Promise<{ stopped: boolean }>
       onScannerItem: (cb: (data: ScannerItemEvent) => void) => Unlisten
       onScannerDone: (cb: (data: ScannerDoneEvent) => void) => Unlisten
       onScannerError: (cb: (data: ScannerErrorEvent) => void) => Unlisten
+      detectJetBrainsConfigRootPath: () => Promise<string | null>
       detectVscodeStateDbPath: () => Promise<string | null>
 
       // ========= theme =========

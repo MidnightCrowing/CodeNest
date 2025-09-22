@@ -27,9 +27,22 @@ withDefaults(defineProps<JeTransparentButtonProps>(), {
   @apply px-14px py-3px b-0 rounded-4px;
   @apply min-w-72px;
 
+  // subtle variant base
   &--subtle {
-    @apply light:bg-$gray-12 dark:bg-$gray-3;
-    @apply hover:bg-$toolbar-hover active:bg-$toolbar-active;
+    @apply light:bg-$gray-12 dark:bg-$gray-3 hover:bg-$toolbar-hover active:bg-$toolbar-active;
+  }
+
+  // Disabled state (applies to all variants)
+  &:disabled {
+    @apply cursor-not-allowed;
+    @apply hover:bg-transparent active:bg-transparent focus-visible:bg-transparent; // no hover/active visuals
+    @apply light:color-$gray-8 dark:color-$gray-6; // muted label color
+    @apply opacity-70; // soften a bit
+  }
+
+  // Variant-specific disabled tweaks
+  &--subtle:disabled {
+    @apply light:bg-$gray-13 dark:bg-$gray-2; // keep a faint background in subtle disabled
   }
 }
 </style>

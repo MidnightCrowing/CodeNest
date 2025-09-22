@@ -53,7 +53,7 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="isOpening" text="default">
+  <div v-if="isOpening" text="default nowrap">
     {{ t('project_card.opening') }}
   </div>
   <JeButton
@@ -61,6 +61,7 @@ defineExpose({
     class="group-hover/item:block"
     type="primary"
     hidden
+    text-nowrap
     :disabled="isOpening"
     @click="handleClick"
   >

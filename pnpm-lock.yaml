@@ -17,6 +17,9 @@ importers:
       better-sqlite3:
         specifier: ^12.2.0
         version: 12.2.0
+      fast-xml-parser:
+        specifier: ^5.2.5
+        version: 5.2.5
       fs-extra:
         specifier: ^11.3.2
         version: 11.3.2
@@ -350,8 +353,8 @@ packages:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
     engines: {node: '>=12'}
 
-  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90':
-    resolution: {tarball: https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90}
+  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90':
+    resolution: {commit: 0453f4fe4656c63277185b35feedec5716a27d90, repo: git@github.com:electron/node-gyp.git, type: git}
     version: 10.2.0-electron.2
     engines: {node: '>=12.13.0'}
     hasBin: true
@@ -2831,6 +2834,10 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
+  fast-xml-parser@5.2.5:
+    resolution: {integrity: sha512-pfX9uG9Ki0yekDHx2SiuRIyFdyAr1kMIMitPvb0YBo8SUfKvia7w7FIyd/l6av85pFYRhZscS75MwMnbvY+hcQ==}
+    hasBin: true
+
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
 
@@ -4681,6 +4688,9 @@ packages:
   strip-literal@3.0.0:
     resolution: {integrity: sha512-TcccoMhJOM3OebGhSBEmp3UZ2SfDMZUEBdRA/9ynfLi8yYajyWX3JiXArcJt4Umh4vISpspkQIY8ZZoCqjbviA==}
 
+  strnum@2.1.1:
+    resolution: {integrity: sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw==}
+
   sumchecker@3.0.1:
     resolution: {integrity: sha512-MvjXzkz/BOfyVDkG0oFOtBxHX2u3gKbMHIF/dXblZsgD3BWOFLmHovIpZY7BykJdAjcqRCBi1WYBNdEC9yI7vg==}
     engines: {node: '>= 8.0'}
@@ -5456,7 +5466,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90':
+  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90':
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.2
@@ -5493,7 +5503,7 @@ snapshots:
 
   '@electron/rebuild@3.7.0':
     dependencies:
-      '@electron/node-gyp': https://codeload.github.com/electron/node-gyp/tar.gz/0453f4fe4656c63277185b35feedec5716a27d90
+      '@electron/node-gyp': git+https://git@github.com:electron/node-gyp.git#0453f4fe4656c63277185b35feedec5716a27d90
       '@malept/cross-spawn-promise': 2.0.0
       chalk: 4.1.2
       debug: 4.4.3
@@ -8299,6 +8309,10 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
+  fast-xml-parser@5.2.5:
+    dependencies:
+      strnum: 2.1.1
+
   fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
@@ -10403,6 +10417,8 @@ snapshots:
   strip-literal@3.0.0:
     dependencies:
       js-tokens: 9.0.1
+
+  strnum@2.1.1: {}
 
   sumchecker@3.0.1:
     dependencies:

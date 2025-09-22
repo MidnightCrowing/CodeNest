@@ -14,10 +14,6 @@ const filePath = computed({
   set: val => emit('update:modelValue', val),
 })
 
-watch(filePath, (newValue) => {
-  emit('update:modelValue', newValue)
-})
-
 // 打开文件/文件夹选择对话框
 async function openPicker() {
   if (props.disabled) {

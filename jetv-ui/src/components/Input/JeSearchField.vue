@@ -14,11 +14,6 @@ const searchContent = computed({
   set: val => emit('update:modelValue', val),
 })
 
-// 监听 searchContent 的变化，将值传递回父组件
-watch(searchContent, (newValue) => {
-  emit('update:modelValue', newValue)
-})
-
 function clearInput() {
   searchContent.value = ''
 }

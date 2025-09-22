@@ -32,9 +32,9 @@ ipcMain.handle('project:import', () => projectSvc.importProjects())
 ipcMain.handle('project:export', () => projectSvc.exportProjects())
 
 // scanner
-ipcMain.handle('scanner:scan', (_e, payload) => scanner.scan(payload))
 ipcMain.handle('scanner:start', (e, payload) => scanner.start(e, payload))
 ipcMain.handle('scanner:stop', (_e, sessionId) => scanner.stop(sessionId))
+ipcMain.handle('scanner:detect-jb-config-root-path', () => scanner.detectJetBrainsConfigRootPath())
 ipcMain.handle('scanner:detect-vsc-state-db-path', () => scanner.detectVscodeStateDbPath())
 
 // system

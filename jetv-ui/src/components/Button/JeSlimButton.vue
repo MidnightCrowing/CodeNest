@@ -21,7 +21,7 @@ withDefaults(defineProps<JeSlimButtonProps>(), {
 <style lang="scss" scoped>
 .slim {
   @apply py-1px;
-  @apply outline-offset-0;
+  @apply outline-offset--1px;
 
   // 禁用状态样式
   &:disabled {
