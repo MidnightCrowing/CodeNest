@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 export function uniqExistingDirs(
-  paths: Iterable<{ path: string, ide: string | null }>,
+  paths: { path: string, ide: string | null }[],
 ): { path: string, ide: string | null }[] {
   const seen = new Set<string>()
   const out: { path: string, ide: string | null }[] = []

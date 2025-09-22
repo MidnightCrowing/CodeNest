@@ -14,7 +14,6 @@ import type { LinguistResult } from '../utils/linguist'
 export async function analyzeProject(event: IpcMainInvokeEvent, folderPath: string): Promise<LinguistResult | { error: string }> {
   return await new Promise((resolve) => {
     try {
-      // @ts-expect-error -- ignore
       const workerUrl = new URL('../workers/linguistAnalyze.worker.js', import.meta.url)
       const worker = new Worker(workerUrl, { type: 'module', workerData: { folderPath } } as any)
 

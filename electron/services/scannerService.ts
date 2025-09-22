@@ -34,7 +34,6 @@ let nextSessionId = 1
 
 export function start(event: IpcMainInvokeEvent, payload: ScanPayload) {
   const sessionId = nextSessionId++
-  // @ts-expect-error -- ignore
   const workerUrl = new URL('../workers/projectScanner.worker.js', import.meta.url)
   const worker = new Worker(workerUrl, { type: 'module', workerData: payload } as any)
 

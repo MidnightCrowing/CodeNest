@@ -9,10 +9,10 @@ import { uniqExistingDirs } from './shared'
 
 export interface JetbrainsRecentEntry {
   path: string
-  ide: string // 例如 "PyCharm", "IntelliJIdea"
+  ide: string | null // 例如 "PyCharm", "IntelliJIdea"
 }
 
-const ideNameMap = {
+const ideNameMap: Record<string, string> = {
   'IntelliJIdea': 'intellij-idea',
   'PyCharm': 'pycharm',
   'PhpStorm': 'phpstorm',
