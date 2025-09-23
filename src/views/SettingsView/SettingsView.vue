@@ -43,12 +43,15 @@ function openSettingsJSON() {
 }
 
 function saveAllSettings() {
-  settingsStore.saveSettings()
+  applyChanges()
   changeHomeView()
 }
 
+function applyChanges() {
+  settingsStore.saveSettings()
+}
+
 function cancelChanges() {
-  // Reset unsaved changes
   settingsStore.loadSettings()
   changeHomeView()
 }
@@ -130,17 +133,22 @@ onUnmounted(() => {
 
       <div flex="~ row-reverse justify-between" gap="8px">
         <JeButton
-          order-2
+          order-3
           @click="saveAllSettings"
         >
           {{ t('settings.save') }}
         </JeButton>
         <JeButton
-          class="cancel-button" type="secondary-alt"
-          order-1
+          type="secondary-alt" order-2
           @click="cancelChanges"
         >
           {{ t('settings.cancel') }}
+        </JeButton>
+        <JeButton
+          type="secondary-alt" order-1
+          @click="applyChanges"
+        >
+          {{ t('settings.apply') }}
         </JeButton>
       </div>
     </JeFrame>

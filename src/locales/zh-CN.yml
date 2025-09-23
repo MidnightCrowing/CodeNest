@@ -212,6 +212,7 @@ settings:
   open_json_file: 打开 JSON 文件
   save: 保存
   cancel: 取消
+  apply: 应用
 status:
   project_scanner:
     scanning: 正在扫描项目

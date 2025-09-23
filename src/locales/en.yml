@@ -218,6 +218,7 @@ settings:
   open_json_file: Open JSON file
   save: Save
   cancel: Cancel
+  apply: Apply
 status:
   project_scanner:
     scanning: Scanning projects
