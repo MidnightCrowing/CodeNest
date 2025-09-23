@@ -1,3 +1,10 @@
+common:
+  detect: 自动检测
+  not_supported: 暂不支持
+  platform:
+    windows: Windows
+    macos: macOS
+    linux: Linux
 license:
   info:
     commercial_use: 商业用途
@@ -7,6 +14,7 @@ license:
     private_use: 私用
     disclose_source: 公开源码
     license_and_copyright_notice: 放置许可协议与版权信息
+    license_and_copyright_notice_for_source: 放置许可协议与版权信息（源码）
     network_use_is_distribution: 使用网络分发
     same_license: 使用相同协议
     same_license_library: 使用相同协议(library)
@@ -148,6 +156,12 @@ settings:
   auto_scan:
     title: 自动扫描项目
     desc: 启动时自动扫描项目根路径下的项目。
+    method: 导入方式
+    methods_desc: 启动后将从以下方式中自动扫描并导入项目。
+    fs_tab: 从文件系统目录中导入
+    enable_fs: 启用从文件系统目录中导入
+    ide_tab: 从 IDE 中导入
+    enable_ide: 启用从 IDE 中导入
     add_folder: 添加项目根
     default_open_mode: 默认打开方式
     auto_select_program: 根据语言自动选择程序
@@ -158,6 +172,30 @@ settings:
     clear_history_warning: 警告：删除后，程序将在下次启动时重新检查所有项目文件夹，可能会导致程序短暂卡顿，请谨慎操作。
     confirm: 是
     cancel: 否
+    strategy: 导入策略
+    jetbrains:
+      title: JetBrains IDE：
+      config_root: JetBrains IDE 配置根路径：
+      select_folder_dialog: 选择 JetBrains IDE 配置根目录
+      hint_title: 请选择 JetBrains IDE 配置根目录，通常在：
+      path_samples:
+        windows: 'C:\\Users\\&lt;用户名&gt;\\AppData\\Roaming\\JetBrains'
+        macos: ~/Library/Application Support/JetBrains
+        linux: ~/.config/JetBrains 或 ~/.JetBrains
+      includes: 包含 IntelliJ IDEA、PyCharm、WebStorm 等 IDE 配置。
+      scan_versions: 该路径下的各个版本 IDE 配置目录均会被扫描。
+    vscode:
+      title: Visual Studio Code：
+      recent_db_label: VS Code recent projects 文件：
+      select_file_dialog: 选择 VS Code recent projects 文件
+      file_type_name: VS Code 数据库
+      hint_title: 请选择 VS Code 的 state.vscdb 文件，通常在：
+      path_samples:
+        windows: 'C:\\Users\\&lt;用户名&gt;\\AppData\\Roaming\\Code\\User\\globalStorage\\state.vscdb'
+        macos: ~/Library/Application Support/Code/User/globalStorage/state.vscdb
+        linux: ~/.config/Code/User/globalStorage/state.vscdb
+    vs:
+      title: Visual Studio：
   about:
     title: 关于
     version:

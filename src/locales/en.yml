@@ -1,3 +1,10 @@
+common:
+  detect: Auto Detect
+  not_supported: Not supported yet
+  platform:
+    windows: Windows
+    macos: macOS
+    linux: Linux
 license:
   info:
     commercial_use: Commercial use
@@ -15,7 +22,6 @@ license:
     state_changes: State changes
     liability: Liability
     trademark_use: Trademark use
-    warranty: Warranty
   mit:
     description_url: https://choosealicense.com/licenses/mit/
   apache_2_0:
@@ -156,6 +162,12 @@ settings:
   auto_scan:
     title: Auto Scanner Project
     desc: Automatically scans project root paths at startup.
+    method: Import Methods
+    methods_desc: Projects will be scanned and imported from the following methods at startup.
+    fs_tab: Import from file system
+    enable_fs: Enable importing from file system
+    ide_tab: Import from IDEs
+    enable_ide: Enable importing from IDEs
     add_folder: Add Project Root
     default_open_mode: Default Opening Method
     auto_select_program: Automatically select program based on language
@@ -166,6 +178,30 @@ settings:
     clear_history_warning: 'Warning: After deletion, the program will re-scan all project folders on next startup, which may cause a short freeze. Please proceed with caution.'
     confirm: Yes
     cancel: No
+    strategy: Import Strategy
+    jetbrains:
+      title: 'JetBrains IDEs:'
+      config_root: 'JetBrains IDE config root path:'
+      select_folder_dialog: Select JetBrains IDE config root directory
+      hint_title: 'Please choose the JetBrains IDE config root directory, usually at:'
+      path_samples:
+        windows: 'C:\\Users\\&lt;User&gt;\\AppData\\Roaming\\JetBrains'
+        macos: ~/Library/Application Support/JetBrains
+        linux: ~/.config/JetBrains or ~/.JetBrains
+      includes: Includes IntelliJ IDEA, PyCharm, WebStorm, etc.
+      scan_versions: All IDE versions under this path will be scanned.
+    vscode:
+      title: 'Visual Studio Code:'
+      recent_db_label: 'VS Code recent projects file:'
+      select_file_dialog: Select VS Code recent projects file
+      file_type_name: VS Code Database
+      hint_title: "Please choose VS Code's state.vscdb file, usually at:"
+      path_samples:
+        windows: 'C:\\Users\\&lt;User&gt;\\AppData\\Roaming\\Code\\User\\globalStorage\\state.vscdb'
+        macos: ~/Library/Application Support/Code/User/globalStorage/state.vscdb
+        linux: ~/.config/Code/User/globalStorage/state.vscdb
+    vs:
+      title: 'Visual Studio:'
   about:
     title: About
     version:

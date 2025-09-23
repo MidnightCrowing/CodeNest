@@ -116,16 +116,16 @@ function deleteScanData() {
       {{ t('settings.auto_scan.title') }}
     </h3>
 
-    <SettingsGroup title="导入方式">
+    <SettingsGroup :title="t('settings.auto_scan.method')">
       <div text="secondary">
-        启动后将从以下方式中自动扫描并导入项目。
+        {{ t('settings.auto_scan.methods_desc') }}
       </div>
 
       <JeTabs v-model="tabActive">
-        <JeTabPane value="filesystem" label="从文件系统目录中导入">
+        <JeTabPane value="filesystem" :label="t('settings.auto_scan.fs_tab')">
           <div flex="~ col items-start" gap="8px" text="default">
             <JeCheckbox v-model="rootsEnabled">
-              启用从文件系统目录中导入
+              {{ t('settings.auto_scan.enable_fs') }}
             </JeCheckbox>
 
             <div settings-section flex="~ col" gap="8px" w="full" box-border>
@@ -182,10 +182,10 @@ function deleteScanData() {
           </div>
         </JeTabPane>
 
-        <JeTabPane value="ide" label="从 IDE 中导入">
+        <JeTabPane value="ide" :label="t('settings.auto_scan.ide_tab')">
           <div flex="~ col items-start" gap="8px" text="default">
             <JeCheckbox v-model="ideEnabled">
-              启用从 IDE 中导入
+              {{ t('settings.auto_scan.enable_ide') }}
             </JeCheckbox>
 
             <div settings-section flex="~ col" gap="8px" w-full box-border>
@@ -194,7 +194,7 @@ function deleteScanData() {
                 <JeCheckbox v-model="ideJbEnabled" :disabled="!ideEnabled">
                   <div m="l-5px" flex="~ row items-center" gap="3px">
                     <span class="i-custom:jetbrains" />
-                    Jetbrains IDEs：
+                    {{ t('settings.auto_scan.jetbrains.title') }}
                   </div>
                 </JeCheckbox>
 
@@ -203,7 +203,7 @@ function deleteScanData() {
                   flex="~ col items-start" gap="5px"
                 >
                   <div lh="26px">
-                    JetBrains IDE 配置根路径：
+                    {{ t('settings.auto_scan.jetbrains.config_root') }}
                   </div>
                   <div settings-section flex="~ col" gap="8px" w-full box-border>
                     <div flex="~ row items-center" gap="8px">
@@ -211,7 +211,7 @@ function deleteScanData() {
                         v-model="jetbrainsConfigPath"
                         mode="folder"
                         :disabled="!ideEnabled || !ideJbEnabled"
-                        dialog-title="选择 JetBrains IDE 配置根目录"
+                        :dialog-title="t('settings.auto_scan.jetbrains.select_folder_dialog')"
                         grow max-w="500px"
                       />
                       <JeSlimButton
@@ -219,31 +219,31 @@ function deleteScanData() {
                         :disabled="!ideEnabled || !ideJbEnabled"
                         @click="handleDetectJbPath"
                       >
-                        自动检测
+                        {{ t('common.detect') }}
                       </JeSlimButton>
                     </div>
 
                     <div flex="~ col" gap="5px" text="secondary medium">
                       <div>
-                        请选择 JetBrains IDE 配置根目录，通常在：
+                        {{ t('settings.auto_scan.jetbrains.hint_title') }}
                       </div>
                       <div
                         p="l-10px"
                         grid="~ cols-[auto_1fr] items-start" gap="x-3px y-5px"
                         break-all
                       >
-                        <span>Windows：</span>
-                        <span>C:\Users\&lt;用户名&gt;\AppData\Roaming\JetBrains</span>
-                        <span>macOS：</span>
-                        <span>~/Library/Application Support/JetBrains</span>
-                        <span>Linux：</span>
-                        <span>~/.config/JetBrains 或 ~/.JetBrains</span>
+                        <span>{{ t('common.platform.windows') }}:</span>
+                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.windows') }}</span>
+                        <span>{{ t('common.platform.macos') }}:</span>
+                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.macos') }}</span>
+                        <span>{{ t('common.platform.linux') }}:</span>
+                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.linux') }}</span>
                       </div>
                       <div>
-                        包含 IntelliJ IDEA、PyCharm、WebStorm 等 IDE 配置。
+                        {{ t('settings.auto_scan.jetbrains.includes') }}
                       </div>
                       <div>
-                        该路径下的各个版本 IDE 配置目录均会被扫描。
+                        {{ t('settings.auto_scan.jetbrains.scan_versions') }}
                       </div>
                     </div>
                   </div>
@@ -255,7 +255,7 @@ function deleteScanData() {
                 <JeCheckbox v-model="ideVscEnabled" :disabled="!ideEnabled">
                   <div m="l-5px" flex="~ row items-center" gap="3px">
                     <span class="i-custom:visual-studio-code" />
-                    Visual Studio Code：
+                    {{ t('settings.auto_scan.vscode.title') }}
                   </div>
                 </JeCheckbox>
 
@@ -264,7 +264,7 @@ function deleteScanData() {
                   flex="~ col items-start" gap="5px"
                 >
                   <div lh="26px">
-                    VS Code recent projects 文件：
+                    {{ t('settings.auto_scan.vscode.recent_db_label') }}
                   </div>
                   <div settings-section flex="~ col" gap="8px" w-full box-border>
                     <div flex="~ row items-center" gap="8px">
@@ -284,25 +284,25 @@ function deleteScanData() {
                         :disabled="!ideEnabled || !ideVscEnabled"
                         @click="handleDetectVscPath"
                       >
-                        自动检测
+                        {{ t('common.detect') }}
                       </JeSlimButton>
                     </div>
 
                     <div flex="~ col" gap="5px" text="secondary medium">
                       <div>
-                        请选择 VS Code 的 state.vscdb 文件，通常在：
+                        {{ t('settings.auto_scan.vscode.hint_title') }}
                       </div>
                       <div
                         p="l-10px"
                         grid="~ cols-[auto_1fr] items-start" gap="x-3px y-5px"
                         break-all
                       >
-                        <span>Windows：</span>
-                        <span>C:\Users\&lt;用户名&gt;\AppData\Roaming\Code\User\globalStorage\state.vscdb</span>
-                        <span>macOS：</span>
-                        <span>~/Library/Application Support/Code/User/globalStorage/state.vscdb</span>
-                        <span>Linux：</span>
-                        <span>~/.config/Code/User/globalStorage/state.vscdb</span>
+                        <span>{{ t('common.platform.windows') }}:</span>
+                        <span>{{ t('settings.auto_scan.vscode.path_samples.windows') }}</span>
+                        <span>{{ t('common.platform.macos') }}:</span>
+                        <span>{{ t('settings.auto_scan.vscode.path_samples.macos') }}</span>
+                        <span>{{ t('common.platform.linux') }}:</span>
+                        <span>{{ t('settings.auto_scan.vscode.path_samples.linux') }}</span>
                       </div>
                     </div>
                   </div>
@@ -318,7 +318,7 @@ function deleteScanData() {
                 >
                   <div m="l-5px" flex="~ row items-center" gap="3px">
                     <span class="i-custom:visual-studio" />
-                    Visual Studio：
+                    {{ t('settings.auto_scan.vs.title') }}
                   </div>
                 </JeCheckbox>
 
@@ -327,7 +327,7 @@ function deleteScanData() {
                   flex="~ col items-start" gap="5px"
                 >
                   <div lh="26px" text="secondary">
-                    暂不支持
+                    {{ t('common.not_supported') }}
                   </div>
                 </div>
               </div>
@@ -337,7 +337,7 @@ function deleteScanData() {
       </JeTabs>
     </SettingsGroup>
 
-    <SettingsGroup title="导入策略">
+    <SettingsGroup :title="t('settings.auto_scan.strategy')">
       <div self-start text="default">
         {{ t('settings.auto_scan.default_open_mode') }}:
       </div>
