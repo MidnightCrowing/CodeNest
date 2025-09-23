@@ -27,7 +27,7 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
 
   async function saveProjectScannerData() {
     await scannerPersistence.save({
-      historyScannedPaths: Array.from(historyScannedPaths.value),
+      historyScannedPaths: Array.from(historyScannedPaths.value).sort(),
     })
   }
 

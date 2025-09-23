@@ -1,5 +1,10 @@
+/**
+ * 数据文件类型
+ */
+export type DataFileEnum = 'editorLangGroups' | 'projects' | 'projectScanner' | 'settings'
+
 export interface PersistenceOptions<T> {
-  key: 'editorLangGroups' | 'projects' | 'projectScanner' | 'settings'
+  key: DataFileEnum
   serialize?: (data: T) => string
   deserialize?: (raw: string) => T
 }

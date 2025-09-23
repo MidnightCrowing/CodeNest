@@ -2,26 +2,22 @@ import { exec } from 'node:child_process'
 import * as path from 'node:path'
 import process from 'node:process'
 
-import { ipcMain, shell } from 'electron'
+import { shell } from 'electron'
 
 // 在系统默认浏览器中打开链接
-ipcMain.handle('external:open', async (_, url: string): Promise<void> => {
-  shell.openExternal(url)
-    .then(() => {})
-    .catch(err => console.error('Failed to open link:', err))
-})
+export async function openExternal(url: string): Promise<void> {
+  await shell.openExternal(url).catch(err => console.error('Failed to open link:', err))
+}
 
 // 使用资源管理器打开路径
-ipcMain.handle('explorer:open', async (_, folderPath: string): Promise<void> => {
+export async function openInExplorer(folderPath: string): Promise<void> {
   const resolvedPath = path.resolve(folderPath)
   // 使用系统默认的资源管理器打开文件夹
-  shell.openPath(resolvedPath).catch((err) => {
-    console.error('打开资源管理器失败:', err)
-  })
-})
+  await shell.openPath(resolvedPath).catch(err => console.error('打开资源管理器失败:', err))
+}
 
 // 使用终端打开路径
-ipcMain.handle('terminal:open', async (_, folderPath: string): Promise<void> => {
+export async function openInTerminal(folderPath: string): Promise<void> {
   const resolvedPath = path.resolve(folderPath)
   // 根据操作系统选择合适的终端命令
   const isWindows = process.platform === 'win32'
@@ -52,4 +48,4 @@ ipcMain.handle('terminal:open', async (_, folderPath: string): Promise<void> => 
   else {
     console.error('不支持的操作系统')
   }
-})
+}

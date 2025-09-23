@@ -42,8 +42,8 @@ watch(searchInputValue, (newSearchValue) => {
   </header>
 </template>
 
-<style lang="scss">
-.overview-header-search-input .je-search-filed__input.je-search-filed__input--in-editor .je-input-field__input {
+<style lang="scss" scoped>
+.overview-header-search-input :deep(.je-search-filed__input).je-search-filed__input--in-editor .je-input-field__input {
   @apply light:bg-$gray-14 dark:bg-$gray-1;
 }
 </style>

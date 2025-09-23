@@ -224,6 +224,24 @@ export interface JeFileInputFieldProps {
   modelValue: string | null
 
   /**
+   * 选择模式：文件夹或文件
+   * - 默认为 'folder'
+   */
+  mode?: 'folder' | 'file'
+
+  /**
+   * 对话框标题
+   */
+  dialogTitle?: string
+
+  /**
+   * 在文件模式下可选的文件类型过滤器。
+   * 仅当 selectType 为 'file' 时生效，将透传给 openFileDialog 以限制可选扩展名。
+   * 例如：[{ name: 'JSON', extensions: ['json'] }]
+   */
+  fileTypes?: { name: string, extensions: string[] }[]
+
+  /**
    * 文件输入字段的验证状态。
    *
    * 如果为 `true`，表示所选文件尚未验证或验证未通过。

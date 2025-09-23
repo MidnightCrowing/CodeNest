@@ -2,7 +2,8 @@ import { exec } from 'node:child_process'
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
 
-import { dialog, ipcMain } from 'electron'
+import type { IpcMainInvokeEvent } from 'electron'
+import { dialog } from 'electron'
 import fs from 'fs-extra'
 import trash from 'trash'
 
@@ -10,7 +11,7 @@ import { projectsFilePath } from '../utils/dataPath'
 import type { LinguistResult } from '../utils/linguist'
 
 // 传入项目根目录，获取项目各编程语言的占比
-ipcMain.handle('project:analyze', async (event, folderPath): Promise<LinguistResult | { error: string }> => {
+export async function analyzeProject(event: IpcMainInvokeEvent, folderPath: string): Promise<LinguistResult | { error: string }> {
   return await new Promise((resolve) => {
     try {
       const workerUrl = new URL('../workers/linguistAnalyze.worker.js', import.meta.url)
@@ -56,10 +57,10 @@ ipcMain.handle('project:analyze', async (event, folderPath): Promise<LinguistRes
       resolve({ error: `Error starting analyze worker: ${String(e)}` })
     }
   })
-})
+}
 
 // 读取项目许可证的前若干行
-ipcMain.handle('project:read-license', async (_evt, folderPath: string, maxLines = 20) => {
+export async function readLicense(folderPath: string, maxLines = 20) {
   try {
     if (!folderPath || typeof folderPath !== 'string')
       return { success: false, message: 'Invalid project path' }
@@ -120,10 +121,10 @@ ipcMain.handle('project:read-license', async (_evt, folderPath: string, maxLines
   catch (e: any) {
     return { success: false, message: String(e?.message || e) }
   }
-})
+}
 
 // 使用IDE打开项目
-ipcMain.handle('project:open', async (_, idePath: string, projectPath: string): Promise<string> => {
+export async function openInIDE(idePath: string, projectPath: string): Promise<string> {
   if (!idePath || !projectPath) {
     throw new Error('IDE 路径和项目路径不能为空')
   }
@@ -148,10 +149,10 @@ ipcMain.handle('project:open', async (_, idePath: string, projectPath: string): 
     console.error(err)
     throw new Error('打开项目时发生错误')
   }
-})
+}
 
 // 删除项目
-ipcMain.handle('project:delete', async (_, projectPath: string) => {
+export async function deleteProject(projectPath: string) {
   try {
     if (!fs.existsSync(projectPath)) {
       throw new Error('项目路径不存在')
@@ -183,10 +184,10 @@ ipcMain.handle('project:delete', async (_, projectPath: string) => {
       return { success: false, message: '删除项目失败', error: (deleteError as Error).message }
     }
   }
-})
+}
 
 // 导入数据
-ipcMain.handle('project:import', async () => {
+export async function importProjects() {
   try {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
@@ -208,10 +209,10 @@ ipcMain.handle('project:import', async () => {
     console.error('Error importing data file:', error)
     return { success: false, message: 'Failed to import data file' }
   }
-})
+}
 
 // 导出数据
-ipcMain.handle('project:export', async () => {
+export async function exportProjects() {
   try {
     const result = await dialog.showSaveDialog({
       defaultPath: 'projects.json',
@@ -233,4 +234,4 @@ ipcMain.handle('project:export', async () => {
     console.error('Error exporting data file:', error)
     return { success: false, message: 'Failed to export data file' }
   }
-})
+}

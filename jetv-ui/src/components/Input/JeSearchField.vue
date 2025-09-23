@@ -9,11 +9,9 @@ const props = withDefaults(defineProps<JeSearchFieldProps>(), {
 })
 const emit = defineEmits(['update:modelValue', 'update:validated'])
 
-const searchContent = ref(props.modelValue)
-
-// 监听 searchContent 的变化，将值传递回父组件
-watch(searchContent, (newValue) => {
-  emit('update:modelValue', newValue)
+const searchContent = computed({
+  get: () => props.modelValue,
+  set: val => emit('update:modelValue', val),
 })
 
 function clearInput() {
@@ -61,6 +59,16 @@ function clearInput() {
   @apply light:i-jet:search dark:i-jet:search-dark;
 }
 
+:deep(.je-input-field__input) {
+  .je-search-filed__input & {
+    @apply m-0 pl-25px pr-23px;
+  }
+
+  .je-search-filed__input--in-editor & {
+    @apply outline-0;
+  }
+}
+
 .je-search-filed__icon-clear {
   @apply absolute top-0 bottom-0 right-0;
   @apply mx-3px my-auto;
@@ -78,18 +86,6 @@ function clearInput() {
     @apply outline outline-2px;
 
     @apply light:outline-$blue-4 dark:outline-$blue-6;
-  }
-}
-</style>
-
-<style lang="scss">
-.je-input-field__input {
-  .je-search-filed__input & {
-    @apply m-0 pl-25px pr-23px;
-  }
-
-  .je-search-filed__input--in-editor & {
-    @apply outline-0;
   }
 }
 </style>

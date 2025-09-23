@@ -10,6 +10,7 @@ const dropdownValue = ref('option1')
 const toolbarDropdownValue = ref('tool1')
 const comboboxValue = ref('')
 const searchValue = ref('')
+const folderValue = ref<string | null>(null)
 const fileValue = ref<string | null>(null)
 
 const dropdownOptions = [
@@ -73,7 +74,11 @@ const comboOptions = [
     </GalleryCard>
 
     <GalleryCard title="FileInputField">
-      <JeFileInputField v-model="fileValue" />
+      <JeFileInputField v-model="folderValue" mode="folder" />
+      <div text="secondary">
+        File: {{ folderValue }}
+      </div>
+      <JeFileInputField v-model="fileValue" mode="file" />
       <div text="secondary">
         File: {{ fileValue }}
       </div>

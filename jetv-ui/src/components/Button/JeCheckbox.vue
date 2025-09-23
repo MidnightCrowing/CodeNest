@@ -1,18 +1,21 @@
 <script lang="ts" setup>
 import type { JeCheckBoxProps } from './types.ts'
 
-withDefaults(defineProps<JeCheckBoxProps>(), {
+const props = withDefaults(defineProps<JeCheckBoxProps>(), {
   indeterminate: false,
   disabled: false,
 })
 const emit = defineEmits(['update:modelValue'])
 
-const isChecked = ref(false)
-
 function handleChange(event: Event) {
   const input = event.target as HTMLInputElement
-  isChecked.value = input.checked
-  emit('update:modelValue', isChecked.value) // 触发更新事件
+  emit('update:modelValue', input.checked)
+}
+
+function handleKeydownEnter() {
+  if (props.disabled)
+    return
+  emit('update:modelValue', !props.modelValue)
 }
 </script>
 
@@ -25,6 +28,7 @@ function handleChange(event: Event) {
       :checked="modelValue"
       :disabled="disabled"
       @change="handleChange"
+      @keydown.enter.prevent="handleKeydownEnter"
     >
     <slot />
   </label>
@@ -48,7 +52,7 @@ function handleChange(event: Event) {
   @apply dark:bg-$gray-2 dark:outline-$gray-6;
 }
 
-// 激活状态
+// Active states
 .je-checkbox__input:not(:disabled) {
   &:not(:checked) {
     @apply light:hover:outline-$gray-6 light:focus:outline-$blue-4;
@@ -63,13 +67,13 @@ function handleChange(event: Event) {
     @apply light:hover:bg-$blue-3 light:focus:outline-$blue-4;
     @apply dark:hover:bg-$blue-5 dark:focus:outline-$blue-6;
 
-    // 选中状态
+    // Checked state
     &:not(.je-checkbox__input--indeterminate) {
       @apply light:bg-$blue-4 dark:bg-$blue-6;
       @apply i-jet:checked;
     }
 
-    // Indeterminate 状态
+    // Indeterminate state
     &.je-checkbox__input--indeterminate {
       @apply light:bg-$blue-4 dark:bg-$blue-6;
       @apply i-jet:remove;
@@ -77,20 +81,30 @@ function handleChange(event: Event) {
   }
 }
 
-// 禁用状态样式
-.je-checkbox__input:disabled:checked {
-  @apply outline-none text-20px;
+// Disabled styles
+.je-checkbox__input:disabled {
+  @apply light:bg-$gray-13 light:outline-$gray-9;
+  @apply dark:bg-$gray-2 dark:outline-$gray-5;
+}
 
-  // 选中状态
+.je-checkbox__input:disabled:checked {
+  @apply outline-none text-20px opacity-70; // soften in disabled
+
+  // Checked state
   &:not(.je-checkbox__input--indeterminate) {
+    // Filled but muted background and outline
+    @apply light:bg-$gray-11 light:outline-$gray-9;
+    @apply dark:bg-$gray-3 dark:outline-$gray-5;
+
+    // Keep a visible but subtle check icon
     @apply light:i-jet:checked dark:i-jet:checked-disabled-dark;
-    @apply light:bg-$gray-9 dark:bg-$gray-3;
   }
 
-  // Indeterminate 状态
+  // Indeterminate state
   &.je-checkbox__input--indeterminate {
+    @apply light:bg-$gray-11 light:outline-$gray-9;
+    @apply dark:bg-$gray-3 dark:outline-$gray-5;
     @apply light:i-jet:remove dark:i-jet:remove-disabled-dark;
-    @apply light:bg-$gray-9 dark:bg-$gray-3;
   }
 }
 </style>

@@ -1,5 +1,3 @@
-import { unref } from 'vue'
-
 import { clearState, setState } from '~/components/StateBar'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import type { LicenseEnum } from '~/constants/license'
@@ -39,18 +37,13 @@ export async function addNewProjectsInWorker() {
 
   projectsStore.allProjects.forEach(p => scannerStore.addScannedPath(p.path))
 
-  const roots = Array.isArray(unref(settingsStore.projectScannerRoots))
-    ? [...unref(settingsStore.projectScannerRoots) as string[]]
-    : []
-  const existingPaths = Array.from(unref(scannerStore.allHistoryScannedPaths))
-
   // 初始状态：扫描中
   setState('projectScanner', t('status.project_scanner.scanning'), true)
 
-  // 启动扫描（异步）
+  // 启动扫描
   const { sessionId } = await window.api.startProjectScan({
-    roots,
-    existingPaths,
+    ...toRaw(settingsStore.scanner),
+    existingPaths: Array.from(scannerStore.allHistoryScannedPaths),
   })
 
   // 先声明，再在 finalize 中使用，避免 no-use-before-define
@@ -97,11 +90,13 @@ export async function addNewProjectsInWorker() {
       }
     }
 
-    const defaultOpen: CodeEditorEnum = settingsStore.projectScannerOpenMode === 'specified'
-      ? settingsStore.projectScannerEditor
-      : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.projectScannerEditor) as CodeEditorEnum
+    const defaultOpen: CodeEditorEnum = item.ide
+      ? item.ide as CodeEditorEnum
+      : settingsStore.scanner.openMode === 'specified'
+        ? settingsStore.scanner.editor
+        : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) as CodeEditorEnum
 
-    const isTemporary: boolean = toRegExp(settingsStore.projectScannerNamePattern)?.test(name) || false
+    const isTemporary: boolean = toRegExp(settingsStore.scanner.namePattern)?.test(name) || false
 
     const newProject: LocalProject = {
       appendTime: Date.now(),

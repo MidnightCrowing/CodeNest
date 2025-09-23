@@ -23,9 +23,9 @@ const visibleProxy = computed<boolean>({
   />
 </template>
 
-<style lang="scss">
-.je-menu--mini .je-menu__ul,
-.je-menu--mini .je-menu__ul .je-menu.je-menu__child .je-menu__ul {
+<style lang="scss" scoped>
+.je-menu--mini :deep(.je-menu__ul),
+.je-menu--mini :deep(.je-menu__ul) .je-menu.je-menu__child .je-menu__ul {
   @apply px-2px py-5px rounded-0 min-w-100px;
 
   .je-menu__option-item .je-menu__child-menu-wrapper {

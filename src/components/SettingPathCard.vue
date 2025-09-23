@@ -23,7 +23,7 @@ async function openFolder() {
     { name: 'All Files', extensions: ['*'] },
   ]
 
-  const selectedPaths = await window.api.openFileDialog(fileTypes)
+  const selectedPaths = await window.api.openFileDialog({ fileTypes })
   if (selectedPaths.length > 0) {
     changePathValue(selectedPaths[0])
   }
@@ -87,7 +87,11 @@ function resetPath() {
       overflow-hidden max-h-0 rounded-2px
       :class="{ 'max-h-100px': isPanelOpen }"
     >
-      <div class="panel-content" bg="light:$gray-12 dark:$gray-3" p="15px" flex="~ row items-center" gap="10px">
+      <div
+        class="panel-content"
+        bg="light:$gray-12 dark:$gray-3" p="15px"
+        flex="~ row items-center" gap="8px"
+      >
         <JeInputField
           v-model="codeEditorPath"
           :tabindex="isPanelOpen ? 0 : -1"
@@ -109,15 +113,16 @@ function resetPath() {
 <style lang="scss" scoped>
 .browse-button {
   @apply light:bg-$gray-10 dark:bg-$gray-5 hover:bg-$toolbar-hover active:bg-$toolbar-active;
-}
-</style>
-
-<style lang="scss">
-.toggle-button .je-transparent-tool-button__icon {
-  @apply transition-transform duration-300 ease-in-out;
+  @apply py-2px;
 }
 
-.toggle-button.rotated .je-transparent-tool-button__icon {
-  @apply rotate-180;
+.toggle-button {
+  :deep(.je-transparent-tool-button__icon) {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+
+  &.rotated :deep(.je-transparent-tool-button__icon) {
+    @apply rotate-180;
+  }
 }
 </style>

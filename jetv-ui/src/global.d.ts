@@ -1,5 +1,11 @@
 interface Window {
   api: {
-    openFolderDialog: () => Promise<string[]>
+    openFolderDialog: (options?: {
+      title?: string
+    }) => Promise<string[]>
+    openFileDialog: (options?: {
+      title?: string
+      fileTypes?: { name: string, extensions: string[] }[]
+    }) => Promise<string[]>
   }
 }
