@@ -114,6 +114,7 @@ export async function addNewProjectsInWorker() {
     }
 
     await projectsStore.addProject(newProject, false)
+    await projectsStore.saveProjects()
 
     // 更新“已发现 N 个新项目”
     foundCount += 1
