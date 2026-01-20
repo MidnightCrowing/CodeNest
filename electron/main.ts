@@ -109,8 +109,8 @@ function setGlobalShortcut() {
 
 // 应用启动时的操作
 app.whenReady().then(async () => {
-  setGlobalShortcut()
   createWindow()
+  setGlobalShortcut()
 })
 
 // 应用退出时的操作
