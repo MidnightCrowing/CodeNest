@@ -6,7 +6,7 @@
     "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
     "module": "ESNext", // 指定编译后的 JavaScript 输出目录
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "paths": {
       "~/*": ["src/*"]
     },
@@ -14,7 +14,7 @@
     "types": [
       "vite/client"
     ],
-    "strict": true, // 模块解析策略
+    "strict": true, // 启用严格模式
     "noUnusedLocals": true,
     "declaration": true, // 开启声明文件生成
     "declarationDir": "./dist/types",

@@ -36,7 +36,6 @@ const projectExists = computed(() => projectItem.value.isExists)
 
 const { t } = useI18n()
 
-const projectCardRef = ref<HTMLDivElement | null>(null)
 const openButtonRef = ref<OpenButtonExpose | null>(null)
 const projectCardActive = ref<boolean>(false)
 const langGroup = ref(projectLangGroup.value)
@@ -151,7 +150,6 @@ function showMenu() {
 
 <template>
   <div
-    ref="projectCardRef"
     class="project-card group/item"
     :class="{ active: projectCardActive }"
     relative
