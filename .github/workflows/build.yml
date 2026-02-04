@@ -47,14 +47,11 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install JetV-ui dependencies
-        run: pnpm ui:install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build JetV-ui
         run: pnpm ui:build
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm run lint

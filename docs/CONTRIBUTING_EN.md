@@ -9,14 +9,11 @@ Ensure that [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) are inst
 ## Installing Dependencies
 
 ```bash
-# Install the component library dependencies
-pnpm ui:install
+# Install all dependencies (including component library)
+pnpm install
 
 # Build the component library
 pnpm ui:build
-
-# Install the project dependencies
-pnpm install
 
 # Run the project
 pnpm dev

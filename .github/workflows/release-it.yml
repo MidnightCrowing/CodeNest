@@ -37,14 +37,11 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install JetV-ui dependencies
-        run: pnpm ui:install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build JetV-ui
         run: pnpm ui:build
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm run lint
@@ -84,14 +81,11 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install JetV-ui dependencies
-        run: pnpm ui:install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build JetV-ui
         run: pnpm ui:build
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Release
         run: npx release-it ${{ inputs.increment }} --verbose
@@ -138,14 +132,11 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install JetV-ui dependencies
-        run: pnpm ui:install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build JetV-ui
         run: pnpm ui:build
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Update Version
         run: pnpm version ${{ inputs.increment }} --no-git-tag-version

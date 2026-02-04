@@ -32,9 +32,7 @@
     "build:electron": "pnpm tsc:electron && node scripts/add-suffix-js.js && electron-builder",
     "icon:build": "node scripts/build-icons.js",
     "tsc:electron": "tsc -p tsconfig/tsconfig.electron.json & tsc -p tsconfig/tsconfig.electron.preload.json",
-    "ui:install": "pnpm --filter jetv-ui install --frozen-lockfile",
     "ui:build": "pnpm --filter jetv-ui build",
-    "ui:update": "pnpm update jetv-ui",
     "postinstall": "electron-builder install-app-deps",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -47,7 +45,7 @@
     "fast-xml-parser": "^5.3.4",
     "fs-extra": "^11.3.3",
     "fuse.js": "^7.1.0",
-    "jetv-ui": "file:jetv-ui",
+    "jetv-ui": "workspace:*",
     "linguist-js": "^2.9.2",
     "pinia": "^3.0.4",
     "trash": "^10.1.0",
@@ -91,21 +89,6 @@
     "vite": "^7.3.1",
     "vitest": "^4.0.18",
     "vue-tsc": "^3.2.4"
-  },
-  "pnpm": {
-    "overrides": {
-      "@electron/node-gyp": "git+https://github.com/electron/node-gyp.git"
-    },
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "better-sqlite3",
-      "electron",
-      "electron-winstaller",
-      "esbuild",
-      "lzma-native",
-      "oxc-resolver",
-      "simple-git-hooks"
-    ]
   },
   "build": {
     "appId": "MidnightCrowing.CodeNest",

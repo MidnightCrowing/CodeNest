@@ -9,14 +9,11 @@
 ## 安装依赖
 
 ```bash
-# 安装组件库依赖
-pnpm ui:install
+# 安装所有依赖（包括组件库）
+pnpm install
 
 # 编译组件库
 pnpm ui:build
-
-# 安装项目依赖
-pnpm install
 
 # 运行项目
 pnpm dev
