@@ -1,3 +1,11 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+packages:
+  - jetv-ui
+overrides:
+  '@electron/node-gyp': git+https://github.com/electron/node-gyp.git
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - better-sqlite3
@@ -7,7 +15,3 @@ onlyBuiltDependencies:
   - lzma-native
   - oxc-resolver
   - simple-git-hooks
-packages:
-  - 'jetv-ui'
-overrides:
-  '@electron/node-gyp': git+https://github.com/electron/node-gyp.git
