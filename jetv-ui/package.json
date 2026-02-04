@@ -2,7 +2,7 @@
   "name": "jetv-ui",
   "type": "module",
   "version": "0.0.0",
-  "packageManager": "pnpm@10.15.1",
+  "packageManager": "pnpm@10.28.2",
   "description": "A Vue 3 UI Library",
   "author": "MidnightCrowing",
   "license": "MIT",
