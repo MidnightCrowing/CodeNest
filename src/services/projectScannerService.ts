@@ -10,9 +10,11 @@ import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { t } from '~/utils/i18n'
 
+const USER_REGEX_PATTERN_RE = /^\/(.*)\/([gimsuy]*)$/
+
 function toRegExp(pattern: string): RegExp | null {
   try {
-    const match = pattern.match(/^\/(.*)\/([gimsuy]*)$/)
+    const match = pattern.match(USER_REGEX_PATTERN_RE)
     if (match)
       return new RegExp(match[1], match[2])
     return new RegExp(pattern)

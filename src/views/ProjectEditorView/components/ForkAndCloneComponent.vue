@@ -12,6 +12,8 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['update:projectFromUrl', 'update:projectFromName'])
 
+const GITHUB_REPO_RE = /github\.com\/([^/]+\/[^/]+)/
+
 const { t } = useI18n()
 
 // 用于获取输入框的内容
@@ -27,7 +29,7 @@ function fillProjectName() {
 watch(projectUrlInputValue, (newValue) => {
   emit('update:projectFromUrl', newValue)
   if (newValue) {
-    const match = newValue.match(/github\.com\/([^/]+\/[^/]+)/)
+    const match = newValue.match(GITHUB_REPO_RE)
     repositoryPath.value = match ? match[1] : ''
   }
 })

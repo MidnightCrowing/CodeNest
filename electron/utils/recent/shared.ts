@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+const WINDOWS_DRIVE_RE = /^[a-z]:/
+
 export function uniqExistingDirs(
   paths: { path: string, ide: string | null }[],
 ): { path: string, ide: string | null }[] {
@@ -23,7 +25,7 @@ export function uniqExistingDirs(
           seen.add(key)
 
           // 输出时修正盘符大写（只改第一个字母）
-          if (/^[a-z]:/.test(fp)) {
+          if (WINDOWS_DRIVE_RE.test(fp)) {
             fp = fp.charAt(0).toUpperCase() + fp.slice(1)
           }
 

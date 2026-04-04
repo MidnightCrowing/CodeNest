@@ -11,7 +11,7 @@ const stateMap = ref<Map<string, StateEntry>>(new Map())
 // 显示最新变化的状态
 export const latestState = computed(() => {
   const values = Array.from(stateMap.value.values())
-  return values.length > 0 ? values[values.length - 1] : undefined
+  return values.length > 0 ? values.at(-1) : undefined
 })
 
 // 注册或更新状态

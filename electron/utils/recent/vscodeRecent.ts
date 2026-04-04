@@ -6,6 +6,9 @@ import Database from 'better-sqlite3'
 
 import { uniqExistingDirs } from './shared'
 
+const FILE_URI_RE = /^file:\/\//i
+const FORWARD_SLASH_RE = /\//g
+
 export interface VscodeRecentEntry {
   folderUri?: string
   fileUri?: string
@@ -50,7 +53,7 @@ function getVscodeRecentProjects(dbPath: string): VscodeRecentEntry[] {
 }
 
 function isFileUri(uri: string): boolean {
-  return /^file:\/\//i.test(uri)
+  return FILE_URI_RE.test(uri)
 }
 
 function decodeFileUriToFsPath(uri: string): string | null {
@@ -65,16 +68,16 @@ function decodeFileUriToFsPath(uri: string): string | null {
       if (p.startsWith('/'))
         p = p.slice(1)
       // Convert to backslashes
-      p = p.replace(/\//g, '\\')
+      p = p.replace(FORWARD_SLASH_RE, '\\')
     }
     return p
   }
   catch {
     // Fallback: strip prefix and decode
     try {
-      const raw = uri.replace(/^file:\/\//i, '')
+      const raw = uri.replace(FILE_URI_RE, '')
       const decoded = decodeURIComponent(raw)
-      return process.platform === 'win32' ? decoded.replace(/\//g, '\\') : `/${decoded}`
+      return process.platform === 'win32' ? decoded.replace(FORWARD_SLASH_RE, '\\') : `/${decoded}`
     }
     catch {
       return null

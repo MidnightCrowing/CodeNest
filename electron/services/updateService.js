@@ -1,0 +1,64 @@
+import { app } from 'electron';
+const VERSION_PREFIX_RE = /^v/i;
+const VERSION_SPLIT_RE = /[+-]/;
+function normalizeVersion(v) {
+    if (!v) {
+        return '0.0.0';
+    }
+    // remove leading v/V and trim whitespace
+    const cleaned = v.trim().replace(VERSION_PREFIX_RE, '');
+    // drop pre-release/build metadata for comparison
+    return cleaned.split(VERSION_SPLIT_RE)[0];
+}
+function compareSemver(a, b) {
+    const pa = normalizeVersion(a).split('.').map(n => Number.parseInt(n, 10) || 0);
+    const pb = normalizeVersion(b).split('.').map(n => Number.parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const na = pa[i] ?? 0;
+        const nb = pb[i] ?? 0;
+        if (na > nb)
+            return 1;
+        if (na < nb)
+            return -1;
+    }
+    return 0;
+}
+export async function checkUpdate() {
+    try {
+        // robust version source for dev and packaged
+        const currentVersion = app.getVersion() || '0.0.0';
+        // GitHub Releases API: latest (excludes drafts and prereleases)
+        const res = await fetch('https://api.github.com/repos/MidnightCrowing/CodeNest/releases/latest', {
+            headers: {
+                'Accept': 'application/vnd.github+json',
+                'User-Agent': 'CodeNest (Electron)',
+            },
+        });
+        if (!res.ok) {
+            // e.g. rate limited or not found
+            return { hasUpdate: false, currentVersion, error: `Request failed: ${res.status}` };
+        }
+        const json = await res.json();
+        const latestTag = json?.tag_name;
+        const latestVersion = normalizeVersion(latestTag || json?.name);
+        const url = json?.html_url || 'https://github.com/MidnightCrowing/CodeNest/releases/latest';
+        const name = json?.name;
+        const notes = json?.body;
+        const publishedAt = json?.published_at;
+        const cmp = compareSemver(currentVersion, latestVersion);
+        const hasUpdate = cmp < 0;
+        return {
+            hasUpdate,
+            currentVersion,
+            latestVersion,
+            url,
+            name,
+            notes,
+            publishedAt,
+        };
+    }
+    catch (e) {
+        const currentVersion = app.getVersion() || '0.0.0';
+        return { hasUpdate: false, currentVersion, error: e?.message || String(e) };
+    }
+}

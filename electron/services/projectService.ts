@@ -10,6 +10,8 @@ import trash from 'trash'
 import { projectsFilePath } from '../utils/dataPath'
 import type { LinguistResult } from '../utils/linguist'
 
+const LICENSE_LINE_SPLIT_RE = /\r?\n/
+
 // 传入项目根目录，获取项目各编程语言的占比
 export async function analyzeProject(event: IpcMainInvokeEvent, folderPath: string): Promise<LinguistResult | { error: string }> {
   return await new Promise((resolve) => {
@@ -109,7 +111,7 @@ export async function readLicense(folderPath: string, maxLines = 20) {
       return { success: false, message: 'License file is not a regular file' }
 
     const content = await fs.readFile(full, 'utf8')
-    const lines = content.split(/\r?\n/).slice(0, Math.max(1, Math.min(100, maxLines)))
+    const lines = content.split(LICENSE_LINE_SPLIT_RE).slice(0, Math.max(1, Math.min(100, maxLines)))
 
     return {
       success: true,

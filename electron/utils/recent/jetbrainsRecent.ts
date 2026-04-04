@@ -7,6 +7,13 @@ import { XMLParser } from 'fast-xml-parser'
 
 import { uniqExistingDirs } from './shared'
 
+const USER_HOME_PLACEHOLDER_RE = /\$USER_HOME\$/g
+const WINDOWS_BACKSLASH_RE = /\\/g
+const IDE_VERSION_SUFFIX_RE = /\d.*$/
+const PLACEHOLDER_TOKEN_RE = /\$[A-Z_]+\$/
+const JETBRAINS_SKIP_RE = /light-edit|scratches/i
+const FORWARD_SLASH_RE = /\//g
+
 export interface JetbrainsRecentEntry {
   path: string
   ide: string | null // 例如 "PyCharm", "IntelliJIdea"
@@ -45,7 +52,7 @@ function getAllJetbrainsRecentProjects(
 
   const userHome = os.homedir()
   const normalizePath = (p: string): string =>
-    p.replace(/\$USER_HOME\$/g, userHome).replace(/\\/g, '/')
+    p.replace(USER_HOME_PLACEHOLDER_RE, userHome).replace(WINDOWS_BACKSLASH_RE, '/')
 
   const entries: JetbrainsRecentEntry[] = []
 
@@ -62,7 +69,7 @@ function getAllJetbrainsRecentProjects(
     const xmlContent = fs.readFileSync(xmlPath, 'utf-8')
     const json = parser.parse(xmlContent)
 
-    const ideNameRaw = subdir.replace(/\d.*$/, '') // 去掉版本号，比如 "PyCharm2025.1" -> "PyCharm"
+    const ideNameRaw = subdir.replace(IDE_VERSION_SUFFIX_RE, '') // 去掉版本号，比如 "PyCharm2025.1" -> "PyCharm"
     const ideName = ideNameMap[ideNameRaw] ?? null
 
     const options = json?.application?.component?.option
@@ -117,9 +124,9 @@ export function collectFromJetbrains(configRoot: string | null): JetbrainsRecent
   for (const e of entries) {
     const p = e.path
     // Skip placeholders and JetBrains light-edit/scratches etc.
-    if (!p || /\$[A-Z_]+\$/.test(p) || /light-edit|scratches/i.test(p))
+    if (!p || PLACEHOLDER_TOKEN_RE.test(p) || JETBRAINS_SKIP_RE.test(p))
       continue
-    const norm = process.platform === 'win32' ? p.replace(/\//g, '\\') : p
+    const norm = process.platform === 'win32' ? p.replace(FORWARD_SLASH_RE, '\\') : p
     candidates.push({ path: norm, ide: e.ide })
   }
   return uniqExistingDirs(candidates)

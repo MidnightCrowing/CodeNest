@@ -37,6 +37,8 @@ import {
   localProjectItem,
 } from './ProjectEditorViewProvider'
 
+const PATH_SPLIT_RE = /[\\/]/
+
 const { t } = useI18n()
 const projectsStore = useProjectsStore()
 const editorLangGroupsStore = useEditorLangGroupsStore()
@@ -237,8 +239,8 @@ watch(
     cleanConfigValue()
 
     // 提取路径的最后一个文件夹名称
-    const parts = newValue.split(/[\\/]/)
-    repositoryFolderName.value = parts[parts.length - 1] || ''
+    const parts = newValue.split(PATH_SPLIT_RE)
+    repositoryFolderName.value = parts.at(-1) || ''
 
     if (newValue) {
       mainLanguageLoading.value = true

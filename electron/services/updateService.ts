@@ -1,5 +1,8 @@
 import { app } from 'electron'
 
+const VERSION_PREFIX_RE = /^v/i
+const VERSION_SPLIT_RE = /[+-]/
+
 interface CheckUpdateResult {
   hasUpdate: boolean
   currentVersion: string
@@ -16,9 +19,9 @@ function normalizeVersion(v: string | undefined): string {
     return '0.0.0'
   }
   // remove leading v/V and trim whitespace
-  const cleaned = v.trim().replace(/^v/i, '')
+  const cleaned = v.trim().replace(VERSION_PREFIX_RE, '')
   // drop pre-release/build metadata for comparison
-  return cleaned.split(/[+-]/)[0]
+  return cleaned.split(VERSION_SPLIT_RE)[0]
 }
 
 function compareSemver(a: string, b: string): number {
