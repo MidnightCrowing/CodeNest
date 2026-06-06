@@ -1,13 +1,9 @@
 <script lang="ts" setup>
-import { JeLink, JeLoader, JeTransparentButton } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
-
-import { useProjectsStore } from '~/stores/projectsStore'
 
 import { version } from '../../../../package.json'
 
 const { t } = useI18n()
-const projectsStore = useProjectsStore()
 
 const checking = ref(false)
 const updateInfo = ref<{
@@ -26,117 +22,129 @@ function openGithub() {
 }
 
 function openRelease(url?: string) {
-  const target = url || 'https://github.com/MidnightCrowing/CodeNest/releases/latest'
-  window.api.openExternal(target)
+  window.api.openExternal(url || 'https://github.com/MidnightCrowing/CodeNest/releases/latest')
 }
 
 async function onCheckUpdate() {
   if (checking.value)
     return
+
   checking.value = true
   try {
-    const res = await window.api.checkUpdate()
-    updateInfo.value = res
+    updateInfo.value = await window.api.checkUpdate()
   }
-  catch (e) {
-    updateInfo.value = { hasUpdate: false, currentVersion: version, error: String(e) }
+  catch (error) {
+    updateInfo.value = { hasUpdate: false, currentVersion: version, error: String(error) }
   }
   finally {
     checking.value = false
   }
 }
-
-async function importProjects() {
-  await window.api.importProject()
-  await projectsStore.loadProjects()
-}
-
-function exportProjects() {
-  window.api.exportProject()
-}
 </script>
 
 <template>
-  <div
-    flex="~ col" gap="8px"
-    p="10px"
-  >
-    <h3 text="h2">
-      {{ t('settings.about.title') }}
-    </h3>
+  <div class="settings-page">
+    <header class="page-header">
+      <h2>{{ t('app.settings.about.title') }}</h2>
+    </header>
 
-    <div p="y-5px" flex="~ row" gap="5px">
-      <strong>{{ t('settings.about.version.title') }}: </strong>
-
-      <div flex="~ col" gap="5px">
-        <span> v{{ version }}</span>
-
-        <div flex="~ row items-center" gap="8px">
-          <JeLink
-            type="internal"
-            :disabled="checking"
-            @click="onCheckUpdate"
+    <div class="settings-list">
+      <div class="setting-row">
+        <div class="setting-copy">
+          <strong>CodeNest v{{ version }}</strong>
+          <span v-if="!updateInfo">{{ t('app.settings.about.update.check_desc') }}</span>
+          <span v-else-if="updateInfo.error" class="error-text">{{ updateInfo.error }}</span>
+          <span v-else-if="updateInfo.hasUpdate">{{ t('app.settings.about.update.available', { version: updateInfo.latestVersion }) }}</span>
+          <span v-else>{{ t('app.settings.about.update.latest') }}</span>
+        </div>
+        <div class="row-actions">
+          <button class="ghost-button" type="button" :disabled="checking" @click="onCheckUpdate">
+            {{ checking ? t('app.settings.about.update.checking') : t('app.settings.about.update.check') }}
+          </button>
+          <button
+            v-if="updateInfo?.hasUpdate"
+            class="primary-button"
+            type="button"
+            @click="openRelease(updateInfo.url)"
           >
-            {{ t('settings.about.version.check_update') }}
-          </JeLink>
-
-          <template v-if="checking">
-            <div flex="~ row items-center" gap="2px">
-              <JeLoader />
-              <span text="secondary">{{ t('settings.about.version.checking_update') }}</span>
-            </div>
-          </template>
-
-          <template v-else-if="updateInfo && !updateInfo.hasUpdate && !updateInfo.error">
-            <span text="secondary">{{ t('settings.about.version.is_latest') }}</span>
-          </template>
-
-          <template v-else-if="updateInfo && updateInfo.hasUpdate">
-            <JeLink type="internal" @click="openRelease(updateInfo.url)">
-              {{ t('settings.about.version.found_new') }}
-              <span v-if="updateInfo.latestVersion">: v{{ updateInfo.latestVersion }}</span>
-            </JeLink>
-          </template>
-
-          <template v-else-if="updateInfo && updateInfo.error">
-            <span text="light:$red-5 dark:$red-5">{{ updateInfo.error }}</span>
-          </template>
+            {{ t('app.settings.about.update.open_release') }}
+          </button>
         </div>
       </div>
-    </div>
 
-    <div p="y-5px" flex="~ items-center" gap="5px">
-      <strong>{{ t('settings.about.link') }}: </strong>
-      <JeTransparentButton
-        type="subtle"
-        flex="~ items-center" gap="5px"
-        @click="openGithub"
-      >
-        <span class="i-custom:github" text="17px" />
-        GitHub
-      </JeTransparentButton>
-    </div>
-
-    <div p="y-5px" flex="~ items-center" gap="5px">
-      <strong>{{ t('settings.about.import_export.title') }}: </strong>
-      <div flex="~ items-center" gap="8px">
-        <JeTransparentButton
-          type="subtle"
-          flex="~ items-center" gap="5px"
-          @click="importProjects"
-        >
-          <span class="i-custom:import" text="17px" />
-          {{ t('settings.about.import_export.import_desc') }}
-        </JeTransparentButton>
-        <JeTransparentButton
-          type="subtle"
-          flex="~ items-center" gap="5px"
-          @click="exportProjects"
-        >
-          <span class="i-custom:export" text="17px" />
-          {{ t('settings.about.import_export.export_desc') }}
-        </JeTransparentButton>
+      <div class="setting-row">
+        <div class="setting-copy">
+          <strong>{{ t('app.settings.about.repository.title') }}</strong>
+          <span>{{ t('app.settings.about.repository.desc') }}</span>
+        </div>
+        <button class="ghost-button" type="button" @click="openGithub">
+          <span class="i-custom:github" />
+          GitHub
+        </button>
       </div>
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.settings-page {
+  @apply flex flex-col gap-10px;
+}
+
+.page-header {
+  @apply flex items-end justify-between gap-10px;
+
+  h2 {
+    @apply m-0 text-16px font-650;
+  }
+}
+
+.settings-list {
+  @apply flex flex-col gap-8px;
+}
+
+.setting-row {
+  @apply min-h-42px flex items-center justify-between gap-14px;
+}
+
+.setting-copy {
+  @apply min-w-0 flex flex-col gap-3px;
+
+  strong {
+    @apply text-13px font-620;
+  }
+
+  span {
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.error-text {
+  @apply color-$red-5;
+}
+
+.row-actions {
+  @apply shrink-0 flex items-center gap-7px;
+}
+
+.primary-button,
+.ghost-button {
+  @apply h-28px border-0 rounded-5px px-9px;
+  @apply inline-flex items-center gap-5px whitespace-nowrap;
+  @apply text-12px font-560 cursor-pointer;
+}
+
+.primary-button {
+  @apply bg-$ui-primary color-$ui-primary-foreground;
+  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
+}
+
+.ghost-button {
+  @apply bg-$ui-surface-background color-$ui-foreground;
+  @apply hover:bg-$ui-hover-background;
+
+  &:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+}
+</style>

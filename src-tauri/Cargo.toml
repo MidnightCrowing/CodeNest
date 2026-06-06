@@ -1,0 +1,36 @@
+[package]
+name = "codenest"
+version = "0.0.6"
+description = "Cross-platform local project manager"
+authors = [ "MidnightCrowing" ]
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "codenest_lib"
+crate-type = [
+  "staticlib",
+  "cdylib",
+  "rlib",
+]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [ ] }
+
+[dependencies]
+dirs = "6.0.0"
+ignore = "0.4.26"
+open = "5.3.5"
+percent-encoding = "2.3.2"
+reqwest = { version = "0.13.4", default-features = false, features = [
+  "json",
+  "rustls",
+] }
+rfd = "0.17.2"
+roxmltree = "0.21.1"
+rusqlite = { version = "0.40.1", features = [ "bundled" ] }
+serde = { version = "1.0.228", features = [ "derive" ] }
+serde_json = "1.0.150"
+tauri = { version = "2.11.2", features = [ ] }
+trash = "5.2.6"
+url = "2.5.8"

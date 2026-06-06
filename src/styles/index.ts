@@ -1,4 +1,5 @@
 import 'uno.css'
-import 'jetv-ui/dist/jetv-ui.css'
+import './theme.scss'
 import './main.scss'
+import './controls.scss'
 import './transitionAndTransitionGroup.scss'

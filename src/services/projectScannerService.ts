@@ -1,5 +1,5 @@
-import { clearState, setState } from '~/components/StateBar'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
+import { isCodeEditor } from '~/constants/codeEditor'
 import type { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -8,7 +8,6 @@ import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
-import { t } from '~/utils/i18n'
 
 const USER_REGEX_PATTERN_RE = /^\/(.*)\/([gimsuy]*)$/
 
@@ -25,123 +24,72 @@ function toRegExp(pattern: string): RegExp | null {
   }
 }
 
-/**
- * 在主进程 Worker 中扫描并分析新增项目目录（流式），边扫边加入项目列表
- */
-export async function addNewProjectsInWorker() {
+export async function addNewProjectsFromScanner() {
   const projectsStore = useProjectsStore()
   const settingsStore = useSettingsStore()
   const scannerStore = useProjectScannerStore()
   const editorLangGroupsStore = useEditorLangGroupsStore()
+
+  if (!settingsStore.scannerEnabled)
+    return
 
   await scannerStore.loadProjectScannerData()
   await projectsStore.loadProjects()
 
   projectsStore.allProjects.forEach(p => scannerStore.addScannedPath(p.path))
 
-  // 初始状态：扫描中
-  setState('projectScanner', t('status.project_scanner.scanning'), true)
+  try {
+    const { items } = await window.api.scanProjects({
+      ...toRaw(settingsStore.scanner),
+      existingPaths: Array.from(scannerStore.allHistoryScannedPaths),
+    })
 
-  // 启动扫描
-  const { sessionId } = await window.api.startProjectScan({
-    ...toRaw(settingsStore.scanner),
-    existingPaths: Array.from(scannerStore.allHistoryScannedPaths),
-  })
+    for (const item of items) {
+      const path = item.path
+      const name = item.name || 'Unnamed Project'
 
-  // 先声明，再在 finalize 中使用，避免 no-use-before-define
-  let offItem: (() => void) | null = null
-  let offDone: (() => void) | null = null
-  let offError: (() => void) | null = null
-  let finalized = false
-  let foundCount = 0
+      scannerStore.addScannedPath(path)
 
-  const finalize = async () => {
-    if (finalized)
-      return
-    finalized = true
-    offItem?.()
-    offDone?.()
-    offError?.()
-    offItem = offDone = offError = null
+      const mainLang = item.mainLang || 'unknown'
+      let license: LicenseEnum | undefined
+      const res = await window.api.readProjectLicense(path)
+      if (res?.success && res.snippet) {
+        const { license: detected, score } = detectLicenseBySnippet(res.snippet)
+        if (detected && score > 0) {
+          license = detected
+        }
+      }
+
+      const defaultOpen: CodeEditorEnum = isCodeEditor(item.ide)
+        ? item.ide
+        : settingsStore.scanner.openMode === 'specified'
+          ? settingsStore.scanner.editor
+          : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) ?? settingsStore.scanner.editor
+
+      const newProject: LocalProject = {
+        appendTime: Date.now(),
+        path,
+        name,
+        group: '',
+        kind: ProjectKind.MINE,
+        mainLang,
+        mainLangColor: item.mainLangColor,
+        langGroup: item.langGroup || [],
+        license,
+        defaultOpen,
+        isTemporary: toRegExp(settingsStore.scanner.namePattern)?.test(name) || false,
+        isExists: true,
+      }
+
+      await projectsStore.addProject(newProject, false)
+    }
+
     await Promise.all([
       projectsStore.saveProjects(),
       scannerStore.saveProjectScannerData(),
     ])
-    clearState('projectScanner')
   }
-
-  // 订阅事件（逐条写入）
-  offItem = window.api.onScannerItem(async ({ sessionId: sid, item }) => {
-    if (sid !== sessionId)
-      return
-
-    const path = item.path as string
-    const name = (item.name as string) || 'Unnamed Project'
-
-    // 记录扫描历史
-    scannerStore.addScannedPath(path)
-
-    const mainLang = (item.mainLang || 'unknown') as string
-
-    let license: LicenseEnum | undefined
-    const res = await window.api.readProjectLicense(path)
-    if (res?.success && res.snippet) {
-      const { license: detected, score } = detectLicenseBySnippet(res.snippet)
-      if (detected && score > 0) {
-        license = detected
-      }
-    }
-
-    const defaultOpen: CodeEditorEnum = item.ide
-      ? item.ide as CodeEditorEnum
-      : settingsStore.scanner.openMode === 'specified'
-        ? settingsStore.scanner.editor
-        : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) as CodeEditorEnum
-
-    const isTemporary: boolean = toRegExp(settingsStore.scanner.namePattern)?.test(name) || false
-
-    const newProject: LocalProject = {
-      appendTime: Date.now(),
-      path,
-      name,
-      group: '',
-      kind: ProjectKind.MINE,
-      mainLang,
-      mainLangColor: item.mainLangColor,
-      langGroup: item.langGroup || [],
-      license,
-      defaultOpen,
-      isTemporary,
-      isExists: true,
-    }
-
-    await projectsStore.addProject(newProject, false)
-    await projectsStore.saveProjects()
-
-    // 更新“已发现 N 个新项目”
-    foundCount += 1
-    setState(
-      'projectScanner',
-      foundCount === 1
-        ? t('status.project_scanner.found_one')
-        : t('status.project_scanner.found_many', { count: foundCount }),
-      true,
-    )
-  })
-
-  offDone = window.api.onScannerDone(async ({ sessionId: sid }) => {
-    if (sid !== sessionId)
-      return
-    // 完成
-    setState('projectScanner', t('status.project_scanner.done'), false)
-    await finalize()
-  })
-
-  offError = window.api.onScannerError(async ({ sessionId: sid }) => {
-    if (sid !== sessionId)
-      return
-    // 失败
-    setState('projectScanner', t('status.project_scanner.error'), false)
-    await finalize()
-  })
+  catch (error) {
+    console.error('Project scanner failed:', error)
+  }
 }

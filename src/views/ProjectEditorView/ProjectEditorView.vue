@@ -1,22 +1,10 @@
 <script lang="ts" setup>
-import type {
-  JeComboboxOptionProps,
-  JeDropdownOptionGroupProps,
-  JeDropdownOptionProps,
-} from 'jetv-ui'
-import {
-  JeButton,
-  JeCheckbox,
-  JeCombobox,
-  JeDropdown,
-  JeFileInputField,
-  JeFrame,
-  JeInputField,
-  JeLink,
-  JeSegmentedControl,
-} from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
+import UiCombobox from '~/components/ui/UiCombobox.vue'
+import UiScrollArea from '~/components/ui/UiScrollArea.vue'
+import UiSelect from '~/components/ui/UiSelect.vue'
+import UiSwitch from '~/components/ui/UiSwitch.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
@@ -28,188 +16,204 @@ import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 
-import EditorItem from './components/EditorItem.vue'
-import EditorTitle from './components/EditorTitle.vue'
-import ForkAndCloneComponent from './components/ForkAndCloneComponent.vue'
 import {
   initializeNewProjectState,
   isUpdateProject,
   localProjectItem,
 } from './ProjectEditorViewProvider'
 
-const PATH_SPLIT_RE = /[\\/]/
+defineOptions({
+  name: 'ProjectEditor',
+})
 
-const { t } = useI18n()
+type FieldKey = 'path' | 'name' | 'mainLang' | 'defaultOpen'
+
+const PATH_SPLIT_RE = /[\\/]+/
+const GITHUB_REPO_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
+
+const activatedView = inject('activatedView') as Ref<ViewEnum>
 const projectsStore = useProjectsStore()
 const editorLangGroupsStore = useEditorLangGroupsStore()
+const initialProjectPath = localProjectItem.value.path || ''
+const { t } = useI18n()
 
-// ==================== ProjectInfo ====================
-const projectPathInputValidated = ref<boolean>(false)
-const projectNameInputValidated = ref<boolean>(false)
-const repositoryFolderName = ref<string>('')
-const excludedPaths = isUpdateProject ? [localProjectItem.value.path || ''] : []
-const groupOptions = ref<JeComboboxOptionProps[]>(
-  projectsStore.allGroups.map(group => ({ label: group, value: group })),
+const analyzing = ref(false)
+const detectingLicense = ref(false)
+const lastAnalyzedPath = ref(initialProjectPath)
+const touchedFields = reactive<Record<FieldKey, boolean>>({
+  path: false,
+  name: false,
+  mainLang: false,
+  defaultOpen: false,
+})
+
+const editorRows = computed(() =>
+  Object.entries(codeEditors) as Array<[CodeEditorEnum, CodeEditorOption]>,
 )
 
-function fillProjectName() {
-  localProjectItem.value.name = repositoryFolderName.value
-}
+const editorOptions = computed(() =>
+  editorRows.value.map(([editor, option]) => ({
+    value: editor,
+    label: `${option.group ? `${option.group} / ` : ''}${option.label}`,
+  })),
+)
 
-// ==================== KindButtons ====================
-const kindButtonLabels = reactive([
-  { label: t('home.side_panel.kinds.mine'), value: ProjectKind.MINE },
-  { label: t('home.side_panel.kinds.fork'), value: ProjectKind.FORK },
-  { label: t('home.side_panel.kinds.clone'), value: ProjectKind.CLONE },
+const licenseOptions = computed(() =>
+  [
+    LicenseEnum.NONE,
+    ...Object.values(LicenseEnum).filter(value => value !== LicenseEnum.NONE),
+  ].map(value => ({
+    value,
+    label: shortLicense(value),
+  })),
+)
+
+const languageOptions = computed(() =>
+  (localProjectItem.value.langGroup || [])
+    .filter(language => language.text !== 'Other')
+    .map(language => language.text),
+)
+
+const repositoryFolderName = computed(() =>
+  localProjectItem.value.path
+    ? localProjectItem.value.path.split(PATH_SPLIT_RE).filter(Boolean).at(-1) || ''
+    : '',
+)
+
+const duplicatePath = computed(() =>
+  !!localProjectItem.value.path
+  && projectsStore.checkPathExistenceInProjects(
+    localProjectItem.value.path,
+    isUpdateProject.value && initialProjectPath ? [initialProjectPath] : [],
+  ),
+)
+
+const sourceSuggestion = computed(() => {
+  const url = localProjectItem.value.fromUrl?.trim()
+  if (!url)
+    return ''
+  return url.match(GITHUB_REPO_RE)?.[1] || ''
+})
+
+const canSave = computed(() =>
+  !!localProjectItem.value.path
+  && !!localProjectItem.value.name
+  && !!localProjectItem.value.mainLang
+  && !!localProjectItem.value.defaultOpen,
+)
+
+const summaryItems = computed(() => [
+  { label: t('app.project_editor.summary.mode'), value: isUpdateProject.value ? t('app.project_editor.mode.edit') : t('app.project_editor.mode.new') },
+  { label: t('app.project_editor.summary.kind'), value: kindLabel(localProjectItem.value.kind) },
+  { label: t('app.project_editor.summary.editor'), value: localProjectItem.value.defaultOpen ? codeEditors[localProjectItem.value.defaultOpen]?.label : t('app.common.not_set') },
+  { label: t('app.project_editor.summary.license'), value: shortLicense(localProjectItem.value.license as LicenseEnum) },
 ])
-const kindComponents: Partial<Record<ProjectKind, ReturnType<typeof defineAsyncComponent>>> = {
-  [ProjectKind.FORK]: ForkAndCloneComponent,
-  [ProjectKind.CLONE]: ForkAndCloneComponent,
+
+async function browseProjectPath() {
+  const selectedPaths = await window.api.openFolderDialog()
+  if (!selectedPaths[0])
+    return
+
+  localProjectItem.value.path = selectedPaths[0]
+  touchedFields.path = true
+  await refreshDetectedProjectMetadata()
 }
 
-// ==================== Language ====================
-const projectLangInputValidated = ref(false)
-const mainLanguageOptions = ref<JeComboboxOptionProps[]>([])
-const mainLanguageLoading = ref(false)
+function handlePathBlur() {
+  markTouched('path')
+  void refreshDetectedProjectMetadata()
+}
 
-// 获取下拉选项
-async function fetchLanguageOptions(path: string) {
+function fillProjectName() {
+  if (repositoryFolderName.value) {
+    localProjectItem.value.name = repositoryFolderName.value
+    touchedFields.name = true
+  }
+}
+
+function fillSourceName() {
+  if (sourceSuggestion.value) {
+    localProjectItem.value.fromName = sourceSuggestion.value
+  }
+}
+
+function markTouched(field: FieldKey) {
+  touchedFields[field] = true
+}
+
+function hasDetectedMetadata() {
+  return !!localProjectItem.value.mainLang && !!localProjectItem.value.defaultOpen
+}
+
+function resetDetectedProjectMetadata() {
+  localProjectItem.value.mainLang = null
+  localProjectItem.value.mainLangColor = null
+  localProjectItem.value.langGroup = []
+  localProjectItem.value.defaultOpen = null
+  localProjectItem.value.license = LicenseEnum.NONE
+}
+
+async function refreshDetectedProjectMetadata() {
+  const path = localProjectItem.value.path?.trim()
+  if (!path)
+    return
+  if (path === lastAnalyzedPath.value && hasDetectedMetadata())
+    return
+
+  if (!localProjectItem.value.name) {
+    localProjectItem.value.name = repositoryFolderName.value
+  }
+
+  resetDetectedProjectMetadata()
+  lastAnalyzedPath.value = path
+
+  await Promise.all([
+    analyzeProject(path),
+    detectLicense(path),
+  ])
+}
+
+async function analyzeProject(targetPath = localProjectItem.value.path) {
+  const path = targetPath
   if (!path)
     return
 
-  mainLanguageLoading.value = true
+  analyzing.value = true
   try {
     const analyzer = new LanguageAnalyzer(path)
     const success = await analyzer.analyze()
+    if (!success)
+      return
+    if (localProjectItem.value.path !== path)
+      return
 
-    if (success) {
-      mainLanguageOptions.value = analyzer.mainLanguageOptions
+    localProjectItem.value.mainLang = analyzer.mainLang
+    localProjectItem.value.mainLangColor = analyzer.mainLangColor
+    localProjectItem.value.langGroup = analyzer.langGroup
+    if (analyzer.mainLang) {
+      localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(analyzer.mainLang)
     }
-  }
-  catch (error) {
-    console.error('Analysis error:', error)
   }
   finally {
-    mainLanguageLoading.value = false
+    analyzing.value = false
   }
 }
 
-// ==================== DefaultOpen ====================
-const projectDefaultOpenInputValidated = ref(false)
-const defaultOpenLoading = ref(false)
-
-// 将 CodeEditorOption 转换为 Dropdown 可接受的 options
-function transformCodeEditorOptionsToDropdownOptions(
-  codeEditorOptions: Record<CodeEditorEnum, CodeEditorOption>,
-): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
-  const groupedOptions = new Map<string, JeDropdownOptionProps[]>()
-
-  // 遍历所有 CodeEditorOption
-  Object.entries(codeEditorOptions).forEach(([value, { label, icon, description, group }]) => {
-    const key = group || 'default'
-    if (!groupedOptions.has(key)) {
-      groupedOptions.set(key, [])
-    }
-    groupedOptions.get(key)!.push({ value, label, icon, description })
-  })
-
-  // 构造结果
-  const dropdownOptions: (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] = []
-  groupedOptions.forEach((options, group) => {
-    if (group === 'default') {
-      dropdownOptions.push(...options) // 未分组直接加入结果
-    }
-    else {
-      dropdownOptions.push({ value: group, groupLabel: group, options }) // 分组的生成 OptionGroup
-    }
-  })
-
-  return dropdownOptions
+function runAnalyzeProject() {
+  void analyzeProject()
 }
 
-// ==================== License ====================
-
-// 常用的 License
-const commonLicenses: LicenseEnum[] = [LicenseEnum.MIT, LicenseEnum.GPLV3]
-
-/**
- * 将 License 枚举转换为 JeDropdownOptionProps 列表
- * 常用的 License 放在前面，不常用的归类到分组中
- * @param licenseEnums - LicenseEnum 枚举
- * @returns {(JeDropdownOptionProps | JeDropdownOptionGroupProps)[]} 转换后的菜单选项数组
- */
-function convertLicensesToDropdownOptions(
-  licenseEnums: typeof LicenseEnum,
-): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
-  const commonOptions: JeDropdownOptionProps[] = []
-  const otherOptions: JeDropdownOptionProps[] = []
-
-  Object.entries(licenseEnums)
-    .filter(([, value]) => value !== LicenseEnum.NONE)
-    .forEach(([, value]) => {
-      const option = {
-        value,
-        label: value,
-        icon: 'light:i-custom:license dark:i-custom:license-dark',
-      }
-
-      if (commonLicenses.includes(value)) {
-        commonOptions.push(option)
-      }
-      else {
-        otherOptions.push(option)
-      }
-    })
-
-  // 返回带分组的选项数组
-  return [
-    {
-      value: LicenseEnum.NONE,
-      label: '<None>',
-    },
-    ...commonOptions,
-    {
-      value: 'other',
-      groupLabel: t('project_config.license_other'),
-      options: otherOptions,
-      isExpand: false,
-    },
-  ]
-}
-
-// ==================== Others ====================
-function cleanConfigValue() {
-  localProjectItem.value.mainLang = null
-  mainLanguageOptions.value = []
-  localProjectItem.value.defaultOpen = null
-}
-
-async function analyzeAndSetLanguage(projectPath: string) {
-  const analyzer = new LanguageAnalyzer(projectPath)
-  try {
-    const success = await analyzer.analyze()
-    if (success) {
-      mainLanguageOptions.value = analyzer.mainLanguageOptions
-      localProjectItem.value.mainLang = analyzer.mainLang
-      localProjectItem.value.mainLangColor = analyzer.mainLangColor
-      localProjectItem.value.langGroup = analyzer.langGroup
-    }
-  }
-  catch (error) {
-    console.error('Analysis error:', error)
-  }
-}
-
-async function analyzeAndSetLicense(projectPath: string) {
-  const currentLicense = localProjectItem.value.license
-
-  // 仅当未选择或为 NONE 时自动填充
-  if (currentLicense && currentLicense !== LicenseEnum.NONE)
+async function detectLicense(targetPath = localProjectItem.value.path) {
+  const path = targetPath
+  if (!path)
     return
 
+  detectingLicense.value = true
   try {
-    const res = await window.api.readProjectLicense(projectPath)
+    const res = await window.api.readProjectLicense(path)
     if (!res?.success || !res.snippet)
+      return
+    if (localProjectItem.value.path !== path)
       return
 
     const { license, score } = detectLicenseBySnippet(res.snippet)
@@ -217,296 +221,753 @@ async function analyzeAndSetLicense(projectPath: string) {
       localProjectItem.value.license = license
     }
   }
-  catch (e) {
-    console.error('License detect error:', e)
+  finally {
+    detectingLicense.value = false
   }
 }
 
-onMounted(() => {
-  if (localProjectItem.value.path) {
-    fetchLanguageOptions(localProjectItem.value.path)
+function runDetectLicense() {
+  void detectLicense()
+}
+
+function updateLanguage(language: string | null) {
+  localProjectItem.value.mainLang = language
+  const languageItem = localProjectItem.value.langGroup?.find(item => item.text === language)
+  localProjectItem.value.mainLangColor = languageItem?.color || null
+  localProjectItem.value.defaultOpen = language
+    ? editorLangGroupsStore.getEditorByLanguage(language)
+    : null
+}
+
+function validateFields() {
+  touchedFields.path = true
+  touchedFields.name = true
+  touchedFields.mainLang = true
+  touchedFields.defaultOpen = true
+  return canSave.value && !duplicatePath.value
+}
+
+function toProject(): LocalProject {
+  return {
+    appendTime: localProjectItem.value.appendTime || Date.now(),
+    path: localProjectItem.value.path!,
+    name: localProjectItem.value.name!,
+    group: localProjectItem.value.group || '',
+    kind: localProjectItem.value.kind,
+    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
+      ? {
+          fromUrl: localProjectItem.value.fromUrl || undefined,
+          fromName: localProjectItem.value.fromName || undefined,
+        }
+      : {}),
+    mainLang: localProjectItem.value.mainLang!,
+    mainLangColor: localProjectItem.value.mainLangColor || undefined,
+    langGroup: localProjectItem.value.langGroup || [],
+    defaultOpen: localProjectItem.value.defaultOpen!,
+    license: localProjectItem.value.license !== LicenseEnum.NONE
+      ? localProjectItem.value.license as LicenseEnum
+      : undefined,
+    isTemporary: !!localProjectItem.value.isTemporary,
+    isExists: true,
   }
-})
+}
+
+async function saveProject() {
+  if (!validateFields())
+    return
+
+  const project = toProject()
+  if (isUpdateProject.value) {
+    await projectsStore.updateProject(project.appendTime, project)
+  }
+  else {
+    await projectsStore.addProject(project, true)
+  }
+  closeEditor()
+}
+
+function closeEditor() {
+  initializeNewProjectState()
+  activatedView.value = ViewEnum.Home
+}
+
+function kindLabel(kind: ProjectKind) {
+  switch (kind) {
+    case ProjectKind.FORK:
+      return t('app.project_kind.fork')
+    case ProjectKind.CLONE:
+      return t('app.project_kind.clone')
+    case ProjectKind.MINE:
+    default:
+      return t('app.project_kind.mine')
+  }
+}
+
+function shortLicense(license?: LicenseEnum | string | null) {
+  if (!license || license === LicenseEnum.NONE)
+    return t('app.license.none')
+  if (license === LicenseEnum.MIT)
+    return 'MIT'
+  if (license === LicenseEnum.APACHE_2_0)
+    return 'Apache-2.0'
+  if (license === LicenseEnum.GPLV3)
+    return 'GPL-3.0'
+  if (license === LicenseEnum.GPLV2)
+    return 'GPL-2.0'
+  if (license === LicenseEnum.OTHER)
+    return t('app.license.other')
+  return String(license).replace(' License', '').replace('GNU ', '')
+}
+
+function fieldInvalid(field: FieldKey) {
+  return touchedFields[field] && !localProjectItem.value[field]
+}
 
 watch(
   () => localProjectItem.value.path,
-  async (newValue) => {
-    if (newValue === null) {
+  (path, oldPath) => {
+    if (path === oldPath)
       return
+    if (!path) {
+      lastAnalyzedPath.value = ''
     }
-
-    // 清空设置项
-    cleanConfigValue()
-
-    // 提取路径的最后一个文件夹名称
-    const parts = newValue.split(PATH_SPLIT_RE)
-    repositoryFolderName.value = parts.at(-1) || ''
-
-    if (newValue) {
-      mainLanguageLoading.value = true
-      defaultOpenLoading.value = true
-
-      await Promise.all([
-        // 获取项目编程语言分析结果
-        analyzeAndSetLanguage(newValue).finally(() => {
-          mainLanguageLoading.value = false
-          defaultOpenLoading.value = false
-        }),
-
-        // 获取许可证分析结果
-        analyzeAndSetLicense(newValue),
-      ])
-    }
+    resetDetectedProjectMetadata()
   },
+  { flush: 'sync' },
 )
 
 watch(
   () => localProjectItem.value.mainLang,
-  (newValue) => {
-    // 查找匹配的语言组项
-    const languageItem = localProjectItem.value.langGroup?.find(item => item.text === newValue)
-    localProjectItem.value.mainLangColor = languageItem?.color || null
-
-    // 查找匹配的默认打开项
-    localProjectItem.value.defaultOpen = newValue
-      ? editorLangGroupsStore.getEditorByLanguage(newValue)
-      : null
-  },
+  language => updateLanguage(language),
 )
-
-// ==================== Bottom Menu ====================
-const activatedView = inject('activatedView') as Ref<ViewEnum>
-
-function changeHomeView() {
-  initializeNewProjectState()
-
-  if (activatedView)
-    activatedView.value = ViewEnum.Home
-}
-
-// 公共的验证函数
-function validateFields(): boolean {
-  const validations = [
-    { field: localProjectItem.value.path, validated: projectPathInputValidated },
-    { field: localProjectItem.value.name, validated: projectNameInputValidated },
-    { field: localProjectItem.value.mainLang, validated: projectLangInputValidated },
-    { field: localProjectItem.value.defaultOpen, validated: projectDefaultOpenInputValidated },
-  ]
-
-  return validations.reduce((errorFound, { field, validated }) => {
-    const isInvalid = !field
-    validated.value = isInvalid
-    return errorFound || isInvalid
-  }, false)
-}
-
-// 公共的动态字段处理函数
-function getDynamicFields(): Record<string, any> {
-  return {
-    // 根据条件动态添加 fromUrl 和 fromName
-    ...(localProjectItem.value.kind === ProjectKind.FORK
-      || localProjectItem.value.kind === ProjectKind.CLONE
-      ? {
-          fromUrl: localProjectItem.value.fromUrl,
-          fromName: localProjectItem.value.fromName,
-        }
-      : {}),
-
-    // 如果 license 不为 None，则包含 license 属性
-    ...(localProjectItem.value.license !== LicenseEnum.NONE
-      ? { license: localProjectItem.value.license }
-      : {}),
-  }
-}
-
-function addNewProject() {
-  // 验证输入项
-  if (validateFields()) {
-    return
-  }
-
-  // 添加项目
-  projectsStore.addProject(
-    {
-      ...localProjectItem.value,
-      ...getDynamicFields(),
-      appendTime: Date.now(), // 添加创建时间
-    } as LocalProject,
-    true,
-  )
-
-  // 返回主页
-  changeHomeView()
-}
-
-function updateProject() {
-  // 验证输入项
-  if (validateFields()) {
-    return
-  }
-
-  // 更新项目
-  localProjectItem.value = {
-    ...localProjectItem.value,
-    ...getDynamicFields(),
-  }
-  projectsStore.updateProject(
-    localProjectItem.value.appendTime as number,
-    localProjectItem.value as LocalProject,
-  )
-
-  // 返回主页
-  changeHomeView()
-}
 </script>
 
 <template>
-  <JeFrame size-full bg="theme-panel-bgDialog" flex="~ col">
-    <JeFrame
-      type="secondary" grow flex="~ col" gap="y-15px" overflow-auto
-      scrollbar-default
-    >
-      <EditorItem>
-        <!-- Directory -->
-        <EditorTitle title="project_config.directory" />
-        <JeFileInputField
-          v-model="localProjectItem.path"
-          :validated="projectPathInputValidated"
-          :validated-tooltip="t('project_config.path_tooltip')"
-          grow
-        />
+  <main class="editor-shell">
+    <header class="editor-topbar">
+      <button class="icon-button back-button" type="button" :title="t('app.common.back')" :aria-label="t('app.common.back')" @click="closeEditor">
+        <span class="i-lucide:chevron-left" />
+      </button>
 
-        <div
-          v-if="
-            localProjectItem.path
-              && projectsStore.checkPathExistenceInProjects(localProjectItem.path, excludedPaths)
-          "
-          col-start="2"
-          flex="~ items-center"
-          gap="2px"
-          color="light:$yellow-4 dark:$yellow-6"
-        >
-          <span i-jet="light:warning dark:warning-dark" />
-          {{ t('project_config.path_in_list', { path: localProjectItem.path }) }}
+      <div class="title-block">
+        <h1>{{ isUpdateProject ? t('app.project_editor.title.edit') : t('app.project_editor.title.add') }}</h1>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="ghost-button" type="button" @click="closeEditor">
+          {{ t('app.common.cancel') }}
+        </button>
+        <button class="primary-button" type="button" :disabled="!canSave || duplicatePath" @click="saveProject">
+          {{ isUpdateProject ? t('app.project_editor.save_changes') : t('app.project_editor.add_project') }}
+        </button>
+      </div>
+    </header>
+
+    <UiScrollArea class="editor-body-scroll" type="always">
+      <section class="editor-body">
+        <div class="form-panel">
+          <section class="form-section">
+            <header class="section-header">
+              <strong>{{ t('app.project_editor.sections.project') }}</strong>
+            </header>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-path">
+                <strong>{{ t('app.project_editor.fields.folder') }}</strong>
+                <span v-if="duplicatePath" class="error-text">{{ t('app.project_editor.fields.folder_duplicate') }}</span>
+                <span v-else>{{ t('app.project_editor.fields.folder_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <input
+                  id="project-path"
+                  v-model="localProjectItem.path"
+                  class="text-input"
+                  :class="{ invalid: fieldInvalid('path') || duplicatePath }"
+                  :aria-label="t('app.project_editor.fields.folder')"
+                  spellcheck="false"
+                  @blur="handlePathBlur"
+                >
+                <button class="icon-button" type="button" :title="t('app.common.browse_folder')" :aria-label="t('app.common.browse_folder')" @click="browseProjectPath">
+                  <span class="i-lucide:folder-open" />
+                </button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-name">
+                <strong>{{ t('app.project_editor.fields.name') }}</strong>
+                <span>{{ t('app.project_editor.fields.name_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <input
+                  id="project-name"
+                  v-model="localProjectItem.name"
+                  class="text-input compact"
+                  :class="{ invalid: fieldInvalid('name') }"
+                  :aria-label="t('app.project_editor.fields.name')"
+                  spellcheck="false"
+                  @blur="markTouched('name')"
+                >
+                <button
+                  v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
+                  class="ghost-button"
+                  type="button"
+                  @click="fillProjectName"
+                >
+                  {{ t('app.project_editor.use_folder') }}
+                </button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-group">
+                <strong>{{ t('app.project_editor.fields.group') }}</strong>
+                <span>{{ t('app.project_editor.fields.group_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <input
+                  id="project-group"
+                  v-model="localProjectItem.group"
+                  class="text-input compact"
+                  list="project-groups"
+                  spellcheck="false"
+                  :aria-label="t('app.project_editor.fields.group')"
+                  :placeholder="t('app.project_editor.no_group')"
+                >
+                <datalist id="project-groups">
+                  <option v-for="group in projectsStore.allGroups" :key="group" :value="group" />
+                </datalist>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <header class="section-header">
+              <strong>{{ t('app.project_editor.sections.metadata') }}</strong>
+            </header>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong>{{ t('app.project_editor.fields.source') }}</strong>
+                <span>{{ t('app.project_editor.fields.source_desc') }}</span>
+              </div>
+              <div class="kind-control">
+                <button
+                  v-for="kind in [ProjectKind.MINE, ProjectKind.FORK, ProjectKind.CLONE]"
+                  :key="kind"
+                  class="segment-button"
+                  :class="{ active: localProjectItem.kind === kind }"
+                  type="button"
+                  :aria-pressed="localProjectItem.kind === kind"
+                  @click="localProjectItem.kind = kind"
+                >
+                  {{ kindLabel(kind) }}
+                </button>
+              </div>
+            </div>
+
+            <div v-if="localProjectItem.kind !== ProjectKind.MINE" class="setting-row stacked">
+              <div class="source-grid">
+                <label>
+                  <span>{{ t('app.project_editor.fields.source_url') }}</span>
+                  <input
+                    v-model="localProjectItem.fromUrl"
+                    class="text-input"
+                    spellcheck="false"
+                    :aria-label="t('app.project_editor.fields.source_url')"
+                  >
+                </label>
+                <label>
+                  <span>{{ t('app.project_editor.fields.source_name') }}</span>
+                  <div class="inline-field">
+                    <input
+                      v-model="localProjectItem.fromName"
+                      class="text-input"
+                      spellcheck="false"
+                      :aria-label="t('app.project_editor.fields.source_name')"
+                    >
+                    <button
+                      v-if="sourceSuggestion && localProjectItem.fromName !== sourceSuggestion"
+                      class="ghost-button"
+                      type="button"
+                      @click="fillSourceName"
+                    >
+                      {{ t('app.project_editor.use_repo') }}
+                    </button>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-language">
+                <strong>{{ t('app.project_editor.fields.main_language') }}</strong>
+                <span>{{ analyzing ? t('app.project_editor.analyzing_desc') : t('app.project_editor.fields.main_language_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <UiCombobox
+                  v-model="localProjectItem.mainLang"
+                  :options="languageOptions"
+                  :invalid="fieldInvalid('mainLang')"
+                  :placeholder="t('app.project_editor.fields.main_language')"
+                  :aria-label="t('app.project_editor.fields.main_language')"
+                  min-width="220px"
+                  content-width="240px"
+                  @blur="markTouched('mainLang')"
+                />
+                <button class="ghost-button" type="button" :disabled="!localProjectItem.path || analyzing" @click="runAnalyzeProject">
+                  {{ analyzing ? t('app.project_editor.analyzing') : t('app.project_editor.analyze') }}
+                </button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-editor">
+                <strong>{{ t('app.project_editor.fields.open_with') }}</strong>
+                <span>{{ t('app.project_editor.fields.open_with_desc') }}</span>
+              </label>
+              <UiSelect
+                v-model="localProjectItem.defaultOpen"
+                :placeholder="t('app.project_editor.select_editor')"
+                :options="editorOptions"
+                :aria-label="t('app.project_editor.fields.open_with')"
+                :class="{ invalid: fieldInvalid('defaultOpen') }"
+                min-width="220px"
+                content-width="260px"
+                @blur="markTouched('defaultOpen')"
+              />
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-license">
+                <strong>{{ t('app.project_editor.fields.license') }}</strong>
+                <span>{{ detectingLicense ? t('app.project_editor.detecting_license_desc') : t('app.project_editor.fields.license_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <UiSelect
+                  v-model="localProjectItem.license"
+                  :options="licenseOptions"
+                  :placeholder="t('app.project_editor.fields.license')"
+                  :aria-label="t('app.project_editor.fields.license')"
+                  min-width="220px"
+                  content-width="240px"
+                />
+                <button
+                  class="ghost-button"
+                  type="button"
+                  :disabled="!localProjectItem.path || detectingLicense"
+                  @click="runDetectLicense"
+                >
+                  {{ detectingLicense ? t('app.project_editor.detecting') : t('app.common.detect') }}
+                </button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong>{{ t('app.project_editor.fields.temporary') }}</strong>
+                <span>{{ t('app.project_editor.fields.temporary_desc') }}</span>
+              </div>
+              <UiSwitch
+                v-model="localProjectItem.isTemporary"
+                :aria-label="t('app.project_editor.fields.temporary')"
+              />
+            </div>
+          </section>
         </div>
+        <aside class="summary-panel">
+          <section class="summary-card">
+            <header class="summary-header">
+              <strong>{{ localProjectItem.name || t('app.project_editor.unnamed') }}</strong>
+              <span>{{ localProjectItem.mainLang || t('app.project_editor.no_language') }}</span>
+            </header>
 
-        <!-- Name -->
-        <EditorTitle title="project_config.name" />
-        <JeInputField
-          v-model="localProjectItem.name"
-          :validated="projectNameInputValidated"
-          :validated-tooltip="t('project_config.name_tooltip')"
-          spellcheck="false"
-          w="200px"
-        />
+            <div class="summary-path" :title="localProjectItem.path || ''">
+              {{ localProjectItem.path || t('app.project_editor.no_folder') }}
+            </div>
 
-        <div
-          v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
-          col-start="2"
-          flex
-          gap="2px"
-          overflow-hidden
-        >
-          <span text="secondary" truncate>{{ repositoryFolderName }}</span>
-          <JeLink :on-click="fillProjectName">
-            {{ t('project_config.fill') }}
-          </JeLink>
-        </div>
+            <div class="summary-list">
+              <div v-for="item in summaryItems" :key="item.label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+            </div>
+          </section>
 
-        <!-- Group -->
-        <EditorTitle title="project_config.group" />
-        <div flex="~ row items-center" gap="10px">
-          <JeCombobox
-            v-model="localProjectItem.group"
-            :options="groupOptions"
-            :spellcheck="false"
-            w="200px"
-          />
-          <span text="secondary">({{ t('project_config.optional') }})</span>
-        </div>
-      </EditorItem>
+          <section class="summary-card">
+            <header class="summary-header">
+              <div class="summary-title">
+                <strong>{{ t('app.project_editor.language_mix.title') }}</strong>
+                <span>{{ t('app.project_editor.language_mix.entries', { count: localProjectItem.langGroup?.length || 0 }) }}</span>
+              </div>
+              <button
+                class="icon-button language-refresh-button"
+                type="button"
+                :title="t('app.project_editor.language_mix.refresh')"
+                :aria-label="t('app.project_editor.language_mix.refresh')"
+                :disabled="!localProjectItem.path || analyzing"
+                @click="runAnalyzeProject"
+              >
+                <span class="i-lucide:refresh-cw" :class="{ spinning: analyzing }" />
+              </button>
+            </header>
 
-      <!-- KindButtons -->
-      <EditorItem>
-        <EditorTitle title="project_config.kind.source" />
-        <JeSegmentedControl v-model="localProjectItem.kind" :labels="kindButtonLabels" />
-
-        <KeepAlive>
-          <Component
-            :is="kindComponents[localProjectItem.kind]"
-            :local-project-item="localProjectItem"
-            @update:project-from-url="
-              (newKind: string) => {
-                localProjectItem.fromUrl = newKind
-              }
-            "
-            @update:project-from-name="
-              (newKind: string) => {
-                localProjectItem.fromName = newKind
-              }
-            "
-          />
-        </KeepAlive>
-
-        <!-- Temporary -->
-        <div col-start="2">
-          <JeCheckbox v-model="localProjectItem.isTemporary" class="checkbox-setting" w-fit>
-            {{ t('project_config.temporary') }}
-          </JeCheckbox>
-        </div>
-      </EditorItem>
-
-      <!-- MainLanguage -->
-      <EditorItem>
-        <EditorTitle title="project_config.main_lang" />
-        <JeCombobox
-          v-model="localProjectItem.mainLang"
-          :options="mainLanguageOptions"
-          :loading="mainLanguageLoading"
-          :validated="projectLangInputValidated"
-          :validated-tooltip="t('project_config.lang_tooltip')"
-          :spellcheck="false"
-        />
-      </EditorItem>
-
-      <!-- DefaultOpen -->
-      <EditorItem>
-        <EditorTitle title="project_config.open_method" />
-        <JeDropdown
-          v-model="localProjectItem.defaultOpen"
-          :options="transformCodeEditorOptionsToDropdownOptions(codeEditors)"
-          :loading="defaultOpenLoading"
-          :validated="projectDefaultOpenInputValidated"
-          :validated-tooltip="t('project_config.open_tooltip')"
-        />
-      </EditorItem>
-
-      <!-- License -->
-      <EditorItem>
-        <EditorTitle title="project_config.license" />
-        <JeDropdown
-          v-model="localProjectItem.license"
-          :options="convertLicensesToDropdownOptions(LicenseEnum)"
-        />
-      </EditorItem>
-    </JeFrame>
-
-    <JeFrame
-      type="secondary"
-      b-t="solid 2px light:$gray-12 dark:$gray-3"
-      p="8px"
-      flex="~ row-reverse"
-      gap="8px"
-    >
-      <JeButton v-if="!isUpdateProject" order-2 @click="addNewProject">
-        {{ t('project_config.create') }}
-      </JeButton>
-      <JeButton v-else order-2 @click="updateProject">
-        {{ t('project_config.finish') }}
-      </JeButton>
-      <JeButton type="secondary-alt" order-1 @click="changeHomeView">
-        {{ t('project_config.cancel') }}
-      </JeButton>
-    </JeFrame>
-  </JeFrame>
+            <div v-if="!localProjectItem.langGroup?.length" class="empty-inline">
+              {{ t('app.project_editor.language_mix.empty') }}
+            </div>
+            <div v-else class="language-list">
+              <div v-for="language in localProjectItem.langGroup" :key="language.text" class="language-row">
+                <div class="language-label">
+                  <span class="color-dot" :style="{ background: language.color || '#b8b8b8' }" />
+                  <strong>{{ language.text }}</strong>
+                  <span>{{ language.percentage }}%</span>
+                </div>
+                <div class="language-bar">
+                  <span :style="{ width: `${Math.min(language.percentage, 100)}%`, background: language.color || '#b8b8b8' }" />
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </UiScrollArea>
+  </main>
 </template>
+
+<style lang="scss" scoped>
+.editor-shell {
+  @apply size-full overflow-hidden flex flex-col;
+  @apply bg-$ui-page-background;
+}
+
+.editor-topbar {
+  @apply shrink-0 px-14px py-10px grid items-center gap-10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.title-block {
+  @apply min-w-0 flex items-center;
+
+  h1 {
+    @apply m-0 text-17px lh-21px font-650;
+  }
+}
+
+.topbar-actions,
+.inline-field {
+  @apply flex items-center gap-7px;
+}
+
+.editor-body-scroll {
+  @apply min-h-0 flex-1;
+}
+
+.editor-body {
+  @apply min-h-full px-14px pb-12px grid items-start gap-12px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.form-panel,
+.summary-panel {
+  @apply min-w-0;
+  @apply flex flex-col gap-12px;
+}
+
+.form-section,
+.summary-card {
+  @apply rounded-6px overflow-hidden;
+  @apply bg-$ui-surface-background;
+}
+
+.section-header,
+.summary-header {
+  @apply min-h-42px px-12px py-8px border-b flex items-center justify-between gap-12px;
+  @apply light:border-$gray-13 dark:border-$gray-3;
+
+  strong {
+    @apply text-13px font-650;
+  }
+
+  span {
+    @apply min-w-0 truncate text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.setting-row {
+  @apply min-h-52px px-12px py-8px border-b grid items-center gap-14px;
+  @apply light:border-$gray-13 dark:border-$gray-3;
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.toggle-row {
+  @apply min-h-52px px-12px py-8px border-b flex items-center gap-14px;
+  @apply light:border-$gray-13 dark:border-$gray-3;
+}
+
+.setting-row.stacked {
+  @apply items-stretch;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.setting-copy,
+.checkbox-copy {
+  @apply min-w-0 flex flex-col gap-3px;
+
+  strong {
+    @apply text-13px font-620;
+  }
+
+  span {
+    @apply truncate text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.toggle-row {
+  @apply justify-start;
+}
+
+.text-input {
+  @apply h-30px min-w-0 rounded-md border px-9px outline-none;
+  appearance: none;
+  border-style: solid;
+  border-color: var(--ui-input);
+  @apply bg-$ui-control-background color-$ui-foreground;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+
+  &::placeholder {
+    color: var(--ui-muted-foreground);
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
+  }
+
+  &:focus {
+    border-color: var(--ui-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+  }
+
+  &.invalid {
+    border-color: var(--red-5);
+  }
+
+  &:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+}
+
+.text-input {
+  @apply w-420px;
+}
+
+.text-input.compact {
+  @apply w-220px;
+}
+
+.source-grid {
+  @apply min-w-0 flex-1 grid gap-8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  label {
+    @apply min-w-0 flex flex-col gap-5px text-12px color-$ui-foreground;
+  }
+
+  .text-input {
+    @apply w-full;
+  }
+}
+
+.kind-control {
+  @apply h-28px rounded-5px p-2px flex items-center;
+  @apply bg-$ui-control-background;
+}
+
+.segment-button {
+  @apply h-24px border-0 rounded-4px px-10px bg-transparent;
+  @apply text-12px cursor-pointer light:color-$gray-5 dark:color-$gray-9;
+
+  &.active {
+    @apply bg-$ui-surface-background color-$ui-foreground;
+  }
+}
+
+.primary-button,
+.ghost-button,
+.icon-button {
+  @apply h-28px border-0 rounded-5px px-9px;
+  @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
+  @apply text-12px font-560 cursor-pointer;
+}
+
+.icon-button {
+  @apply w-28px px-0;
+}
+
+.back-button {
+  @apply light:bg-transparent dark:bg-transparent;
+
+  span {
+    @apply text-16px;
+  }
+}
+
+.primary-button {
+  @apply bg-$ui-primary color-$ui-primary-foreground;
+  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
+
+  &:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+}
+
+.ghost-button,
+.icon-button {
+  @apply bg-$ui-surface-background color-$ui-foreground;
+  @apply hover:bg-$ui-hover-background;
+
+  &:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+}
+
+.back-button {
+  @apply light:bg-transparent dark:bg-transparent;
+  @apply hover:bg-$ui-hover-background;
+}
+
+.summary-title {
+  @apply min-w-0 flex flex-col gap-2px;
+}
+
+.language-refresh-button {
+  @apply size-24px shrink-0;
+  @apply light:color-$gray-1 dark:color-white;
+}
+
+.spinning {
+  animation: spin-refresh 0.8s linear infinite;
+}
+
+@keyframes spin-refresh {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.summary-path {
+  @apply px-12px py-9px truncate text-12px border-b;
+  @apply light:border-$gray-13 dark:border-$gray-3;
+  @apply light:color-$gray-6 dark:color-$gray-8;
+}
+
+.summary-list {
+  @apply px-12px py-8px flex flex-col gap-7px;
+
+  div {
+    @apply flex items-center justify-between gap-10px;
+  }
+
+  span {
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+
+  strong {
+    @apply min-w-0 truncate text-12px font-620;
+  }
+}
+
+.language-list {
+  @apply p-12px flex flex-col gap-9px;
+}
+
+.language-row {
+  @apply flex flex-col gap-5px;
+}
+
+.language-label {
+  @apply min-w-0 flex items-center gap-6px;
+
+  strong {
+    @apply min-w-0 flex-1 truncate text-12px font-620;
+  }
+
+  span:last-child {
+    @apply text-11px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.color-dot {
+  @apply size-8px rounded-full shrink-0;
+}
+
+.language-bar {
+  @apply h-4px rounded-full overflow-hidden bg-$ui-hover-background;
+
+  span {
+    @apply block h-full rounded-full;
+  }
+}
+
+.empty-inline,
+.error-text {
+  @apply text-12px;
+}
+
+.empty-inline {
+  @apply px-12px py-10px light:color-$gray-6 dark:color-$gray-8;
+}
+
+.error-text {
+  @apply color-$red-5;
+}
+
+@media (max-width: 960px) {
+  .editor-body {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-panel {
+    @apply hidden;
+  }
+}
+
+@media (max-width: 680px) {
+  .editor-topbar {
+    @apply px-10px py-8px;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .topbar-actions {
+    @apply col-span-2 justify-end;
+  }
+
+  .editor-body {
+    @apply px-10px pb-10px;
+  }
+
+  .setting-row {
+    @apply gap-7px;
+    grid-template-columns: 1fr;
+  }
+
+  .setting-copy {
+    @apply w-auto;
+  }
+
+  .inline-field {
+    @apply flex-wrap;
+  }
+
+  .text-input,
+  .text-input.compact {
+    @apply flex-1 w-auto min-w-180px;
+  }
+
+  .source-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

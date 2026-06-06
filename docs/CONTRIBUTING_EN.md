@@ -24,9 +24,8 @@ pnpm dev
 ```
 CodeNest
   ├── data        # Stores user data and configuration files
-  ├── electron    # Logic and configuration for Electron
+  ├── src-tauri   # Tauri desktop shell and native commands
   ├── icons       # Icons and resource files used by the project
-  ├── jetv-ui     # Code and assets for the component library
   ├── scripts     # Scripts for automating tasks
   ├── src         # Source code and core logic of the Vue app
 ```

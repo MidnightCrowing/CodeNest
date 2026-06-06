@@ -5,82 +5,10 @@ common:
     windows: Windows
     macos: macOS
     linux: Linux
-license:
-  info:
-    commercial_use: Commercial use
-    distribution: Distribution
-    modification: Modification
-    patent_use: Patent use
-    private_use: Private use
-    disclose_source: Disclose source
-    license_and_copyright_notice: License and copyright notice
-    license_and_copyright_notice_for_source: License and copyright notice for source
-    network_use_is_distribution: Network use is distribution
-    same_license: Same license
-    same_license_library: Same license (library)
-    same_license_file: Same license (file)
-    state_changes: State changes
-    liability: Liability
-    trademark_use: Trademark use
-  mit:
-    description_url: https://choosealicense.com/licenses/mit/
-  apache_2_0:
-    description_url: https://choosealicense.com/licenses/apache-2.0/
-  bsd_2_clause:
-    description_url: https://choosealicense.com/licenses/bsd-2-clause/
-  bsd_3_clause:
-    description_url: https://choosealicense.com/licenses/bsd-3-clause/
-  gplv2:
-    description_url: https://choosealicense.com/licenses/gpl-2.0/
-  gplv3:
-    description_url: https://choosealicense.com/licenses/gpl-3.0/
-  lgplv2_1:
-    description_url: https://choosealicense.com/licenses/lgpl-2.1/
-  lgplv3:
-    description_url: https://choosealicense.com/licenses/lgpl-3.0/
-  agplv3:
-    description_url: https://choosealicense.com/licenses/agpl-3.0/
-  mpl_2_0:
-    description_url: https://choosealicense.com/licenses/mpl-2.0/
-  eclipse_2_0:
-    description_url: https://choosealicense.com/licenses/epl-2.0/
-  boost_1_0:
-    description_url: https://choosealicense.com/licenses/bsl-1.0/
-  cc0_1_0:
-    description_url: https://choosealicense.com/licenses/cc0-1.0/
-  unlicense:
-    description_url: https://choosealicense.com/licenses/unlicense/
-  wtfpl:
-    description_url: https://choosealicense.com/licenses/wtfpl/
-  zlib:
-    description_url: https://choosealicense.com/licenses/zlib/
-  isc:
-    description_url: https://choosealicense.com/licenses/isc/
-  artistic_2_0:
-    description_url: https://choosealicense.com/licenses/artistic-2.0/
-  afl_3_0:
-    description_url: https://choosealicense.com/licenses/afl-3.0/
-  osl_3_0:
-    description_url: https://choosealicense.com/licenses/osl-3.0/
-  eupl_1_1:
-    description_url: https://choosealicense.com/licenses/eupl-1.1/
-  eupl_1_2:
-    description_url: https://choosealicense.com/licenses/eupl-1.2/
-  open_font_1_1:
-    description_url: https://choosealicense.com/licenses/ofl-1.1/
-  ms_pl:
-    description_url: https://choosealicense.com/licenses/ms-pl/
-  ms_rl:
-    description_url: https://choosealicense.com/licenses/ms-rl/
 language_pop:
-  analyze_failed: Failed to get analysis result
+  count: '{count} languages'
+  more: '+{count} more'
   overall_label: Languages used in this project
-license_pop:
-  permissions: Permissions
-  limitations: Limitations
-  conditions: Conditions
-  description_from: Description from
-  no_description_desc: Not has description
 project_card:
   temporary: Temporary
   opening: Opening...
@@ -128,10 +56,10 @@ remove_project_dialog:
   remove_from_list: Remove from List (Keep files)
   delete: Delete
 no_ide_path_dialog:
-  dialog_title: IDE Path Not Set
-  dialog_desc: IDE path is not set, please set it in the settings
+  dialog_title: Launch Command Not Set
+  dialog_desc: Configure a launch command for this editor in settings.
   cancel: Cancel
-  set: Set
+  set: Configure
 home:
   side_panel:
     projects: Projects
@@ -219,10 +147,267 @@ settings:
   save: Save
   cancel: Cancel
   apply: Apply
-status:
-  project_scanner:
-    scanning: Scanning projects
-    found_one: Found 1 new project
-    found_many: Found {count} new projects
-    done: Scan completed
-    error: Scan failed
+app:
+  common:
+    back: Back
+    cancel: Cancel
+    apply: Apply
+    save: Save
+    clear: Clear
+    detect: Detect
+    browse_folder: Browse folder
+    no_editor: No editor
+    not_set: Not set
+    unknown: unknown
+  license:
+    none: No license
+    other: Other
+  project_kind:
+    mine: Mine
+    fork: Fork
+    clone: Clone
+    forks: Forks
+    clones: Clones
+  home:
+    title: Projects
+    sync: Scan
+    syncing: Scanning
+    add_project: Add project
+    search_placeholder: Search name, path, group, language...
+    clear_count: Clear {count}
+    project_list: Project list
+    filters:
+      kind: Kind
+      status: Status
+      language: Language
+      group: Group
+      sort: Sort
+      all_projects: All projects
+      all_status: All status
+      available: Available
+      missing_path: Missing path
+      temporary: Temporary
+      all_languages: All languages
+      all_groups: All groups
+      no_group: No group
+    sort:
+      recent: Recent first
+      name: Name
+      language: Language
+      group: Group
+    layout:
+      label: Project layout
+      list: List
+      grid: Grid
+    table:
+      project: Project
+      kind: Kind
+      language: Language
+      license: License
+      updated: Updated
+      actions: Actions
+    empty:
+      title: No projects found
+      desc: Adjust filters or add a local project.
+    source:
+      forked_from: Forked from
+      cloned_from: Cloned from
+    actions:
+      open_project: Open project
+      open_explorer: Open in Explorer
+      open_terminal: Open terminal
+      copy_path: Copy path
+      copied: Copied
+      copy_failed: Copy failed
+      edit: Edit
+      remove: Remove
+  settings:
+    title: Settings
+    open_json: Open settings JSON
+    tabs:
+      label: Settings pages
+      appearance:
+        label: Appearance
+        desc: Theme and language
+      editors:
+        label: Editors
+        desc: Open projects fast
+      scanner:
+        label: Scanner
+        desc: Import rules
+      data:
+        label: Data
+        desc: Import/export and sync
+      about:
+        label: About
+        desc: Version and repository
+    appearance:
+      title: Appearance
+      theme:
+        title: Theme
+        desc: Switch the desktop shell and interface colors.
+        light: Light
+        dark: Dark
+      theme_color:
+        title: Theme color
+        desc: Choose the accent used by actions and focused controls.
+        contrast: Contrast
+        blue: Blue
+        green: Green
+        teal: Teal
+        orange: Orange
+        purple: Purple
+        red: Red
+      language:
+        title: Language
+        desc: Choose the interface language.
+        english: English
+        zh_cn: Simplified Chinese
+    editors:
+      title: Editors
+      desc: Configure launch targets used by project rows.
+      editor: Editor
+      path: Command
+      path_placeholder: Command for {editor}
+      command_placeholder: Launch command for {editor}
+      clear_path: Clear command
+      clear_command: Clear command
+      browse_executable: Browse executable
+      auto_detect: Auto detect
+      terminal: Run in terminal
+    scanner:
+      title: Scanner
+      desc: Control which projects are imported on startup or manual scan.
+      sources:
+        title: Import sources
+        desc: Keep only the sources you actually use.
+      roots:
+        title: Project roots
+        desc: Scan immediate subfolders under selected directories.
+        add: Add root
+        count: '{count} roots'
+        empty: No project roots configured.
+        remove: Remove root
+      ide:
+        title: Recent IDE projects
+        desc: Import projects from editor history databases.
+      jetbrains:
+        placeholder: JetBrains config root
+      vscode:
+        placeholder: state.vscdb path
+        browse: Browse database
+      strategy:
+        title: Import strategy
+        desc: Decide how new projects are opened and classified.
+      default_editor:
+        title: Default editor
+        desc: Use language mapping or force one editor.
+      specified_editor:
+        title: Specified editor
+        desc: Used when the strategy above is fixed.
+      name_pattern:
+        title: Temporary name pattern
+        desc: Regex used to mark demo/test projects automatically.
+      open_mode:
+        auto: Auto by language
+        specified: Always specified
+      history:
+        title: Scan history
+        desc: Clear this when you want previously seen folders to be imported again.
+        clear: Clear history
+        dialog_title: Clear scan history?
+        dialog_desc: Previously scanned folders can be imported again on the next scan.
+    data:
+      title: Data
+      desc: Project list portability and manual sync.
+      projects:
+        title: Project list
+        desc: Move your tracked projects between machines.
+        import: Import
+        export: Export
+      webdav:
+        title: WebDAV
+        desc: Manually upload or pull settings and project list data.
+        server: WebDAV server URL
+        server_placeholder: https://example.com/dav/
+        remote_path: WebDAV folder
+        remote_path_placeholder: CodeNest
+        account: WebDAV account
+        password: WebDAV password
+        test: Test connection
+        testing: Testing
+        connected: WebDAV connection succeeded.
+        upload: Upload to cloud
+        uploading: Uploading
+        uploaded: Uploaded to WebDAV.
+        download: Download from cloud
+        downloading: Downloading
+        pulled: Pulled from WebDAV.
+        failed: WebDAV sync failed.
+    about:
+      title: About
+      desc: Version and repository information.
+      update:
+        check_desc: Check GitHub Releases for updates.
+        available: 'New version available: v{version}'
+        latest: You are on the latest version.
+        checking: Checking
+        check: Check update
+        open_release: Open release
+      repository:
+        title: Repository
+        desc: Open the project page in your browser.
+  project_editor:
+    title:
+      add: Add project
+      edit: Edit project
+    mode:
+      new: New project
+      edit: Edit project
+    add_project: Add project
+    save_changes: Save changes
+    use_folder: Use folder
+    use_repo: Use repo
+    no_group: No group
+    analyze: Analyze
+    analyzing: Analyzing
+    analyzing_desc: Analyzing project files...
+    detecting: Detecting
+    detecting_license_desc: Reading license file...
+    select_editor: Select editor
+    unnamed: Unnamed project
+    no_language: No language
+    no_folder: No folder selected
+    sections:
+      project: Project
+      metadata: Metadata
+    fields:
+      folder: Folder
+      folder_desc: Local project root folder.
+      folder_duplicate: This folder is already tracked.
+      name: Name
+      name_desc: Display name in the project list.
+      group: Group
+      group_desc: Optional label for filtering.
+      source: Source
+      source_desc: Used for fork/clone context in the list.
+      source_url: Source URL
+      source_name: Source name
+      main_language: Main language
+      main_language_desc: Auto detected, still editable.
+      open_with: Open with
+      open_with_desc: Default editor for the open action.
+      license: License
+      license_desc: Shown directly in the project list.
+      temporary: Temporary project
+      temporary_desc: Mark experiments, demos, or short-lived folders.
+    summary:
+      mode: Mode
+      kind: Kind
+      editor: Editor
+      license: License
+    language_mix:
+      title: Language mix
+      entries: '{count} entries'
+      refresh: Refresh languages
+      empty: Choose a folder or run analysis.

@@ -6,6 +6,58 @@ html,
   @apply overflow-hidden;
 }
 
+body {
+  --font-title:
+    "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans GB",
+    "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
+
+  font-family:
+    "JetBrains Sans", "JetBrains Mono", "JetBrains Mono NL", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
+    "PingFang TC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
+  background: var(--ui-page-background);
+  color: var(--app-foreground);
+}
+
+h1,
+h2 {
+  font-family: var(--font-title);
+}
+
+button,
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  border-style: solid;
+  appearance: none;
+  font: inherit;
+}
+
+input,
+textarea {
+  font-size: 11px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-size: 11px;
+  line-height: 1;
+}
+
 ::selection {
   @apply light:bg-$gray-11 dark:bg-$gray-5;
+}
+
+.ide-icon {
+  color: inherit;
+}
+
+.ide-icon.monochrome-editor-icon,
+.ide-icon.i-custom\:cursor,
+.ide-icon.i-custom\:windsurf,
+.ide-icon.i-custom\:zed-industries,
+.ide-icon.i-custom\:sublime-text,
+.ide-icon.i-custom\:neovim,
+.ide-icon.i-lucide\:sparkles {
+  color: var(--ui-foreground);
 }

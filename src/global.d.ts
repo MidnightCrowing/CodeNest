@@ -1,45 +1,30 @@
 import type { ThemeEnum } from '~/constants/appEnums'
+import type { EditorCommandKey } from '~/constants/codeEditor'
 import type { DataFileEnum } from '~/stores/helpers/persistence'
-import type { ScannerSettings } from '~/stores/settingsStore'
-import type { LinguistResult } from '~/views/ProjectEditorView'
+import type { ScannerSettings, WebDavSettings } from '~/stores/settingsStore'
+import type { LinguistResult } from '~/types/linguist'
 
-/**
- * 通用/基础类型
- */
 type HexColor = `#${string}`
-type Unlisten = () => void
 interface ErrorResult { error: string }
 
-/**
- * 对话框
- */
 interface DialogOpenOptions {
   title?: string
 }
+
 interface FileTypeFilter {
   name: string
   extensions: string[]
 }
+
 interface FileDialogOptions extends DialogOpenOptions {
   fileTypes?: FileTypeFilter[]
 }
 
-/**
- * 路径与文件
- */
 interface PathExistenceResult {
   exists: boolean
   error?: string
 }
 
-/**
- * 项目分析
- */
-type ProjectAnalyzeStage = 'start' | 'checking' | 'analyzing' | 'done'
-interface ProjectAnalyzeProgress {
-  folderPath: string
-  stage: ProjectAnalyzeStage
-}
 interface LicenseReadResult {
   success: boolean
   filename?: string
@@ -48,22 +33,23 @@ interface LicenseReadResult {
   message?: string
 }
 
-/**
- * 数据存取
- */
 interface BasicResult {
   success: boolean
   error?: string
 }
+
 interface DataResult {
   success: boolean
   data?: string
   error?: string
 }
 
-/**
- * 更新检查
- */
+interface ProjectMutationResult {
+  success: boolean
+  message?: string
+  error?: string
+}
+
 interface UpdateCheckResult {
   hasUpdate: boolean
   currentVersion: string
@@ -75,86 +61,75 @@ interface UpdateCheckResult {
   error?: string
 }
 
-/**
- * 扫描（批量 & 流式）
- */
 interface LangGroupItem {
   text: string
   color: HexColor
   percentage: number
 }
+
 interface ScanItem {
   path: string
   name: string
   mainLang?: string
   mainLangColor?: HexColor
   langGroup?: LangGroupItem[]
-  ide?: string | null // CodeEditorEnum，例如 "visual-studio-code"
+  ide?: string | null
   error?: string
 }
-export interface ScanStartPayload extends Omit<ScannerSettings, 'openMode', 'editor', 'namePattern'> {
+
+export interface ScanStartPayload extends Omit<ScannerSettings, 'openMode' | 'editor' | 'namePattern'> {
   existingPaths: string[]
 }
-interface ScanSession {
-  sessionId: number
+
+interface ScanResult {
+  items: ScanItem[]
 }
-interface ScannerItemEvent {
-  sessionId: number
-  item: ScanItem
-}
-interface ScannerDoneEvent {
-  sessionId: number
-}
-interface ScannerErrorEvent {
-  sessionId: number
-  error: string
+
+interface WebDavSyncResult {
+  success: boolean
+  message?: string
+  error?: string
 }
 
 declare global {
   interface Window {
     api: {
-      // ========= dialog =========
       openFolderDialog: (options?: DialogOpenOptions) => Promise<string[]>
       openFileDialog: (options?: FileDialogOptions) => Promise<string[]>
 
-      // ========= path =========
       formatPath: (filePath: string) => Promise<string>
       checkPathExistence: (path: string) => Promise<PathExistenceResult>
 
-      // ========= project =========
       analyzeProject: (folderPath: string) => Promise<LinguistResult | ErrorResult>
-      onProjectAnalyzeProgress: (cb: (data: ProjectAnalyzeProgress) => void) => Unlisten
       readProjectLicense: (folderPath: string, maxLines?: number) => Promise<LicenseReadResult>
-      openProject: (idePath: string, projectPath: string) => Promise<string>
-      deleteProject: (projectPath: string) => Promise<boolean>
-      importProject: () => Promise<boolean>
-      exportProject: () => Promise<boolean>
+      openProject: (editorCommand: string, projectPath: string, openInTerminal?: boolean) => Promise<string>
+      detectEditorCommand: (editor: EditorCommandKey) => Promise<string | null>
+      deleteProject: (projectPath: string) => Promise<ProjectMutationResult>
+      importProject: () => Promise<ProjectMutationResult>
+      exportProject: () => Promise<ProjectMutationResult>
 
-      // ========= data =========
       saveData: (fileType: DataFileEnum, data: string) => Promise<BasicResult>
       loadData: (fileType: DataFileEnum) => Promise<DataResult>
-      openData: (fileType: DataFileEnum) => Promise<DataResult>
+      openData: (fileType: DataFileEnum) => Promise<boolean>
       deleteData: (fileType: DataFileEnum) => Promise<BasicResult>
 
-      // ========= system =========
       openExternal: (url: string) => void
       openInExplorer: (path: string) => void
       openInTerminal: (path: string) => void
 
-      // ========= update =========
       checkUpdate: () => Promise<UpdateCheckResult>
 
-      // ========= scanner =========
-      startProjectScan: (payload: ScanStartPayload) => Promise<ScanSession>
-      stopProjectScan: (sessionId: number) => Promise<{ stopped: boolean }>
-      onScannerItem: (cb: (data: ScannerItemEvent) => void) => Unlisten
-      onScannerDone: (cb: (data: ScannerDoneEvent) => void) => Unlisten
-      onScannerError: (cb: (data: ScannerErrorEvent) => void) => Unlisten
+      scanProjects: (payload: ScanStartPayload) => Promise<ScanResult>
       detectJetBrainsConfigRootPath: () => Promise<string | null>
       detectVscodeStateDbPath: () => Promise<string | null>
+      webdavTestConnection: (config: WebDavSettings) => Promise<WebDavSyncResult>
+      webdavUploadData: (config: WebDavSettings) => Promise<WebDavSyncResult>
+      webdavPullData: (config: WebDavSettings) => Promise<WebDavSyncResult>
 
-      // ========= theme =========
       setWindowTheme: (currentTheme: ThemeEnum) => void
+      minimizeWindow: () => Promise<boolean>
+      toggleMaximizeWindow: () => Promise<boolean>
+      closeWindow: () => Promise<boolean>
     }
   }
 }

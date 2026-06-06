@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import '~/styles'
 
-import { JeFrame } from 'jetv-ui'
 import { useI18n } from 'vue-i18n'
 
 import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
@@ -9,7 +8,7 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ViewEnum } from '~/constants/appEnums'
-import { addNewProjectsInWorker } from '~/services/projectScannerService'
+import { addNewProjectsFromScanner } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -35,29 +34,26 @@ async function applyLanguage(lang: LanguageEnum) {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    // settings
-    (async () => {
-      await settingsStore.loadSettings()
-      await Promise.all([applyTheme(settingsStore.theme), applyLanguage(settingsStore.language)])
-    })(),
+  await settingsStore.loadSettings()
 
-    // projects
-    (async () => {
-      await Promise.all([
-        useProjectsStore().loadProjects(),
-        useEditorLangGroupsStore().loadEditorLangGroupsData(),
-      ])
-      void addNewProjectsInWorker()
-    })(),
+  await Promise.all([
+    applyTheme(settingsStore.theme, settingsStore.themeColor),
+    applyLanguage(settingsStore.language),
   ])
+
+  await Promise.all([
+    useProjectsStore().loadProjects(),
+    useEditorLangGroupsStore().loadEditorLangGroupsData(),
+  ])
+
+  void addNewProjectsFromScanner()
 })
 
 provide('activatedView', activatedView)
 </script>
 
 <template>
-  <JeFrame size-full flex="~ col" caret="theme-text-caret" select-none>
+  <main class="app-shell">
     <WindowHeader shrink-0 />
     <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />
@@ -66,5 +62,12 @@ provide('activatedView', activatedView)
     <!-- Dialog -->
     <RemoveProjectDialog />
     <NoIdePathDialog />
-  </JeFrame>
+  </main>
 </template>
+
+<style lang="scss" scoped>
+.app-shell {
+  @apply size-full flex flex-col select-none;
+  caret-color: var(--theme-text-caret);
+}
+</style>

@@ -60,7 +60,6 @@ export default defineConfig({
     outDir: r('dist/app'), // 是否清空输出目录
     rollupOptions: {
       input: r('src/index.html'),
-      external: ['electron'],
       output: {
         format: 'es',
       },

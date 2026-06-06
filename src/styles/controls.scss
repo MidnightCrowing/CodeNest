@@ -1,0 +1,114 @@
+button,
+[role="button"] {
+  @apply select-none;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  @apply cursor-pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  @apply cursor-not-allowed;
+}
+
+input:not(:disabled),
+textarea:not(:disabled) {
+  @apply cursor-text;
+}
+
+.primary-button,
+.ghost-button,
+.danger-button {
+  @apply h-28px border-0 rounded-5px px-9px;
+  @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
+  @apply text-12px font-560;
+}
+
+.primary-button {
+  @apply bg-$ui-primary color-$ui-primary-foreground;
+  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
+}
+
+.primary-button > span {
+  @apply color-$ui-primary-foreground;
+}
+
+.ghost-button {
+  @apply bg-$ui-surface-background color-$ui-foreground;
+  @apply hover:bg-$ui-hover-background;
+}
+
+.danger-button {
+  @apply bg-$red-5 color-white hover:bg-$red-6;
+}
+
+.primary-button:disabled,
+.ghost-button:disabled,
+.danger-button:disabled {
+  @apply opacity-55;
+}
+
+.ghost-button:disabled {
+  @apply hover:bg-$ui-surface-background;
+}
+
+.icon-button {
+  @apply size-28px border-0 rounded-5px p-0;
+  @apply inline-flex items-center justify-center;
+  @apply bg-$ui-surface-background color-$ui-foreground;
+  @apply hover:bg-$ui-hover-background;
+}
+
+.icon-button:disabled {
+  @apply opacity-45 hover:bg-$ui-surface-background;
+}
+
+.path-input,
+.text-input {
+  @apply h-30px min-w-0 rounded-md border px-9px outline-none;
+  @apply bg-$ui-control-background color-$ui-foreground;
+  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  appearance: none;
+  border-color: var(--ui-input);
+  border-style: solid;
+}
+
+.path-input::placeholder,
+.text-input::placeholder {
+  color: var(--ui-muted-foreground);
+}
+
+.path-input:hover,
+.text-input:hover {
+  border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
+}
+
+.path-input:focus,
+.text-input:focus {
+  border-color: var(--ui-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+}
+
+.path-input:disabled,
+.text-input:disabled {
+  @apply opacity-55;
+}
+
+.path-input.invalid,
+.text-input.invalid {
+  border-color: var(--red-5);
+}
+
+.path-input.compact,
+.text-input.compact {
+  @apply w-220px;
+}
+
+.clear-path-button {
+  @apply absolute right-5px top-1/2 size-18px -translate-y-1/2 rounded-full border-0 p-0;
+  @apply inline-flex items-center justify-center text-11px;
+  @apply bg-$ui-hover-background color-$ui-muted-foreground;
+  @apply hover:color-$ui-foreground;
+}

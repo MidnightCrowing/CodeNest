@@ -17,9 +17,9 @@ export const useEditorLangGroupsStore = defineStore('editorLangGroups', () => {
     fallback: CodeEditorEnum | null = null,
   ): CodeEditorEnum | null {
     lang = lang.toLowerCase()
-    for (const [editor, langs] of Object.entries(groups.value)) {
+    for (const [editor, langs] of Object.entries(groups.value) as Array<[CodeEditorEnum, string[]]>) {
       if (langs.includes(lang)) {
-        return editor as CodeEditorEnum
+        return editor
       }
     }
     return fallback

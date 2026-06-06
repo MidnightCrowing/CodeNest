@@ -18,7 +18,7 @@ export function detectLicenseBySnippet(snippet: string | undefined | null): Lice
   const text = snippet.toLowerCase()
   let best: LicenseDetectResult = { license: null, score: 0, matchedPatterns: [] }
 
-  for (const [key, meta] of Object.entries(LicenseInfo) as Array<[keyof typeof LicenseInfo, typeof LicenseInfo[keyof typeof LicenseInfo]]>) {
+  for (const [key, meta] of Object.entries(LicenseInfo) as Array<[LicenseEnum, typeof LicenseInfo[LicenseEnum]]>) {
     const detect = meta.detect
     if (!detect || !detect.patterns?.length)
       continue
@@ -33,7 +33,7 @@ export function detectLicenseBySnippet(snippet: string | undefined | null): Lice
     }
 
     if (score > best.score) {
-      best = { license: key as unknown as LicenseEnum, score, matchedPatterns: matched }
+      best = { license: key, score, matchedPatterns: matched }
     }
   }
 

@@ -8,12 +8,23 @@ export enum SettingPageEnum {
   Appearance = 'Appearance',
   Ides = 'Ides',
   AutoScan = 'AutoScan',
+  Data = 'Data',
   About = 'About',
 }
 
 export enum ThemeEnum {
   Light = 'light',
   Dark = 'dark',
+}
+
+export enum ThemeColorEnum {
+  Contrast = 'contrast',
+  Blue = 'blue',
+  Green = 'green',
+  Teal = 'teal',
+  Orange = 'orange',
+  Purple = 'purple',
+  Red = 'red',
 }
 
 export enum LanguageEnum {

@@ -34,7 +34,8 @@ export default antfu(
         // 忽略其他目录
         'data',
         'icons',
-        'electron/**/*.js',
+        'src-tauri/gen',
+        'src-tauri/target',
 
         // 忽略特定文件类型
         '**/*.ico',
@@ -57,8 +58,5 @@ export default antfu(
     rules: {
       'vue/max-attributes-per-line': 'off',
     },
-  },
-  {
-    ignores: ['electron/*.js', 'electron/**/*.js'],
   },
 )

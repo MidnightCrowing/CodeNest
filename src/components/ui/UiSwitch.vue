@@ -1,0 +1,69 @@
+<script lang="ts" setup>
+withDefaults(defineProps<{
+  modelValue: boolean
+  disabled?: boolean
+}>(), {
+  disabled: false,
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+}>()
+</script>
+
+<template>
+  <button
+    class="ui-switch"
+    type="button"
+    role="switch"
+    :aria-checked="modelValue"
+    :disabled="disabled"
+    :data-state="modelValue ? 'checked' : 'unchecked'"
+    @click="emit('update:modelValue', !modelValue)"
+  >
+    <span class="ui-switch-thumb" />
+  </button>
+</template>
+
+<style lang="scss">
+.ui-switch {
+  @apply h-20px w-36px shrink-0 rounded-full border p-2px outline-none;
+  @apply inline-flex items-center cursor-pointer;
+  @apply border-$ui-input bg-$ui-hover-background;
+  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  appearance: none;
+  border-style: solid;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 20%);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+  }
+
+  &[data-state="checked"] {
+    @apply border-$ui-primary bg-$ui-primary;
+  }
+
+  &:disabled {
+    @apply opacity-55 cursor-not-allowed;
+  }
+}
+
+.ui-switch-thumb {
+  @apply size-14px rounded-full bg-white shadow-sm;
+  border: 1px solid color-mix(in srgb, var(--ui-border), transparent 35%);
+  transform: translateX(0);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.ui-switch[data-state="checked"] .ui-switch-thumb {
+  @apply bg-$ui-primary-foreground;
+  border-color: transparent;
+  transform: translateX(16px);
+}
+</style>

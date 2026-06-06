@@ -1,0 +1,49 @@
+import { invoke } from '@tauri-apps/api/core'
+
+function call<T>(command: string, args?: Record<string, unknown>) {
+  return invoke<T>(command, args)
+}
+
+function fire(command: string, args?: Record<string, unknown>) {
+  void call(command, args).catch(error => console.error(`Tauri command '${command}' failed:`, error))
+}
+
+window.api = {
+  openFolderDialog: options => call('open_folder_dialog', { options }),
+  openFileDialog: options => call('open_file_dialog', { options }),
+
+  formatPath: filePath => call('format_path', { filePath }),
+  checkPathExistence: path => call('check_path_existence', { path }),
+
+  analyzeProject: folderPath => call('analyze_project', { folderPath }),
+  readProjectLicense: (folderPath, maxLines = 20) =>
+    call('read_project_license', { folderPath, maxLines }),
+  openProject: (editorCommand, projectPath, openInTerminal) =>
+    call('open_project', { editorCommand, projectPath, openInTerminal }),
+  detectEditorCommand: editor => call('detect_editor_command', { editor }),
+  deleteProject: projectPath => call('delete_project', { projectPath }),
+  importProject: () => call('import_projects'),
+  exportProject: () => call('export_projects'),
+
+  saveData: (fileType, data) => call('save_data', { fileType, data }),
+  loadData: fileType => call('load_data', { fileType }),
+  openData: fileType => call('open_data', { fileType }),
+  deleteData: fileType => call('delete_data', { fileType }),
+
+  openExternal: url => fire('open_external', { url }),
+  openInExplorer: path => fire('open_in_explorer', { path }),
+  openInTerminal: path => fire('open_in_terminal', { path }),
+
+  checkUpdate: () => call('check_update'),
+  scanProjects: payload => call('scan_projects', { payload }),
+  detectJetBrainsConfigRootPath: () => call('detect_jetbrains_config_root_path'),
+  detectVscodeStateDbPath: () => call('detect_vscode_state_db_path'),
+  webdavTestConnection: config => call('webdav_test_connection', { config }),
+  webdavUploadData: config => call('webdav_upload_data', { config }),
+  webdavPullData: config => call('webdav_pull_data', { config }),
+
+  setWindowTheme: currentTheme => fire('set_window_theme', { currentTheme }),
+  minimizeWindow: () => call('minimize_window'),
+  toggleMaximizeWindow: () => call('toggle_maximize_window'),
+  closeWindow: () => call('close_window'),
+} satisfies Window['api']

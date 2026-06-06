@@ -1,8 +1,8 @@
 .idea/
 dist/
 node_modules/
-build/
-data/
+src-tauri/gen/
+src-tauri/target/
 *.log
 *.zip
 tsconfig.tsbuildinfo

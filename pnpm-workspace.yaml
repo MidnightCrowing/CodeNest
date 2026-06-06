@@ -1,11 +1,10 @@
+minimumReleaseAge: 0
+
 shellEmulator: true
 
 trustPolicy: no-downgrade
 
-packages:
-  - jetv-ui
 overrides:
-  '@electron/node-gyp': git+https://github.com/electron/node-gyp.git
   '@tootallnate/once': '>=3.0.1'
   flatted: '>=3.4.2'
   immutable: '>=5.1.5'
@@ -18,10 +17,12 @@ overrides:
   yaml: '>=2.8.3'
 onlyBuiltDependencies:
   - '@parcel/watcher'
-  - better-sqlite3
-  - electron
-  - electron-winstaller
   - esbuild
   - lzma-native
   - oxc-resolver
   - simple-git-hooks
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  simple-git-hooks: true
+  vue-demi: true

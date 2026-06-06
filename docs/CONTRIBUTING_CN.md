@@ -24,9 +24,8 @@ pnpm dev
 ```
 CodeNest
   ├── data        # 存储用户数据和配置文件
-  ├── electron    # Electron 相关的应用逻辑和配置
+  ├── src-tauri   # Tauri 桌面壳和本地命令
   ├── icons       # 项目使用的图标和资源文件
-  ├── jetv-ui     # 组件库的代码和相关资源
   ├── scripts     # 用于自动化任务的脚本文件
   ├── src         # Vue 应用的源代码和核心逻辑
 ```

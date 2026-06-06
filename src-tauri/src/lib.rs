@@ -1,0 +1,46 @@
+mod analyzer;
+mod data;
+mod dialog;
+mod project;
+mod recent;
+mod scanner;
+mod system;
+mod updater;
+mod webdav;
+
+pub fn run() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            data::delete_data,
+            data::load_data,
+            data::open_data,
+            data::save_data,
+            dialog::open_file_dialog,
+            dialog::open_folder_dialog,
+            project::analyze_project,
+            project::delete_project,
+            project::detect_editor_command,
+            project::export_projects,
+            project::import_projects,
+            project::open_project,
+            project::read_project_license,
+            scanner::detect_jetbrains_config_root_path,
+            scanner::detect_vscode_state_db_path,
+            scanner::scan_projects,
+            system::check_path_existence,
+            system::close_window,
+            system::format_path,
+            system::minimize_window,
+            system::open_external,
+            system::open_in_explorer,
+            system::open_in_terminal,
+            system::set_window_theme,
+            system::toggle_maximize_window,
+            updater::check_update,
+            webdav::webdav_pull_data,
+            webdav::webdav_test_connection,
+            webdav::webdav_upload_data,
+        ])
+        .run(tauri::generate_context!())
+        .expect("failed to run CodeNest");
+}

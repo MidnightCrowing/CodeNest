@@ -1,19 +1,21 @@
-import { ThemeEnum } from '~/constants/appEnums'
+import { ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
 
-export async function applyTheme(theme?: ThemeEnum) {
-  const rootElement = document.documentElement // 获取 :root，即 <html> 元素
+export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum) {
+  const rootElement = document.documentElement
   if (!rootElement) {
     console.warn('Root element not found. Theme application aborted.')
     return
   }
 
-  // 更新 HTML 的 className
   const newTheme = theme ?? ThemeEnum.Light
-  if (rootElement.className !== newTheme) {
-    rootElement.className = newTheme
-  }
+  const newThemeColor = themeColor ?? ThemeColorEnum.Blue
+  rootElement.classList.remove(ThemeEnum.Light, ThemeEnum.Dark)
+  rootElement.classList.remove(
+    ...Object.values(ThemeColorEnum).map(color => `theme-${color}`),
+  )
+  rootElement.classList.add(newTheme)
+  rootElement.classList.add(`theme-${newThemeColor}`)
 
-  // 更新 Electron 窗口主题样式
   try {
     window.api.setWindowTheme(newTheme)
   }

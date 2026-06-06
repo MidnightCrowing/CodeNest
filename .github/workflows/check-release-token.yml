@@ -1,23 +1,31 @@
-name: Check RELEAS_TOKEN
+name: Check RELEASE_TOKEN
 
 on:
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   check-token:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Echo Start Message
-        run: echo "Starting to check RELEAS_TOKEN existence."
-
-      - name: Check RELEAS_TOKEN
+      - name: Check RELEASE_TOKEN
         env:
-          RELEAS_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          if [ -z "$RELEAS_TOKEN" ]; then
-            echo "Error: RELEAS_TOKEN is not set in Secrets."
+          if [ -z "$RELEASE_TOKEN" ]; then
+            echo "RELEASE_TOKEN is not set in Secrets."
             exit 1
-          else
-            echo "RELEAS_TOKEN is set and ready to use."
+          fi
+
+      - name: Validate RELEASE_TOKEN
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $RELEASE_TOKEN" \
+            https://api.github.com/user)
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "RELEASE_TOKEN validation failed with HTTP $status."
+            exit 1
           fi

@@ -1,8 +1,12 @@
-import type { JeDropdownOptionGroupProps, JeDropdownOptionProps } from 'jetv-ui'
-
 import type { languagesGroupItem } from '~/constants/localProject'
+import type { LinguistLanguageResult } from '~/types/linguist'
 import { t } from '~/utils/i18n'
-import type { LinguistLanguageResult } from '~/views/ProjectEditorView'
+
+interface LanguageOption {
+  value: string
+  label: string
+  description: string
+}
 
 /**
  * 用于分析项目语言的工具类
@@ -12,7 +16,7 @@ export class LanguageAnalyzer {
   public mainLang: string | null = null // 主要编程语言
   public mainLangColor: `#${string}` | null = null // 主要编程语言的颜色
   public langGroup: languagesGroupItem[] | null = null // 语言分组，用于展示比例
-  public mainLanguageOptions: (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] = [] // 下拉选项列表
+  public mainLanguageOptions: LanguageOption[] = [] // 下拉选项列表
 
   /**
    * 构造函数
@@ -42,12 +46,12 @@ export class LanguageAnalyzer {
 
       // 设置主要编程语言及颜色
       this.mainLang = Object.keys(sortedResults)[0] || null
-      this.mainLangColor = this.mainLang ? sortedResults[this.mainLang].color as `#${string}` : null
+      this.mainLangColor = this.mainLang ? sortedResults[this.mainLang].color ?? null : null
 
       // 转换为语言分组格式
       this.langGroup = this.convertToLangGroup(sortedResults)
 
-      // 转换为 JeDropdown 下拉选项格式
+      // 转换为下拉选项格式
       this.mainLanguageOptions = this.convertResultsToDropdownOptions(sortedResults)
 
       return true
@@ -64,10 +68,10 @@ export class LanguageAnalyzer {
    * @returns {Promise<Record<string, LinguistLanguageResult>>} - 语言分析结果
    */
   private async getLanguagesResult(): Promise<Record<string, LinguistLanguageResult>> {
-    const res = await window.api.analyzeProject(this.folderPath) as any
+    const res = await window.api.analyzeProject(this.folderPath)
     if (!res || 'error' in res || !res.languages)
       return {}
-    return res.languages.results as Record<string, LinguistLanguageResult>
+    return res.languages.results
   }
 
   /**
@@ -99,9 +103,9 @@ export class LanguageAnalyzer {
   /**
    * 将语言结果转换为下拉选项格式
    * @param results - 排序后的语言结果
-   * @returns {(JeDropdownOptionProps | JeDropdownOptionGroupProps)[]} - 下拉选项
+   * @returns {LanguageOption[]} - 下拉选项
    */
-  private convertResultsToDropdownOptions(results: Record<string, LinguistLanguageResult>): (JeDropdownOptionProps | JeDropdownOptionGroupProps)[] {
+  private convertResultsToDropdownOptions(results: Record<string, LinguistLanguageResult>): LanguageOption[] {
     return Object.entries(results).map(([key, value]) => ({
       value: key,
       label: key,
@@ -122,7 +126,7 @@ export class LanguageAnalyzer {
 
     const languages = Object.entries(sortedResults).map(([lang, info]) => ({
       text: lang,
-      color: info.color as `#${string}`,
+      color: info.color ?? '#ccc',
       percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)),
     }))
 

@@ -6,8 +6,6 @@ on:
       - dev
       - main
     paths-ignore:
-      # Changes involving the following path files will not trigger the workflow
-      # 涉及以下路径文件的更改不会触发工作流
       - LICENSE.txt
       - README.md
       - README_EN.md
@@ -18,69 +16,61 @@ on:
       - dev
       - main
     paths-ignore:
-      # Changes involving the following path files will not trigger the workflow
-      # 涉及以下路径文件的更改不会触发工作流
       - LICENSE.txt
       - README.md
       - README_EN.md
       - docs/**
+
   workflow_dispatch:
 
 jobs:
   build:
     strategy:
-      matrix:
-        node: [lts/*, lts/-1]
-        os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
+      matrix:
+        node: [lts/*]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set node ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
+      - uses: actions/checkout@v6
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build JetV-ui
-        run: pnpm ui:build
-
       - name: Lint
-        run: pnpm run lint
+        run: pnpm lint
 
       - name: Type check
-        run: pnpm run typecheck
+        run: pnpm typecheck
 
       - name: Build the project
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
 
-      - name: Upload Windows Installer
-        if: matrix.node == 'lts/*' && matrix.os == 'windows-latest'
+      - name: Upload bundles
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
-          path: build/*Setup*.exe
-
-      - name: Upload macOS Installer
-        if: matrix.node == 'lts/*' && matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac-installer
-          path: build/*.dmg
-
-      - name: Upload Linux Installer
-        if: matrix.node == 'lts/*' && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-installer
-          path: build/*.AppImage
+          name: codenest-${{ runner.os }}
+          path: src-tauri/target/release/bundle/**/*
+          if-no-files-found: error

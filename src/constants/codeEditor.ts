@@ -1,10 +1,3 @@
-export interface CodeEditorOption {
-  label: string // 显示文本
-  icon?: string // 图标类名
-  description?: string // 描述注释
-  group?: string // 所在分类
-}
-
 export enum CodeEditorEnum {
   IntellijIdea = 'intellij-idea',
   PyCharm = 'pycharm',
@@ -15,11 +8,67 @@ export enum CodeEditorEnum {
   RustRover = 'rust-rover',
   WebStorm = 'webstorm',
   RubyMine = 'rubymine',
-  Aqua = 'aqua',
-  Fleet = 'fleet',
   AndroidStudio = 'android-studio',
   VisualStudio = 'visual-studio',
   VisualStudioCode = 'visual-studio-code',
+  Cursor = 'cursor',
+  Windsurf = 'windsurf',
+  Trae = 'trae',
+  Zed = 'zed',
+  SublimeText = 'sublime-text',
+  Neovim = 'neovim',
+  CodexCli = 'codex-cli',
+  ClaudeCode = 'claude-code',
+  GeminiCli = 'gemini-cli',
+}
+
+export type EditorCommandKey = CodeEditorEnum
+
+export interface CodeEditorOption {
+  label: string
+  icon?: string
+  description?: string
+  group?: string
+  defaultCommand: string
+  openInTerminal?: boolean
+  monochromeIcon?: boolean
+}
+
+export interface EditorCommandOption {
+  key: EditorCommandKey
+  label: string
+  icon?: string
+  description?: string
+  defaultCommand: string
+  openInTerminal: boolean
+  monochromeIcon?: boolean
+  editors: CodeEditorEnum[]
+}
+
+export function isCodeEditor(value: unknown): value is CodeEditorEnum {
+  return Object.values(CodeEditorEnum).includes(value as CodeEditorEnum)
+}
+
+export const jetBrainsEditors = [
+  CodeEditorEnum.IntellijIdea,
+  CodeEditorEnum.PyCharm,
+  CodeEditorEnum.PhpStorm,
+  CodeEditorEnum.GoLand,
+  CodeEditorEnum.Rider,
+  CodeEditorEnum.Clion,
+  CodeEditorEnum.RustRover,
+  CodeEditorEnum.WebStorm,
+  CodeEditorEnum.RubyMine,
+] as const satisfies readonly CodeEditorEnum[]
+
+const jetBrainsEditorSet = new Set<CodeEditorEnum>(jetBrainsEditors)
+
+export function isJetBrainsEditor(editor: CodeEditorEnum) {
+  return jetBrainsEditorSet.has(editor)
+}
+
+export function getEditorCommandKey(editor: CodeEditorEnum): EditorCommandKey {
+  return editor
 }
 
 export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
@@ -28,90 +77,175 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Intellij IDEA',
     description: 'Java  Kotlin  Spring',
     icon: 'i-custom:jetbrains-intellij-idea',
+    defaultCommand: 'idea {project}',
   },
-
   [CodeEditorEnum.PyCharm]: {
     group: 'JetBrains',
     label: 'PyCharm',
     description: 'Python  Django  Jupyter',
     icon: 'i-custom:jetbrains-pycharm',
+    defaultCommand: 'pycharm {project}',
   },
   [CodeEditorEnum.PhpStorm]: {
     group: 'JetBrains',
     label: 'PhpStorm',
     description: 'PHP  Laravel  Symfony',
     icon: 'i-custom:jetbrains-phpstorm',
+    defaultCommand: 'phpstorm {project}',
   },
   [CodeEditorEnum.GoLand]: {
     group: 'JetBrains',
     label: 'GoLand',
     description: 'Go (Golang)  JavaScript  TypeScript',
     icon: 'i-custom:jetbrains-goland',
+    defaultCommand: 'goland {project}',
   },
   [CodeEditorEnum.Rider]: {
     group: 'JetBrains',
     label: 'Rider',
     description: 'C#  .NET  ASP.NET',
     icon: 'i-custom:jetbrains-rider',
+    defaultCommand: 'rider {project}',
   },
   [CodeEditorEnum.Clion]: {
     group: 'JetBrains',
     label: 'Clion',
     description: 'C  C++  CMake',
     icon: 'i-custom:jetbrains-clion',
+    defaultCommand: 'clion {project}',
   },
   [CodeEditorEnum.RustRover]: {
     group: 'JetBrains',
     label: 'RustRover',
     description: 'Rust  TOML  SQL',
     icon: 'i-custom:jetbrains-rustrover',
+    defaultCommand: 'rustrover {project}',
   },
   [CodeEditorEnum.WebStorm]: {
     group: 'JetBrains',
     label: 'WebStorm',
     description: 'JavaScript  TypeScript  React',
     icon: 'i-custom:jetbrains-webstorm',
+    defaultCommand: 'webstorm {project}',
   },
   [CodeEditorEnum.RubyMine]: {
     group: 'JetBrains',
     label: 'RubyMine',
     description: 'Ruby on Rails (RoR)  Hotwire  RuboCop',
     icon: 'i-custom:jetbrains-rubymine',
-  },
-  [CodeEditorEnum.Aqua]: {
-    group: 'JetBrains',
-    label: 'Aqua',
-    description: 'Selenium  Selenide  Playwright',
-    icon: 'i-custom:jetbrains-aqua',
-  },
-  [CodeEditorEnum.Fleet]: {
-    group: 'JetBrains',
-    label: 'Fleet',
-    description: 'JavaScript  Python  PHP  C#  Java  Kotlin',
-    icon: 'i-custom:jetbrains-fleet',
+    defaultCommand: 'rubymine {project}',
   },
   [CodeEditorEnum.VisualStudio]: {
     group: 'Microsoft',
     label: 'Visual Studio',
     icon: 'i-custom:visual-studio',
+    defaultCommand: 'devenv {project}',
   },
   [CodeEditorEnum.VisualStudioCode]: {
     group: 'Microsoft',
     label: 'Visual Studio Code',
     icon: 'i-custom:visual-studio-code',
+    defaultCommand: 'code {project}',
+  },
+  [CodeEditorEnum.Cursor]: {
+    group: 'AI Editors',
+    label: 'Cursor',
+    description: 'AI coding editor',
+    icon: 'i-custom:cursor',
+    defaultCommand: 'cursor {project}',
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.Windsurf]: {
+    group: 'AI Editors',
+    label: 'Windsurf',
+    description: 'Agentic coding editor',
+    icon: 'i-custom:windsurf',
+    defaultCommand: 'windsurf {project}',
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.Trae]: {
+    group: 'AI Editors',
+    label: 'Trae',
+    description: 'AI coding editor',
+    icon: 'i-lucide:sparkles',
+    defaultCommand: 'trae {project}',
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.Zed]: {
+    group: 'Editors',
+    label: 'Zed',
+    description: 'Fast collaborative editor',
+    icon: 'i-custom:zed-industries',
+    defaultCommand: 'zed {project}',
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.SublimeText]: {
+    group: 'Editors',
+    label: 'Sublime Text',
+    icon: 'i-custom:sublime-text',
+    defaultCommand: 'subl {project}',
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.Neovim]: {
+    group: 'Terminal Editors',
+    label: 'Neovim',
+    icon: 'i-custom:neovim',
+    defaultCommand: 'nvim .',
+    openInTerminal: true,
+    monochromeIcon: true,
+  },
+  [CodeEditorEnum.CodexCli]: {
+    group: 'AI CLI',
+    label: 'Codex CLI',
+    description: 'OpenAI Codex in terminal',
+    icon: 'i-custom:codex-color',
+    defaultCommand: 'codex',
+    openInTerminal: true,
+  },
+  [CodeEditorEnum.ClaudeCode]: {
+    group: 'AI CLI',
+    label: 'Claude Code',
+    description: 'Anthropic Claude Code in terminal',
+    icon: 'i-custom:claude-color',
+    defaultCommand: 'claude',
+    openInTerminal: true,
+  },
+  [CodeEditorEnum.GeminiCli]: {
+    group: 'AI CLI',
+    label: 'Gemini CLI',
+    description: 'Google Gemini in terminal',
+    icon: 'i-custom:gemini-color',
+    defaultCommand: 'gemini',
+    openInTerminal: true,
   },
   [CodeEditorEnum.AndroidStudio]: {
     group: 'Google',
     label: 'Android Studio',
     icon: 'i-custom:android-studio-stable',
+    defaultCommand: 'studio {project}',
   },
 }
 
-// 从 codeEditors 中提取所有 icon 字段的值，并将它们映射为一个数组，
-// 用于生成图标类名的 safelist，以确保这些动态生成的类名被 Unocss 识别并编译。
-export const editorIconClasses = Object.values(codeEditors)
-  .map(option => option.icon)
-  .filter(icon => icon !== undefined)
+export const editorCommandOptions: EditorCommandOption[] = [
+  ...Object.entries(codeEditors)
+    .map(([editor, option]) => ({
+      key: editor as CodeEditorEnum,
+      label: option.label,
+      icon: option.icon,
+      description: option.description || option.group,
+      defaultCommand: option.defaultCommand,
+      openInTerminal: option.openInTerminal === true,
+      monochromeIcon: option.monochromeIcon,
+      editors: [editor as CodeEditorEnum],
+    })),
+]
+
+export const editorCommandKeys = editorCommandOptions.map(option => option.key)
+
+export const editorIconClasses = [
+  ...Object.values(codeEditors).map(option => option.icon),
+  ...editorCommandOptions.map(option => option.icon),
+].filter(icon => icon !== undefined)
 
 export const defaultEditorLangGroups: Record<CodeEditorEnum, string[]> = {
   [CodeEditorEnum.IntellijIdea]: [
@@ -168,8 +302,6 @@ export const defaultEditorLangGroups: Record<CodeEditorEnum, string[]> = {
     'mdx',
   ],
   [CodeEditorEnum.RubyMine]: ['ror', 'ruby on rails', 'ruby', 'erb', 'haml', 'slim'],
-  [CodeEditorEnum.Aqua]: ['selenium', 'playwright'],
-  [CodeEditorEnum.Fleet]: [],
   [CodeEditorEnum.AndroidStudio]: ['android', 'dart'],
   [CodeEditorEnum.VisualStudio]: ['f#', 'vb', 'vb.net'],
   [CodeEditorEnum.VisualStudioCode]: [
@@ -190,4 +322,32 @@ export const defaultEditorLangGroups: Record<CodeEditorEnum, string[]> = {
     'json5',
     'bicep',
   ],
+  [CodeEditorEnum.Cursor]: [
+    'javascript',
+    'typescript',
+    'tsx',
+    'vue',
+    'react',
+    'python',
+    'rust',
+    'go',
+    'markdown',
+  ],
+  [CodeEditorEnum.Windsurf]: [
+    'javascript',
+    'typescript',
+    'tsx',
+    'vue',
+    'react',
+    'python',
+    'go',
+    'rust',
+  ],
+  [CodeEditorEnum.Trae]: ['javascript', 'typescript', 'python', 'go', 'java'],
+  [CodeEditorEnum.Zed]: ['rust', 'go', 'typescript', 'javascript', 'python'],
+  [CodeEditorEnum.SublimeText]: ['text', 'markdown', 'python', 'javascript'],
+  [CodeEditorEnum.Neovim]: ['vim script', 'lua', 'rust', 'go', 'c', 'c++'],
+  [CodeEditorEnum.CodexCli]: [],
+  [CodeEditorEnum.ClaudeCode]: [],
+  [CodeEditorEnum.GeminiCli]: [],
 }

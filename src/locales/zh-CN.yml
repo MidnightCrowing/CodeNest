@@ -5,76 +5,10 @@ common:
     windows: Windows
     macos: macOS
     linux: Linux
-license:
-  info:
-    commercial_use: 商业用途
-    distribution: 分发
-    modification: 修改
-    patent_use: 专利授权
-    private_use: 私用
-    disclose_source: 公开源码
-    license_and_copyright_notice: 放置许可协议与版权信息
-    license_and_copyright_notice_for_source: 放置许可协议与版权信息（源码）
-    network_use_is_distribution: 使用网络分发
-    same_license: 使用相同协议
-    same_license_library: 使用相同协议(library)
-    same_license_file: 使用���同协议(file)
-    state_changes: 声明变更
-    liability: 承担责任
-    trademark_use: 使用商标
-  mit:
-    description_url: https://choosealicense.cc/licenses/mit/
-  apache_2_0:
-    description_url: https://choosealicense.cc/licenses/apache-2.0/
-  bsd_2_clause:
-    description_url: https://choosealicense.cc/licenses/bsd-2-clause/
-  bsd_3_clause:
-    description_url: https://choosealicense.cc/licenses/bsd-3-clause/
-  gplv2:
-    description_url: https://choosealicense.cc/licenses/gpl-2.0/
-  gplv3:
-    description_url: https://choosealicense.cc/licenses/gpl-3.0/
-  lgplv2_1:
-    description_url: https://choosealicense.cc/licenses/lgpl-2.1/
-  lgplv3:
-    description_url: https://choosealicense.cc/licenses/lgpl-3.0/
-  agplv3:
-    description_url: https://choosealicense.cc/licenses/agpl-3.0/
-  mpl_2_0:
-    description_url: https://choosealicense.cc/licenses/mpl-2.0/
-  cc0_1_0:
-    description_url: https://choosealicense.cc/licenses/cc0-1.0/
-  unlicense:
-    description_url: https://choosealicense.cc/licenses/unlicense/
-  wtfpl:
-    description_url: https://choosealicense.cc/licenses/wtfpl/
-  zlib:
-    description_url: https://choosealicense.cc/licenses/zlib/
-  isc:
-    description_url: https://choosealicense.cc/licenses/isc/
-  artistic_2_0:
-    description_url: https://choosealicense.cc/licenses/artistic-2.0/
-  afl_3_0:
-    description_url: https://choosealicense.cc/licenses/afl-3.0/
-  osl_3_0:
-    description_url: https://choosealicense.cc/licenses/osl-3.0/
-  eupl_1_1:
-    description_url: https://choosealicense.cc/licenses/eupl-1.1/
-  open_font_1_1:
-    description_url: https://choosealicense.cc/licenses/ofl-1.1/
-  ms_pl:
-    description_url: https://choosealicense.cc/licenses/ms-pl/
-  ms_rl:
-    description_url: https://choosealicense.cc/licenses/ms-rl/
 language_pop:
-  analyze_failed: 无法获取分析结果
+  count: '{count} 种语言'
+  more: '+{count} 更多'
   overall_label: 该项目所用语言
-license_pop:
-  permissions: 允许
-  limitations: 禁止
-  conditions: 要求
-  description_from: 信息来源
-  no_description_desc: 没有描述
 project_card:
   temporary: 临时
   opening: 正在打开...
@@ -122,10 +56,10 @@ remove_project_dialog:
   remove_from_list: 移除项目 (保留文件)
   delete: 删除
 no_ide_path_dialog:
-  dialog_title: IDE 路径未设置
-  dialog_desc: 请设置 IDE 路径
+  dialog_title: 启动命令未设置
+  dialog_desc: 请在设置中配置这个编辑器的启动命令。
   cancel: 取消
-  set: 设置路径
+  set: 去配置
 home:
   side_panel:
     projects: 项目
@@ -213,10 +147,267 @@ settings:
   save: 保存
   cancel: 取消
   apply: 应用
-status:
-  project_scanner:
-    scanning: 正在扫描项目
-    found_one: 已发现 1 个新项目
-    found_many: 已发现 {count} 个新项目
-    done: 扫描完成
-    error: 扫描失败
+app:
+  common:
+    back: 返回
+    cancel: 取消
+    apply: 应用
+    save: 保存
+    clear: 清除
+    detect: 检测
+    browse_folder: 浏览文件夹
+    no_editor: 未设置编辑器
+    not_set: 未设置
+    unknown: 未知
+  license:
+    none: 无许可证
+    other: 其他
+  project_kind:
+    mine: 个人
+    fork: Fork
+    clone: Clone
+    forks: Fork
+    clones: Clone
+  home:
+    title: 项目
+    sync: 扫描
+    syncing: 扫描中
+    add_project: 添加项目
+    search_placeholder: 搜索名称、路径、分组、语言...
+    clear_count: 清除 {count}
+    project_list: 项目列表
+    filters:
+      kind: 类型
+      status: 状态
+      language: 语言
+      group: 分组
+      sort: 排序
+      all_projects: 全部项目
+      all_status: 全部状态
+      available: 可用
+      missing_path: 路径缺失
+      temporary: 临时
+      all_languages: 全部语言
+      all_groups: 全部分组
+      no_group: 无分组
+    sort:
+      recent: 最近优先
+      name: 名称
+      language: 语言
+      group: 分组
+    layout:
+      label: 项目布局
+      list: 列表
+      grid: 卡片
+    table:
+      project: 项目
+      kind: 类型
+      language: 语言
+      license: 许可证
+      updated: 更新时间
+      actions: 操作
+    empty:
+      title: 没有找到项目
+      desc: 调整筛选条件，或添加一个本地项目。
+    source:
+      forked_from: Fork 自
+      cloned_from: Clone 自
+    actions:
+      open_project: 打开项目
+      open_explorer: 在资源管理器中打开
+      open_terminal: 在终端中打开
+      copy_path: 复制路径
+      copied: 已复制
+      copy_failed: 复制失败
+      edit: 编辑
+      remove: 移除
+  settings:
+    title: 设置
+    open_json: 打开设置 JSON
+    tabs:
+      label: 设置页面
+      appearance:
+        label: 外观
+        desc: 主题和语言
+      editors:
+        label: 编辑器
+        desc: 快速打开项目
+      scanner:
+        label: 扫描器
+        desc: 导入规则
+      data:
+        label: 数据
+        desc: 导入导出与同步
+      about:
+        label: 关于
+        desc: 版本与仓库
+    appearance:
+      title: 外观
+      theme:
+        title: 主题
+        desc: 切换桌面外壳和界面配色。
+        light: 浅色
+        dark: 暗色
+      theme_color:
+        title: 主题色
+        desc: 选择操作按钮和聚焦控件使用的强调色。
+        contrast: 反色
+        blue: 蓝色
+        green: 绿色
+        teal: 青色
+        orange: 橙色
+        purple: 紫色
+        red: 红色
+      language:
+        title: 语言
+        desc: 选择界面语言。
+        english: English
+        zh_cn: 简体中文
+    editors:
+      title: 编辑器
+      desc: 配置项目列表使用的启动目标。
+      editor: 编辑器
+      path: 命令
+      path_placeholder: '{editor} 的命令'
+      command_placeholder: '{editor} 的启动命令'
+      clear_path: 清空命令
+      clear_command: 清空命令
+      browse_executable: 浏览可执行文件
+      auto_detect: 自动检测
+      terminal: 在终端中运行
+    scanner:
+      title: 扫描器
+      desc: 控制启动时或手动扫描时导入哪些项目。
+      sources:
+        title: 导入来源
+        desc: 只保留你实际使用的来源。
+      roots:
+        title: 项目根目录
+        desc: 扫描所选目录下的一级子文件夹。
+        add: 添加根目录
+        count: '{count} 个根目录'
+        empty: 尚未配置项目根目录。
+        remove: 移除根目录
+      ide:
+        title: 最近 IDE 项目
+        desc: 从编辑器历史数据库导入项目。
+      jetbrains:
+        placeholder: JetBrains 配置根目录
+      vscode:
+        placeholder: state.vscdb 路径
+        browse: 浏览数据库
+      strategy:
+        title: 导入策略
+        desc: 决定新项目如何打开和分类。
+      default_editor:
+        title: 默认编辑器
+        desc: 使用语言映射，或强制使用某个编辑器。
+      specified_editor:
+        title: 指定编辑器
+        desc: 当上方策略为固定编辑器时使用。
+      name_pattern:
+        title: 临时项目名称规则
+        desc: 用于自动标记 demo/test 项目的正则。
+      open_mode:
+        auto: 按语言自动选择
+        specified: 始终使用指定编辑器
+      history:
+        title: 扫描记录
+        desc: 想重新导入已见过的文件夹时可清除它。
+        clear: 清除记录
+        dialog_title: 清除扫描记录？
+        dialog_desc: 下次扫描时，之前扫描过的文件夹也会重新参与导入。
+    data:
+      title: 数据
+      desc: 项目列表迁移与手动同步。
+      projects:
+        title: 项目列表
+        desc: 在不同设备之间迁移已跟踪的项目。
+        import: 导入
+        export: 导出
+      webdav:
+        title: WebDAV
+        desc: 手动上传或拉取设置和项目列表数据。
+        server: WebDAV 服务器地址
+        server_placeholder: https://example.com/dav/
+        remote_path: WebDAV 目录
+        remote_path_placeholder: CodeNest
+        account: WebDAV 账户
+        password: WebDAV 密码
+        test: 测试连接
+        testing: 测试中
+        connected: WebDAV 连接成功。
+        upload: 上传到云端
+        uploading: 上传中
+        uploaded: 已上传到 WebDAV。
+        download: 从云端下载
+        downloading: 下载中
+        pulled: 已从 WebDAV 拉取。
+        failed: WebDAV 同步失败。
+    about:
+      title: 关于
+      desc: 版本和仓库信息。
+      update:
+        check_desc: 从 GitHub Releases 检查更新。
+        available: '发现新版本：v{version}'
+        latest: 当前已是最新版本。
+        checking: 检查中
+        check: 检查更新
+        open_release: 打开发布页
+      repository:
+        title: 仓库
+        desc: 在浏览器中打开项目页面。
+  project_editor:
+    title:
+      add: 添加项目
+      edit: 编辑项目
+    mode:
+      new: 新项目
+      edit: 编辑项目
+    add_project: 添加项目
+    save_changes: 保存更改
+    use_folder: 使用文件夹名
+    use_repo: 使用仓库名
+    no_group: 无分组
+    analyze: 分析
+    analyzing: 分析中
+    analyzing_desc: 正在分析项目文件...
+    detecting: 检测中
+    detecting_license_desc: 正在读取许可证文件...
+    select_editor: 选择编辑器
+    unnamed: 未命名项目
+    no_language: 无语言
+    no_folder: 未选择文件夹
+    sections:
+      project: 项目
+      metadata: 元数据
+    fields:
+      folder: 文件夹
+      folder_desc: 本地项目根目录。
+      folder_duplicate: 这个文件夹已经被跟踪。
+      name: 名称
+      name_desc: 在项目列表中显示的名称。
+      group: 分组
+      group_desc: 用于筛选的可选标签。
+      source: 来源
+      source_desc: 用于列表中的 Fork/Clone 上下文。
+      source_url: 来源 URL
+      source_name: 来源名称
+      main_language: 主要语言
+      main_language_desc: 自动检测，也可以手动编辑。
+      open_with: 打开方式
+      open_with_desc: 打开操作使用的默认编辑器。
+      license: 许可证
+      license_desc: 会直接显示在项目列表中。
+      temporary: 临时项目
+      temporary_desc: 标记实验、demo 或短期文件夹。
+    summary:
+      mode: 模式
+      kind: 类型
+      editor: 编辑器
+      license: 许可证
+    language_mix:
+      title: 语言占比
+      entries: '{count} 项'
+      refresh: 刷新语言列表
+      empty: 选择文件夹或运行分析。

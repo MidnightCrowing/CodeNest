@@ -1,406 +1,469 @@
 <script lang="ts" setup>
-import type { JeDropdownOptionProps } from 'jetv-ui'
 import {
-  JeButton,
-  JeCheckbox,
-  JeFileInputField,
-  JeFrame,
-  JeInputField,
-  JeLine,
-  JePopup,
-  JeRadio,
-  JeSlimButton,
-  JeTabPane,
-  JeTabs,
-  JeToolbarDropdown,
-  JeTransparentButton,
-} from 'jetv-ui'
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 
-import SettingsGroup from '~/components/SettingsGroup.vue'
+import UiCheckbox from '~/components/ui/UiCheckbox.vue'
+import UiSelect from '~/components/ui/UiSelect.vue'
+import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
 import { useSettingsStore } from '~/stores/settingsStore'
 
 const settings = useSettingsStore()
 const { t } = useI18n()
+const showClearConfirm = ref(false)
 
-const tabActive = ref<'filesystem' | 'ide'>('filesystem')
+const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(() =>
+  (Object.keys(codeEditors) as CodeEditorEnum[]).map(editor => ({
+    value: editor,
+    label: codeEditors[editor].label,
+  })),
+)
 
-// ==================== file system ====================
-const rootsEnabled = computed({
-  get: () => settings.scanner.rootsEnabled,
-  set: (v: boolean) => { settings.scanner.rootsEnabled = v },
-})
-const projectRoots = computed(() => settings.scanner.roots)
+const openModeOptions = computed(() => [
+  { value: 'auto', label: t('app.settings.scanner.open_mode.auto') },
+  { value: 'specified', label: t('app.settings.scanner.open_mode.specified') },
+])
 
-async function openFolder() {
+async function addProjectRoot() {
+  if (!settings.scanner.rootsEnabled)
+    return
+
   const selectedPaths = await window.api.openFolderDialog()
-  if (selectedPaths.length > 0) {
-    const uniqueRoots = Array.from(new Set([...(settings.scanner.roots || []), ...selectedPaths])).sort()
-    settings.scanner.roots.splice(0, settings.scanner.roots.length, ...uniqueRoots)
+  if (!selectedPaths.length) {
+    return
   }
+
+  const roots = Array.from(new Set([...settings.scanner.roots, ...selectedPaths])).sort()
+  settings.scanner.roots.splice(0, settings.scanner.roots.length, ...roots)
+  settings.scanner.rootsEnabled = true
 }
 
 function removeRoot(root: string) {
   const index = settings.scanner.roots.indexOf(root)
-  if (index !== -1) {
+  if (index >= 0) {
     settings.scanner.roots.splice(index, 1)
   }
 }
 
-// ==================== ide ====================
-const ideEnabled = computed({
-  get: () => settings.scanner.ideEnabled,
-  set: (v: boolean) => { settings.scanner.ideEnabled = v },
-})
-const ideJbEnabled = computed({
-  get: () => settings.scanner.jetbrains.enabled,
-  set: (v: boolean) => { settings.scanner.jetbrains.enabled = v },
-})
-const ideVscEnabled = computed({
-  get: () => settings.scanner.vscode.enabled,
-  set: (v: boolean) => { settings.scanner.vscode.enabled = v },
-})
-const ideVsEnabled = computed({
-  get: () => settings.scanner.visualStudio.enabled,
-  set: (v: boolean) => { settings.scanner.visualStudio.enabled = v },
-})
-const jetbrainsConfigPath = computed({
-  get: () => settings.scanner.jetbrains.configRootPath,
-  set: (v: string) => { settings.scanner.jetbrains.configRootPath = v },
-})
-const vscConfigPath = computed({
-  get: () => settings.scanner.vscode.stateDbPath,
-  set: (v: string) => { settings.scanner.vscode.stateDbPath = v },
-})
+async function browseJetbrainsRoot() {
+  if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled)
+    return
 
-async function handleDetectJbPath() {
+  const selectedPaths = await window.api.openFolderDialog()
+  if (selectedPaths[0]) {
+    settings.scanner.jetbrains.configRootPath = selectedPaths[0]
+  }
+}
+
+async function browseVscodeDb() {
+  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled)
+    return
+
+  const selectedPaths = await window.api.openFileDialog({
+    fileTypes: [{ name: 'VS Code Database', extensions: ['vscdb'] }],
+  })
+  if (selectedPaths[0]) {
+    settings.scanner.vscode.stateDbPath = selectedPaths[0]
+  }
+}
+
+async function detectJetbrainsRoot() {
+  if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled)
+    return
+
   const detectedPath = await window.api.detectJetBrainsConfigRootPath()
   if (detectedPath) {
     settings.scanner.jetbrains.configRootPath = detectedPath
   }
 }
 
-async function handleDetectVscPath() {
+async function detectVscodeDb() {
+  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled)
+    return
+
   const detectedPath = await window.api.detectVscodeStateDbPath()
   if (detectedPath) {
     settings.scanner.vscode.stateDbPath = detectedPath
   }
 }
 
-// ==================== 导入策略 ====================
-const defaultOpenMode = computed({
-  get: () => settings.scanner.openMode,
-  set: (v: 'auto' | 'specified') => { settings.scanner.openMode = v },
-})
-const editorOptions: JeDropdownOptionProps[] = Object.entries(codeEditors).map(([value, editor]) => ({
-  value,
-  label: editor.label,
-}))
-
-// ==================== Clean dialog ====================
-const showDialog = ref<boolean>(false)
-
-function deleteScanData() {
-  window.api.deleteData('projectScanner')
-  showDialog.value = false
+function clearScanHistory() {
+  void window.api.deleteData('projectScanner')
+  showClearConfirm.value = false
 }
 </script>
 
 <template>
-  <div
-    flex="~ col" gap="15px"
-    p="10px"
-  >
-    <h3 text="h2">
-      {{ t('settings.auto_scan.title') }}
-    </h3>
+  <div class="settings-page">
+    <header class="page-header">
+      <h2>{{ t('app.settings.scanner.title') }}</h2>
+    </header>
 
-    <SettingsGroup :title="t('settings.auto_scan.method')">
-      <div text="secondary">
-        {{ t('settings.auto_scan.methods_desc') }}
-      </div>
+    <div class="settings-grid">
+      <section class="settings-panel">
+        <header class="panel-header">
+          <strong>{{ t('app.settings.scanner.sources.title') }}</strong>
+          <span>{{ t('app.settings.scanner.sources.desc') }}</span>
+        </header>
 
-      <JeTabs v-model="tabActive">
-        <JeTabPane value="filesystem" :label="t('settings.auto_scan.fs_tab')">
-          <div flex="~ col items-start" gap="8px" text="default">
-            <JeCheckbox v-model="rootsEnabled">
-              {{ t('settings.auto_scan.enable_fs') }}
-            </JeCheckbox>
+        <div class="toggle-row">
+          <UiCheckbox v-model="settings.scanner.rootsEnabled">
+            <div class="checkbox-copy">
+              <strong>{{ t('app.settings.scanner.roots.title') }}</strong>
+              <span>{{ t('app.settings.scanner.roots.desc') }}</span>
+            </div>
+          </UiCheckbox>
+        </div>
 
-            <div settings-section flex="~ col" gap="8px" w="full" box-border>
-              <div>
-                <JeTransparentButton
-                  type="subtle"
-                  flex="~ row items-center" gap="3px"
-                  @click="openFolder"
-                >
-                  <span i-jet="light:add dark:add-dark" />
-                  {{ t('settings.auto_scan.add_folder') }}
-                </JeTransparentButton>
-              </div>
+        <div class="source-child-group" :class="{ disabled: !settings.scanner.rootsEnabled }">
+          <div class="inline-actions">
+            <button class="ghost-button" type="button" :disabled="!settings.scanner.rootsEnabled" @click="addProjectRoot">
+              <span class="i-lucide:plus" />
+              {{ t('app.settings.scanner.roots.add') }}
+            </button>
+            <span class="subtle-count">{{ t('app.settings.scanner.roots.count', { count: settings.scanner.roots.length }) }}</span>
+          </div>
 
-              <JeFrame
-                type="secondary"
-                grow flex="~ col"
-                b="solid 1px light:$gray-12 dark:$gray-3"
-                min-h="200px" max-h="300px" overflow-auto
+          <div class="path-list">
+            <div v-if="settings.scanner.roots.length === 0" class="empty-inline">
+              {{ t('app.settings.scanner.roots.empty') }}
+            </div>
+            <div v-for="root in settings.scanner.roots" :key="root" class="path-row">
+              <span :title="root">{{ root }}</span>
+              <button
+                class="icon-button"
+                type="button"
+                :title="t('app.settings.scanner.roots.remove')"
+                :aria-label="t('app.settings.scanner.roots.remove')"
+                :disabled="!settings.scanner.rootsEnabled"
+                @click="removeRoot(root)"
               >
-                <TransitionGroup name="list" tag="div">
-                  <div
-                    v-for="root in projectRoots" :key="root"
-                    class="group"
-                    hover:bg="light:$gray-12 dark:$gray-3"
-                    p="x-10px y-3px" b="solid 1px transparent" rounded="3px"
-                    text="default hover:default-semibold"
-                    flex="~ row items-center" gap="5px"
-                    focus-visible="outline-none b-$blue-primary"
-                    :tabindex="0"
-                  >
-                    <div truncate>
-                      {{ root }}
-                    </div>
-                    <JeLine
-                      grow min-w="10px"
-                      group-hover:bg="light:$gray-13 dark:$gray-2"
-                    />
-                    <span
-                      shrink-0
-                      i-jet="light:close-small dark:close-small-dark"
-                      hover:i-jet="light:close-hovered-small dark:close-small-hovered-dark"
-                      b="solid 1px transparent" rounded="3px"
-                      focus-visible="outline-none b-$blue-primary"
-                      cursor-pointer
-                      :tabindex="0"
-                      @click="removeRoot(root)"
-                      @keydown.enter="removeRoot(root)"
-                    />
-                  </div>
-                </TransitionGroup>
-              </JeFrame>
+                <span class="i-lucide:x" />
+              </button>
             </div>
           </div>
-        </JeTabPane>
+        </div>
 
-        <JeTabPane value="ide" :label="t('settings.auto_scan.ide_tab')">
-          <div flex="~ col items-start" gap="8px" text="default">
-            <JeCheckbox v-model="ideEnabled">
-              {{ t('settings.auto_scan.enable_ide') }}
-            </JeCheckbox>
-
-            <div settings-section flex="~ col" gap="8px" w-full box-border>
-              <!-- Jetbrains -->
-              <div flex="~ col items-start" gap="5px">
-                <JeCheckbox v-model="ideJbEnabled" :disabled="!ideEnabled">
-                  <div m="l-5px" flex="~ row items-center" gap="3px">
-                    <span class="i-custom:jetbrains" />
-                    {{ t('settings.auto_scan.jetbrains.title') }}
-                  </div>
-                </JeCheckbox>
-
-                <div
-                  settings-section m="l-25px" w="[calc(100%-25px)]" box-border
-                  flex="~ col items-start" gap="5px"
-                >
-                  <div lh="26px">
-                    {{ t('settings.auto_scan.jetbrains.config_root') }}
-                  </div>
-                  <div settings-section flex="~ col" gap="8px" w-full box-border>
-                    <div flex="~ row items-center" gap="8px">
-                      <JeFileInputField
-                        v-model="jetbrainsConfigPath"
-                        mode="folder"
-                        :disabled="!ideEnabled || !ideJbEnabled"
-                        :dialog-title="t('settings.auto_scan.jetbrains.select_folder_dialog')"
-                        grow max-w="500px"
-                      />
-                      <JeSlimButton
-                        type="alt"
-                        :disabled="!ideEnabled || !ideJbEnabled"
-                        @click="handleDetectJbPath"
-                      >
-                        {{ t('common.detect') }}
-                      </JeSlimButton>
-                    </div>
-
-                    <div flex="~ col" gap="5px" text="secondary medium">
-                      <div>
-                        {{ t('settings.auto_scan.jetbrains.hint_title') }}
-                      </div>
-                      <div
-                        p="l-10px"
-                        grid="~ cols-[auto_1fr] items-start" gap="x-3px y-5px"
-                        break-all
-                      >
-                        <span>{{ t('common.platform.windows') }}:</span>
-                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.windows') }}</span>
-                        <span>{{ t('common.platform.macos') }}:</span>
-                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.macos') }}</span>
-                        <span>{{ t('common.platform.linux') }}:</span>
-                        <span>{{ t('settings.auto_scan.jetbrains.path_samples.linux') }}</span>
-                      </div>
-                      <div>
-                        {{ t('settings.auto_scan.jetbrains.includes') }}
-                      </div>
-                      <div>
-                        {{ t('settings.auto_scan.jetbrains.scan_versions') }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- VS Code -->
-              <div flex="~ col items-start" gap="5px">
-                <JeCheckbox v-model="ideVscEnabled" :disabled="!ideEnabled">
-                  <div m="l-5px" flex="~ row items-center" gap="3px">
-                    <span class="i-custom:visual-studio-code" />
-                    {{ t('settings.auto_scan.vscode.title') }}
-                  </div>
-                </JeCheckbox>
-
-                <div
-                  settings-section m="l-25px" w="[calc(100%-25px)]" box-border
-                  flex="~ col items-start" gap="5px"
-                >
-                  <div lh="26px">
-                    {{ t('settings.auto_scan.vscode.recent_db_label') }}
-                  </div>
-                  <div settings-section flex="~ col" gap="8px" w-full box-border>
-                    <div flex="~ row items-center" gap="8px">
-                      <JeFileInputField
-                        v-model="vscConfigPath"
-                        mode="file"
-                        dialog-title="选择 VS Code recent projects 文件"
-                        :file-types="[{
-                          name: 'VS Code Database',
-                          extensions: ['vscdb'], // 只允许选择 .vscdb 文件
-                        }]"
-                        :disabled="!ideEnabled || !ideVscEnabled"
-                        grow max-w="500px"
-                      />
-                      <JeSlimButton
-                        type="alt"
-                        :disabled="!ideEnabled || !ideVscEnabled"
-                        @click="handleDetectVscPath"
-                      >
-                        {{ t('common.detect') }}
-                      </JeSlimButton>
-                    </div>
-
-                    <div flex="~ col" gap="5px" text="secondary medium">
-                      <div>
-                        {{ t('settings.auto_scan.vscode.hint_title') }}
-                      </div>
-                      <div
-                        p="l-10px"
-                        grid="~ cols-[auto_1fr] items-start" gap="x-3px y-5px"
-                        break-all
-                      >
-                        <span>{{ t('common.platform.windows') }}:</span>
-                        <span>{{ t('settings.auto_scan.vscode.path_samples.windows') }}</span>
-                        <span>{{ t('common.platform.macos') }}:</span>
-                        <span>{{ t('settings.auto_scan.vscode.path_samples.macos') }}</span>
-                        <span>{{ t('common.platform.linux') }}:</span>
-                        <span>{{ t('settings.auto_scan.vscode.path_samples.linux') }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- VS -->
-              <div flex="~ col items-start" gap="5px">
-                <JeCheckbox
-                  v-model="ideVsEnabled"
-                  class="ide-vs-checkbox"
-                  disabled text="secondary" cursor-not-allowed
-                >
-                  <div m="l-5px" flex="~ row items-center" gap="3px">
-                    <span class="i-custom:visual-studio" />
-                    {{ t('settings.auto_scan.vs.title') }}
-                  </div>
-                </JeCheckbox>
-
-                <div
-                  settings-section m="l-25px" w="[calc(100%-25px)]" box-border
-                  flex="~ col items-start" gap="5px"
-                >
-                  <div lh="26px" text="secondary">
-                    {{ t('common.not_supported') }}
-                  </div>
-                </div>
-              </div>
+        <div class="toggle-row">
+          <UiCheckbox v-model="settings.scanner.ideEnabled">
+            <div class="checkbox-copy">
+              <strong>{{ t('app.settings.scanner.ide.title') }}</strong>
+              <span>{{ t('app.settings.scanner.ide.desc') }}</span>
             </div>
-          </div>
-        </JeTabPane>
-      </JeTabs>
-    </SettingsGroup>
-
-    <SettingsGroup :title="t('settings.auto_scan.strategy')">
-      <div self-start text="default">
-        {{ t('settings.auto_scan.default_open_mode') }}:
-      </div>
-      <div settings-section flex="~ col items-start" gap="3px">
-        <JeRadio v-model="defaultOpenMode" value="auto">
-          {{ t('settings.auto_scan.auto_select_program') }}
-        </JeRadio>
-        <JeRadio v-model="defaultOpenMode" value="specified">
-          <div flex="~ items-center">
-            {{ t('settings.auto_scan.always_use_custom_program') }}
-            <JeToolbarDropdown
-              v-model="settings.scanner.editor"
-              label=""
-              :options="editorOptions"
-              :disabled="defaultOpenMode !== 'specified'"
-            />
-          </div>
-        </JeRadio>
-      </div>
-
-      <div flex="~ row items-center" gap="5px">
-        <div text="default">
-          {{ t('settings.auto_scan.temp_project_name_rule') }}:
+          </UiCheckbox>
         </div>
 
-        <JeInputField v-model="settings.scanner.namePattern" spellcheck="false" w="250px" />
-      </div>
-    </SettingsGroup>
+        <div class="source-child-group" :class="{ disabled: !settings.scanner.ideEnabled }">
+          <div class="source-row">
+            <UiCheckbox
+              v-model="settings.scanner.jetbrains.enabled"
+              :disabled="!settings.scanner.ideEnabled"
+            >
+              JetBrains
+            </UiCheckbox>
+            <input
+              v-model="settings.scanner.jetbrains.configRootPath"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.scanner.jetbrains.placeholder')"
+              :placeholder="t('app.settings.scanner.jetbrains.placeholder')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled"
+            >
+            <button
+              class="ghost-button"
+              type="button"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled"
+              @click="detectJetbrainsRoot"
+            >
+              {{ t('app.common.detect') }}
+            </button>
+            <button
+              class="icon-button"
+              type="button"
+              :title="t('app.common.browse_folder')"
+              :aria-label="t('app.common.browse_folder')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled"
+              @click="browseJetbrainsRoot"
+            >
+              <span class="i-lucide:folder-open" />
+            </button>
+          </div>
 
-    <div flex="~ row items-center">
-      <JeSlimButton type="alt" @click="showDialog = true">
-        {{ t('settings.auto_scan.clear_history') }}
-      </JeSlimButton>
-    </div>
-
-    <!-- Dialog -->
-    <div
-      v-if="showDialog"
-      pos="fixed top-40px bottom-0 left-0 right-0"
-      flex="~ items-center justify-center"
-      bg="light:black/30 dark:black/50"
-    >
-      <JePopup p="20px" rounded="8px" w="400px">
-        <h3>{{ t('settings.auto_scan.clear_history') }}</h3>
-        <p>{{ t('settings.auto_scan.clear_history_desc') }}</p>
-        <p color="light:$red-4 dark:$red-6">
-          {{ t('settings.auto_scan.clear_history_warning') }}
-        </p>
-        <div m="t-20px b-5px" flex="~ row-reverse" gap="10px">
-          <JeButton order-2 @click="deleteScanData">
-            {{ t('settings.auto_scan.confirm') }}
-          </JeButton>
-          <JeButton type="secondary" order-1 @click="showDialog = false">
-            {{ t('settings.auto_scan.cancel') }}
-          </JeButton>
+          <div class="source-row">
+            <UiCheckbox
+              v-model="settings.scanner.vscode.enabled"
+              :disabled="!settings.scanner.ideEnabled"
+            >
+              VS Code
+            </UiCheckbox>
+            <input
+              v-model="settings.scanner.vscode.stateDbPath"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.scanner.vscode.placeholder')"
+              :placeholder="t('app.settings.scanner.vscode.placeholder')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
+            >
+            <button
+              class="ghost-button"
+              type="button"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
+              @click="detectVscodeDb"
+            >
+              {{ t('app.common.detect') }}
+            </button>
+            <button
+              class="icon-button"
+              type="button"
+              :title="t('app.settings.scanner.vscode.browse')"
+              :aria-label="t('app.settings.scanner.vscode.browse')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
+              @click="browseVscodeDb"
+            >
+              <span class="i-lucide:folder-open" />
+            </button>
+          </div>
         </div>
-      </JePopup>
+      </section>
+
+      <section class="settings-panel">
+        <header class="panel-header">
+          <strong>{{ t('app.settings.scanner.strategy.title') }}</strong>
+          <span>{{ t('app.settings.scanner.strategy.desc') }}</span>
+        </header>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong>{{ t('app.settings.scanner.default_editor.title') }}</strong>
+            <span>{{ t('app.settings.scanner.default_editor.desc') }}</span>
+          </div>
+          <UiSelect
+            v-model="settings.scanner.openMode"
+            :options="openModeOptions"
+            :aria-label="t('app.settings.scanner.default_editor.title')"
+            min-width="160px"
+            content-width="180px"
+          />
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong>{{ t('app.settings.scanner.specified_editor.title') }}</strong>
+            <span>{{ t('app.settings.scanner.specified_editor.desc') }}</span>
+          </div>
+          <UiSelect
+            v-model="settings.scanner.editor"
+            :options="editorOptions"
+            :aria-label="t('app.settings.scanner.specified_editor.title')"
+            :disabled="settings.scanner.openMode !== 'specified'"
+            min-width="160px"
+            content-width="210px"
+          />
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong>{{ t('app.settings.scanner.name_pattern.title') }}</strong>
+            <span>{{ t('app.settings.scanner.name_pattern.desc') }}</span>
+          </div>
+          <input
+            v-model="settings.scanner.namePattern"
+            class="path-input compact"
+            spellcheck="false"
+            :aria-label="t('app.settings.scanner.name_pattern.title')"
+          >
+        </div>
+
+        <div class="maintenance-box">
+          <div>
+            <strong>{{ t('app.settings.scanner.history.title') }}</strong>
+            <span>{{ t('app.settings.scanner.history.desc') }}</span>
+          </div>
+          <button class="danger-button" type="button" @click="showClearConfirm = true">
+            {{ t('app.settings.scanner.history.clear') }}
+          </button>
+        </div>
+      </section>
     </div>
+
+    <DialogRoot v-model:open="showClearConfirm">
+      <DialogPortal>
+        <DialogOverlay class="dialog-backdrop" />
+        <DialogContent class="confirm-dialog">
+          <DialogTitle class="dialog-title">
+            {{ t('app.settings.scanner.history.dialog_title') }}
+          </DialogTitle>
+          <DialogDescription class="dialog-description">
+            {{ t('app.settings.scanner.history.dialog_desc') }}
+          </DialogDescription>
+          <div class="dialog-actions">
+            <button class="ghost-button" type="button" @click="showClearConfirm = false">
+              {{ t('app.common.cancel') }}
+            </button>
+            <button class="danger-button" type="button" @click="clearScanHistory">
+              {{ t('app.common.clear') }}
+            </button>
+          </div>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.ide-vs-checkbox :deep(.je-checkbox__input) {
-  @apply cursor-not-allowed;
+.settings-page {
+  @apply relative flex flex-col gap-10px;
+}
+
+.page-header {
+  @apply flex items-end justify-between gap-10px;
+
+  h2 {
+    @apply m-0 text-16px font-650;
+  }
+
+  span {
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.settings-grid {
+  @apply grid gap-25px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
+}
+
+.settings-panel {
+  @apply min-w-0 flex flex-col gap-8px;
+}
+
+.panel-header {
+  @apply min-h-34px flex flex-col gap-3px;
+
+  strong {
+    @apply text-13px font-650;
+  }
+
+  span {
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.toggle-row,
+.setting-row,
+.maintenance-box {
+  @apply min-h-42px flex items-center justify-between gap-12px;
+}
+
+.toggle-row {
+  @apply justify-start;
+}
+
+.checkbox-copy,
+.setting-copy,
+.maintenance-box div {
+  @apply min-w-0 flex flex-col gap-3px;
+
+  strong {
+    @apply text-13px font-620;
+  }
+
+  span {
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+  }
+}
+
+.inline-actions {
+  @apply flex items-center gap-8px;
+}
+
+.source-child-group {
+  @apply ml-24px pl-12px flex flex-col gap-7px border-l;
+  @apply border-$ui-border;
+
+  &.disabled {
+    @apply opacity-55;
+
+    .path-row span,
+    .subtle-count,
+    .empty-inline {
+      @apply color-$ui-muted-foreground;
+    }
+  }
+}
+
+.subtle-count,
+.empty-inline {
+  @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+}
+
+.path-list {
+  @apply max-h-128px overflow-auto;
+}
+
+.path-row {
+  @apply h-31px flex items-center gap-8px;
+
+  span {
+    @apply min-w-0 flex-1 truncate text-12px light:color-$gray-3 dark:color-$gray-12;
+  }
+
+  .icon-button {
+    @apply bg-transparent hover:bg-$ui-hover-background;
+  }
+}
+
+.empty-inline {
+  @apply py-9px;
+}
+
+.source-row {
+  @apply min-h-36px grid items-center gap-7px;
+  grid-template-columns: 84px minmax(160px, 1fr) 70px 28px;
+
+  @apply text-12px;
+}
+
+.path-input.compact {
+  @apply w-180px;
+}
+
+.dialog-backdrop {
+  @apply fixed left-0 right-0 bottom-0 top-40px z-40;
+  @apply bg-black/28 dark:bg-black/50;
+}
+
+.confirm-dialog {
+  @apply fixed left-1/2 top-[calc(40px+50%)] z-50 w-320px max-w-[calc(100vw-32px)];
+  @apply -translate-x-1/2 -translate-y-1/2 rounded-6px border p-14px shadow-xl outline-none;
+  @apply border-$ui-border bg-$ui-surface-background color-$ui-foreground;
+}
+
+.dialog-title {
+  @apply m-0 text-15px font-650 lh-20px;
+}
+
+.dialog-description {
+  @apply mt-8px mb-0 text-12px lh-17px light:color-$gray-6 dark:color-$gray-8;
+}
+
+.dialog-actions {
+  @apply mt-14px flex justify-end gap-8px;
+}
+
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .source-row {
+    grid-template-columns: 84px minmax(0, 1fr) 70px 28px;
+  }
 }
 </style>

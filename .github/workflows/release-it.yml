@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       increment:
-        description: 选择版本号递增方式
+        description: Version increment
         required: true
         default: patch
         type: choice
@@ -19,50 +19,57 @@ on:
 
 jobs:
   quality-check:
-    runs-on: ${{ matrix.platform }}
     strategy:
-      matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
-    timeout-minutes: 10
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set node ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
+      - uses: actions/checkout@v6
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build JetV-ui
-        run: pnpm ui:build
 
       - name: Lint
-        run: pnpm run lint
+        run: pnpm lint
 
       - name: Type check
-        run: pnpm run typecheck
+        run: pnpm typecheck
 
       - name: Build the project
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
 
-  release-ubuntu:
+  release-linux:
     runs-on: ubuntu-latest
     needs: quality-check
-    env:
-      PLATFORM: ubuntu
+    timeout-minutes: 30
     outputs:
-      latest_tag: ${{ steps.get_tag.outputs.latest_tag }}
+      latest_tag: ${{ steps.get-tag.outputs.latest_tag }}
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
@@ -72,95 +79,85 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "110297461+github-actions[bot]@users.noreply.github.com"
 
-      - name: Set node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build JetV-ui
-        run: pnpm ui:build
 
       - name: Release
-        run: npx release-it ${{ inputs.increment }} --verbose
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Upload Ubuntu Installer
-        run: gh release upload $(git describe --tags --abbrev=0) build/*.AppImage
+        run: pnpm release-it ${{ inputs.increment }} --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get the latest tag
-        id: get_tag
+      - name: Get latest tag
+        id: get-tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
-          echo "Intermediate tag: $latest_tag"
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Linux bundles
+        run: |
+          find src-tauri/target/release/bundle -type f -print0 \
+            | xargs -0 gh release upload "${{ steps.get-tag.outputs.latest_tag }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release-other-platforms:
-    runs-on: ${{ matrix.platform }}
-    needs: release-ubuntu
     strategy:
+      fail-fast: false
       matrix:
-        platform: [windows-latest, macos-latest]
-    env:
-      PLATFORM: ${{ matrix.platform == 'windows-latest' && 'windows' || matrix.platform == 'macos-latest' && 'mac' }}
+        os: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    needs: release-linux
+    timeout-minutes: 30
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Git config
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "110297461+github-actions[bot]@users.noreply.github.com"
-
-      - name: Set node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build JetV-ui
-        run: pnpm ui:build
-
-      - name: Update Version
+      - name: Update package version
         run: pnpm version ${{ inputs.increment }} --no-git-tag-version
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Build the project
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm build
 
-      - name: Get the latest tag
-        run: |
-          echo "Latest tag is: ${{ needs.release-ubuntu.outputs.latest_tag }}"
-
-      - name: Upload Windows Installer
-        if: matrix.platform == 'windows-latest'
-        run: gh release upload "${{ needs.release-ubuntu.outputs.latest_tag }}" build/*.exe
+      - name: Upload bundles
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload macOS Installer
-        if: matrix.platform == 'macos-latest'
-        run: gh release upload "${{ needs.release-ubuntu.outputs.latest_tag }}" build/*.dmg
+        run: |
+          find src-tauri/target/release/bundle -type f -print0 \
+            | xargs -0 gh release upload "${{ needs.release-linux.outputs.latest_tag }}" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

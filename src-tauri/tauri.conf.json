@@ -1,0 +1,46 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "CodeNest",
+  "version": "0.0.6",
+  "identifier": "com.midnightcrowing.codenest",
+  "build": {
+    "beforeDevCommand": "pnpm dev:vue",
+    "devUrl": "http://localhost:3001",
+    "beforeBuildCommand": "pnpm build:vue",
+    "frontendDist": "../dist/app"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "CodeNest",
+        "width": 1200,
+        "height": 650,
+        "minWidth": 800,
+        "minHeight": 650,
+        "decorations": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "../src/assets/app-icon.ico",
+      "../src/assets/app-icon.icns",
+      "../src/assets/app-icon.png"
+    ],
+    "resources": [
+      "../LICENSE.txt"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "installerIcon": "../src/assets/app-icon.ico"
+      }
+    }
+  }
+}

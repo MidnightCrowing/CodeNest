@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia'
 
-import { LanguageEnum, ThemeEnum } from '~/constants/appEnums'
-import { CodeEditorEnum, codeEditors } from '~/constants/codeEditor'
+import { LanguageEnum, ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
+import type { EditorCommandKey } from '~/constants/codeEditor'
+import {
+  CodeEditorEnum,
+  editorCommandKeys,
+  editorCommandOptions,
+  isCodeEditor,
+} from '~/constants/codeEditor'
 import { createPersistence } from '~/stores/helpers/persistence'
-
-const settingsPersistence = createPersistence<any>({
-  key: 'settings',
-})
 
 // Scanner settings shape
 export interface ScannerSettings {
@@ -24,9 +26,6 @@ export interface ScannerSettings {
     enabled: boolean
     stateDbPath: string
   }
-  visualStudio: {
-    enabled: boolean
-  }
 
   // import strategies
   openMode: 'auto' | 'specified'
@@ -34,13 +33,63 @@ export interface ScannerSettings {
   namePattern: string
 }
 
+export interface WebDavSettings {
+  endpoint: string
+  username: string
+  password: string
+  remotePath: string
+}
+
+interface StoredSettings {
+  theme?: ThemeEnum
+  themeColor?: ThemeColorEnum
+  language?: LanguageEnum
+  codeEditorsPath?: Partial<Record<EditorCommandKey | 'jetbrains', string>>
+  codeEditorsOpenInTerminal?: Partial<Record<EditorCommandKey, boolean>>
+  autoDetectedEditorCommands?: boolean
+  webdav?: Partial<WebDavSettings>
+  scanner?: Partial<Omit<ScannerSettings, 'jetbrains' | 'vscode'>> & {
+    jetbrains?: Partial<ScannerSettings['jetbrains']>
+    vscode?: Partial<ScannerSettings['vscode']>
+  }
+}
+
+const settingsPersistence = createPersistence<StoredSettings>({
+  key: 'settings',
+})
+
+function isTheme(value: unknown): value is ThemeEnum {
+  return Object.values(ThemeEnum).includes(value as ThemeEnum)
+}
+
+function isThemeColor(value: unknown): value is ThemeColorEnum {
+  return Object.values(ThemeColorEnum).includes(value as ThemeColorEnum)
+}
+
+function isLanguage(value: unknown): value is LanguageEnum {
+  return Object.values(LanguageEnum).includes(value as LanguageEnum)
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   // --- 基础配置项 ---
   const theme = ref<ThemeEnum>(ThemeEnum.Light)
+  const themeColor = ref<ThemeColorEnum>(ThemeColorEnum.Contrast)
   const language = ref<LanguageEnum>(LanguageEnum.English)
-  const codeEditorsPath = reactive<Record<CodeEditorEnum, string>>(
-    Object.fromEntries(Object.keys(codeEditors).map(key => [key, ''])) as Record<CodeEditorEnum, string>,
+  const loaded = ref(false)
+  let saveTimer: number | null = null
+  const codeEditorsPath = reactive<Record<EditorCommandKey, string>>(
+    Object.fromEntries(editorCommandKeys.map(key => [key, ''])) as Record<EditorCommandKey, string>,
   )
+  const codeEditorsOpenInTerminal = reactive<Record<EditorCommandKey, boolean>>(
+    Object.fromEntries(editorCommandOptions.map(option => [option.key, option.openInTerminal])) as Record<EditorCommandKey, boolean>,
+  )
+  const autoDetectedEditorCommands = ref(false)
+  const webdav = reactive<WebDavSettings>({
+    endpoint: '',
+    username: '',
+    password: '',
+    remotePath: 'CodeNest',
+  })
 
   // --- 扫描器配置 ---
   const scanner = reactive<ScannerSettings>({
@@ -56,33 +105,124 @@ export const useSettingsStore = defineStore('settings', () => {
       enabled: false,
       stateDbPath: '',
     },
-    visualStudio: {
-      enabled: false,
-    },
 
     openMode: 'auto',
     editor: CodeEditorEnum.VisualStudioCode,
     namePattern: '(demo|test)',
   })
+  const scannerEnabled = computed(() =>
+    (scanner.rootsEnabled && scanner.roots.length > 0)
+    || (
+      scanner.ideEnabled
+      && (
+        (scanner.jetbrains.enabled && !!scanner.jetbrains.configRootPath)
+        || (scanner.vscode.enabled && !!scanner.vscode.stateDbPath)
+      )
+    ),
+  )
+
+  function snapshotScanner(): ScannerSettings {
+    return {
+      rootsEnabled: scanner.rootsEnabled,
+      roots: [...scanner.roots],
+      ideEnabled: scanner.ideEnabled,
+      jetbrains: {
+        enabled: scanner.jetbrains.enabled,
+        configRootPath: scanner.jetbrains.configRootPath,
+      },
+      vscode: {
+        enabled: scanner.vscode.enabled,
+        stateDbPath: scanner.vscode.stateDbPath,
+      },
+      openMode: scanner.openMode,
+      editor: scanner.editor,
+      namePattern: scanner.namePattern,
+    }
+  }
+
+  function resetScanner() {
+    scanner.rootsEnabled = false
+    scanner.roots.splice(0, scanner.roots.length)
+    scanner.ideEnabled = false
+    scanner.jetbrains.enabled = false
+    scanner.jetbrains.configRootPath = ''
+    scanner.vscode.enabled = false
+    scanner.vscode.stateDbPath = ''
+    scanner.openMode = 'auto'
+    scanner.editor = CodeEditorEnum.VisualStudioCode
+    scanner.namePattern = '(demo|test)'
+  }
 
   // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
     try {
+      loaded.value = false
+      theme.value = ThemeEnum.Light
+      themeColor.value = ThemeColorEnum.Contrast
+      language.value = LanguageEnum.English
+      autoDetectedEditorCommands.value = false
+      for (const option of editorCommandOptions) {
+        codeEditorsPath[option.key] = ''
+        codeEditorsOpenInTerminal[option.key] = option.openInTerminal
+      }
+      webdav.endpoint = ''
+      webdav.username = ''
+      webdav.password = ''
+      webdav.remotePath = 'CodeNest'
+      resetScanner()
+
       const loadedData = await settingsPersistence.load()
       if (loadedData) {
-        theme.value = loadedData.theme ?? theme.value
-        language.value = loadedData.language ?? language.value
+        if (isTheme(loadedData.theme))
+          theme.value = loadedData.theme
+        if (isThemeColor(loadedData.themeColor))
+          themeColor.value = loadedData.themeColor
+        if (isLanguage(loadedData.language))
+          language.value = loadedData.language
 
-        // editors path
+        // editor launch commands
+        let shouldRedetectEditors = false
         if (loadedData.codeEditorsPath) {
-          for (const editor of Object.keys(codeEditorsPath) as CodeEditorEnum[]) {
-            codeEditorsPath[editor] = loadedData.codeEditorsPath[editor] ?? ''
+          for (const option of editorCommandOptions) {
+            if (!(option.key in loadedData.codeEditorsPath))
+              shouldRedetectEditors = true
+            const command = loadedData.codeEditorsPath[option.key]
+            codeEditorsPath[option.key] = typeof command === 'string' ? command : ''
           }
+
+          const legacyJetBrainsCommand = loadedData.codeEditorsPath.jetbrains
+          if (typeof legacyJetBrainsCommand === 'string' && legacyJetBrainsCommand.trim()) {
+            codeEditorsPath[CodeEditorEnum.IntellijIdea] ||= legacyJetBrainsCommand
+            shouldRedetectEditors = true
+          }
+        }
+
+        if (loadedData.codeEditorsOpenInTerminal) {
+          for (const option of editorCommandOptions) {
+            const openInTerminal = loadedData.codeEditorsOpenInTerminal[option.key]
+            if (typeof openInTerminal === 'boolean')
+              codeEditorsOpenInTerminal[option.key] = openInTerminal
+          }
+        }
+        if (typeof loadedData.autoDetectedEditorCommands === 'boolean')
+          autoDetectedEditorCommands.value = loadedData.autoDetectedEditorCommands
+        if (shouldRedetectEditors)
+          autoDetectedEditorCommands.value = false
+
+        if (loadedData.webdav) {
+          if (typeof loadedData.webdav.endpoint === 'string')
+            webdav.endpoint = loadedData.webdav.endpoint
+          if (typeof loadedData.webdav.username === 'string')
+            webdav.username = loadedData.webdav.username
+          if (typeof loadedData.webdav.password === 'string')
+            webdav.password = loadedData.webdav.password
+          if (typeof loadedData.webdav.remotePath === 'string')
+            webdav.remotePath = loadedData.webdav.remotePath
         }
 
         // scanner
         if (loadedData.scanner) {
-          const s = loadedData.scanner as Partial<ScannerSettings>
+          const s = loadedData.scanner
           // primitives
           if (typeof s.rootsEnabled === 'boolean')
             scanner.rootsEnabled = s.rootsEnabled
@@ -92,28 +232,33 @@ export const useSettingsStore = defineStore('settings', () => {
             scanner.ideEnabled = s.ideEnabled
           if (s.openMode === 'auto' || s.openMode === 'specified')
             scanner.openMode = s.openMode
-          if (s.editor)
+          if (isCodeEditor(s.editor))
             scanner.editor = s.editor
           if (typeof s.namePattern === 'string')
             scanner.namePattern = s.namePattern
 
           // nested
           if (s.jetbrains) {
-            scanner.jetbrains.enabled = s.jetbrains.enabled
-            scanner.jetbrains.configRootPath = s.jetbrains.configRootPath
+            if (typeof s.jetbrains.enabled === 'boolean')
+              scanner.jetbrains.enabled = s.jetbrains.enabled
+            if (typeof s.jetbrains.configRootPath === 'string')
+              scanner.jetbrains.configRootPath = s.jetbrains.configRootPath
           }
           if (s.vscode) {
-            scanner.vscode.enabled = s.vscode.enabled
-            scanner.vscode.stateDbPath = s.vscode.stateDbPath
-          }
-          if (s.visualStudio) {
-            scanner.visualStudio.enabled = s.visualStudio.enabled
+            if (typeof s.vscode.enabled === 'boolean')
+              scanner.vscode.enabled = s.vscode.enabled
+            if (typeof s.vscode.stateDbPath === 'string')
+              scanner.vscode.stateDbPath = s.vscode.stateDbPath
           }
         }
       }
+      loaded.value = true
+      if (!autoDetectedEditorCommands.value)
+        await detectMissingEditorCommands()
     }
     catch (error) {
       console.error('Error loading settings data:', error)
+      loaded.value = true
     }
   }
 
@@ -122,9 +267,13 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       await settingsPersistence.save({
         theme: theme.value,
+        themeColor: themeColor.value,
         language: language.value,
-        codeEditorsPath,
-        scanner,
+        codeEditorsPath: { ...codeEditorsPath },
+        codeEditorsOpenInTerminal: { ...codeEditorsOpenInTerminal },
+        autoDetectedEditorCommands: autoDetectedEditorCommands.value,
+        webdav: { ...webdav },
+        scanner: snapshotScanner(),
       })
     }
     catch (error) {
@@ -132,11 +281,68 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  function queueSaveSettings() {
+    if (!loaded.value)
+      return
+    if (saveTimer !== null)
+      window.clearTimeout(saveTimer)
+    saveTimer = window.setTimeout(() => {
+      saveTimer = null
+      void saveSettings()
+    }, 180)
+  }
+
+  watch(
+    [theme, themeColor, language, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
+    queueSaveSettings,
+    { deep: true },
+  )
+
+  async function detectEditorCommand(key: EditorCommandKey, overwrite = true): Promise<string | null> {
+    if (!overwrite && codeEditorsPath[key].trim())
+      return codeEditorsPath[key]
+
+    const command = await window.api.detectEditorCommand(key)
+    if (command) {
+      codeEditorsPath[key] = command
+      return command
+    }
+    return null
+  }
+
+  async function detectMissingEditorCommands() {
+    const detected = await Promise.all(
+      editorCommandKeys.map(key => detectEditorCommand(key, false)),
+    )
+    autoDetectedEditorCommands.value = true
+    if (detected.some(Boolean))
+      await saveSettings()
+    else
+      queueSaveSettings()
+  }
+
+  function getEditorLaunchConfig(editor: CodeEditorEnum) {
+    const key = editor
+    return {
+      key,
+      command: codeEditorsPath[key],
+      openInTerminal: codeEditorsOpenInTerminal[key],
+    }
+  }
+
   return {
     theme,
+    themeColor,
     language,
     codeEditorsPath,
+    codeEditorsOpenInTerminal,
+    autoDetectedEditorCommands,
+    webdav,
     scanner,
+    scannerEnabled,
+    detectEditorCommand,
+    detectMissingEditorCommands,
+    getEditorLaunchConfig,
     loadSettings,
     saveSettings,
   }
