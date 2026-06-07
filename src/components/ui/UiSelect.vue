@@ -39,6 +39,9 @@ const emit = defineEmits<{
   'blur': [event: FocusEvent]
 }>()
 
+const viewportRef = ref<HTMLElement | null>(null)
+const isScrollable = ref(false)
+
 const selectedOption = computed(() =>
   props.options.find(option => option.value === props.modelValue),
 )
@@ -50,6 +53,16 @@ const triggerLabel = computed(() =>
 function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
+
+async function updateScrollableState() {
+  await nextTick()
+  const viewport = viewportRef.value
+  isScrollable.value = !!viewport && viewport.scrollHeight > viewport.clientHeight + 1
+}
+
+watch(() => props.options.length, () => {
+  void updateScrollableState()
+})
 </script>
 
 <template>
@@ -65,7 +78,9 @@ function handleBlur(event: FocusEvent) {
       @blur="handleBlur"
     >
       <SelectValue :placeholder="placeholder">
-        <span class="ui-select-label">{{ selectedOption?.label || placeholder }}</span>
+        <span class="ui-select-label">
+          {{ selectedOption?.label || placeholder }}
+        </span>
         <span v-if="selectedOption?.count !== undefined" class="ui-select-count-badge">
           {{ selectedOption.count }}
         </span>
@@ -82,7 +97,12 @@ function handleBlur(event: FocusEvent) {
         :side-offset="5"
         :style="{ minWidth, width: contentWidth }"
       >
-        <SelectViewport class="ui-select-viewport">
+        <SelectViewport
+          ref="viewportRef"
+          class="ui-select-viewport"
+          :class="{ scrollable: isScrollable }"
+          @vue:mounted="updateScrollableState"
+        >
           <SelectItem
             v-for="option in options"
             :key="option.value"
@@ -150,23 +170,41 @@ function handleBlur(event: FocusEvent) {
     0 2px 8px rgb(0 0 0 / 8%);
 }
 
-.ui-select-viewport {
+.ui-select-viewport[data-reka-select-viewport] {
   @apply overflow-y-auto;
   max-height: min(260px, var(--reka-select-content-available-height, 260px));
+  scrollbar-width: auto;
+}
+
+.ui-select-viewport[data-reka-select-viewport].scrollable {
+  @apply pr-2px;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.45) transparent;
 }
 
-.ui-select-viewport::-webkit-scrollbar {
-  @apply w-6px;
+.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  display: block;
 }
 
-.ui-select-viewport::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-$gray-8/55;
+.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
-.ui-select-viewport::-webkit-scrollbar-track {
+.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-thumb {
+  @apply rounded-full border-l-2px border-r-0;
+  border-color: transparent;
+  background-clip: content-box;
+  background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 58%);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 42%);
+  }
+}
+
+.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
 
@@ -175,7 +213,8 @@ function handleBlur(event: FocusEvent) {
   @apply flex items-center cursor-pointer select-none text-12px;
 
   &[data-highlighted] {
-    @apply bg-$ui-hover-background color-$ui-accent-foreground;
+    @apply color-$ui-accent-foreground;
+    background-color: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
   }
 
   &[data-disabled] {

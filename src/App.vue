@@ -16,7 +16,10 @@ import { applyTheme } from '~/utils/theme'
 import Home from '~/views/HomeView/HomeView.vue'
 
 const settingsStore = useSettingsStore()
+const projectsStore = useProjectsStore()
+const editorLangGroupsStore = useEditorLangGroupsStore()
 const { locale } = useI18n()
+const useNativeTitleBar = navigator.userAgent.includes('Mac OS') || navigator.platform.toLowerCase().includes('mac')
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
@@ -33,20 +36,31 @@ async function applyLanguage(lang: LanguageEnum) {
   locale.value = lang
 }
 
+function runDeferred(task: () => void) {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(task, { timeout: 1600 })
+    return
+  }
+  globalThis.setTimeout(task, 900)
+}
+
+if (settingsStore.hydrateCachedSettings()) {
+  void applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor)
+  void applyLanguage(settingsStore.language)
+}
+void projectsStore.loadProjects()
+
 onMounted(async () => {
   await settingsStore.loadSettings()
 
   await Promise.all([
-    applyTheme(settingsStore.theme, settingsStore.themeColor),
+    applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor),
     applyLanguage(settingsStore.language),
   ])
 
-  await Promise.all([
-    useProjectsStore().loadProjects(),
-    useEditorLangGroupsStore().loadEditorLangGroupsData(),
-  ])
-
-  void addNewProjectsFromScanner()
+  runDeferred(() => {
+    void editorLangGroupsStore.loadEditorLangGroupsData().then(() => addNewProjectsFromScanner())
+  })
 })
 
 provide('activatedView', activatedView)
@@ -54,7 +68,7 @@ provide('activatedView', activatedView)
 
 <template>
   <main class="app-shell">
-    <WindowHeader shrink-0 />
+    <WindowHeader v-if="!useNativeTitleBar" shrink-0 />
     <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />
     </KeepAlive>

@@ -7,9 +7,12 @@ import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { showPop as showLanguagePop } from '~/components/LanguagePop/LanguagePopProvider'
 import { showNoIdePathDialog } from '~/components/NoIdePathDialog'
 import { showRemoveDialog } from '~/components/RemoveProjectDialog'
+import type { UiActionMenuItem } from '~/components/ui/actionMenu'
+import UiActionMenu from '~/components/ui/UiActionMenu.vue'
 import UiScrollArea from '~/components/ui/UiScrollArea.vue'
+import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
-import { ViewEnum } from '~/constants/appEnums'
+import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import { codeEditors } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
@@ -21,6 +24,8 @@ import {
   initializeNewProjectState,
   initializeUpdateProjectState,
 } from '~/views/ProjectEditorView'
+
+import LanguageFilterSelect from './LanguageFilterSelect.vue'
 
 defineOptions({
   name: 'Home',
@@ -36,6 +41,7 @@ const MIN_SYNC_BUSY_MS = 280
 interface FilterOption<T extends string> {
   value: T
   label: string
+  color?: string
   count?: number
 }
 
@@ -81,9 +87,9 @@ const sortOptions = computed<Array<FilterOption<SortKey>>>(() => [
   { value: 'group', label: t('app.home.sort.group') },
 ])
 
-const layoutOptions = computed<Array<{ value: LayoutMode, label: string }>>(() => [
-  { value: 'list', label: t('app.home.layout.list') },
-  { value: 'grid', label: t('app.home.layout.grid') },
+const layoutOptions = computed<Array<{ value: LayoutMode, label: string, icon: string }>>(() => [
+  { value: 'list', label: t('app.home.layout.list'), icon: 'i-lucide:list' },
+  { value: 'grid', label: t('app.home.layout.grid'), icon: 'i-lucide:layout-grid' },
 ])
 
 const languages = computed(() =>
@@ -97,6 +103,7 @@ const languageOptions = computed(() => [
   ...languages.value.map(language => ({
     value: language.text,
     label: language.text,
+    color: language.color,
     count: language.count,
   })),
 ])
@@ -156,7 +163,52 @@ const activeFilterCount = computed(() =>
   + Number(groupFilter.value !== 'all'),
 )
 
+function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
+  return [
+    {
+      id: 'open',
+      label: t('app.home.actions.open_project'),
+      disabled: !project.isExists,
+    },
+    {
+      id: 'explorer',
+      label: t('app.home.actions.open_explorer'),
+      disabled: !project.isExists,
+      separatorBefore: true,
+    },
+    {
+      id: 'terminal',
+      label: t('app.home.actions.open_terminal'),
+      disabled: !project.isExists,
+    },
+    {
+      id: 'copy',
+      label: t('app.home.actions.copy_path'),
+    },
+    {
+      id: 'edit',
+      label: t('app.home.actions.edit'),
+      separatorBefore: true,
+    },
+    {
+      id: 'pin',
+      label: pinButtonTitle(project),
+      icon: pinButtonIcon(project),
+    },
+    {
+      id: 'remove',
+      label: t('app.home.actions.remove'),
+      icon: 'i-lucide:trash-2',
+      danger: true,
+      separatorBefore: true,
+    },
+  ]
+}
+
 function compareProjects(a: LocalProject, b: LocalProject) {
+  if (!!a.isPinned !== !!b.isPinned)
+    return a.isPinned ? -1 : 1
+
   switch (sortKey.value) {
     case 'name':
       return a.name.localeCompare(b.name)
@@ -259,6 +311,48 @@ function copyButtonClass(project: LocalProject) {
   return {
     'copy-success': status === 'success',
     'copy-error': status === 'error',
+  }
+}
+
+function pinButtonTitle(project: LocalProject) {
+  return project.isPinned
+    ? t('app.home.actions.unpin')
+    : t('app.home.actions.pin')
+}
+
+function pinButtonIcon(project: LocalProject) {
+  return project.isPinned
+    ? 'i-lucide:pin-off'
+    : 'i-lucide:pin'
+}
+
+async function toggleProjectPinned(project: LocalProject) {
+  await projectsStore.toggleProjectPinned(project.appendTime)
+}
+
+function handleProjectMenuSelect(project: LocalProject, action: string) {
+  switch (action) {
+    case 'pin':
+      void toggleProjectPinned(project)
+      break
+    case 'open':
+      void openProject(project)
+      break
+    case 'explorer':
+      openInExplorer(project)
+      break
+    case 'terminal':
+      openInTerminal(project)
+      break
+    case 'copy':
+      void copyProjectPath(project)
+      break
+    case 'edit':
+      editProject(project)
+      break
+    case 'remove':
+      showRemoveDialog(project)
+      break
   }
 }
 
@@ -374,10 +468,14 @@ function formatTime(timestamp: number) {
     minute: '2-digit',
   }).format(new Date(timestamp))
 }
+
+function updateLayoutMode(value: string) {
+  layoutMode.value = value as LayoutMode
+}
 </script>
 
 <template>
-  <main class="workspace-shell">
+  <main class="workspace-shell" :class="{ 'theme-dark': settingsStore.theme === ThemeEnum.Dark }">
     <section class="workspace-topbar">
       <div class="title-block">
         <div class="title-row">
@@ -440,7 +538,7 @@ function formatTime(timestamp: number) {
         min-width="128px"
       />
 
-      <UiSelect
+      <LanguageFilterSelect
         v-model="languageFilter"
         :options="languageOptions"
         :placeholder="t('app.home.filters.language')"
@@ -471,20 +569,13 @@ function formatTime(timestamp: number) {
         {{ t('app.home.clear_count', { count: activeFilterCount }) }}
       </button>
 
-      <div class="layout-switch" :aria-label="t('app.home.layout.label')">
-        <button
-          v-for="option in layoutOptions"
-          :key="option.value"
-          class="layout-button"
-          :class="{ active: layoutMode === option.value }"
-          type="button"
-          :aria-pressed="layoutMode === option.value"
-          @click="layoutMode = option.value"
-        >
-          <span :class="option.value === 'list' ? 'i-lucide:list' : 'i-lucide:layout-grid'" />
-          {{ option.label }}
-        </button>
-      </div>
+      <UiSegmentedControl
+        class="layout-switch"
+        :model-value="layoutMode"
+        :options="layoutOptions"
+        :aria-label="t('app.home.layout.label')"
+        @update:model-value="updateLayoutMode"
+      />
     </section>
 
     <section class="project-table" :class="`layout-${layoutMode}`" :aria-label="t('app.home.project_list')">
@@ -503,210 +594,232 @@ function formatTime(timestamp: number) {
       </div>
 
       <UiScrollArea v-else-if="layoutMode === 'list'" class="table-body">
-        <div
+        <UiActionMenu
           v-for="project in filteredProjects"
           :key="project.appendTime"
-          class="project-grid project-row"
-          :class="{ missing: !project.isExists }"
-          tabindex="0"
-          @click="openProject(project)"
-          @keydown.enter="openProject(project)"
-          @keydown.space.prevent="openProject(project)"
+          mode="context"
+          :items="projectMenuItems(project)"
+          :aria-label="t('app.home.actions.more')"
+          @select="action => handleProjectMenuSelect(project, action)"
         >
-          <div class="project-main">
-            <div class="project-title-line">
-              <span class="project-title">
-                <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span><span class="project-name">{{ project.name }}</span>
-              </span>
-              <span class="editor-chip">
-                <span :class="editorIconClasses(project.defaultOpen)" />
-                <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
-              </span>
-            </div>
-            <div class="project-path" :title="project.path">
-              {{ project.path }}
-            </div>
-            <div v-if="project.fromUrl || project.fromName" class="project-source">
-              {{ project.kind === ProjectKind.FORK ? t('app.home.source.forked_from') : t('app.home.source.cloned_from') }}
-              {{ project.fromName || project.fromUrl }}
-            </div>
-          </div>
-
-          <span class="kind-pill" :class="kindClass(project.kind)">
-            {{ kindLabel(project.kind) }}
-          </span>
-          <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
-            <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
-            {{ project.mainLang || t('app.common.unknown') }}
-          </button>
-          <span
-            v-if="project.license && project.license !== LicenseEnum.NONE"
-            class="license-cell"
-          >
-            {{ shortLicense(project.license) }}
-          </span>
-          <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
-          <span class="updated-cell">{{ formatTime(project.appendTime) }}</span>
-
-          <div class="row-actions">
-            <button
-              class="icon-button primary-action"
-              type="button"
-              :title="t('app.home.actions.open_project')"
-              :aria-label="t('app.home.actions.open_project')"
-              :disabled="!project.isExists"
-              @click.stop="openProject(project)"
-            >
-              <span class="i-lucide:external-link" />
-            </button>
-            <button
-              class="icon-button"
-              type="button"
-              :title="t('app.home.actions.open_explorer')"
-              :aria-label="t('app.home.actions.open_explorer')"
-              :disabled="!project.isExists"
-              @click.stop="openInExplorer(project)"
-            >
-              <span class="i-lucide:folder" />
-            </button>
-            <button
-              class="icon-button"
-              type="button"
-              :title="t('app.home.actions.open_terminal')"
-              :aria-label="t('app.home.actions.open_terminal')"
-              :disabled="!project.isExists"
-              @click.stop="openInTerminal(project)"
-            >
-              <span class="i-lucide:square-terminal" />
-            </button>
-            <button
-              class="icon-button"
-              :class="copyButtonClass(project)"
-              type="button"
-              :title="copyButtonTitle(project)"
-              :aria-label="copyButtonTitle(project)"
-              @click.stop="copyProjectPath(project)"
-            >
-              <span :class="copyButtonIcon(project)" />
-            </button>
-            <button class="icon-button" type="button" :title="t('app.home.actions.edit')" :aria-label="t('app.home.actions.edit')" @click.stop="editProject(project)">
-              <span class="i-lucide:pencil" />
-            </button>
-            <button
-              class="icon-button danger"
-              type="button"
-              :title="t('app.home.actions.remove')"
-              :aria-label="t('app.home.actions.remove')"
-              @click.stop="showRemoveDialog(project)"
-            >
-              <span class="i-lucide:trash-2" />
-            </button>
-          </div>
-        </div>
-      </UiScrollArea>
-
-      <UiScrollArea v-else class="cards-scroll">
-        <div class="cards-body">
-          <article
-            v-for="project in filteredProjects"
-            :key="project.appendTime"
-            class="project-card"
+          <div
+            class="project-grid project-row"
             :class="{ missing: !project.isExists }"
             tabindex="0"
             @click="openProject(project)"
             @keydown.enter="openProject(project)"
             @keydown.space.prevent="openProject(project)"
           >
-            <header class="card-header">
-              <div class="card-title">
-                <strong>
-                  <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span>{{ project.name }}
-                </strong>
+            <div class="project-main">
+              <div class="project-title-line">
+                <span class="project-title">
+                  <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
+                  <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span><span class="project-name">{{ project.name }}</span>
+                </span>
+                <span class="editor-chip">
+                  <span :class="editorIconClasses(project.defaultOpen)" />
+                  <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
+                </span>
               </div>
-              <span class="kind-pill" :class="kindClass(project.kind)">
-                {{ kindLabel(project.kind) }}
-              </span>
-            </header>
-
-            <div class="card-path" :title="project.path">
-              {{ project.path }}
+              <div class="project-path" :title="project.path">
+                {{ project.path }}
+              </div>
+              <div v-if="project.fromUrl || project.fromName" class="project-source">
+                {{ project.kind === ProjectKind.FORK ? t('app.home.source.forked_from') : t('app.home.source.cloned_from') }}
+                {{ project.fromName || project.fromUrl }}
+              </div>
             </div>
 
-            <div class="card-meta">
-              <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
-                <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
-                {{ project.mainLang || t('app.common.unknown') }}
-              </button>
-              <span
-                v-if="project.license && project.license !== LicenseEnum.NONE"
-                class="license-cell"
+            <span class="kind-pill" :class="kindClass(project.kind)">
+              {{ kindLabel(project.kind) }}
+            </span>
+            <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
+              <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
+              {{ project.mainLang || t('app.common.unknown') }}
+            </button>
+            <span
+              v-if="project.license && project.license !== LicenseEnum.NONE"
+              class="license-cell"
+            >
+              {{ shortLicense(project.license) }}
+            </span>
+            <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
+            <span class="updated-cell">{{ formatTime(project.appendTime) }}</span>
+
+            <div class="row-actions">
+              <button
+                class="icon-button primary-action"
+                type="button"
+                :title="t('app.home.actions.open_project')"
+                :aria-label="t('app.home.actions.open_project')"
+                :disabled="!project.isExists"
+                @click.stop="openProject(project)"
               >
-                {{ shortLicense(project.license) }}
-              </span>
-              <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
+                <span class="i-lucide:external-link" />
+              </button>
+              <button
+                class="icon-button"
+                type="button"
+                :title="t('app.home.actions.open_explorer')"
+                :aria-label="t('app.home.actions.open_explorer')"
+                :disabled="!project.isExists"
+                @click.stop="openInExplorer(project)"
+              >
+                <span class="i-lucide:folder" />
+              </button>
+              <button
+                class="icon-button"
+                type="button"
+                :title="t('app.home.actions.open_terminal')"
+                :aria-label="t('app.home.actions.open_terminal')"
+                :disabled="!project.isExists"
+                @click.stop="openInTerminal(project)"
+              >
+                <span class="i-lucide:square-terminal" />
+              </button>
+              <button
+                class="icon-button copy-action"
+                :class="copyButtonClass(project)"
+                type="button"
+                :title="copyButtonTitle(project)"
+                :aria-label="copyButtonTitle(project)"
+                @click.stop="copyProjectPath(project)"
+              >
+                <span :class="copyButtonIcon(project)" />
+              </button>
+              <UiActionMenu
+                :items="projectMenuItems(project)"
+                :aria-label="t('app.home.actions.more')"
+                @select="action => handleProjectMenuSelect(project, action)"
+              >
+                <button
+                  class="icon-button more-action"
+                  type="button"
+                  :title="t('app.home.actions.more')"
+                  :aria-label="t('app.home.actions.more')"
+                  @click.stop
+                >
+                  <span class="i-lucide:more-horizontal" />
+                </button>
+              </UiActionMenu>
             </div>
+          </div>
+        </UiActionMenu>
+      </UiScrollArea>
 
-            <footer class="card-footer">
-              <span class="editor-chip">
-                <span :class="editorIconClasses(project.defaultOpen)" />
-                <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
-              </span>
-              <div class="row-actions">
-                <button
-                  class="icon-button primary-action"
-                  type="button"
-                  :title="t('app.home.actions.open_project')"
-                  :aria-label="t('app.home.actions.open_project')"
-                  :disabled="!project.isExists"
-                  @click.stop="openProject(project)"
-                >
-                  <span class="i-lucide:external-link" />
-                </button>
-                <button
-                  class="icon-button"
-                  type="button"
-                  :title="t('app.home.actions.open_explorer')"
-                  :aria-label="t('app.home.actions.open_explorer')"
-                  :disabled="!project.isExists"
-                  @click.stop="openInExplorer(project)"
-                >
-                  <span class="i-lucide:folder" />
-                </button>
-                <button
-                  class="icon-button"
-                  type="button"
-                  :title="t('app.home.actions.open_terminal')"
-                  :aria-label="t('app.home.actions.open_terminal')"
-                  :disabled="!project.isExists"
-                  @click.stop="openInTerminal(project)"
-                >
-                  <span class="i-lucide:square-terminal" />
-                </button>
-                <button
-                  class="icon-button"
-                  :class="copyButtonClass(project)"
-                  type="button"
-                  :title="copyButtonTitle(project)"
-                  :aria-label="copyButtonTitle(project)"
-                  @click.stop="copyProjectPath(project)"
-                >
-                  <span :class="copyButtonIcon(project)" />
-                </button>
-                <button class="icon-button" type="button" :title="t('app.home.actions.edit')" :aria-label="t('app.home.actions.edit')" @click.stop="editProject(project)">
-                  <span class="i-lucide:pencil" />
-                </button>
-                <button
-                  class="icon-button danger"
-                  type="button"
-                  :title="t('app.home.actions.remove')"
-                  :aria-label="t('app.home.actions.remove')"
-                  @click.stop="showRemoveDialog(project)"
-                >
-                  <span class="i-lucide:trash-2" />
-                </button>
+      <UiScrollArea v-else class="cards-scroll">
+        <div class="cards-body">
+          <UiActionMenu
+            v-for="project in filteredProjects"
+            :key="project.appendTime"
+            mode="context"
+            :items="projectMenuItems(project)"
+            :aria-label="t('app.home.actions.more')"
+            @select="action => handleProjectMenuSelect(project, action)"
+          >
+            <article
+              class="project-card"
+              :class="{ missing: !project.isExists }"
+              tabindex="0"
+              @click="openProject(project)"
+              @keydown.enter="openProject(project)"
+              @keydown.space.prevent="openProject(project)"
+            >
+              <header class="card-header">
+                <div class="card-title">
+                  <strong>
+                    <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
+                    <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span>{{ project.name }}
+                  </strong>
+                </div>
+                <span class="kind-pill" :class="kindClass(project.kind)">
+                  {{ kindLabel(project.kind) }}
+                </span>
+              </header>
+
+              <div class="card-path" :title="project.path">
+                {{ project.path }}
               </div>
-            </footer>
-          </article>
+
+              <div class="card-meta">
+                <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
+                  <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
+                  {{ project.mainLang || t('app.common.unknown') }}
+                </button>
+                <span
+                  v-if="project.license && project.license !== LicenseEnum.NONE"
+                  class="license-cell"
+                >
+                  {{ shortLicense(project.license) }}
+                </span>
+                <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
+              </div>
+
+              <footer class="card-footer">
+                <span class="editor-chip">
+                  <span :class="editorIconClasses(project.defaultOpen)" />
+                  <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
+                </span>
+                <div class="row-actions">
+                  <button
+                    class="icon-button primary-action"
+                    type="button"
+                    :title="t('app.home.actions.open_project')"
+                    :aria-label="t('app.home.actions.open_project')"
+                    :disabled="!project.isExists"
+                    @click.stop="openProject(project)"
+                  >
+                    <span class="i-lucide:external-link" />
+                  </button>
+                  <button
+                    class="icon-button"
+                    type="button"
+                    :title="t('app.home.actions.open_explorer')"
+                    :aria-label="t('app.home.actions.open_explorer')"
+                    :disabled="!project.isExists"
+                    @click.stop="openInExplorer(project)"
+                  >
+                    <span class="i-lucide:folder" />
+                  </button>
+                  <button
+                    class="icon-button"
+                    type="button"
+                    :title="t('app.home.actions.open_terminal')"
+                    :aria-label="t('app.home.actions.open_terminal')"
+                    :disabled="!project.isExists"
+                    @click.stop="openInTerminal(project)"
+                  >
+                    <span class="i-lucide:square-terminal" />
+                  </button>
+                  <button
+                    class="icon-button copy-action"
+                    :class="copyButtonClass(project)"
+                    type="button"
+                    :title="copyButtonTitle(project)"
+                    :aria-label="copyButtonTitle(project)"
+                    @click.stop="copyProjectPath(project)"
+                  >
+                    <span :class="copyButtonIcon(project)" />
+                  </button>
+                  <UiActionMenu
+                    :items="projectMenuItems(project)"
+                    :aria-label="t('app.home.actions.more')"
+                    @select="action => handleProjectMenuSelect(project, action)"
+                  >
+                    <button
+                      class="icon-button more-action"
+                      type="button"
+                      :title="t('app.home.actions.more')"
+                      :aria-label="t('app.home.actions.more')"
+                      @click.stop
+                    >
+                      <span class="i-lucide:more-horizontal" />
+                    </button>
+                  </UiActionMenu>
+                </div>
+              </footer>
+            </article>
+          </UiActionMenu>
         </div>
       </UiScrollArea>
     </section>
@@ -815,21 +928,6 @@ function formatTime(timestamp: number) {
   @apply text-11px font-650 bg-$ui-hover-background color-$ui-muted-foreground;
 }
 
-.layout-switch {
-  @apply h-28px rounded-5px p-2px flex items-center;
-  @apply bg-$ui-control-background;
-}
-
-.layout-button {
-  @apply h-24px border-0 rounded-4px px-7px bg-transparent;
-  @apply inline-flex items-center gap-5px cursor-pointer text-12px;
-  @apply color-$ui-muted-foreground;
-
-  &.active {
-    @apply bg-$ui-surface-background color-$ui-foreground;
-  }
-}
-
 .spinning {
   animation: spin-sync 0.8s linear infinite;
 }
@@ -885,7 +983,7 @@ function formatTime(timestamp: number) {
 }
 
 .project-title {
-  @apply min-w-0 flex items-baseline truncate;
+  @apply min-w-0 flex items-center truncate;
 }
 
 .project-group-prefix {
@@ -896,6 +994,10 @@ function formatTime(timestamp: number) {
   @apply min-w-0 truncate text-13px font-620 light:color-$gray-1 dark:color-$gray-13;
 }
 
+.pinned-marker {
+  @apply mr-4px shrink-0 text-11px color-$ui-primary;
+}
+
 .project-path,
 .project-source,
 .updated-cell {
@@ -903,7 +1005,7 @@ function formatTime(timestamp: number) {
 }
 
 .editor-chip {
-  @apply min-w-0 shrink-0 max-w-120px rounded-4px px-5px py-2px;
+  @apply min-w-0 w-fit shrink-0 max-w-180px rounded-4px px-5px py-2px;
   @apply inline-flex items-center gap-4px text-11px;
   @apply bg-$ui-hover-background;
 
@@ -937,15 +1039,33 @@ function formatTime(timestamp: number) {
 }
 
 .kind-mine {
-  @apply light:bg-$blue-12 dark:bg-$blue-1 color-$blue-5;
+  @apply [--kind-color:var(--blue-5)];
+  @apply [--kind-bg-light-strength:13%] [--kind-bg-dark-strength:18%];
+  @apply [--kind-text-light:var(--blue-5)] [--kind-text-dark:var(--blue-8)];
 }
 
 .kind-fork {
-  @apply light:bg-$purple-10 dark:bg-$purple-1 color-$purple-5;
+  @apply [--kind-color:var(--purple-5)];
+  @apply [--kind-bg-light-strength:14%] [--kind-bg-dark-strength:20%];
+  @apply [--kind-text-light:color-mix(in_srgb,var(--purple-5)_92%,var(--gray-1))];
+  @apply [--kind-text-dark:color-mix(in_srgb,var(--purple-8)_86%,var(--gray-1))];
 }
 
 .kind-clone {
-  @apply light:bg-$yellow-10 dark:bg-$yellow-1 color-$yellow-5;
+  @apply [--kind-color:var(--yellow-5)] [--kind-bg-dark-color:var(--yellow-3)] [--kind-bg-dark-base:var(--gray-1)];
+  @apply [--kind-bg-light-strength:27%] [--kind-bg-dark-strength:30%];
+  @apply [--kind-text-light:color-mix(in_srgb,var(--yellow-2)_96%,var(--gray-1))];
+  @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_80%,var(--gray-1))];
+}
+
+.kind-pill {
+  @apply [background:color-mix(in_srgb,var(--kind-color)_var(--kind-bg-light-strength),var(--ui-surface-background))];
+  @apply [color:var(--kind-text-light)];
+}
+
+.workspace-shell.theme-dark .kind-pill {
+  @apply [background:color-mix(in_srgb,var(--kind-bg-dark-color,var(--kind-color))_var(--kind-bg-dark-strength),var(--kind-bg-dark-base,var(--ui-surface-background)))];
+  @apply [color:var(--kind-text-dark)];
 }
 
 .row-actions {
@@ -1015,7 +1135,7 @@ function formatTime(timestamp: number) {
   @apply min-w-0 flex flex-col gap-2px;
 
   strong {
-    @apply truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
+    @apply min-w-0 inline-flex items-center truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
   }
 }
 
@@ -1032,7 +1152,7 @@ function formatTime(timestamp: number) {
   grid-template-columns: minmax(0, 1fr) max-content;
 
   .editor-chip {
-    @apply w-fit max-w-160px shrink justify-self-start;
+    @apply w-fit max-w-180px shrink justify-self-start;
   }
 
   .row-actions {
@@ -1094,7 +1214,7 @@ function formatTime(timestamp: number) {
   }
 
   .project-grid {
-    grid-template-columns: minmax(210px, 1fr) 76px 146px;
+    grid-template-columns: minmax(210px, 1fr) 76px 158px;
   }
 
   .project-grid > :nth-child(3),
@@ -1136,7 +1256,11 @@ function formatTime(timestamp: number) {
   }
 
   .project-grid {
-    grid-template-columns: minmax(180px, 1fr) 76px 120px;
+    grid-template-columns: minmax(180px, 1fr) 76px 84px;
+  }
+
+  .row-actions .icon-button:not(.primary-action):not(.copy-action):not(.more-action) {
+    display: none;
   }
 
   .row-actions {

@@ -1,5 +1,6 @@
 import type { ThemeEnum } from '~/constants/appEnums'
 import type { EditorCommandKey } from '~/constants/codeEditor'
+import type { LicenseEnum } from '~/constants/license'
 import type { DataFileEnum } from '~/stores/helpers/persistence'
 import type { ScannerSettings, WebDavSettings } from '~/stores/settingsStore'
 import type { LinguistResult } from '~/types/linguist'
@@ -75,10 +76,17 @@ interface ScanItem {
   langGroup?: LangGroupItem[]
   ide?: string | null
   error?: string
+  signature?: string
+}
+
+interface ScanCacheEntry extends ScanItem {
+  signature: string
+  license?: LicenseEnum
 }
 
 export interface ScanStartPayload extends Omit<ScannerSettings, 'openMode' | 'editor' | 'namePattern'> {
   existingPaths: string[]
+  cacheEntries: ScanCacheEntry[]
 }
 
 interface ScanResult {
@@ -120,6 +128,7 @@ declare global {
       checkUpdate: () => Promise<UpdateCheckResult>
 
       scanProjects: (payload: ScanStartPayload) => Promise<ScanResult>
+      getSystemAccentColor: (currentTheme?: ThemeEnum) => Promise<HexColor | null>
       detectJetBrainsConfigRootPath: () => Promise<string | null>
       detectVscodeStateDbPath: () => Promise<string | null>
       webdavTestConnection: (config: WebDavSettings) => Promise<WebDavSyncResult>

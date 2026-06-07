@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import {
+  RadioGroupItem,
+  RadioGroupRoot,
+} from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 
 import UiSelect from '~/components/ui/UiSelect.vue'
@@ -8,6 +12,7 @@ import { applyTheme } from '~/utils/theme'
 
 const settings = useSettingsStore()
 const { locale, t } = useI18n()
+const customColorInputRef = ref<HTMLInputElement | null>(null)
 
 const themeOptions = computed(() => [
   { value: ThemeEnum.Light, label: t('app.settings.appearance.theme.light') },
@@ -21,19 +26,21 @@ const languageOptions = computed(() => [
 
 const themeColorOptions = computed(() => [
   { value: ThemeColorEnum.Contrast, label: t('app.settings.appearance.theme_color.contrast') },
+  { value: ThemeColorEnum.System, label: t('app.settings.appearance.theme_color.system') },
   { value: ThemeColorEnum.Blue, label: t('app.settings.appearance.theme_color.blue') },
   { value: ThemeColorEnum.Green, label: t('app.settings.appearance.theme_color.green') },
   { value: ThemeColorEnum.Teal, label: t('app.settings.appearance.theme_color.teal') },
   { value: ThemeColorEnum.Orange, label: t('app.settings.appearance.theme_color.orange') },
   { value: ThemeColorEnum.Purple, label: t('app.settings.appearance.theme_color.purple') },
   { value: ThemeColorEnum.Red, label: t('app.settings.appearance.theme_color.red') },
+  { value: ThemeColorEnum.Custom, label: t('app.settings.appearance.theme_color.custom') },
 ])
 
 const appTheme = computed({
   get: () => settings.theme,
   set: (theme: ThemeEnum) => {
     settings.theme = theme
-    void applyTheme(theme, settings.themeColor)
+    void applyTheme(theme, settings.themeColor, settings.customThemeColor)
   },
 })
 
@@ -41,7 +48,16 @@ const appThemeColor = computed({
   get: () => settings.themeColor,
   set: (themeColor: ThemeColorEnum) => {
     settings.themeColor = themeColor
-    void applyTheme(settings.theme, themeColor)
+    void applyTheme(settings.theme, themeColor, settings.customThemeColor)
+  },
+})
+
+const appCustomThemeColor = computed({
+  get: () => settings.customThemeColor,
+  set: (customThemeColor: string) => {
+    settings.customThemeColor = customThemeColor
+    settings.themeColor = ThemeColorEnum.Custom
+    void applyTheme(settings.theme, ThemeColorEnum.Custom, customThemeColor)
   },
 })
 
@@ -52,6 +68,33 @@ const appLanguage = computed({
     locale.value = language
   },
 })
+
+function selectThemeColor(value: unknown) {
+  if (!Object.values(ThemeColorEnum).includes(value as ThemeColorEnum))
+    return
+
+  const themeColor = value as ThemeColorEnum
+  appThemeColor.value = themeColor
+  if (themeColor === ThemeColorEnum.Custom) {
+    void nextTick(() => {
+      customColorInputRef.value?.click()
+    })
+  }
+}
+
+function updateCustomThemeColor(event: Event) {
+  const input = event.target as HTMLInputElement
+  appCustomThemeColor.value = input.value
+}
+
+function themeColorButtonStyle(themeColor: ThemeColorEnum) {
+  if (themeColor !== ThemeColorEnum.Custom)
+    return undefined
+
+  return {
+    '--swatch-color': settings.customThemeColor,
+  }
+}
 </script>
 
 <template>
@@ -80,21 +123,39 @@ const appLanguage = computed({
           <strong>{{ t('app.settings.appearance.theme_color.title') }}</strong>
           <span>{{ t('app.settings.appearance.theme_color.desc') }}</span>
         </div>
-        <div class="theme-color-grid" :aria-label="t('app.settings.appearance.theme_color.title')">
-          <button
-            v-for="option in themeColorOptions"
-            :key="option.value"
-            class="theme-color-button"
-            :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
-            type="button"
-            :title="option.label"
-            :aria-label="option.label"
-            :aria-pressed="appThemeColor === option.value"
-            @click="appThemeColor = option.value"
-          >
-            <span />
-          </button>
-        </div>
+        <RadioGroupRoot
+          as-child
+          orientation="horizontal"
+          :model-value="appThemeColor"
+          @update:model-value="selectThemeColor"
+        >
+          <div class="theme-color-grid" :aria-label="t('app.settings.appearance.theme_color.title')">
+            <RadioGroupItem
+              v-for="option in themeColorOptions"
+              :key="option.value"
+              class="theme-color-button"
+              :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
+              :style="themeColorButtonStyle(option.value)"
+              :value="option.value"
+              :title="option.label"
+              :aria-label="option.label"
+            >
+              <span class="theme-color-swatch" />
+              <span
+                v-if="option.value === ThemeColorEnum.Custom"
+                class="theme-color-icon i-lucide:pipette"
+              />
+            </RadioGroupItem>
+            <input
+              ref="customColorInputRef"
+              :value="appCustomThemeColor"
+              class="custom-color-input"
+              type="color"
+              :aria-label="t('app.settings.appearance.theme_color.custom')"
+              @input="updateCustomThemeColor"
+            >
+          </div>
+        </RadioGroupRoot>
       </div>
 
       <div class="setting-row">
@@ -152,17 +213,17 @@ const appLanguage = computed({
 }
 
 .theme-color-grid {
-  @apply shrink-0 flex items-center gap-7px;
+  @apply relative shrink-0 flex items-center gap-7px;
 }
 
 .theme-color-button {
-  @apply size-24px rounded-full border p-0 cursor-pointer outline-none;
+  @apply relative size-24px rounded-full border p-0 cursor-pointer outline-none;
   @apply inline-flex items-center justify-center;
   @apply transition duration-120 ease-out;
   border-color: var(--ui-input);
   @apply bg-$ui-control-background;
 
-  span {
+  .theme-color-swatch {
     @apply size-14px rounded-full;
     background: var(--swatch-color);
   }
@@ -190,6 +251,10 @@ const appLanguage = computed({
   --swatch-color: var(--app-foreground);
 }
 
+.theme-color-system {
+  --swatch-color: var(--system-theme-color);
+}
+
 .theme-color-green {
   --swatch-color: var(--green-5);
 }
@@ -208,5 +273,18 @@ const appLanguage = computed({
 
 .theme-color-red {
   --swatch-color: var(--red-5);
+}
+
+.theme-color-custom {
+  --swatch-color: var(--custom-theme-color);
+}
+
+.theme-color-icon {
+  @apply absolute text-10px;
+  color: var(--custom-theme-foreground);
+}
+
+.custom-color-input {
+  @apply absolute size-1px opacity-0 pointer-events-none;
 }
 </style>

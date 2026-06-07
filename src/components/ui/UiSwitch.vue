@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import {
+  SwitchRoot,
+  SwitchThumb,
+} from 'reka-ui'
+
 withDefaults(defineProps<{
   modelValue: boolean
   disabled?: boolean
@@ -12,26 +17,24 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <button
+  <SwitchRoot
     class="ui-switch"
-    type="button"
-    role="switch"
-    :aria-checked="modelValue"
+    :model-value="modelValue"
     :disabled="disabled"
-    :data-state="modelValue ? 'checked' : 'unchecked'"
-    @click="emit('update:modelValue', !modelValue)"
+    @update:model-value="value => emit('update:modelValue', Boolean(value))"
   >
-    <span class="ui-switch-thumb" />
-  </button>
+    <SwitchThumb class="ui-switch-thumb" />
+  </SwitchRoot>
 </template>
 
 <style lang="scss">
 .ui-switch {
   @apply h-20px w-36px shrink-0 rounded-full border p-2px outline-none;
   @apply inline-flex items-center cursor-pointer;
-  @apply border-$ui-input bg-$ui-hover-background;
+  @apply border-$ui-input;
   @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
   appearance: none;
+  background-color: var(--ui-switch-background);
   border-style: solid;
 
   &:hover {

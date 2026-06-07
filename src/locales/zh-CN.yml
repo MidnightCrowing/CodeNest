@@ -7,6 +7,8 @@ common:
     linux: Linux
 language_pop:
   count: '{count} 种语言'
+  failed: 分析失败
+  loading: 正在分析
   more: '+{count} 更多'
   overall_label: 该项目所用语言
 project_card:
@@ -219,6 +221,9 @@ app:
       copy_path: 复制路径
       copied: 已复制
       copy_failed: 复制失败
+      pin: 置顶
+      unpin: 取消置顶
+      more: 更多操作
       edit: 编辑
       remove: 移除
   settings:
@@ -252,12 +257,14 @@ app:
         title: 主题色
         desc: 选择操作按钮和聚焦控件使用的强调色。
         contrast: 反色
+        system: 系统
         blue: 蓝色
         green: 绿色
         teal: 青色
         orange: 橙色
         purple: 紫色
         red: 红色
+        custom: 自定义
       language:
         title: 语言
         desc: 选择界面语言。
@@ -313,10 +320,10 @@ app:
         specified: 始终使用指定编辑器
       history:
         title: 扫描记录
-        desc: 想重新导入已见过的文件夹时可清除它。
+        desc: 想重新导入已见过的文件夹时可清除记录和分析缓存。
         clear: 清除记录
         dialog_title: 清除扫描记录？
-        dialog_desc: 下次扫描时，之前扫描过的文件夹也会重新参与导入。
+        dialog_desc: 下次扫描时，之前扫描过的文件夹也会重新参与导入，语言分析缓存也会重建。
     data:
       title: 数据
       desc: 项目列表迁移与手动同步。
@@ -343,6 +350,7 @@ app:
         download: 从云端下载
         downloading: 下载中
         pulled: 已从 WebDAV 拉取。
+        pulled_with_backup: 已从 WebDAV 拉取，并创建本地备份。
         failed: WebDAV 同步失败。
     about:
       title: 关于

@@ -2,18 +2,23 @@
 import { onClickOutside } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
-import { languagesGroup, popupVisible, position } from './LanguagePopProvider'
+import { ThemeEnum } from '~/constants/appEnums'
+import { useSettingsStore } from '~/stores/settingsStore'
+
+import { analyzing, getAnalyzeError, hidePop, languagesGroup, popupVisible, position } from './LanguagePopProvider'
 
 const popupRef = ref<HTMLElement | null>(null)
+const settingsStore = useSettingsStore()
 
 onClickOutside(popupRef, () => {
-  popupVisible.value = false
+  hidePop()
 })
 
 const { t } = useI18n()
 
 const visibleLanguages = computed(() => languagesGroup.value?.slice(0, 5) || [])
 const hiddenLanguageCount = computed(() => Math.max((languagesGroup.value?.length || 0) - visibleLanguages.value.length, 0))
+const isDarkTheme = computed(() => settingsStore.theme === ThemeEnum.Dark)
 </script>
 
 <template>
@@ -21,11 +26,17 @@ const hiddenLanguageCount = computed(() => Math.max((languagesGroup.value?.lengt
     v-if="popupVisible"
     ref="popupRef"
     class="language-pop"
-    :class="{ loading: !languagesGroup?.length }"
+    :class="{ 'loading': analyzing || !languagesGroup?.length, 'dark-language-pop': isDarkTheme }"
     :style="{ top: `${position.top}px`, left: `${position.left}px` }"
   >
-    <div v-if="!languagesGroup?.length" class="loading-panel">
+    <div v-if="analyzing" class="state-panel">
       <span class="state-loader" />
+      <span>{{ t('language_pop.loading') }}</span>
+    </div>
+
+    <div v-else-if="getAnalyzeError || !languagesGroup?.length" class="state-panel error">
+      <span class="i-lucide:triangle-alert" />
+      <span>{{ t('language_pop.failed') }}</span>
     </div>
 
     <template v-else>
@@ -67,20 +78,28 @@ const hiddenLanguageCount = computed(() => Math.max((languagesGroup.value?.lengt
 .language-pop {
   @apply absolute z-30 w-270px translate-y--100%;
   @apply rounded-6px border px-10px py-9px shadow-lg;
-  @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
+  @apply border-$ui-border color-$ui-foreground;
   @apply backdrop-blur-8px backdrop-saturate-140;
+  background: var(--ui-popover-background);
+  box-shadow: var(--shadow-popup);
 }
 
 .language-pop.loading {
-  @apply w-52px px-0 py-0;
+  @apply w-160px;
 }
 
-.loading-panel {
-  @apply h-42px flex items-center justify-center;
+.state-panel {
+  @apply h-44px flex items-center justify-center gap-8px;
+  @apply text-12px color-$ui-muted-foreground;
+}
+
+.state-panel.error {
+  @apply color-$red-5;
 }
 
 .state-loader {
   @apply block size-13px shrink-0 rounded-full border-2;
+  border-style: solid;
   border-color: var(--ui-border);
   border-top-color: var(--ui-primary);
   animation: state-loader-spin 0.75s linear infinite;
@@ -124,6 +143,28 @@ const hiddenLanguageCount = computed(() => Math.max((languagesGroup.value?.lengt
 
 .color-dot {
   @apply size-8px rounded-full shrink-0;
+}
+
+.language-pop.dark-language-pop {
+  background: color-mix(in srgb, var(--ui-page-background), var(--gray-2) 72%);
+  border-color: color-mix(in srgb, var(--ui-border), var(--gray-14) 10%);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 52%);
+  backdrop-filter: none;
+}
+
+.language-pop.dark-language-pop .language-bar {
+  background: color-mix(in srgb, var(--ui-page-background), var(--gray-14) 6%);
+}
+
+.language-pop.dark-language-pop .language-bar span {
+  opacity: 0.74;
+  filter: saturate(0.72) brightness(0.92);
+}
+
+.language-pop.dark-language-pop .color-dot {
+  opacity: 0.84;
+  filter: saturate(0.72) brightness(0.94);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
 }
 
 @keyframes state-loader-spin {

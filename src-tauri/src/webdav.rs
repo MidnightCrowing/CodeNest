@@ -1,9 +1,13 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::PathBuf,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use reqwest::{Client, Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use url::Url;
 
 use crate::data::{data_file_path, DataFileKind};
@@ -121,7 +125,7 @@ async fn pull_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String
     validate_config(&config)?;
 
     let client = Client::new();
-    let mut count = 0;
+    let mut pulled_files = Vec::new();
     for file in SYNC_FILES {
         let url = remote_file_url(&config, file.name)?;
         let response = with_auth(client.get(url), &config)
@@ -141,11 +145,42 @@ async fn pull_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String
 
         let raw = response.text().await.map_err(|error| error.to_string())?;
         let content = prepare_pull_content(&app, file.kind, &raw)?;
-        write_local_file(data_file_path(&app, file.kind)?, content)?;
-        count += 1;
+        pulled_files.push((file.kind, content));
+    }
+
+    backup_local_sync_files(&app)?;
+
+    let count = pulled_files.len();
+    for (kind, content) in pulled_files {
+        write_local_file(data_file_path(&app, kind)?, content)?;
     }
 
     Ok(count)
+}
+
+fn backup_local_sync_files(app: &AppHandle) -> Result<PathBuf, String> {
+    let backup_root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?
+        .join("backups")
+        .join(format!(
+            "webdav-pull-{}",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map_err(|error| error.to_string())?
+                .as_secs()
+        ));
+    fs::create_dir_all(&backup_root).map_err(|error| error.to_string())?;
+
+    for file in SYNC_FILES {
+        let source = data_file_path(app, file.kind)?;
+        if source.exists() {
+            fs::copy(source, backup_root.join(file.name)).map_err(|error| error.to_string())?;
+        }
+    }
+
+    Ok(backup_root)
 }
 
 async fn create_remote_dir(client: &Client, config: &WebDavConfig) -> Result<(), String> {
@@ -160,7 +195,11 @@ async fn create_remote_dir(client: &Client, config: &WebDavConfig) -> Result<(),
             current.push('/');
         }
         current.push_str(part);
-        let url = remote_url(config, Some(&current), None)?;
+        if remote_dir_exists(client, config, &current).await? {
+            continue;
+        }
+
+        let url = remote_collection_url(config, &current)?;
         let response = with_auth(
             client.request(
                 Method::from_bytes(b"MKCOL").map_err(|error| error.to_string())?,
@@ -171,16 +210,50 @@ async fn create_remote_dir(client: &Client, config: &WebDavConfig) -> Result<(),
         .send()
         .await
         .map_err(|error| error.to_string())?;
-        if response.status().is_success() || response.status() == StatusCode::METHOD_NOT_ALLOWED {
+        let status = response.status();
+        if status.is_success() {
             continue;
         }
-        return Err(format!(
-            "Failed to create remote directory: {}",
-            response.status()
-        ));
+        if matches!(
+            status,
+            StatusCode::METHOD_NOT_ALLOWED | StatusCode::CONFLICT
+        ) && remote_dir_exists(client, config, &current).await?
+        {
+            continue;
+        }
+        return Err(format!("Failed to create remote directory: {}", status));
     }
 
     Ok(())
+}
+
+async fn remote_dir_exists(
+    client: &Client,
+    config: &WebDavConfig,
+    remote_path: &str,
+) -> Result<bool, String> {
+    let response = with_auth(
+        client
+            .request(
+                Method::from_bytes(b"PROPFIND").map_err(|error| error.to_string())?,
+                remote_collection_url(config, remote_path)?,
+            )
+            .header("Depth", "0"),
+        config,
+    )
+    .send()
+    .await
+    .map_err(|error| error.to_string())?;
+
+    let status = response.status();
+    if status.is_success() || status.as_u16() == 207 {
+        return Ok(true);
+    }
+    if matches!(status, StatusCode::NOT_FOUND | StatusCode::CONFLICT) {
+        return Ok(false);
+    }
+
+    Err(format!("Failed to check remote directory: {}", status))
 }
 
 fn prepare_upload_content(kind: DataFileKind, raw: &str) -> Result<String, String> {
@@ -255,6 +328,21 @@ fn remote_url(
         if let Some(file_name) = file_name {
             segments.push(file_name);
         }
+    }
+    Ok(url)
+}
+
+fn remote_collection_url(config: &WebDavConfig, remote_path: &str) -> Result<Url, String> {
+    let endpoint = ensure_trailing_slash(config.endpoint.trim());
+    let mut url = Url::parse(&endpoint).map_err(|error| error.to_string())?;
+    {
+        let mut segments = url
+            .path_segments_mut()
+            .map_err(|_| "Invalid WebDAV URL".to_string())?;
+        for segment in remote_path.split('/').filter(|segment| !segment.is_empty()) {
+            segments.push(segment);
+        }
+        segments.push("");
     }
     Ok(url)
 }

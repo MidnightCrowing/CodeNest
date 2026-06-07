@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import UiCombobox from '~/components/ui/UiCombobox.vue'
 import UiScrollArea from '~/components/ui/UiScrollArea.vue'
+import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import UiSwitch from '~/components/ui/UiSwitch.vue'
 import { ViewEnum } from '~/constants/appEnums'
@@ -65,6 +66,13 @@ const licenseOptions = computed(() =>
   ].map(value => ({
     value,
     label: shortLicense(value),
+  })),
+)
+
+const projectKindOptions = computed(() =>
+  [ProjectKind.MINE, ProjectKind.FORK, ProjectKind.CLONE].map(kind => ({
+    value: kind,
+    label: kindLabel(kind),
   })),
 )
 
@@ -291,6 +299,10 @@ function closeEditor() {
   activatedView.value = ViewEnum.Home
 }
 
+function updateProjectKind(kind: string) {
+  localProjectItem.value.kind = kind as ProjectKind
+}
+
 function kindLabel(kind: ProjectKind) {
   switch (kind) {
     case ProjectKind.FORK:
@@ -451,19 +463,13 @@ watch(
                 <strong>{{ t('app.project_editor.fields.source') }}</strong>
                 <span>{{ t('app.project_editor.fields.source_desc') }}</span>
               </div>
-              <div class="kind-control">
-                <button
-                  v-for="kind in [ProjectKind.MINE, ProjectKind.FORK, ProjectKind.CLONE]"
-                  :key="kind"
-                  class="segment-button"
-                  :class="{ active: localProjectItem.kind === kind }"
-                  type="button"
-                  :aria-pressed="localProjectItem.kind === kind"
-                  @click="localProjectItem.kind = kind"
-                >
-                  {{ kindLabel(kind) }}
-                </button>
-              </div>
+              <UiSegmentedControl
+                class="kind-control"
+                :model-value="localProjectItem.kind"
+                :options="projectKindOptions"
+                :aria-label="t('app.project_editor.fields.source')"
+                @update:model-value="updateProjectKind"
+              />
             </div>
 
             <div v-if="localProjectItem.kind !== ProjectKind.MINE" class="setting-row stacked">
@@ -777,20 +783,6 @@ watch(
 
   .text-input {
     @apply w-full;
-  }
-}
-
-.kind-control {
-  @apply h-28px rounded-5px p-2px flex items-center;
-  @apply bg-$ui-control-background;
-}
-
-.segment-button {
-  @apply h-24px border-0 rounded-4px px-10px bg-transparent;
-  @apply text-12px cursor-pointer light:color-$gray-5 dark:color-$gray-9;
-
-  &.active {
-    @apply bg-$ui-surface-background color-$ui-foreground;
   }
 }
 

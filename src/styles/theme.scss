@@ -113,10 +113,13 @@
   --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-1);
   --theme-text-caret: var(--blue-5);
+  --system-theme-color: var(--blue-5);
+  --system-theme-foreground: rgb(255 255 255);
   --ui-background: var(--ui-surface-background);
   --ui-control-background: color-mix(in srgb, var(--ui-surface-background) 72%, var(--ui-page-background));
-  --ui-popover-background: var(--ui-surface-background);
+  --ui-popover-background: color-mix(in srgb, var(--ui-surface-background) 88%, var(--blue-12));
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background) 52%, var(--ui-page-background));
+  --ui-switch-background: var(--gray-11);
   --ui-hover-background: var(--ui-surface-muted-background);
   --ui-foreground: var(--gray-2);
   --ui-muted-foreground: var(--gray-7);
@@ -251,10 +254,13 @@
   --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-12);
   --theme-text-caret: var(--blue-8);
+  --system-theme-color: var(--blue-8);
+  --system-theme-foreground: rgb(255 255 255);
   --ui-background: var(--ui-surface-background);
   --ui-control-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 7%);
-  --ui-popover-background: var(--ui-surface-background);
+  --ui-popover-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 10%);
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 4%);
+  --ui-switch-background: var(--gray-3);
   --ui-hover-background: var(--ui-surface-muted-background);
   --ui-foreground: var(--gray-12);
   --ui-muted-foreground: var(--gray-8);
@@ -284,6 +290,15 @@
   --ui-primary-hover: var(--gray-3);
   --ui-primary-active: var(--gray-4);
   --ui-primary-foreground: var(--gray-14);
+}
+
+:root.theme-system {
+  --theme-text-caret: var(--system-theme-color);
+  --ui-ring: var(--system-theme-color);
+  --ui-primary: var(--system-theme-color);
+  --ui-primary-hover: color-mix(in srgb, var(--system-theme-color), var(--gray-1) 10%);
+  --ui-primary-active: color-mix(in srgb, var(--system-theme-color), var(--gray-1) 18%);
+  --ui-primary-foreground: var(--system-theme-foreground);
 }
 
 :root.theme-green {
@@ -326,6 +341,15 @@
   --ui-primary-active: var(--red-3);
 }
 
+:root.theme-custom {
+  --theme-text-caret: var(--custom-theme-color);
+  --ui-ring: var(--custom-theme-color);
+  --ui-primary: var(--custom-theme-color);
+  --ui-primary-hover: color-mix(in srgb, var(--custom-theme-color), var(--gray-1) 10%);
+  --ui-primary-active: color-mix(in srgb, var(--custom-theme-color), var(--gray-1) 18%);
+  --ui-primary-foreground: var(--custom-theme-foreground);
+}
+
 :root.dark.theme-blue {
   --theme-text-caret: var(--blue-8);
   --ui-ring: var(--blue-8);
@@ -341,6 +365,15 @@
   --ui-primary-hover: var(--gray-13);
   --ui-primary-active: var(--gray-12);
   --ui-primary-foreground: var(--gray-1);
+}
+
+:root.dark.theme-system {
+  --theme-text-caret: var(--system-theme-color);
+  --ui-ring: var(--system-theme-color);
+  --ui-primary: var(--system-theme-color);
+  --ui-primary-hover: color-mix(in srgb, var(--system-theme-color), var(--gray-14) 14%);
+  --ui-primary-active: color-mix(in srgb, var(--system-theme-color), var(--gray-14) 8%);
+  --ui-primary-foreground: var(--system-theme-foreground);
 }
 
 :root.dark.theme-green {
@@ -381,4 +414,13 @@
   --ui-primary: var(--red-8);
   --ui-primary-hover: var(--red-9);
   --ui-primary-active: var(--red-7);
+}
+
+:root.dark.theme-custom {
+  --theme-text-caret: var(--custom-theme-color);
+  --ui-ring: var(--custom-theme-color);
+  --ui-primary: var(--custom-theme-color);
+  --ui-primary-hover: color-mix(in srgb, var(--custom-theme-color), var(--gray-14) 14%);
+  --ui-primary-active: color-mix(in srgb, var(--custom-theme-color), var(--gray-14) 8%);
+  --ui-primary-foreground: var(--custom-theme-foreground);
 }

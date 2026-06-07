@@ -167,9 +167,8 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     group: 'AI Editors',
     label: 'Trae',
     description: 'AI coding editor',
-    icon: 'i-lucide:sparkles',
+    icon: 'i-custom:trae-color',
     defaultCommand: 'trae {project}',
-    monochromeIcon: true,
   },
   [CodeEditorEnum.Zed]: {
     group: 'Editors',

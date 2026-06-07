@@ -1,7 +1,9 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     env, fs,
+    hash::{Hash, Hasher},
     path::{Path, PathBuf},
+    time::UNIX_EPOCH,
 };
 
 use ignore::WalkBuilder;
@@ -24,6 +26,8 @@ pub struct ScanPayload {
     jetbrains: JetbrainsScannerConfig,
     vscode: VscodeScannerConfig,
     existing_paths: Vec<String>,
+    #[serde(default)]
+    cache_entries: Vec<ScanCacheEntry>,
 }
 
 #[derive(Deserialize)]
@@ -61,9 +65,28 @@ pub struct ScanItem {
     ide: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    signature: Option<String>,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ScanCacheEntry {
+    path: String,
+    signature: String,
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    main_lang: Option<String>,
+    #[serde(default)]
+    main_lang_color: Option<String>,
+    #[serde(default)]
+    lang_group: Option<Vec<LangGroupItem>>,
+    #[serde(default)]
+    error: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 pub struct LangGroupItem {
     text: String,
     color: String,
@@ -179,6 +202,16 @@ fn scan_projects_inner(payload: ScanPayload) -> Result<ScanResult, String> {
         .iter()
         .map(|path| analyzer::normalize_path_key(Path::new(path)))
         .collect::<HashSet<_>>();
+    let cache = payload
+        .cache_entries
+        .iter()
+        .map(|entry| {
+            (
+                analyzer::normalize_path_key(Path::new(&entry.path)),
+                entry.clone(),
+            )
+        })
+        .collect::<HashMap<_, _>>();
     let max_scan_bytes = env::var("CODENEST_MAX_SCAN_BYTES")
         .ok()
         .and_then(|value| value.parse::<u64>().ok())
@@ -194,17 +227,27 @@ fn scan_projects_inner(payload: ScanPayload) -> Result<ScanResult, String> {
 
         let canonical = analyzer::canonical_or_original(&path);
         let key = analyzer::normalize_path_key(&canonical);
-        if existing.contains(&key) || !seen.insert(key) {
+        if existing.contains(&key) || !seen.insert(key.clone()) {
             continue;
         }
 
-        items.push(scan_one_project(canonical, candidate.ide, max_scan_bytes));
+        items.push(scan_one_project(
+            canonical,
+            candidate.ide,
+            max_scan_bytes,
+            cache.get(&key),
+        ));
     }
 
     Ok(ScanResult { items })
 }
 
-fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> ScanItem {
+fn scan_one_project(
+    path: PathBuf,
+    ide: Option<String>,
+    max_scan_bytes: u64,
+    cached: Option<&ScanCacheEntry>,
+) -> ScanItem {
     let name = path
         .file_name()
         .map(|name| name.to_string_lossy().into_owned())
@@ -212,8 +255,25 @@ fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> 
         .unwrap_or_else(|| "Unnamed Project".to_string());
     let path_string = analyzer::display_path(&path);
 
-    match directory_size_capped(&path, max_scan_bytes) {
-        Ok(size) if size > max_scan_bytes => ScanItem {
+    match directory_state_capped(&path, max_scan_bytes) {
+        Ok(state) if cached.is_some_and(|entry| entry.signature == state.signature) => {
+            let cached = cached.expect("cache entry checked above");
+            ScanItem {
+                path: path_string,
+                name: if cached.name.is_empty() {
+                    name
+                } else {
+                    cached.name.clone()
+                },
+                main_lang: cached.main_lang.clone(),
+                main_lang_color: cached.main_lang_color.clone(),
+                lang_group: cached.lang_group.clone(),
+                ide,
+                error: cached.error.clone(),
+                signature: Some(state.signature),
+            }
+        }
+        Ok(state) if state.total_bytes > max_scan_bytes => ScanItem {
             path: path_string,
             name,
             main_lang: None,
@@ -221,6 +281,7 @@ fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> 
             lang_group: None,
             ide,
             error: None,
+            signature: Some(state.signature),
         },
         Err(error) => ScanItem {
             path: path_string,
@@ -230,8 +291,9 @@ fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> 
             lang_group: None,
             ide,
             error: Some(error),
+            signature: None,
         },
-        _ => match analyzer::analyze_folder(&path) {
+        Ok(state) => match analyzer::analyze_folder(&path) {
             Ok(analysis) => {
                 let mut entries = analysis.languages.results.into_iter().collect::<Vec<_>>();
                 sort_languages(&mut entries);
@@ -247,6 +309,7 @@ fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> 
                     lang_group,
                     ide,
                     error: None,
+                    signature: Some(state.signature),
                 }
             }
             Err(error) => ScanItem {
@@ -257,6 +320,7 @@ fn scan_one_project(path: PathBuf, ide: Option<String>, max_scan_bytes: u64) -> 
                 lang_group: None,
                 ide,
                 error: Some(error),
+                signature: Some(state.signature),
             },
         },
     }
@@ -273,13 +337,20 @@ fn list_immediate_subdirs(root: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-fn directory_size_capped(root: &Path, cap: u64) -> Result<u64, String> {
+struct DirectoryState {
+    total_bytes: u64,
+    signature: String,
+}
+
+fn directory_state_capped(root: &Path, cap: u64) -> Result<DirectoryState, String> {
     let mut total = 0;
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
     let walker = WalkBuilder::new(root)
         .hidden(true)
         .ignore(true)
         .git_ignore(true)
         .parents(true)
+        .filter_entry(|entry| !analyzer::is_skipped_dir(entry))
         .build();
 
     for entry in walker {
@@ -297,12 +368,27 @@ fn directory_size_capped(root: &Path, cap: u64) -> Result<u64, String> {
         let Ok(metadata) = entry.metadata() else {
             continue;
         };
+        let relative = entry.path().strip_prefix(root).unwrap_or(entry.path());
+        relative.to_string_lossy().hash(&mut hasher);
+        metadata.len().hash(&mut hasher);
+        if let Ok(modified) = metadata.modified() {
+            if let Ok(duration) = modified.duration_since(UNIX_EPOCH) {
+                duration.as_secs().hash(&mut hasher);
+                duration.subsec_nanos().hash(&mut hasher);
+            }
+        }
         total += metadata.len();
         if total > cap {
-            return Ok(total);
+            return Ok(DirectoryState {
+                total_bytes: total,
+                signature: format!("{:016x}", hasher.finish()),
+            });
         }
     }
-    Ok(total)
+    Ok(DirectoryState {
+        total_bytes: total,
+        signature: format!("{:016x}", hasher.finish()),
+    })
 }
 
 fn sort_languages(entries: &mut [(String, LanguageStats)]) {

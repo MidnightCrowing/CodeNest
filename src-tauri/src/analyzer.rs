@@ -1,11 +1,14 @@
 use std::{
     collections::BTreeMap,
-    fs,
+    fs::File,
+    io::Read,
     path::{Path, PathBuf},
 };
 
 use ignore::{DirEntry, WalkBuilder};
 use serde::Serialize;
+
+const MAX_LINE_COUNT_BYTES: u64 = 1_500_000;
 
 #[derive(Clone, Copy, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -111,19 +114,27 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
         }
 
         let path = entry.path();
+        if is_skipped_file(path) {
+            continue;
+        }
+
         let metadata = match entry.metadata() {
             Ok(metadata) => metadata,
             Err(_) => continue,
         };
         let bytes = metadata.len();
-        let lines = count_lines(path).unwrap_or_default();
+        let language = language_for_path(path);
+        let lines = language
+            .filter(|language| should_count_lines(language.language_type, bytes))
+            .and_then(|_| count_lines(path))
+            .unwrap_or_default();
         let relative_path = relative_path(folder_path, path);
 
         result.files.count += 1;
         result.files.bytes += bytes;
         result.files.lines.add(&lines);
 
-        if let Some(language) = language_for_path(path) {
+        if let Some(language) = language {
             result
                 .files
                 .results
@@ -180,7 +191,7 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
     Ok(result)
 }
 
-fn is_skipped_dir(entry: &DirEntry) -> bool {
+pub fn is_skipped_dir(entry: &DirEntry) -> bool {
     if entry.depth() == 0 {
         return false;
     }
@@ -198,29 +209,143 @@ fn is_skipped_dir(entry: &DirEntry) -> bool {
             | ".svn"
             | ".idea"
             | ".vscode"
+            | ".cache"
+            | ".gradle"
+            | ".parcel-cache"
+            | ".pytest_cache"
+            | ".mypy_cache"
+            | ".ruff_cache"
             | "node_modules"
             | "vendor"
             | "dist"
             | "build"
+            | "out"
+            | "release"
+            | "debug"
             | "coverage"
             | "target"
+            | "__pycache__"
+            | "venv"
+            | ".venv"
             | ".next"
             | ".nuxt"
+            | ".svelte-kit"
+            | ".turbo"
     )
 }
 
-fn count_lines(path: &Path) -> Option<LineCounts> {
-    let bytes = fs::read(path).ok()?;
-    if bytes.is_empty() {
-        return Some(LineCounts::default());
+fn is_skipped_file(path: &Path) -> bool {
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(str::to_ascii_lowercase)
+        .unwrap_or_default();
+
+    if file_name.ends_with(".min.js")
+        || file_name.ends_with(".min.css")
+        || file_name.ends_with(".bundle.js")
+        || file_name.ends_with(".bundle.css")
+    {
+        return true;
     }
 
-    let total = bytes.iter().filter(|byte| **byte == b'\n').count() as u64
-        + u64::from(!bytes.ends_with(b"\n"));
-    let content = String::from_utf8_lossy(&bytes)
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .count() as u64;
+    let extension = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .map(str::to_ascii_lowercase)
+        .unwrap_or_default();
+
+    matches!(
+        extension.as_str(),
+        "map"
+            | "png"
+            | "jpg"
+            | "jpeg"
+            | "gif"
+            | "webp"
+            | "avif"
+            | "bmp"
+            | "ico"
+            | "icns"
+            | "mp4"
+            | "mov"
+            | "webm"
+            | "mkv"
+            | "mp3"
+            | "wav"
+            | "flac"
+            | "ogg"
+            | "pdf"
+            | "zip"
+            | "rar"
+            | "7z"
+            | "gz"
+            | "tgz"
+            | "tar"
+            | "woff"
+            | "woff2"
+            | "ttf"
+            | "otf"
+            | "eot"
+            | "wasm"
+            | "exe"
+            | "dll"
+            | "so"
+            | "dylib"
+            | "class"
+            | "jar"
+    )
+}
+
+fn should_count_lines(language_type: LanguageType, bytes: u64) -> bool {
+    bytes <= MAX_LINE_COUNT_BYTES
+        && matches!(
+            language_type,
+            LanguageType::Programming | LanguageType::Markup | LanguageType::Prose
+        )
+}
+
+fn count_lines(path: &Path) -> Option<LineCounts> {
+    let mut file = File::open(path).ok()?;
+    let mut buffer = [0_u8; 16 * 1024];
+    let mut total = 0_u64;
+    let mut content = 0_u64;
+    let mut has_bytes = false;
+    let mut line_has_content = false;
+    let mut last_byte = None;
+
+    loop {
+        let read = file.read(&mut buffer).ok()?;
+        if read == 0 {
+            break;
+        }
+
+        for byte in &buffer[..read] {
+            if *byte == 0 {
+                return None;
+            }
+
+            has_bytes = true;
+            last_byte = Some(*byte);
+
+            if *byte == b'\n' {
+                total += 1;
+                if line_has_content {
+                    content += 1;
+                }
+                line_has_content = false;
+            } else if *byte != b'\r' && !byte.is_ascii_whitespace() {
+                line_has_content = true;
+            }
+        }
+    }
+
+    if has_bytes && last_byte != Some(b'\n') {
+        total += 1;
+        if line_has_content {
+            content += 1;
+        }
+    }
 
     Some(LineCounts {
         total,

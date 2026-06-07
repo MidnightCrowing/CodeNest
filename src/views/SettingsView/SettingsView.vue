@@ -123,7 +123,7 @@ function changeHomeView() {
 }
 
 async function syncRuntimeSettings() {
-  await applyTheme(settingsStore.theme, settingsStore.themeColor)
+  await applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor)
   locale.value = settingsStore.language
 }
 

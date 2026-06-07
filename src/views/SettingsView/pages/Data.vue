@@ -9,7 +9,18 @@ const settings = useSettingsStore()
 const { t } = useI18n()
 
 const webdavBusy = ref<'test' | 'upload' | 'pull' | null>(null)
-const webdavStatus = ref('')
+const webdavStatus = ref<{ type: 'success' | 'error', text: string } | null>(null)
+
+function clearWebDavStatus() {
+  webdavStatus.value = null
+}
+
+function setWebDavStatus(success: boolean, text: string) {
+  webdavStatus.value = {
+    type: success ? 'success' : 'error',
+    text,
+  }
+}
 
 async function importProjects() {
   await window.api.importProject()
@@ -25,16 +36,19 @@ async function testWebDavConnection() {
     return
 
   webdavBusy.value = 'test'
-  webdavStatus.value = ''
+  clearWebDavStatus()
   await settings.saveSettings()
   try {
     const result = await window.api.webdavTestConnection(settings.webdav)
-    webdavStatus.value = result.success
-      ? t('app.settings.data.webdav.connected')
-      : result.error || t('app.settings.data.webdav.failed')
+    setWebDavStatus(
+      result.success,
+      result.success
+        ? t('app.settings.data.webdav.connected')
+        : result.error || t('app.settings.data.webdav.failed'),
+    )
   }
   catch (error) {
-    webdavStatus.value = String(error)
+    setWebDavStatus(false, String(error))
   }
   finally {
     webdavBusy.value = null
@@ -46,16 +60,19 @@ async function uploadWebDavData() {
     return
 
   webdavBusy.value = 'upload'
-  webdavStatus.value = ''
+  clearWebDavStatus()
   await settings.saveSettings()
   try {
     const result = await window.api.webdavUploadData(settings.webdav)
-    webdavStatus.value = result.success
-      ? t('app.settings.data.webdav.uploaded')
-      : result.error || t('app.settings.data.webdav.failed')
+    setWebDavStatus(
+      result.success,
+      result.success
+        ? t('app.settings.data.webdav.uploaded')
+        : result.error || t('app.settings.data.webdav.failed'),
+    )
   }
   catch (error) {
-    webdavStatus.value = String(error)
+    setWebDavStatus(false, String(error))
   }
   finally {
     webdavBusy.value = null
@@ -67,7 +84,8 @@ async function pullWebDavData() {
     return
 
   webdavBusy.value = 'pull'
-  webdavStatus.value = ''
+  clearWebDavStatus()
+  await settings.saveSettings()
   try {
     const result = await window.api.webdavPullData(settings.webdav)
     if (result.success) {
@@ -75,14 +93,14 @@ async function pullWebDavData() {
         settings.loadSettings(),
         projectsStore.loadProjects(),
       ])
-      webdavStatus.value = t('app.settings.data.webdav.pulled')
+      setWebDavStatus(true, t('app.settings.data.webdav.pulled_with_backup'))
     }
     else {
-      webdavStatus.value = result.error || t('app.settings.data.webdav.failed')
+      setWebDavStatus(false, result.error || t('app.settings.data.webdav.failed'))
     }
   }
   catch (error) {
-    webdavStatus.value = String(error)
+    setWebDavStatus(false, String(error))
   }
   finally {
     webdavBusy.value = null
@@ -117,7 +135,7 @@ async function pullWebDavData() {
       <div class="setting-row webdav-row">
         <div class="setting-copy">
           <strong>{{ t('app.settings.data.webdav.title') }}</strong>
-          <span>{{ webdavStatus || t('app.settings.data.webdav.desc') }}</span>
+          <span>{{ t('app.settings.data.webdav.desc') }}</span>
         </div>
         <div class="webdav-panel">
           <div class="webdav-fields">
@@ -191,6 +209,13 @@ async function pullWebDavData() {
               {{ webdavBusy === 'upload' ? t('app.settings.data.webdav.uploading') : t('app.settings.data.webdav.upload') }}
             </button>
           </div>
+          <p
+            v-if="webdavStatus"
+            class="webdav-status"
+            :class="webdavStatus.type"
+          >
+            {{ webdavStatus.text }}
+          </p>
         </div>
       </div>
     </div>
@@ -265,5 +290,17 @@ async function pullWebDavData() {
 
 .webdav-actions {
   @apply flex flex-wrap items-center justify-end gap-7px;
+}
+
+.webdav-status {
+  @apply m-0 text-right text-12px;
+
+  &.success {
+    @apply color-$green-5;
+  }
+
+  &.error {
+    @apply color-$red-5;
+  }
 }
 </style>

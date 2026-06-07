@@ -34,7 +34,8 @@ export async function addNewProjectsFromScanner() {
     return
 
   await scannerStore.loadProjectScannerData()
-  await projectsStore.loadProjects()
+  if (!projectsStore.loaded)
+    await projectsStore.loadProjects()
 
   projectsStore.allProjects.forEach(p => scannerStore.addScannedPath(p.path))
 
@@ -42,6 +43,7 @@ export async function addNewProjectsFromScanner() {
     const { items } = await window.api.scanProjects({
       ...toRaw(settingsStore.scanner),
       existingPaths: Array.from(scannerStore.allHistoryScannedPaths),
+      cacheEntries: scannerStore.scanCacheEntries,
     })
 
     for (const item of items) {
@@ -52,11 +54,19 @@ export async function addNewProjectsFromScanner() {
 
       const mainLang = item.mainLang || 'unknown'
       let license: LicenseEnum | undefined
-      const res = await window.api.readProjectLicense(path)
-      if (res?.success && res.snippet) {
-        const { license: detected, score } = detectLicenseBySnippet(res.snippet)
-        if (detected && score > 0) {
-          license = detected
+      const cachedScan = item.signature
+        ? scannerStore.getScanCacheEntry(path)
+        : null
+      if (cachedScan && cachedScan.signature === item.signature) {
+        license = cachedScan.license
+      }
+      if (!license) {
+        const res = await window.api.readProjectLicense(path)
+        if (res?.success && res.snippet) {
+          const { license: detected, score } = detectLicenseBySnippet(res.snippet)
+          if (detected && score > 0) {
+            license = detected
+          }
         }
       }
 
@@ -82,6 +92,19 @@ export async function addNewProjectsFromScanner() {
       }
 
       await projectsStore.addProject(newProject, false)
+      if (item.signature) {
+        scannerStore.setScanCacheEntry({
+          path,
+          signature: item.signature,
+          name,
+          mainLang: item.mainLang,
+          mainLangColor: item.mainLangColor,
+          langGroup: item.langGroup,
+          ide: item.ide,
+          error: item.error,
+          license,
+        })
+      }
     }
 
     await Promise.all([

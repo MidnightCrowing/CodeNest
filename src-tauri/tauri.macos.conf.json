@@ -1,0 +1,17 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "CodeNest",
+        "width": 1200,
+        "height": 650,
+        "minWidth": 800,
+        "minHeight": 650,
+        "decorations": true,
+        "titleBarStyle": "Visible",
+        "hiddenTitle": false
+      }
+    ]
+  }
+}

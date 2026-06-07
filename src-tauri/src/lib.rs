@@ -30,6 +30,7 @@ pub fn run() {
             system::check_path_existence,
             system::close_window,
             system::format_path,
+            system::get_system_accent_color,
             system::minimize_window,
             system::open_external,
             system::open_in_explorer,

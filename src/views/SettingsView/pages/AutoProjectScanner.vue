@@ -1,21 +1,16 @@
 <script lang="ts" setup>
-import {
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 
 import UiCheckbox from '~/components/ui/UiCheckbox.vue'
+import UiDialog from '~/components/ui/UiDialog.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
+import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 
 const settings = useSettingsStore()
+const projectScannerStore = useProjectScannerStore()
 const { t } = useI18n()
 const showClearConfirm = ref(false)
 
@@ -95,7 +90,7 @@ async function detectVscodeDb() {
 }
 
 function clearScanHistory() {
-  void window.api.deleteData('projectScanner')
+  projectScannerStore.clearProjectScannerData()
   showClearConfirm.value = false
 }
 </script>
@@ -293,27 +288,22 @@ function clearScanHistory() {
       </section>
     </div>
 
-    <DialogRoot v-model:open="showClearConfirm">
-      <DialogPortal>
-        <DialogOverlay class="dialog-backdrop" />
-        <DialogContent class="confirm-dialog">
-          <DialogTitle class="dialog-title">
-            {{ t('app.settings.scanner.history.dialog_title') }}
-          </DialogTitle>
-          <DialogDescription class="dialog-description">
-            {{ t('app.settings.scanner.history.dialog_desc') }}
-          </DialogDescription>
-          <div class="dialog-actions">
-            <button class="ghost-button" type="button" @click="showClearConfirm = false">
-              {{ t('app.common.cancel') }}
-            </button>
-            <button class="danger-button" type="button" @click="clearScanHistory">
-              {{ t('app.common.clear') }}
-            </button>
-          </div>
-        </DialogContent>
-      </DialogPortal>
-    </DialogRoot>
+    <UiDialog
+      v-model:open="showClearConfirm"
+      :title="t('app.settings.scanner.history.dialog_title')"
+      :description="t('app.settings.scanner.history.dialog_desc')"
+      width="320px"
+      actions-layout="end"
+    >
+      <template #actions>
+        <button class="ghost-button" type="button" @click="showClearConfirm = false">
+          {{ t('app.common.cancel') }}
+        </button>
+        <button class="danger-button" type="button" @click="clearScanHistory">
+          {{ t('app.common.clear') }}
+        </button>
+      </template>
+    </UiDialog>
   </div>
 </template>
 
@@ -432,29 +422,6 @@ function clearScanHistory() {
 
 .path-input.compact {
   @apply w-180px;
-}
-
-.dialog-backdrop {
-  @apply fixed left-0 right-0 bottom-0 top-40px z-40;
-  @apply bg-black/28 dark:bg-black/50;
-}
-
-.confirm-dialog {
-  @apply fixed left-1/2 top-[calc(40px+50%)] z-50 w-320px max-w-[calc(100vw-32px)];
-  @apply -translate-x-1/2 -translate-y-1/2 rounded-6px border p-14px shadow-xl outline-none;
-  @apply border-$ui-border bg-$ui-surface-background color-$ui-foreground;
-}
-
-.dialog-title {
-  @apply m-0 text-15px font-650 lh-20px;
-}
-
-.dialog-description {
-  @apply mt-8px mb-0 text-12px lh-17px light:color-$gray-6 dark:color-$gray-8;
-}
-
-.dialog-actions {
-  @apply mt-14px flex justify-end gap-8px;
 }
 
 @media (max-width: 900px) {

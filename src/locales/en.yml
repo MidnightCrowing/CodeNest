@@ -7,6 +7,8 @@ common:
     linux: Linux
 language_pop:
   count: '{count} languages'
+  failed: Analysis failed
+  loading: Analyzing
   more: '+{count} more'
   overall_label: Languages used in this project
 project_card:
@@ -219,6 +221,9 @@ app:
       copy_path: Copy path
       copied: Copied
       copy_failed: Copy failed
+      pin: Pin
+      unpin: Unpin
+      more: More actions
       edit: Edit
       remove: Remove
   settings:
@@ -252,12 +257,14 @@ app:
         title: Theme color
         desc: Choose the accent used by actions and focused controls.
         contrast: Contrast
+        system: System
         blue: Blue
         green: Green
         teal: Teal
         orange: Orange
         purple: Purple
         red: Red
+        custom: Custom
       language:
         title: Language
         desc: Choose the interface language.
@@ -313,10 +320,10 @@ app:
         specified: Always specified
       history:
         title: Scan history
-        desc: Clear this when you want previously seen folders to be imported again.
+        desc: Clear records and analysis cache when you want previously seen folders to be imported again.
         clear: Clear history
         dialog_title: Clear scan history?
-        dialog_desc: Previously scanned folders can be imported again on the next scan.
+        dialog_desc: Previously scanned folders can be imported again on the next scan, and the language analysis cache will be rebuilt.
     data:
       title: Data
       desc: Project list portability and manual sync.
@@ -343,6 +350,7 @@ app:
         download: Download from cloud
         downloading: Downloading
         pulled: Pulled from WebDAV.
+        pulled_with_backup: Pulled from WebDAV. A local backup was created.
         failed: WebDAV sync failed.
     about:
       title: About

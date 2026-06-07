@@ -19,12 +19,14 @@ export enum ThemeEnum {
 
 export enum ThemeColorEnum {
   Contrast = 'contrast',
+  System = 'system',
   Blue = 'blue',
   Green = 'green',
   Teal = 'teal',
   Orange = 'orange',
   Purple = 'purple',
   Red = 'red',
+  Custom = 'custom',
 }
 
 export enum LanguageEnum {

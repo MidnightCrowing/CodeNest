@@ -57,7 +57,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     minify: 'terser', // 使用 Terser 进行代码压缩
-    outDir: r('dist/app'), // 是否清空输出目录
+    outDir: r('dist'), // 是否清空输出目录
     rollupOptions: {
       input: r('src/index.html'),
       output: {

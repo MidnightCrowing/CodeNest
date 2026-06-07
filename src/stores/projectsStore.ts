@@ -14,6 +14,8 @@ const projectsPersistence = createPersistence<LocalProject[]>({
         return undefined
       if (key === 'isTemporary' && value !== true)
         return undefined
+      if (key === 'isPinned' && value !== true)
+        return undefined
       if (key === 'license' && value === 'None')
         return undefined
       return value
@@ -36,6 +38,7 @@ function normalizeProject(project: LocalProject): LocalProject {
     path: stripWindowsVerbatimPrefix(project.path || ''),
     group: project.group || '',
     isTemporary: !!project.isTemporary,
+    isPinned: !!project.isPinned,
     isExists: project.isExists ?? true,
     langGroup: project.langGroup || [],
   }
@@ -48,6 +51,8 @@ function normalizePathForCompare(path: string) {
 
 export const useProjectsStore = defineStore('projects', () => {
   const projects = ref<LocalProject[]>([])
+  const loaded = ref(false)
+  let loadingPromise: Promise<void> | null = null
 
   const allProjects = computed(() => projects.value)
   const tempProjects = computed(() => projects.value.filter(project => project.isTemporary))
@@ -132,6 +137,16 @@ export const useProjectsStore = defineStore('projects', () => {
     return true
   }
 
+  async function toggleProjectPinned(appendTime: LocalProject['appendTime']) {
+    const project = getProjectByAppendTime(appendTime)
+    if (!project)
+      return false
+
+    project.isPinned = !project.isPinned
+    await saveProjects()
+    return true
+  }
+
   function clearProjects() {
     projects.value.splice(0, projects.value.length)
   }
@@ -145,24 +160,43 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  function setProjects(loadedData: LocalProject[]) {
+    const normalized = loadedData.map(normalizeProject)
+    projects.value.splice(0, projects.value.length, ...normalized)
+    loaded.value = true
+  }
+
   async function loadProjects() {
+    if (loadingPromise)
+      return loadingPromise
+
+    const cachedData = projectsPersistence.loadCached()
+    if (cachedData)
+      setProjects(cachedData)
+
+    loadingPromise = loadProjectsFromDisk().finally(() => {
+      loadingPromise = null
+    })
+    return loadingPromise
+  }
+
+  async function loadProjectsFromDisk() {
     try {
-      const loaded = await projectsPersistence.load()
-      if (!loaded) {
+      const loadedData = await projectsPersistence.load()
+      if (!loadedData) {
+        projects.value.splice(0, projects.value.length)
+        loaded.value = true
         return
       }
 
-      const normalized = await Promise.all(
-        loaded.map(async (project) => {
-          const item = normalizeProject(project)
-          item.isExists = await checkProjectExistence(item)
-          return item
-        }),
-      )
-      projects.value.splice(0, projects.value.length, ...normalized)
+      setProjects(loadedData)
+      void refreshProjectExistence().catch((error) => {
+        console.error('Error refreshing project existence:', error)
+      })
     }
     catch (error) {
       console.error('Error loading project data:', error)
+      loaded.value = true
     }
   }
 
@@ -204,6 +238,7 @@ export const useProjectsStore = defineStore('projects', () => {
 
   return {
     projects,
+    loaded,
     allProjects,
     tempProjects,
     mainLangSummary,
@@ -214,6 +249,7 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectsByLang,
     updateProject,
     removeProject,
+    toggleProjectPinned,
     clearProjects,
     saveProjects,
     loadProjects,

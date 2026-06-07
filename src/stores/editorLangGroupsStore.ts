@@ -11,6 +11,7 @@ const groupsPersistence = createPersistence<Record<CodeEditorEnum, string[]>>({
 
 export const useEditorLangGroupsStore = defineStore('editorLangGroups', () => {
   const groups = ref<Record<CodeEditorEnum, string[]>>(defaultEditorLangGroups)
+  let loadingPromise: Promise<void> | null = null
 
   function getEditorByLanguage(
     lang: string,
@@ -26,14 +27,23 @@ export const useEditorLangGroupsStore = defineStore('editorLangGroups', () => {
   }
 
   async function loadEditorLangGroupsData() {
+    if (loadingPromise)
+      return loadingPromise
+
+    const cachedData = groupsPersistence.loadCached()
+    if (cachedData)
+      groups.value = cachedData
+
+    loadingPromise = loadEditorLangGroupsFromDisk().finally(() => {
+      loadingPromise = null
+    })
+    return loadingPromise
+  }
+
+  async function loadEditorLangGroupsFromDisk() {
     const data = await groupsPersistence.load()
-    if (data) {
+    if (data)
       groups.value = data
-    }
-    else {
-      // If no data is found, save the default groups
-      await saveEditorLangGroupsData()
-    }
   }
 
   async function saveEditorLangGroupsData() {

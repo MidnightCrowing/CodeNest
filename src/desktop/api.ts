@@ -36,6 +36,7 @@ window.api = {
 
   checkUpdate: () => call('check_update'),
   scanProjects: payload => call('scan_projects', { payload }),
+  getSystemAccentColor: currentTheme => call('get_system_accent_color', { currentTheme }),
   detectJetBrainsConfigRootPath: () => call('detect_jetbrains_config_root_path'),
   detectVscodeStateDbPath: () => call('detect_vscode_state_db_path'),
   webdavTestConnection: config => call('webdav_test_connection', { config }),
