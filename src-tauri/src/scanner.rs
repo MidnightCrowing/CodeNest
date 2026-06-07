@@ -252,7 +252,7 @@ fn scan_one_project(
         .file_name()
         .map(|name| name.to_string_lossy().into_owned())
         .filter(|name| !name.is_empty())
-        .unwrap_or_else(|| "Unnamed Project".to_string());
+        .unwrap_or_default();
     let path_string = analyzer::display_path(&path);
 
     match directory_state_capped(&path, max_scan_bytes) {

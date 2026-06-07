@@ -13,6 +13,7 @@ const settings = useSettingsStore()
 const projectScannerStore = useProjectScannerStore()
 const { t } = useI18n()
 const showClearConfirm = ref(false)
+const rootRowRefs = new Map<string, HTMLElement>()
 
 const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(() =>
   (Object.keys(codeEditors) as CodeEditorEnum[]).map(editor => ({
@@ -47,6 +48,93 @@ function removeRoot(root: string) {
   }
 }
 
+function setRootRowRef(root: string, element: unknown) {
+  if (element instanceof HTMLElement) {
+    rootRowRefs.set(root, element)
+    return
+  }
+
+  rootRowRefs.delete(root)
+}
+
+function focusRootRow(root: string | undefined, preferRemoveButton = false) {
+  if (!root)
+    return
+
+  const row = rootRowRefs.get(root)
+  if (!row)
+    return
+
+  const target = preferRemoveButton
+    ? row.querySelector<HTMLButtonElement>('[data-root-action="remove"]:not(:disabled)') || row
+    : row
+
+  target.focus({ preventScroll: true })
+  target.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+function focusRootRowByOffset(root: string, offset: number, preferRemoveButton = false) {
+  const roots = settings.scanner.roots
+  const currentIndex = roots.indexOf(root)
+  if (currentIndex < 0)
+    return
+
+  const targetIndex = Math.max(0, Math.min(roots.length - 1, currentIndex + offset))
+  focusRootRow(roots[targetIndex], preferRemoveButton)
+}
+
+function focusRootRowAtEdge(edge: 'start' | 'end', preferRemoveButton = false) {
+  focusRootRow(edge === 'start' ? settings.scanner.roots[0] : settings.scanner.roots.at(-1), preferRemoveButton)
+}
+
+async function removeFocusedRoot(root: string) {
+  const roots = settings.scanner.roots
+  const index = roots.indexOf(root)
+  if (index < 0)
+    return
+
+  const nextRoot = roots[index + 1] || roots[index - 1]
+  removeRoot(root)
+  await nextTick()
+  focusRootRow(nextRoot)
+}
+
+function handleRootRowKeydown(root: string, event: KeyboardEvent) {
+  if (!settings.scanner.rootsEnabled || event.defaultPrevented)
+    return
+
+  const preferRemoveButton = event.target instanceof HTMLElement
+    && !!event.target.closest('[data-root-action="remove"]')
+
+  switch (event.key) {
+    case 'ArrowUp':
+      event.preventDefault()
+      event.stopPropagation()
+      focusRootRowByOffset(root, -1, preferRemoveButton)
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      event.stopPropagation()
+      focusRootRowByOffset(root, 1, preferRemoveButton)
+      break
+    case 'Home':
+      event.preventDefault()
+      event.stopPropagation()
+      focusRootRowAtEdge('start', preferRemoveButton)
+      break
+    case 'End':
+      event.preventDefault()
+      event.stopPropagation()
+      focusRootRowAtEdge('end', preferRemoveButton)
+      break
+    case 'Delete':
+      event.preventDefault()
+      event.stopPropagation()
+      void removeFocusedRoot(root)
+      break
+  }
+}
+
 async function browseJetbrainsRoot() {
   if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled)
     return
@@ -62,7 +150,7 @@ async function browseVscodeDb() {
     return
 
   const selectedPaths = await window.api.openFileDialog({
-    fileTypes: [{ name: 'VS Code Database', extensions: ['vscdb'] }],
+    fileTypes: [{ name: t('app.dialog.file_types.vscode_database'), extensions: ['vscdb'] }],
   })
   if (selectedPaths[0]) {
     settings.scanner.vscode.stateDbPath = selectedPaths[0]
@@ -126,15 +214,26 @@ function clearScanHistory() {
             <span class="subtle-count">{{ t('app.settings.scanner.roots.count', { count: settings.scanner.roots.length }) }}</span>
           </div>
 
-          <div class="path-list">
+          <div class="path-list" role="list">
             <div v-if="settings.scanner.roots.length === 0" class="empty-inline">
               {{ t('app.settings.scanner.roots.empty') }}
             </div>
-            <div v-for="root in settings.scanner.roots" :key="root" class="path-row">
+            <div
+              v-for="root in settings.scanner.roots"
+              :key="root"
+              :ref="el => setRootRowRef(root, el)"
+              class="path-row"
+              role="listitem"
+              :tabindex="settings.scanner.rootsEnabled ? 0 : -1"
+              :aria-label="root"
+              aria-keyshortcuts="Delete"
+              @keydown="handleRootRowKeydown(root, $event)"
+            >
               <span :title="root">{{ root }}</span>
               <button
                 class="icon-button"
                 type="button"
+                data-root-action="remove"
                 :title="t('app.settings.scanner.roots.remove')"
                 :aria-label="t('app.settings.scanner.roots.remove')"
                 :disabled="!settings.scanner.rootsEnabled"
@@ -338,10 +437,12 @@ function clearScanHistory() {
 
   strong {
     @apply text-13px font-650;
+    overflow-wrap: anywhere;
   }
 
   span {
     @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -349,6 +450,18 @@ function clearScanHistory() {
 .setting-row,
 .maintenance-box {
   @apply min-h-42px flex items-center justify-between gap-12px;
+}
+
+.maintenance-box {
+  @apply flex-wrap;
+
+  > div {
+    @apply flex-1;
+  }
+
+  > button {
+    @apply ml-auto;
+  }
 }
 
 .toggle-row {
@@ -362,10 +475,12 @@ function clearScanHistory() {
 
   strong {
     @apply text-13px font-620;
+    overflow-wrap: anywhere;
   }
 
   span {
     @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -395,10 +510,15 @@ function clearScanHistory() {
 
 .path-list {
   @apply max-h-128px overflow-auto;
+  scrollbar-gutter: stable;
 }
 
 .path-row {
-  @apply h-31px flex items-center gap-8px;
+  @apply h-31px flex items-center gap-8px rounded-4px outline-none;
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ui-ring);
+  }
 
   span {
     @apply min-w-0 flex-1 truncate text-12px light:color-$gray-3 dark:color-$gray-12;

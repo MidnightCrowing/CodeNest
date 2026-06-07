@@ -4,12 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 
+import SettingsPage from '../components/SettingsPage.vue'
+import SettingsRow from '../components/SettingsRow.vue'
+
 const projectsStore = useProjectsStore()
 const settings = useSettingsStore()
 const { t } = useI18n()
 
 const webdavBusy = ref<'test' | 'upload' | 'pull' | null>(null)
-const webdavStatus = ref<{ type: 'success' | 'error', text: string } | null>(null)
+const webdavStatus = ref<{ type: 'neutral' | 'info' | 'success' | 'warning' | 'error', text: string } | null>(null)
 
 function clearWebDavStatus() {
   webdavStatus.value = null
@@ -20,6 +23,43 @@ function setWebDavStatus(success: boolean, text: string) {
     type: success ? 'success' : 'error',
     text,
   }
+}
+
+function formatWebDavError(error?: string) {
+  const detail = error?.trim()
+  if (!detail)
+    return t('app.settings.data.webdav.failed')
+
+  if (detail === 'WebDAV URL is required')
+    return t('app.settings.data.webdav.errors.url_required')
+  if (detail === 'Invalid WebDAV URL' || detail.includes('relative URL') || detail.includes('empty host'))
+    return t('app.settings.data.webdav.errors.invalid_url')
+
+  const connectionMatch = detail.match(/^WebDAV connection failed: (.+)$/)
+  if (connectionMatch)
+    return t('app.settings.data.webdav.errors.connection_failed', { detail: connectionMatch[1] })
+
+  const uploadMatch = detail.match(/^Failed to upload (.+): (.+)$/)
+  if (uploadMatch)
+    return t('app.settings.data.webdav.errors.upload_failed', { file: uploadMatch[1], detail: uploadMatch[2] })
+
+  const pullMatch = detail.match(/^Failed to pull (.+): (.+)$/)
+  if (pullMatch)
+    return t('app.settings.data.webdav.errors.download_failed', { file: pullMatch[1], detail: pullMatch[2] })
+
+  const missingMatch = detail.match(/^Remote file not found: (.+)$/)
+  if (missingMatch)
+    return t('app.settings.data.webdav.errors.remote_file_missing', { file: missingMatch[1] })
+
+  const createDirMatch = detail.match(/^Failed to create remote directory: (.+)$/)
+  if (createDirMatch)
+    return t('app.settings.data.webdav.errors.create_directory_failed', { detail: createDirMatch[1] })
+
+  const checkDirMatch = detail.match(/^Failed to check remote directory: (.+)$/)
+  if (checkDirMatch)
+    return t('app.settings.data.webdav.errors.check_directory_failed', { detail: checkDirMatch[1] })
+
+  return t('app.settings.data.webdav.errors.detail', { detail })
 }
 
 async function importProjects() {
@@ -44,11 +84,11 @@ async function testWebDavConnection() {
       result.success,
       result.success
         ? t('app.settings.data.webdav.connected')
-        : result.error || t('app.settings.data.webdav.failed'),
+        : formatWebDavError(result.error),
     )
   }
   catch (error) {
-    setWebDavStatus(false, String(error))
+    setWebDavStatus(false, formatWebDavError(String(error)))
   }
   finally {
     webdavBusy.value = null
@@ -68,11 +108,11 @@ async function uploadWebDavData() {
       result.success,
       result.success
         ? t('app.settings.data.webdav.uploaded')
-        : result.error || t('app.settings.data.webdav.failed'),
+        : formatWebDavError(result.error),
     )
   }
   catch (error) {
-    setWebDavStatus(false, String(error))
+    setWebDavStatus(false, formatWebDavError(String(error)))
   }
   finally {
     webdavBusy.value = null
@@ -96,11 +136,11 @@ async function pullWebDavData() {
       setWebDavStatus(true, t('app.settings.data.webdav.pulled_with_backup'))
     }
     else {
-      setWebDavStatus(false, result.error || t('app.settings.data.webdav.failed'))
+      setWebDavStatus(false, formatWebDavError(result.error))
     }
   }
   catch (error) {
-    setWebDavStatus(false, String(error))
+    setWebDavStatus(false, formatWebDavError(String(error)))
   }
   finally {
     webdavBusy.value = null
@@ -109,158 +149,113 @@ async function pullWebDavData() {
 </script>
 
 <template>
-  <div class="settings-page">
-    <header class="page-header">
-      <h2>{{ t('app.settings.data.title') }}</h2>
-    </header>
-
-    <div class="settings-list">
-      <div class="setting-row">
-        <div class="setting-copy">
-          <strong>{{ t('app.settings.data.projects.title') }}</strong>
-          <span>{{ t('app.settings.data.projects.desc') }}</span>
-        </div>
-        <div class="row-actions">
-          <button class="ghost-button" type="button" @click="importProjects">
-            <span class="i-custom:import" />
-            {{ t('app.settings.data.projects.import') }}
-          </button>
-          <button class="ghost-button" type="button" @click="exportProjects">
-            <span class="i-custom:export" />
-            {{ t('app.settings.data.projects.export') }}
-          </button>
-        </div>
+  <SettingsPage :title="t('app.settings.data.title')">
+    <SettingsRow
+      :title="t('app.settings.data.projects.title')"
+    >
+      <div class="row-actions">
+        <button class="ghost-button" type="button" @click="importProjects">
+          <span class="i-custom:import" />
+          {{ t('app.settings.data.projects.import') }}
+        </button>
+        <button class="ghost-button" type="button" @click="exportProjects">
+          <span class="i-custom:export" />
+          {{ t('app.settings.data.projects.export') }}
+        </button>
       </div>
+    </SettingsRow>
 
-      <div class="setting-row webdav-row">
-        <div class="setting-copy">
-          <strong>{{ t('app.settings.data.webdav.title') }}</strong>
-          <span>{{ t('app.settings.data.webdav.desc') }}</span>
+    <SettingsRow
+      :title="t('app.settings.data.webdav.title')"
+      align="start"
+    >
+      <div class="webdav-panel">
+        <div class="webdav-fields">
+          <label class="field-control wide">
+            <span>{{ t('app.settings.data.webdav.server') }}</span>
+            <input
+              v-model="settings.webdav.endpoint"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.data.webdav.server')"
+              :placeholder="t('app.settings.data.webdav.server_placeholder')"
+            >
+          </label>
+          <label class="field-control wide">
+            <span>{{ t('app.settings.data.webdav.remote_path') }}</span>
+            <input
+              v-model="settings.webdav.remotePath"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.data.webdav.remote_path')"
+              :placeholder="t('app.settings.data.webdav.remote_path_placeholder')"
+            >
+          </label>
+          <label class="field-control">
+            <span>{{ t('app.settings.data.webdav.account') }}</span>
+            <input
+              v-model="settings.webdav.username"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.data.webdav.account')"
+              :placeholder="t('app.settings.data.webdav.account')"
+            >
+          </label>
+          <label class="field-control">
+            <span>{{ t('app.settings.data.webdav.password') }}</span>
+            <input
+              v-model="settings.webdav.password"
+              class="path-input"
+              type="password"
+              :aria-label="t('app.settings.data.webdav.password')"
+              :placeholder="t('app.settings.data.webdav.password')"
+            >
+          </label>
         </div>
-        <div class="webdav-panel">
-          <div class="webdav-fields">
-            <label class="field-control wide">
-              <span>{{ t('app.settings.data.webdav.server') }}</span>
-              <input
-                v-model="settings.webdav.endpoint"
-                class="path-input"
-                spellcheck="false"
-                :aria-label="t('app.settings.data.webdav.server')"
-                :placeholder="t('app.settings.data.webdav.server_placeholder')"
-              >
-            </label>
-            <label class="field-control wide">
-              <span>{{ t('app.settings.data.webdav.remote_path') }}</span>
-              <input
-                v-model="settings.webdav.remotePath"
-                class="path-input"
-                spellcheck="false"
-                :aria-label="t('app.settings.data.webdav.remote_path')"
-                :placeholder="t('app.settings.data.webdav.remote_path_placeholder')"
-              >
-            </label>
-            <label class="field-control">
-              <span>{{ t('app.settings.data.webdav.account') }}</span>
-              <input
-                v-model="settings.webdav.username"
-                class="path-input"
-                spellcheck="false"
-                :aria-label="t('app.settings.data.webdav.account')"
-                :placeholder="t('app.settings.data.webdav.account')"
-              >
-            </label>
-            <label class="field-control">
-              <span>{{ t('app.settings.data.webdav.password') }}</span>
-              <input
-                v-model="settings.webdav.password"
-                class="path-input"
-                type="password"
-                :aria-label="t('app.settings.data.webdav.password')"
-                :placeholder="t('app.settings.data.webdav.password')"
-              >
-            </label>
-          </div>
-          <div class="webdav-actions">
-            <button
-              class="ghost-button"
-              type="button"
-              :disabled="webdavBusy !== null || !settings.webdav.endpoint"
-              @click="testWebDavConnection"
-            >
-              <span class="i-lucide:plug-zap" />
-              {{ webdavBusy === 'test' ? t('app.settings.data.webdav.testing') : t('app.settings.data.webdav.test') }}
-            </button>
-            <button
-              class="ghost-button"
-              type="button"
-              :disabled="webdavBusy !== null || !settings.webdav.endpoint"
-              @click="pullWebDavData"
-            >
-              <span class="i-lucide:cloud-download" />
-              {{ webdavBusy === 'pull' ? t('app.settings.data.webdav.downloading') : t('app.settings.data.webdav.download') }}
-            </button>
-            <button
-              class="ghost-button"
-              type="button"
-              :disabled="webdavBusy !== null || !settings.webdav.endpoint"
-              @click="uploadWebDavData"
-            >
-              <span class="i-lucide:cloud-upload" />
-              {{ webdavBusy === 'upload' ? t('app.settings.data.webdav.uploading') : t('app.settings.data.webdav.upload') }}
-            </button>
-          </div>
-          <p
-            v-if="webdavStatus"
-            class="webdav-status"
-            :class="webdavStatus.type"
+        <div class="webdav-actions">
+          <button
+            class="ghost-button"
+            type="button"
+            :disabled="webdavBusy !== null || !settings.webdav.endpoint"
+            @click="testWebDavConnection"
           >
-            {{ webdavStatus.text }}
-          </p>
+            <span class="i-lucide:plug-zap" />
+            {{ webdavBusy === 'test' ? t('app.settings.data.webdav.testing') : t('app.settings.data.webdav.test') }}
+          </button>
+          <button
+            class="ghost-button"
+            type="button"
+            :disabled="webdavBusy !== null || !settings.webdav.endpoint"
+            @click="uploadWebDavData"
+          >
+            <span class="i-lucide:cloud-upload" />
+            {{ webdavBusy === 'upload' ? t('app.settings.data.webdav.uploading') : t('app.settings.data.webdav.upload') }}
+          </button>
+          <button
+            class="ghost-button"
+            type="button"
+            :disabled="webdavBusy !== null || !settings.webdav.endpoint"
+            @click="pullWebDavData"
+          >
+            <span class="i-lucide:cloud-download" />
+            {{ webdavBusy === 'pull' ? t('app.settings.data.webdav.downloading') : t('app.settings.data.webdav.download') }}
+          </button>
         </div>
+        <p
+          class="webdav-status"
+          :class="[webdavStatus?.type || 'neutral', { empty: !webdavStatus }]"
+          :aria-hidden="!webdavStatus"
+        >
+          {{ webdavStatus?.text }}
+        </p>
       </div>
-    </div>
-  </div>
+    </SettingsRow>
+  </SettingsPage>
 </template>
 
 <style lang="scss" scoped>
-.settings-page {
-  @apply flex flex-col gap-10px;
-}
-
-.page-header {
-  @apply flex items-end justify-between gap-10px;
-
-  h2 {
-    @apply m-0 text-16px font-650;
-  }
-}
-
-.settings-list {
-  @apply flex flex-col gap-8px;
-}
-
-.setting-row {
-  @apply min-h-42px flex items-center justify-between gap-14px;
-}
-
-.webdav-row {
-  @apply items-start;
-}
-
-.setting-copy {
-  @apply min-w-0 flex flex-col gap-3px;
-
-  strong {
-    @apply text-13px font-620;
-  }
-
-  span {
-    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
-  }
-}
-
 .row-actions {
-  @apply shrink-0 flex items-center gap-7px;
+  @apply shrink-0 flex flex-wrap items-center justify-end gap-7px;
 }
 
 .webdav-panel {
@@ -277,6 +272,7 @@ async function pullWebDavData() {
 
   span {
     @apply text-12px color-$ui-foreground;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -293,14 +289,43 @@ async function pullWebDavData() {
 }
 
 .webdav-status {
-  @apply m-0 text-right text-12px;
+  @apply m-0 min-h-16px text-right text-12px lh-16px;
+  overflow-wrap: anywhere;
+
+  &.empty {
+    visibility: hidden;
+  }
+
+  &.neutral {
+    @apply color-$ui-muted-foreground;
+  }
+
+  &.info {
+    color: color-mix(in srgb, var(--ui-primary) 72%, var(--ui-foreground));
+  }
 
   &.success {
-    @apply color-$green-5;
+    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
+  }
+
+  &.warning {
+    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
   }
 
   &.error {
-    @apply color-$red-5;
+    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
   }
+}
+
+:global(.dark) .webdav-status.success {
+  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
+}
+
+:global(.dark) .webdav-status.warning {
+  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
+}
+
+:global(.dark) .webdav-status.error {
+  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
 }
 </style>

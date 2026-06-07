@@ -5,11 +5,19 @@ import UiSwitch from '~/components/ui/UiSwitch.vue'
 import type { EditorCommandKey, EditorCommandOption } from '~/constants/codeEditor'
 import { codeEditors, editorCommandOptions } from '~/constants/codeEditor'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { useDelayedBusyKeys } from '~/utils/useDelayedBusy'
+
+type EditorControlKey = 'command' | 'terminal' | 'detect' | 'browse'
 
 const settings = useSettingsStore()
 const { t } = useI18n()
+const editorRowRefs = new Map<EditorCommandKey, HTMLElement>()
 
 const detectingKeys = ref<Set<EditorCommandKey>>(new Set())
+const {
+  visibleKeys: visibleDetectingKeys,
+  setKeyBusy: setVisibleDetectingKey,
+} = useDelayedBusyKeys<EditorCommandKey>({ delay: 220, minDuration: 320 })
 
 const commandGroups = computed(() => {
   const groups = new Map<string, EditorCommandOption[]>()
@@ -20,12 +28,18 @@ const commandGroups = computed(() => {
   return Array.from(groups.entries()).map(([label, options]) => ({ label, options }))
 })
 
+const editorCommandRows = computed(() => commandGroups.value.flatMap(group => group.options))
+
 function commandGroup(option: EditorCommandOption) {
-  return codeEditors[option.editors[0]]?.group || 'Editors'
+  return t(option.groupKey)
 }
 
 function commandPlaceholder(option: EditorCommandOption) {
   return option.defaultCommand
+}
+
+function editorDescription(option: EditorCommandOption) {
+  return option.descriptionKey ? t(option.descriptionKey) : commandGroup(option)
 }
 
 function editorNames(option: EditorCommandOption) {
@@ -35,8 +49,8 @@ function editorNames(option: EditorCommandOption) {
 async function browseEditor(option: EditorCommandOption) {
   const selectedPaths = await window.api.openFileDialog({
     fileTypes: [
-      { name: 'Executable Files', extensions: ['exe', 'bat', 'cmd'] },
-      { name: 'All Files', extensions: ['*'] },
+      { name: t('app.dialog.file_types.executable'), extensions: ['exe', 'bat', 'cmd'] },
+      { name: t('app.dialog.file_types.all'), extensions: ['*'] },
     ],
   })
   if (selectedPaths[0]) {
@@ -51,6 +65,7 @@ async function detectEditor(option: EditorCommandOption) {
     return
 
   detectingKeys.value = new Set([...detectingKeys.value, option.key])
+  setVisibleDetectingKey(option.key, true)
   try {
     await settings.detectEditorCommand(option.key)
   }
@@ -58,11 +73,107 @@ async function detectEditor(option: EditorCommandOption) {
     const next = new Set(detectingKeys.value)
     next.delete(option.key)
     detectingKeys.value = next
+    setVisibleDetectingKey(option.key, false)
   }
 }
 
 function clearEditor(option: EditorCommandOption) {
   settings.codeEditorsPath[option.key] = ''
+}
+
+function setEditorRowRef(key: EditorCommandKey, element: unknown) {
+  if (element instanceof HTMLElement) {
+    editorRowRefs.set(key, element)
+    return
+  }
+
+  editorRowRefs.delete(key)
+}
+
+function editorControlKey(target: EventTarget | null) {
+  const element = target instanceof HTMLElement
+    ? target.closest<HTMLElement>('[data-editor-control]')
+    : null
+  const control = element?.dataset.editorControl
+  return control === 'command' || control === 'terminal' || control === 'detect' || control === 'browse'
+    ? control
+    : null
+}
+
+function focusEditorControl(option: EditorCommandOption | undefined, preferredControl: EditorControlKey | null) {
+  if (!option)
+    return
+
+  const row = editorRowRefs.get(option.key)
+  if (!row)
+    return
+
+  const selector = preferredControl
+    ? `[data-editor-control="${preferredControl}"]:not(:disabled)`
+    : '[data-editor-control]:not(:disabled)'
+  const target = row.querySelector<HTMLElement>(selector)
+    || row.querySelector<HTMLElement>('[data-editor-control]:not(:disabled)')
+
+  target?.focus({ preventScroll: true })
+  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+function focusEditorControlByOffset(option: EditorCommandOption, offset: number, preferredControl: EditorControlKey | null) {
+  const rows = editorCommandRows.value
+  const currentIndex = rows.findIndex(item => item.key === option.key)
+  if (currentIndex < 0)
+    return
+
+  const targetIndex = Math.max(0, Math.min(rows.length - 1, currentIndex + offset))
+  focusEditorControl(rows[targetIndex], preferredControl)
+}
+
+function handleEditorRowKeydown(option: EditorCommandOption, event: KeyboardEvent) {
+  if (event.defaultPrevented)
+    return
+
+  if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')
+    return
+
+  event.preventDefault()
+  event.stopPropagation()
+  focusEditorControlByOffset(option, event.key === 'ArrowUp' ? -1 : 1, editorControlKey(event.target))
+}
+
+function commandActionButtons(toolbar: HTMLElement) {
+  return Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-editor-control]'))
+    .filter(button => !button.disabled && button.getClientRects().length > 0)
+}
+
+function handleCommandActionsKeydown(event: KeyboardEvent) {
+  if (event.defaultPrevented)
+    return
+
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home' && event.key !== 'End')
+    return
+
+  const toolbar = event.currentTarget
+  if (!(toolbar instanceof HTMLElement))
+    return
+
+  const buttons = commandActionButtons(toolbar)
+  const target = event.target instanceof HTMLElement
+    ? event.target.closest<HTMLButtonElement>('[data-editor-control]')
+    : null
+  const currentIndex = target ? buttons.indexOf(target) : -1
+  if (!buttons.length)
+    return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  const nextIndex = event.key === 'Home'
+    ? 0
+    : event.key === 'End'
+      ? buttons.length - 1
+      : Math.max(0, Math.min(buttons.length - 1, currentIndex + (event.key === 'ArrowLeft' ? -1 : 1)))
+
+  buttons[nextIndex]?.focus({ preventScroll: true })
 }
 
 function quoteCommand(command: string) {
@@ -87,13 +198,15 @@ function quoteCommand(command: string) {
         <div
           v-for="option in group.options"
           :key="option.key"
+          :ref="el => setEditorRowRef(option.key, el)"
           class="editor-row"
+          @keydown="handleEditorRowKeydown(option, $event)"
         >
           <div class="editor-name">
             <span class="ide-icon" :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
             <div>
-              <strong>{{ option.label }}</strong>
-              <span>{{ option.description || editorNames(option) }}</span>
+              <strong :title="option.label">{{ option.label }}</strong>
+              <span :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
             </div>
           </div>
 
@@ -102,9 +215,11 @@ function quoteCommand(command: string) {
               <input
                 v-model="settings.codeEditorsPath[option.key]"
                 class="path-input"
+                data-editor-control="command"
                 spellcheck="false"
                 :aria-label="t('app.settings.editors.command_placeholder', { editor: option.label })"
                 :placeholder="commandPlaceholder(option)"
+                :title="settings.codeEditorsPath[option.key] || commandPlaceholder(option)"
               >
               <button
                 v-if="settings.codeEditorsPath[option.key]"
@@ -119,23 +234,32 @@ function quoteCommand(command: string) {
             </div>
 
             <label class="terminal-toggle">
-              <UiSwitch v-model="settings.codeEditorsOpenInTerminal[option.key]" />
+              <UiSwitch v-model="settings.codeEditorsOpenInTerminal[option.key]" data-editor-control="terminal" />
               <span>{{ t('app.settings.editors.terminal') }}</span>
             </label>
 
-            <div class="command-actions">
+            <div
+              class="command-actions"
+              role="toolbar"
+              aria-orientation="horizontal"
+              :aria-label="option.label"
+              @keydown="handleCommandActionsKeydown"
+            >
               <button
                 class="icon-button"
                 type="button"
+                data-editor-control="detect"
                 :title="t('app.settings.editors.auto_detect')"
                 :aria-label="t('app.settings.editors.auto_detect')"
+                :disabled="detectingKeys.has(option.key)"
                 @click="detectEditor(option)"
               >
-                <span class="i-lucide:wand-sparkles" :class="{ spinning: detectingKeys.has(option.key) }" />
+                <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingKeys.has(option.key) }" />
               </button>
               <button
                 class="icon-button"
                 type="button"
+                data-editor-control="browse"
                 :title="t('app.settings.editors.browse_executable')"
                 :aria-label="t('app.settings.editors.browse_executable')"
                 @click="browseEditor(option)"
@@ -160,6 +284,7 @@ function quoteCommand(command: string) {
 
   h2 {
     @apply m-0 text-16px font-650;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -172,6 +297,7 @@ function quoteCommand(command: string) {
 
   h3 {
     @apply m-0 text-13px font-650;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -215,6 +341,10 @@ function quoteCommand(command: string) {
 
 .terminal-toggle {
   @apply min-w-0 flex items-center gap-6px text-12px color-$ui-muted-foreground cursor-pointer;
+
+  span {
+    @apply whitespace-nowrap;
+  }
 }
 
 .command-actions {

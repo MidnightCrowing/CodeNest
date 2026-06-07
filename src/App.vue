@@ -67,7 +67,10 @@ provide('activatedView', activatedView)
 </script>
 
 <template>
-  <main class="app-shell">
+  <main
+    class="app-shell"
+    :style="{ '--window-titlebar-height': useNativeTitleBar ? '0px' : '40px' }"
+  >
     <WindowHeader v-if="!useNativeTitleBar" shrink-0 />
     <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />

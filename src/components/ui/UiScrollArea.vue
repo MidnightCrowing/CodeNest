@@ -39,6 +39,7 @@ withDefaults(defineProps<{
 
 .ui-scroll-viewport {
   @apply size-full min-h-0 min-w-0;
+  scrollbar-gutter: stable;
 }
 
 .ui-scrollbar {

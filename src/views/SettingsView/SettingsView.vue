@@ -28,9 +28,21 @@ const sectionRefs = reactive<Record<SettingPageEnum, HTMLElement | null>>({
   [SettingPageEnum.Data]: null,
   [SettingPageEnum.About]: null,
 })
+const tabRefs = reactive<Record<SettingPageEnum, HTMLElement | null>>({
+  [SettingPageEnum.Appearance]: null,
+  [SettingPageEnum.Ides]: null,
+  [SettingPageEnum.AutoScan]: null,
+  [SettingPageEnum.Data]: null,
+  [SettingPageEnum.About]: null,
+})
 
 let settingsViewport: HTMLElement | null = null
 let ignoreScrollSync = false
+let scrollSettleTimer: ReturnType<typeof window.setTimeout> | null = null
+let scrollFallbackTimer: ReturnType<typeof window.setTimeout> | null = null
+
+const SCROLL_SETTLE_MS = 140
+const SCROLL_FALLBACK_MS = 1400
 
 const menuItems = computed(() => [
   {
@@ -64,17 +76,76 @@ function setSectionRef(page: SettingPageEnum, element: unknown) {
   sectionRefs[page] = element instanceof HTMLElement ? element : null
 }
 
+function setTabRef(page: SettingPageEnum, element: unknown) {
+  if (element instanceof HTMLElement) {
+    tabRefs[page] = element
+    return
+  }
+
+  if (element && typeof element === 'object' && '$el' in element && element.$el instanceof HTMLElement) {
+    tabRefs[page] = element.$el
+    return
+  }
+
+  tabRefs[page] = null
+}
+
+function scrollActiveTabIntoView() {
+  const tab = tabRefs[activatedPage.value]
+  if (!tab)
+    return
+
+  const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+  tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior })
+}
+
 function updateActivatedPage(page: string | number) {
   const nextPage = page as SettingPageEnum
   activatedPage.value = nextPage
   ignoreScrollSync = true
+  clearProgrammaticScrollTimers()
   nextTick(() => {
     sectionRefs[nextPage]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    window.setTimeout(() => {
-      ignoreScrollSync = false
-      syncActivePageFromScroll()
-    }, 360)
+    scheduleProgrammaticScrollUnlock()
+    scrollFallbackTimer = window.setTimeout(unlockProgrammaticScrollSync, SCROLL_FALLBACK_MS)
   })
+}
+
+function clearProgrammaticScrollTimers() {
+  if (scrollSettleTimer !== null) {
+    window.clearTimeout(scrollSettleTimer)
+    scrollSettleTimer = null
+  }
+
+  if (scrollFallbackTimer !== null) {
+    window.clearTimeout(scrollFallbackTimer)
+    scrollFallbackTimer = null
+  }
+}
+
+function scheduleProgrammaticScrollUnlock() {
+  if (scrollSettleTimer !== null)
+    window.clearTimeout(scrollSettleTimer)
+
+  scrollSettleTimer = window.setTimeout(unlockProgrammaticScrollSync, SCROLL_SETTLE_MS)
+}
+
+function unlockProgrammaticScrollSync() {
+  clearProgrammaticScrollTimers()
+  if (!ignoreScrollSync)
+    return
+
+  ignoreScrollSync = false
+  syncActivePageFromScroll()
+}
+
+function handleSettingsScroll() {
+  if (ignoreScrollSync) {
+    scheduleProgrammaticScrollUnlock()
+    return
+  }
+
+  syncActivePageFromScroll()
 }
 
 function syncActivePageFromScroll() {
@@ -97,6 +168,10 @@ function syncActivePageFromScroll() {
 
   activatedPage.value = activePage
 }
+
+watch(activatedPage, () => {
+  void nextTick(scrollActiveTabIntoView)
+})
 
 function openSettingsJSON() {
   void window.api.openData('settings')
@@ -132,7 +207,7 @@ onMounted(async () => {
   await syncRuntimeSettings()
   await nextTick()
   settingsViewport = settingsContentRef.value
-  settingsViewport?.addEventListener('scroll', syncActivePageFromScroll, { passive: true })
+  settingsViewport?.addEventListener('scroll', handleSettingsScroll, { passive: true })
 
   const initialPage = activatedPage.value
   if (initialPage !== SettingPageEnum.Appearance) {
@@ -143,7 +218,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  settingsViewport?.removeEventListener('scroll', syncActivePageFromScroll)
+  settingsViewport?.removeEventListener('scroll', handleSettingsScroll)
+  clearProgrammaticScrollTimers()
   activatedPage.value = SettingPageEnum.Appearance
 })
 </script>
@@ -168,6 +244,7 @@ onUnmounted(() => {
           <TabsTrigger
             v-for="item in menuItems"
             :key="item.value"
+            :ref="el => setTabRef(item.value, el)"
             class="settings-tab"
             :value="item.value"
             type="button"
@@ -244,7 +321,7 @@ onUnmounted(() => {
 }
 
 .settings-tabs {
-  @apply min-w-0 flex items-center gap-6px overflow-x-auto;
+  @apply min-w-0 flex items-center gap-6px overflow-x-auto px-2px py-3px;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -253,9 +330,10 @@ onUnmounted(() => {
 }
 
 .settings-tab {
-  @apply h-42px min-w-118px rounded-6px border-0 px-10px bg-transparent text-left cursor-pointer;
+  @apply h-42px min-w-118px rounded-6px border-0 px-10px bg-transparent text-left cursor-pointer outline-none;
   @apply flex flex-col justify-center gap-2px;
   @apply light:color-$gray-4 dark:color-$gray-10;
+  @apply transition duration-120 ease-out;
 
   strong {
     @apply text-12px font-620;
@@ -268,51 +346,29 @@ onUnmounted(() => {
   &[data-state="active"] {
     @apply bg-$ui-surface-background color-$ui-foreground;
   }
+
+  &:focus-visible {
+    box-shadow: var(--shadow-focus);
+  }
 }
 
 .settings-actions {
   @apply shrink-0 flex items-center gap-6px;
 }
 
-.primary-button,
-.ghost-button,
-.icon-button {
-  @apply h-28px border-0 rounded-5px px-9px;
-  @apply inline-flex items-center gap-5px whitespace-nowrap;
-  @apply text-12px font-560 cursor-pointer;
-}
-
-.icon-button {
-  @apply w-28px justify-center px-0;
-}
-
 .back-button {
   @apply light:bg-transparent dark:bg-transparent;
+  @apply hover:bg-$ui-hover-background;
 
   span {
     @apply text-16px;
   }
 }
 
-.primary-button {
-  @apply bg-$ui-primary color-$ui-primary-foreground;
-  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
-}
-
-.ghost-button,
-.icon-button {
-  @apply bg-$ui-surface-background color-$ui-foreground;
-  @apply hover:bg-$ui-hover-background;
-}
-
-.back-button {
-  @apply light:bg-transparent dark:bg-transparent;
-  @apply hover:bg-$ui-hover-background;
-}
-
 .settings-content {
   @apply min-h-0 min-w-0 mx-14px mb-12px pb-12px flex-1 overflow-y-auto;
   @apply flex flex-col gap-34px;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 55%) transparent;
 
@@ -384,6 +440,20 @@ onUnmounted(() => {
 }
 
 @media (max-width: 720px) {
+  .settings-topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .settings-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .settings-tabs-root {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
   .settings-title span {
     @apply hidden;
   }

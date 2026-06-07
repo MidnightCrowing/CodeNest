@@ -27,8 +27,8 @@ export type EditorCommandKey = CodeEditorEnum
 export interface CodeEditorOption {
   label: string
   icon?: string
-  description?: string
-  group?: string
+  descriptionKey?: string
+  groupKey: string
   defaultCommand: string
   openInTerminal?: boolean
   monochromeIcon?: boolean
@@ -38,7 +38,8 @@ export interface EditorCommandOption {
   key: EditorCommandKey
   label: string
   icon?: string
-  description?: string
+  descriptionKey?: string
+  groupKey: string
   defaultCommand: string
   openInTerminal: boolean
   monochromeIcon?: boolean
@@ -73,120 +74,120 @@ export function getEditorCommandKey(editor: CodeEditorEnum): EditorCommandKey {
 
 export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
   [CodeEditorEnum.IntellijIdea]: {
-    group: 'JetBrains',
-    label: 'Intellij IDEA',
-    description: 'Java  Kotlin  Spring',
+    groupKey: 'app.settings.editors.groups.jetbrains',
+    label: 'IntelliJ IDEA',
+    descriptionKey: 'app.settings.editors.descriptions.intellij_idea',
     icon: 'i-custom:jetbrains-intellij-idea',
     defaultCommand: 'idea {project}',
   },
   [CodeEditorEnum.PyCharm]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'PyCharm',
-    description: 'Python  Django  Jupyter',
+    descriptionKey: 'app.settings.editors.descriptions.pycharm',
     icon: 'i-custom:jetbrains-pycharm',
     defaultCommand: 'pycharm {project}',
   },
   [CodeEditorEnum.PhpStorm]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'PhpStorm',
-    description: 'PHP  Laravel  Symfony',
+    descriptionKey: 'app.settings.editors.descriptions.phpstorm',
     icon: 'i-custom:jetbrains-phpstorm',
     defaultCommand: 'phpstorm {project}',
   },
   [CodeEditorEnum.GoLand]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'GoLand',
-    description: 'Go (Golang)  JavaScript  TypeScript',
+    descriptionKey: 'app.settings.editors.descriptions.goland',
     icon: 'i-custom:jetbrains-goland',
     defaultCommand: 'goland {project}',
   },
   [CodeEditorEnum.Rider]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'Rider',
-    description: 'C#  .NET  ASP.NET',
+    descriptionKey: 'app.settings.editors.descriptions.rider',
     icon: 'i-custom:jetbrains-rider',
     defaultCommand: 'rider {project}',
   },
   [CodeEditorEnum.Clion]: {
-    group: 'JetBrains',
-    label: 'Clion',
-    description: 'C  C++  CMake',
+    groupKey: 'app.settings.editors.groups.jetbrains',
+    label: 'CLion',
+    descriptionKey: 'app.settings.editors.descriptions.clion',
     icon: 'i-custom:jetbrains-clion',
     defaultCommand: 'clion {project}',
   },
   [CodeEditorEnum.RustRover]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'RustRover',
-    description: 'Rust  TOML  SQL',
+    descriptionKey: 'app.settings.editors.descriptions.rust_rover',
     icon: 'i-custom:jetbrains-rustrover',
     defaultCommand: 'rustrover {project}',
   },
   [CodeEditorEnum.WebStorm]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'WebStorm',
-    description: 'JavaScript  TypeScript  React',
+    descriptionKey: 'app.settings.editors.descriptions.webstorm',
     icon: 'i-custom:jetbrains-webstorm',
     defaultCommand: 'webstorm {project}',
   },
   [CodeEditorEnum.RubyMine]: {
-    group: 'JetBrains',
+    groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'RubyMine',
-    description: 'Ruby on Rails (RoR)  Hotwire  RuboCop',
+    descriptionKey: 'app.settings.editors.descriptions.rubymine',
     icon: 'i-custom:jetbrains-rubymine',
     defaultCommand: 'rubymine {project}',
   },
   [CodeEditorEnum.VisualStudio]: {
-    group: 'Microsoft',
+    groupKey: 'app.settings.editors.groups.microsoft',
     label: 'Visual Studio',
     icon: 'i-custom:visual-studio',
     defaultCommand: 'devenv {project}',
   },
   [CodeEditorEnum.VisualStudioCode]: {
-    group: 'Microsoft',
+    groupKey: 'app.settings.editors.groups.microsoft',
     label: 'Visual Studio Code',
     icon: 'i-custom:visual-studio-code',
     defaultCommand: 'code {project}',
   },
   [CodeEditorEnum.Cursor]: {
-    group: 'AI Editors',
+    groupKey: 'app.settings.editors.groups.ai_editors',
     label: 'Cursor',
-    description: 'AI coding editor',
+    descriptionKey: 'app.settings.editors.descriptions.cursor',
     icon: 'i-custom:cursor',
     defaultCommand: 'cursor {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Windsurf]: {
-    group: 'AI Editors',
+    groupKey: 'app.settings.editors.groups.ai_editors',
     label: 'Windsurf',
-    description: 'Agentic coding editor',
+    descriptionKey: 'app.settings.editors.descriptions.windsurf',
     icon: 'i-custom:windsurf',
     defaultCommand: 'windsurf {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Trae]: {
-    group: 'AI Editors',
+    groupKey: 'app.settings.editors.groups.ai_editors',
     label: 'Trae',
-    description: 'AI coding editor',
+    descriptionKey: 'app.settings.editors.descriptions.trae',
     icon: 'i-custom:trae-color',
     defaultCommand: 'trae {project}',
   },
   [CodeEditorEnum.Zed]: {
-    group: 'Editors',
+    groupKey: 'app.settings.editors.groups.editors',
     label: 'Zed',
-    description: 'Fast collaborative editor',
+    descriptionKey: 'app.settings.editors.descriptions.zed',
     icon: 'i-custom:zed-industries',
     defaultCommand: 'zed {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.SublimeText]: {
-    group: 'Editors',
+    groupKey: 'app.settings.editors.groups.editors',
     label: 'Sublime Text',
     icon: 'i-custom:sublime-text',
     defaultCommand: 'subl {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Neovim]: {
-    group: 'Terminal Editors',
+    groupKey: 'app.settings.editors.groups.terminal_editors',
     label: 'Neovim',
     icon: 'i-custom:neovim',
     defaultCommand: 'nvim .',
@@ -194,31 +195,31 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     monochromeIcon: true,
   },
   [CodeEditorEnum.CodexCli]: {
-    group: 'AI CLI',
+    groupKey: 'app.settings.editors.groups.ai_cli',
     label: 'Codex CLI',
-    description: 'OpenAI Codex in terminal',
+    descriptionKey: 'app.settings.editors.descriptions.codex_cli',
     icon: 'i-custom:codex-color',
     defaultCommand: 'codex',
     openInTerminal: true,
   },
   [CodeEditorEnum.ClaudeCode]: {
-    group: 'AI CLI',
+    groupKey: 'app.settings.editors.groups.ai_cli',
     label: 'Claude Code',
-    description: 'Anthropic Claude Code in terminal',
+    descriptionKey: 'app.settings.editors.descriptions.claude_code',
     icon: 'i-custom:claude-color',
     defaultCommand: 'claude',
     openInTerminal: true,
   },
   [CodeEditorEnum.GeminiCli]: {
-    group: 'AI CLI',
+    groupKey: 'app.settings.editors.groups.ai_cli',
     label: 'Gemini CLI',
-    description: 'Google Gemini in terminal',
+    descriptionKey: 'app.settings.editors.descriptions.gemini_cli',
     icon: 'i-custom:gemini-color',
     defaultCommand: 'gemini',
     openInTerminal: true,
   },
   [CodeEditorEnum.AndroidStudio]: {
-    group: 'Google',
+    groupKey: 'app.settings.editors.groups.google',
     label: 'Android Studio',
     icon: 'i-custom:android-studio-stable',
     defaultCommand: 'studio {project}',
@@ -231,7 +232,8 @@ export const editorCommandOptions: EditorCommandOption[] = [
       key: editor as CodeEditorEnum,
       label: option.label,
       icon: option.icon,
-      description: option.description || option.group,
+      descriptionKey: option.descriptionKey,
+      groupKey: option.groupKey,
       defaultCommand: option.defaultCommand,
       openInTerminal: option.openInTerminal === true,
       monochromeIcon: option.monochromeIcon,

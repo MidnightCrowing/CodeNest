@@ -35,8 +35,10 @@ type KindFilter = ProjectKind | 'all'
 type StatusFilter = 'all' | 'available' | 'missing' | 'temporary'
 type SortKey = 'recent' | 'name' | 'language' | 'group'
 type LayoutMode = 'list' | 'grid'
+type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
 
 const MIN_SYNC_BUSY_MS = 280
+const PROJECT_ACTION_KEYS: ProjectActionKey[] = ['open', 'explorer', 'terminal', 'copy', 'more']
 
 interface FilterOption<T extends string> {
   value: T
@@ -60,6 +62,8 @@ const layoutMode = useLocalStorage<LayoutMode>('codenest:home-layout', 'list')
 const syncing = ref(false)
 const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
 const copyFeedbackTimers = new Map<number, number>()
+const projectItemRefs = new Map<number, HTMLElement>()
+const projectActionRefs = new Map<number, HTMLElement>()
 
 const totalProjects = computed(() => projectsStore.allProjects.length)
 const availableProjects = computed(() => projectsStore.allProjects.filter(project => project.isExists).length)
@@ -102,7 +106,7 @@ const languageOptions = computed(() => [
   { value: 'all', label: t('app.home.filters.all_languages'), count: totalProjects.value },
   ...languages.value.map(language => ({
     value: language.text,
-    label: language.text,
+    label: language.text === 'unknown' ? t('app.common.unknown') : language.text,
     color: language.color,
     count: language.count,
   })),
@@ -171,6 +175,15 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
       disabled: !project.isExists,
     },
     {
+      id: 'edit',
+      label: t('app.home.actions.edit'),
+    },
+    {
+      id: 'pin',
+      label: pinButtonTitle(project),
+      icon: pinButtonIcon(project),
+    },
+    {
       id: 'explorer',
       label: t('app.home.actions.open_explorer'),
       disabled: !project.isExists,
@@ -184,16 +197,6 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     {
       id: 'copy',
       label: t('app.home.actions.copy_path'),
-    },
-    {
-      id: 'edit',
-      label: t('app.home.actions.edit'),
-      separatorBefore: true,
-    },
-    {
-      id: 'pin',
-      label: pinButtonTitle(project),
-      icon: pinButtonIcon(project),
     },
     {
       id: 'remove',
@@ -250,6 +253,298 @@ async function openProject(project: LocalProject) {
   catch (error) {
     console.error('Failed to open project:', error)
     showNoIdePathDialog()
+  }
+}
+
+function setProjectItemRef(projectId: number, element: unknown) {
+  if (element instanceof HTMLElement) {
+    projectItemRefs.set(projectId, element)
+    return
+  }
+
+  projectItemRefs.delete(projectId)
+}
+
+function setProjectActionsRef(projectId: number, element: unknown) {
+  if (element instanceof HTMLElement) {
+    projectActionRefs.set(projectId, element)
+    return
+  }
+
+  projectActionRefs.delete(projectId)
+}
+
+function focusProject(project: LocalProject | undefined) {
+  if (!project?.isExists)
+    return
+
+  const element = projectItemRefs.get(project.appendTime)
+  if (!element)
+    return
+
+  element.focus({ preventScroll: true })
+  element.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+function findProjectByLinearOffset(project: LocalProject, offset: number, includeMissing = false) {
+  const projects = filteredProjects.value.filter(item => includeMissing || item.isExists)
+  const currentIndex = projects.findIndex(item => item.appendTime === project.appendTime)
+  if (currentIndex < 0)
+    return undefined
+
+  const targetIndex = Math.max(0, Math.min(projects.length - 1, currentIndex + offset))
+  return projects[targetIndex]
+}
+
+function focusProjectByLinearOffset(project: LocalProject, offset: number) {
+  focusProject(findProjectByLinearOffset(project, offset))
+}
+
+function focusProjectAtEdge(edge: 'start' | 'end') {
+  const focusableProjects = filteredProjects.value.filter(item => item.isExists)
+  focusProject(edge === 'start' ? focusableProjects[0] : focusableProjects.at(-1))
+}
+
+function openProjectContextMenuFromKeyboard(event: KeyboardEvent) {
+  const target = event.currentTarget
+  if (!(target instanceof HTMLElement))
+    return
+
+  const rect = target.getBoundingClientRect()
+  target.dispatchEvent(new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left + Math.min(36, rect.width / 2),
+    clientY: rect.top + Math.min(24, rect.height / 2),
+  }))
+}
+
+function findProjectByGridDirection(project: LocalProject, direction: 'left' | 'right' | 'up' | 'down', includeMissing = false) {
+  const currentElement = projectItemRefs.get(project.appendTime)
+  if (!currentElement)
+    return undefined
+
+  const currentRect = currentElement.getBoundingClientRect()
+  const currentCenterX = currentRect.left + currentRect.width / 2
+  const sameRowTolerance = Math.max(8, currentRect.height / 2)
+
+  const candidates = filteredProjects.value
+    .filter(item => (includeMissing || item.isExists) && item.appendTime !== project.appendTime)
+    .map((item) => {
+      const element = projectItemRefs.get(item.appendTime)
+      return element
+        ? { project: item, rect: element.getBoundingClientRect() }
+        : null
+    })
+    .filter(item => item !== null)
+
+  if (direction === 'left' || direction === 'right') {
+    const sameRow = candidates
+      .filter(item => Math.abs(item.rect.top - currentRect.top) <= sameRowTolerance)
+      .filter(item => direction === 'left' ? item.rect.left < currentRect.left : item.rect.left > currentRect.left)
+      .sort((a, b) => direction === 'left' ? b.rect.left - a.rect.left : a.rect.left - b.rect.left)
+
+    if (sameRow[0]) {
+      return sameRow[0].project
+    }
+
+    return findProjectByLinearOffset(project, direction === 'left' ? -1 : 1, includeMissing)
+  }
+
+  const verticalCandidates = candidates
+    .filter(item => direction === 'up' ? item.rect.top < currentRect.top - 4 : item.rect.top > currentRect.top + 4)
+    .sort((a, b) => {
+      const rowDistanceA = Math.abs(a.rect.top - currentRect.top)
+      const rowDistanceB = Math.abs(b.rect.top - currentRect.top)
+      if (rowDistanceA !== rowDistanceB)
+        return rowDistanceA - rowDistanceB
+
+      const centerA = a.rect.left + a.rect.width / 2
+      const centerB = b.rect.left + b.rect.width / 2
+      return Math.abs(centerA - currentCenterX) - Math.abs(centerB - currentCenterX)
+    })
+
+  return verticalCandidates[0]?.project
+}
+
+function focusCardByDirection(project: LocalProject, direction: 'left' | 'right' | 'up' | 'down') {
+  focusProject(findProjectByGridDirection(project, direction))
+}
+
+function isProjectActionDisabled(project: LocalProject, action: ProjectActionKey) {
+  return !project.isExists && (action === 'open' || action === 'explorer' || action === 'terminal')
+}
+
+function firstEnabledProjectAction(project: LocalProject) {
+  return PROJECT_ACTION_KEYS.find(action => !isProjectActionDisabled(project, action)) || 'more'
+}
+
+function actionButtonTabIndex(project: LocalProject, action: ProjectActionKey) {
+  if (isProjectActionDisabled(project, action))
+    return -1
+
+  return firstEnabledProjectAction(project) === action ? 0 : -1
+}
+
+function projectActionKey(button: HTMLButtonElement) {
+  const action = button.dataset.projectAction
+  return PROJECT_ACTION_KEYS.includes(action as ProjectActionKey)
+    ? action as ProjectActionKey
+    : null
+}
+
+function toolbarActionButtons(toolbar: HTMLElement) {
+  return Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-project-action]'))
+    .filter(button => !button.disabled && button.getClientRects().length > 0)
+}
+
+function focusToolbarButtonAtIndex(toolbar: HTMLElement, index: number) {
+  const buttons = toolbarActionButtons(toolbar)
+  if (!buttons.length)
+    return
+
+  const targetIndex = Math.max(0, Math.min(buttons.length - 1, index))
+  buttons[targetIndex]?.focus({ preventScroll: true })
+}
+
+function focusProjectAction(project: LocalProject | undefined, preferredAction: ProjectActionKey | null, preferredIndex: number) {
+  if (!project)
+    return
+
+  const toolbar = projectActionRefs.get(project.appendTime)
+  if (!toolbar)
+    return
+
+  const buttons = toolbarActionButtons(toolbar)
+  if (!buttons.length)
+    return
+
+  const sameActionButton = preferredAction
+    ? buttons.find(button => projectActionKey(button) === preferredAction)
+    : undefined
+  const fallbackIndex = Math.max(0, Math.min(buttons.length - 1, preferredIndex))
+  const target = sameActionButton || buttons[fallbackIndex] || buttons[0]
+
+  target.focus({ preventScroll: true })
+  target.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+function handleProjectActionsKeydown(project: LocalProject, event: KeyboardEvent) {
+  if (event.defaultPrevented)
+    return
+
+  const toolbar = event.currentTarget
+  if (!(toolbar instanceof HTMLElement))
+    return
+
+  const target = event.target instanceof HTMLElement
+    ? event.target.closest<HTMLButtonElement>('[data-project-action]')
+    : null
+  const buttons = toolbarActionButtons(toolbar)
+  const currentIndex = target ? buttons.indexOf(target) : -1
+  const action = target ? projectActionKey(target) : null
+
+  if (!buttons.length)
+    return
+
+  const focusHorizontalAction = (offset: number) => {
+    event.preventDefault()
+    event.stopPropagation()
+    focusToolbarButtonAtIndex(toolbar, currentIndex < 0 ? 0 : currentIndex + offset)
+  }
+
+  const focusVerticalAction = (offset: number, direction: 'up' | 'down') => {
+    event.preventDefault()
+    event.stopPropagation()
+    const targetProject = layoutMode.value === 'grid'
+      ? findProjectByGridDirection(project, direction, true)
+      : findProjectByLinearOffset(project, offset, true)
+    focusProjectAction(targetProject, action, currentIndex)
+  }
+
+  switch (event.key) {
+    case 'ArrowLeft':
+      focusHorizontalAction(-1)
+      break
+    case 'ArrowRight':
+      focusHorizontalAction(1)
+      break
+    case 'ArrowUp':
+      focusVerticalAction(-1, 'up')
+      break
+    case 'ArrowDown':
+      focusVerticalAction(1, 'down')
+      break
+    case 'Home':
+      event.preventDefault()
+      event.stopPropagation()
+      focusToolbarButtonAtIndex(toolbar, 0)
+      break
+    case 'End':
+      event.preventDefault()
+      event.stopPropagation()
+      focusToolbarButtonAtIndex(toolbar, buttons.length - 1)
+      break
+  }
+}
+
+function handleProjectContainerKeydown(project: LocalProject, event: KeyboardEvent) {
+  if (event.target !== event.currentTarget)
+    return
+
+  switch (event.key) {
+    case 'Enter':
+      event.preventDefault()
+      void openProject(project)
+      break
+    case ' ':
+      event.preventDefault()
+      void openProject(project)
+      break
+    case 'ContextMenu':
+      event.preventDefault()
+      openProjectContextMenuFromKeyboard(event)
+      break
+    case 'F10':
+      if (!event.shiftKey)
+        return
+      event.preventDefault()
+      openProjectContextMenuFromKeyboard(event)
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      if (layoutMode.value === 'grid')
+        focusCardByDirection(project, 'up')
+      else
+        focusProjectByLinearOffset(project, -1)
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      if (layoutMode.value === 'grid')
+        focusCardByDirection(project, 'down')
+      else
+        focusProjectByLinearOffset(project, 1)
+      break
+    case 'ArrowLeft':
+      if (layoutMode.value !== 'grid')
+        return
+      event.preventDefault()
+      focusCardByDirection(project, 'left')
+      break
+    case 'ArrowRight':
+      if (layoutMode.value !== 'grid')
+        return
+      event.preventDefault()
+      focusCardByDirection(project, 'right')
+      break
+    case 'Home':
+      event.preventDefault()
+      focusProjectAtEdge('start')
+      break
+    case 'End':
+      event.preventDefault()
+      focusProjectAtEdge('end')
+      break
   }
 }
 
@@ -401,8 +696,7 @@ function clearSearch() {
 }
 
 function showLanguage(project: LocalProject, event: MouseEvent) {
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  showLanguagePop(project, rect.top + window.scrollY - 3, rect.left + window.scrollX - 5)
+  showLanguagePop(project, event.currentTarget as HTMLElement)
 }
 
 function openSettings() {
@@ -603,18 +897,22 @@ function updateLayoutMode(value: string) {
           @select="action => handleProjectMenuSelect(project, action)"
         >
           <div
+            :ref="el => setProjectItemRef(project.appendTime, el)"
             class="project-grid project-row"
             :class="{ missing: !project.isExists }"
-            tabindex="0"
+            role="button"
+            :tabindex="project.isExists ? 0 : -1"
+            :aria-disabled="!project.isExists"
+            :aria-label="t('app.home.actions.open_named', { name: project.name })"
+            aria-keyshortcuts="Enter Space Shift+F10"
             @click="openProject(project)"
-            @keydown.enter="openProject(project)"
-            @keydown.space.prevent="openProject(project)"
+            @keydown="handleProjectContainerKeydown(project, $event)"
           >
             <div class="project-main">
               <div class="project-title-line">
-                <span class="project-title">
+                <span class="project-title" :title="project.group ? `${project.group}/${project.name}` : project.name">
                   <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
-                  <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span><span class="project-name">{{ project.name }}</span>
+                  <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                 </span>
                 <span class="editor-chip">
                   <span :class="editorIconClasses(project.defaultOpen)" />
@@ -624,7 +922,7 @@ function updateLayoutMode(value: string) {
               <div class="project-path" :title="project.path">
                 {{ project.path }}
               </div>
-              <div v-if="project.fromUrl || project.fromName" class="project-source">
+              <div v-if="project.fromUrl || project.fromName" class="project-source" :title="project.fromName || project.fromUrl">
                 {{ project.kind === ProjectKind.FORK ? t('app.home.source.forked_from') : t('app.home.source.cloned_from') }}
                 {{ project.fromName || project.fromUrl }}
               </div>
@@ -633,7 +931,7 @@ function updateLayoutMode(value: string) {
             <span class="kind-pill" :class="kindClass(project.kind)">
               {{ kindLabel(project.kind) }}
             </span>
-            <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
+            <button class="inline-pill" type="button" :title="project.mainLang || t('app.common.unknown')" @click.stop="showLanguage(project, $event)">
               <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
               {{ project.mainLang || t('app.common.unknown') }}
             </button>
@@ -646,13 +944,22 @@ function updateLayoutMode(value: string) {
             <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
             <span class="updated-cell">{{ formatTime(project.appendTime) }}</span>
 
-            <div class="row-actions">
+            <div
+              :ref="el => setProjectActionsRef(project.appendTime, el)"
+              class="row-actions"
+              role="toolbar"
+              aria-orientation="horizontal"
+              :aria-label="t('app.home.actions.project_actions', { name: project.name })"
+              @keydown="handleProjectActionsKeydown(project, $event)"
+            >
               <button
                 class="icon-button primary-action"
                 type="button"
+                data-project-action="open"
                 :title="t('app.home.actions.open_project')"
                 :aria-label="t('app.home.actions.open_project')"
                 :disabled="!project.isExists"
+                :tabindex="actionButtonTabIndex(project, 'open')"
                 @click.stop="openProject(project)"
               >
                 <span class="i-lucide:external-link" />
@@ -660,9 +967,11 @@ function updateLayoutMode(value: string) {
               <button
                 class="icon-button"
                 type="button"
+                data-project-action="explorer"
                 :title="t('app.home.actions.open_explorer')"
                 :aria-label="t('app.home.actions.open_explorer')"
                 :disabled="!project.isExists"
+                :tabindex="actionButtonTabIndex(project, 'explorer')"
                 @click.stop="openInExplorer(project)"
               >
                 <span class="i-lucide:folder" />
@@ -670,9 +979,11 @@ function updateLayoutMode(value: string) {
               <button
                 class="icon-button"
                 type="button"
+                data-project-action="terminal"
                 :title="t('app.home.actions.open_terminal')"
                 :aria-label="t('app.home.actions.open_terminal')"
                 :disabled="!project.isExists"
+                :tabindex="actionButtonTabIndex(project, 'terminal')"
                 @click.stop="openInTerminal(project)"
               >
                 <span class="i-lucide:square-terminal" />
@@ -681,8 +992,10 @@ function updateLayoutMode(value: string) {
                 class="icon-button copy-action"
                 :class="copyButtonClass(project)"
                 type="button"
+                data-project-action="copy"
                 :title="copyButtonTitle(project)"
                 :aria-label="copyButtonTitle(project)"
+                :tabindex="actionButtonTabIndex(project, 'copy')"
                 @click.stop="copyProjectPath(project)"
               >
                 <span :class="copyButtonIcon(project)" />
@@ -695,8 +1008,10 @@ function updateLayoutMode(value: string) {
                 <button
                   class="icon-button more-action"
                   type="button"
+                  data-project-action="more"
                   :title="t('app.home.actions.more')"
                   :aria-label="t('app.home.actions.more')"
+                  :tabindex="actionButtonTabIndex(project, 'more')"
                   @click.stop
                 >
                   <span class="i-lucide:more-horizontal" />
@@ -718,18 +1033,22 @@ function updateLayoutMode(value: string) {
             @select="action => handleProjectMenuSelect(project, action)"
           >
             <article
+              :ref="el => setProjectItemRef(project.appendTime, el)"
               class="project-card"
               :class="{ missing: !project.isExists }"
-              tabindex="0"
+              role="button"
+              :tabindex="project.isExists ? 0 : -1"
+              :aria-disabled="!project.isExists"
+              :aria-label="t('app.home.actions.open_named', { name: project.name })"
+              aria-keyshortcuts="Enter Space Shift+F10"
               @click="openProject(project)"
-              @keydown.enter="openProject(project)"
-              @keydown.space.prevent="openProject(project)"
+              @keydown="handleProjectContainerKeydown(project, $event)"
             >
               <header class="card-header">
                 <div class="card-title">
-                  <strong>
+                  <strong :title="project.group ? `${project.group}/${project.name}` : project.name">
                     <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
-                    <span v-if="project.group" class="project-group-prefix">{{ project.group }}/</span>{{ project.name }}
+                    <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                   </strong>
                 </div>
                 <span class="kind-pill" :class="kindClass(project.kind)">
@@ -742,7 +1061,7 @@ function updateLayoutMode(value: string) {
               </div>
 
               <div class="card-meta">
-                <button class="inline-pill" type="button" @click.stop="showLanguage(project, $event)">
+                <button class="inline-pill" type="button" :title="project.mainLang || t('app.common.unknown')" @click.stop="showLanguage(project, $event)">
                   <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
                   {{ project.mainLang || t('app.common.unknown') }}
                 </button>
@@ -760,13 +1079,22 @@ function updateLayoutMode(value: string) {
                   <span :class="editorIconClasses(project.defaultOpen)" />
                   <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
                 </span>
-                <div class="row-actions">
+                <div
+                  :ref="el => setProjectActionsRef(project.appendTime, el)"
+                  class="row-actions"
+                  role="toolbar"
+                  aria-orientation="horizontal"
+                  :aria-label="t('app.home.actions.project_actions', { name: project.name })"
+                  @keydown="handleProjectActionsKeydown(project, $event)"
+                >
                   <button
                     class="icon-button primary-action"
                     type="button"
+                    data-project-action="open"
                     :title="t('app.home.actions.open_project')"
                     :aria-label="t('app.home.actions.open_project')"
                     :disabled="!project.isExists"
+                    :tabindex="actionButtonTabIndex(project, 'open')"
                     @click.stop="openProject(project)"
                   >
                     <span class="i-lucide:external-link" />
@@ -774,9 +1102,11 @@ function updateLayoutMode(value: string) {
                   <button
                     class="icon-button"
                     type="button"
+                    data-project-action="explorer"
                     :title="t('app.home.actions.open_explorer')"
                     :aria-label="t('app.home.actions.open_explorer')"
                     :disabled="!project.isExists"
+                    :tabindex="actionButtonTabIndex(project, 'explorer')"
                     @click.stop="openInExplorer(project)"
                   >
                     <span class="i-lucide:folder" />
@@ -784,9 +1114,11 @@ function updateLayoutMode(value: string) {
                   <button
                     class="icon-button"
                     type="button"
+                    data-project-action="terminal"
                     :title="t('app.home.actions.open_terminal')"
                     :aria-label="t('app.home.actions.open_terminal')"
                     :disabled="!project.isExists"
+                    :tabindex="actionButtonTabIndex(project, 'terminal')"
                     @click.stop="openInTerminal(project)"
                   >
                     <span class="i-lucide:square-terminal" />
@@ -795,8 +1127,10 @@ function updateLayoutMode(value: string) {
                     class="icon-button copy-action"
                     :class="copyButtonClass(project)"
                     type="button"
+                    data-project-action="copy"
                     :title="copyButtonTitle(project)"
                     :aria-label="copyButtonTitle(project)"
+                    :tabindex="actionButtonTabIndex(project, 'copy')"
                     @click.stop="copyProjectPath(project)"
                   >
                     <span :class="copyButtonIcon(project)" />
@@ -809,8 +1143,10 @@ function updateLayoutMode(value: string) {
                     <button
                       class="icon-button more-action"
                       type="button"
+                      data-project-action="more"
                       :title="t('app.home.actions.more')"
                       :aria-label="t('app.home.actions.more')"
+                      :tabindex="actionButtonTabIndex(project, 'more')"
                       @click.stop
                     >
                       <span class="i-lucide:more-horizontal" />
@@ -855,31 +1191,10 @@ function updateLayoutMode(value: string) {
   @apply shrink-0 flex items-center gap-7px;
 }
 
-.primary-button,
-.ghost-button,
 .clear-button {
   @apply h-28px border-0 rounded-5px px-9px;
   @apply inline-flex items-center gap-6px whitespace-nowrap;
   @apply text-12px font-560 cursor-pointer;
-}
-
-.primary-button {
-  @apply bg-$ui-primary color-$ui-primary-foreground;
-  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
-
-  > span {
-    @apply color-$ui-primary-foreground;
-  }
-}
-
-.ghost-button {
-  @apply bg-$ui-surface-background color-$ui-foreground;
-  @apply hover:bg-$ui-hover-background;
-}
-
-.ghost-button:disabled,
-.primary-button:disabled {
-  @apply opacity-55 cursor-not-allowed;
 }
 
 .filter-bar {
@@ -892,14 +1207,14 @@ function updateLayoutMode(value: string) {
   border-style: solid;
   border-color: var(--ui-input);
   @apply bg-$ui-control-background color-$ui-foreground;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+  box-shadow: var(--shadow-control);
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease;
 
   &:focus-within {
     border-color: var(--ui-ring);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+    box-shadow: var(--shadow-focus);
   }
 
   input {
@@ -946,15 +1261,16 @@ function updateLayoutMode(value: string) {
 .project-table {
   @apply min-h-0 mx-14px mb-14px flex-1 overflow-hidden rounded-6px flex flex-col;
   @apply bg-$ui-surface-background;
+  box-shadow: var(--shadow-surface);
 }
 
 .project-grid {
   @apply grid items-center gap-9px;
-  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 122px 160px;
+  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 122px 136px;
 }
 
 .table-head {
-  @apply h-31px px-10px border-b text-11px uppercase tracking-0;
+  @apply h-31px px-12px border-b text-11px uppercase tracking-0;
   @apply light:border-$gray-12 dark:border-$gray-4;
   @apply light:color-$gray-7 dark:color-$gray-8;
 }
@@ -964,13 +1280,21 @@ function updateLayoutMode(value: string) {
 }
 
 .project-row {
-  @apply min-h-52px px-10px py-6px border-b cursor-pointer;
+  @apply min-h-52px px-12px py-6px border-b cursor-pointer;
   @apply light:border-$gray-13 dark:border-$gray-3;
   @apply hover:bg-$ui-hover-background;
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-$blue-5;
+  @apply focus-visible:outline-none;
+  transition:
+    background-color 120ms ease-out,
+    box-shadow 120ms ease-out,
+    opacity 120ms ease-out;
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ui-ring);
+  }
 
   &.missing {
-    @apply opacity-78;
+    @apply cursor-default opacity-78;
   }
 }
 
@@ -979,19 +1303,19 @@ function updateLayoutMode(value: string) {
 }
 
 .project-title-line {
-  @apply min-w-0 flex items-center gap-7px;
+  @apply min-w-0 flex items-center gap-7px overflow-hidden;
 }
 
 .project-title {
-  @apply min-w-0 flex items-center truncate;
+  @apply min-w-0 flex-1 flex items-center truncate;
 }
 
 .project-group-prefix {
-  @apply shrink-0 text-12px font-600 light:color-$gray-7 dark:color-$gray-8;
+  @apply min-w-0 max-w-[45%] truncate text-12px font-600 light:color-$gray-7 dark:color-$gray-8;
 }
 
 .project-name {
-  @apply min-w-0 truncate text-13px font-620 light:color-$gray-1 dark:color-$gray-13;
+  @apply min-w-0 flex-1 truncate text-13px font-620 light:color-$gray-1 dark:color-$gray-13;
 }
 
 .pinned-marker {
@@ -1021,7 +1345,7 @@ function updateLayoutMode(value: string) {
 .inline-pill,
 .kind-pill,
 .license-cell {
-  @apply min-w-0 h-23px rounded-4px px-7px border-0;
+  @apply min-w-0 max-w-full h-23px rounded-4px px-7px border-0;
   @apply inline-flex items-center gap-5px truncate text-11px;
   @apply bg-$ui-control-background color-$ui-foreground;
 }
@@ -1055,7 +1379,7 @@ function updateLayoutMode(value: string) {
   @apply [--kind-color:var(--yellow-5)] [--kind-bg-dark-color:var(--yellow-3)] [--kind-bg-dark-base:var(--gray-1)];
   @apply [--kind-bg-light-strength:27%] [--kind-bg-dark-strength:30%];
   @apply [--kind-text-light:color-mix(in_srgb,var(--yellow-2)_96%,var(--gray-1))];
-  @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_80%,var(--gray-1))];
+  @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_95%,var(--gray-1))];
 }
 
 .kind-pill {
@@ -1083,7 +1407,12 @@ function updateLayoutMode(value: string) {
   }
 
   &.primary-action {
-    @apply color-$blue-5;
+    color: color-mix(in srgb, var(--ui-primary) 58%, var(--ui-muted-foreground));
+
+    &:hover,
+    &:focus-visible {
+      @apply color-$ui-primary;
+    }
   }
 
   &.danger {
@@ -1109,22 +1438,44 @@ function updateLayoutMode(value: string) {
 }
 
 .cards-body {
-  @apply min-h-full p-10px;
-  @apply grid gap-10px content-start;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  @apply min-h-full p-12px;
+  @apply grid gap-12px content-start;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
 }
 
 .project-card {
-  @apply min-w-0 rounded-6px border p-10px cursor-pointer;
+  @apply min-w-0 rounded-6px border p-12px cursor-pointer;
   @apply border-$ui-border bg-$ui-control-background;
   @apply hover:bg-$ui-hover-background;
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-$blue-5;
+  @apply focus-visible:outline-none;
+  box-shadow: var(--shadow-surface);
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out,
+    opacity 120ms ease-out,
+    transform 120ms ease-out;
+
+  &:hover {
+    box-shadow: var(--shadow-surface-hover);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    box-shadow: var(--shadow-focus), var(--shadow-surface-hover);
+  }
+
+  &.missing {
+    @apply cursor-default opacity-78;
+    box-shadow: var(--shadow-surface);
+    transform: none;
+  }
 }
 
 .card-header,
 .card-footer,
 .card-meta {
-  @apply min-w-0 flex items-center gap-8px;
+  @apply min-w-0 flex items-center gap-9px;
 }
 
 .card-header {
@@ -1132,15 +1483,15 @@ function updateLayoutMode(value: string) {
 }
 
 .card-title {
-  @apply min-w-0 flex flex-col gap-2px;
+  @apply min-w-0 flex-1 flex flex-col gap-2px;
 
   strong {
-    @apply min-w-0 inline-flex items-center truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
+    @apply min-w-0 w-full inline-flex items-center truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
   }
 }
 
 .card-path {
-  @apply my-8px truncate text-11px light:color-$gray-6 dark:color-$gray-8;
+  @apply my-9px truncate text-11px light:color-$gray-6 dark:color-$gray-8;
 }
 
 .card-meta {
@@ -1148,7 +1499,7 @@ function updateLayoutMode(value: string) {
 }
 
 .card-footer {
-  @apply mt-10px grid;
+  @apply mt-12px grid;
   grid-template-columns: minmax(0, 1fr) max-content;
 
   .editor-chip {
@@ -1180,7 +1531,7 @@ function updateLayoutMode(value: string) {
 
 @media (max-width: 1020px) {
   .project-grid {
-    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 156px;
+    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 136px;
   }
 
   .project-grid > :nth-child(5) {
@@ -1214,7 +1565,7 @@ function updateLayoutMode(value: string) {
   }
 
   .project-grid {
-    grid-template-columns: minmax(210px, 1fr) 76px 158px;
+    grid-template-columns: minmax(210px, 1fr) 76px 136px;
   }
 
   .project-grid > :nth-child(3),

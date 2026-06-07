@@ -3,7 +3,7 @@ import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { useProjectsStore } from '~/stores/projectsStore'
 
 export const popupVisible: Ref<boolean> = ref(false)
-export const position: { top: number, left: number } = reactive({ top: 0, left: 0 })
+export const anchorElement: Ref<HTMLElement | null> = ref(null)
 
 const project: Ref<LocalProject | null> = ref(null)
 export const mainLang: Ref<ProjectLanguage | null | undefined> = ref<ProjectLanguage | null>(null)
@@ -14,14 +14,13 @@ export const analyzing: Ref<boolean> = ref(false)
 
 let analyzeRequestId = 0
 
-export function showPop(newProjectItem: LocalProject, top: number, left: number) {
+export function showPop(newProjectItem: LocalProject, anchor: HTMLElement) {
   const requestId = ++analyzeRequestId
   project.value = newProjectItem
   mainLang.value = newProjectItem.mainLang
   mainLangColor.value = newProjectItem.mainLangColor
   languagesGroup.value = newProjectItem.langGroup?.length ? newProjectItem.langGroup : undefined
-  position.top = top
-  position.left = left
+  anchorElement.value = anchor
   popupVisible.value = true
 
   getAnalyzeError.value = null
@@ -37,6 +36,7 @@ export function showPop(newProjectItem: LocalProject, top: number, left: number)
 
 export function hidePop() {
   analyzeRequestId += 1
+  anchorElement.value = null
   popupVisible.value = false
 }
 

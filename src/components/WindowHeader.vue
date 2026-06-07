@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 function minimizeWindow() {
   void window.api.minimizeWindow()
 }
@@ -20,13 +24,13 @@ function closeWindow() {
     <span class="window-title" data-tauri-drag-region>CodeNest</span>
 
     <div class="window-controls">
-      <button class="window-control" type="button" aria-label="Minimize" @click="minimizeWindow">
+      <button class="window-control" type="button" :aria-label="t('app.window.minimize')" @click="minimizeWindow">
         <span class="window-control-icon minimize" />
       </button>
-      <button class="window-control" type="button" aria-label="Maximize" @click="toggleMaximizeWindow">
+      <button class="window-control" type="button" :aria-label="t('app.window.maximize')" @click="toggleMaximizeWindow">
         <span class="window-control-icon maximize" />
       </button>
-      <button class="window-control close" type="button" aria-label="Close" @click="closeWindow">
+      <button class="window-control close" type="button" :aria-label="t('app.window.close')" @click="closeWindow">
         <span class="window-control-icon close-icon" />
       </button>
     </div>

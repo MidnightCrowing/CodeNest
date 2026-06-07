@@ -60,7 +60,8 @@ function updateValue(value: unknown) {
 .ui-segmented-button {
   @apply h-24px border-0 rounded-4px px-8px bg-transparent;
   @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
-  @apply text-12px cursor-pointer light:color-$gray-5 dark:color-$gray-9;
+  @apply text-12px cursor-pointer outline-none light:color-$gray-5 dark:color-$gray-9;
+  @apply transition duration-120 ease-out;
 
   &:hover:not(.active):not(:disabled) {
     @apply color-$ui-foreground;
@@ -69,6 +70,10 @@ function updateValue(value: unknown) {
 
   &.active {
     @apply bg-$ui-surface-background color-$ui-foreground;
+  }
+
+  &:focus-visible {
+    box-shadow: var(--shadow-focus);
   }
 
   &:disabled {

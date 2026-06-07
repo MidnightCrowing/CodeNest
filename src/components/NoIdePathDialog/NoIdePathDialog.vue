@@ -37,22 +37,3 @@ function changeSettingsView() {
     </template>
   </UiDialog>
 </template>
-
-<style lang="scss" scoped>
-.primary-button,
-.ghost-button {
-  @apply h-28px border-0 rounded-5px px-10px;
-  @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
-  @apply text-12px font-560 cursor-pointer;
-}
-
-.primary-button {
-  @apply bg-$ui-primary color-$ui-primary-foreground;
-  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
-}
-
-.ghost-button {
-  @apply bg-$ui-control-background color-$ui-foreground;
-  @apply hover:bg-$ui-hover-background;
-}
-</style>

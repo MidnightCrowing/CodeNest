@@ -105,8 +105,13 @@
 
   --toolbar-hover: rgb(0 0 0 / 10%);
   --toolbar-active: rgb(0 0 0 / 5%);
-  --shadow-popup: 0 6px 20px 0 rgb(145 145 145 / 47%);
-  --shadow-editor-tooltip: 0 3px 12px 0 rgb(27 31 38 / 18%);
+  --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 4%), 0 1px 1px rgb(0 0 0 / 3%);
+  --shadow-surface: 0 1px 2px rgb(0 0 0 / 5%), 0 6px 16px rgb(31 35 40 / 5%);
+  --shadow-surface-hover: 0 2px 4px rgb(0 0 0 / 6%), 0 10px 24px rgb(31 35 40 / 8%);
+  --shadow-popup: 0 18px 44px rgb(31 35 40 / 16%), 0 6px 18px rgb(31 35 40 / 10%), 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-dialog: 0 30px 72px rgb(31 35 40 / 22%), 0 12px 28px rgb(31 35 40 / 14%), 0 2px 6px rgb(0 0 0 / 8%);
+  --shadow-editor-tooltip: 0 10px 28px rgb(31 35 40 / 14%), 0 2px 8px rgb(0 0 0 / 8%);
   --ui-page-background: var(--gray-13);
   --ui-surface-background: var(--gray-14);
   --ui-surface-muted-background: var(--gray-13);
@@ -121,6 +126,7 @@
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background) 52%, var(--ui-page-background));
   --ui-switch-background: var(--gray-11);
   --ui-hover-background: var(--ui-surface-muted-background);
+  --ui-option-hover-background: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
   --ui-foreground: var(--gray-2);
   --ui-muted-foreground: var(--gray-7);
   --ui-border: var(--gray-12);
@@ -246,8 +252,13 @@
 
   --toolbar-hover: rgb(255 255 255 / 10%);
   --toolbar-active: rgb(255 255 255 / 5%);
-  --shadow-popup: 0 8px 32px 0 rgb(0 0 0 / 40%);
-  --shadow-editor-tooltip: 0 3px 12px 0 rgb(27 31 38 / 18%);
+  --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 34%), inset 0 1px 0 rgb(255 255 255 / 4%);
+  --shadow-surface: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 20px rgb(0 0 0 / 18%), inset 0 1px 0 rgb(255 255 255 / 3%);
+  --shadow-surface-hover: 0 2px 4px rgb(0 0 0 / 34%), 0 14px 28px rgb(0 0 0 / 24%), inset 0 1px 0 rgb(255 255 255 / 4%);
+  --shadow-popup: 0 22px 56px rgb(0 0 0 / 58%), 0 8px 22px rgb(0 0 0 / 42%), inset 0 1px 0 rgb(255 255 255 / 6%);
+  --shadow-dialog: 0 34px 84px rgb(0 0 0 / 66%), 0 12px 32px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 6%);
+  --shadow-editor-tooltip: 0 14px 34px rgb(0 0 0 / 50%), 0 3px 12px rgb(0 0 0 / 34%);
   --ui-page-background: var(--gray-1);
   --ui-surface-background: var(--gray-2);
   --ui-surface-muted-background: var(--gray-3);
@@ -262,6 +273,7 @@
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 4%);
   --ui-switch-background: var(--gray-3);
   --ui-hover-background: var(--ui-surface-muted-background);
+  --ui-option-hover-background: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 14%);
   --ui-foreground: var(--gray-12);
   --ui-muted-foreground: var(--gray-8);
   --ui-border: var(--gray-4);

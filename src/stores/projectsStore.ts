@@ -10,7 +10,7 @@ const projectsPersistence = createPersistence<LocalProject[]>({
     JSON.stringify(data, (key, value) => {
       if (key === 'group' && value === '')
         return undefined
-      if (key === 'langGroup' || key === 'isExists')
+      if (key === 'isExists')
         return undefined
       if (key === 'isTemporary' && value !== true)
         return undefined

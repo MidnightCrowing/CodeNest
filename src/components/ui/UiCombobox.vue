@@ -131,8 +131,9 @@ watch(() => normalizedOptions.value.length, () => {
   @apply h-30px rounded-md border px-9px;
   @apply inline-flex items-center justify-between gap-7px;
   @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
-  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  @apply transition duration-120 ease-out;
   border-style: solid;
+  box-shadow: var(--shadow-control);
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
@@ -140,7 +141,7 @@ watch(() => normalizedOptions.value.length, () => {
 
   &:focus-within {
     border-color: var(--ui-ring);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+    box-shadow: var(--shadow-focus);
   }
 
   &.invalid {
@@ -176,9 +177,11 @@ watch(() => normalizedOptions.value.length, () => {
   @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
   @apply backdrop-blur-8px backdrop-saturate-140;
   border-style: solid;
-  box-shadow:
-    0 10px 28px rgb(0 0 0 / 14%),
-    0 2px 8px rgb(0 0 0 / 8%);
+  box-shadow: var(--shadow-popup);
+
+  &[data-state="open"] {
+    animation: combobox-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 .ui-combobox-viewport[data-reka-combobox-viewport] {
@@ -225,7 +228,7 @@ watch(() => normalizedOptions.value.length, () => {
 
   &[data-highlighted] {
     @apply color-$ui-accent-foreground;
-    background-color: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
+    background-color: var(--ui-option-hover-background);
   }
 
   &[data-disabled] {
@@ -240,5 +243,12 @@ watch(() => normalizedOptions.value.length, () => {
 .ui-combobox-check {
   @apply absolute left-7px top-1/2 -translate-y-1/2 text-12px;
   @apply color-$ui-primary;
+}
+
+@keyframes combobox-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.985);
+  }
 }
 </style>

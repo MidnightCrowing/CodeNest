@@ -10,6 +10,9 @@ import { LanguageEnum, ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
 
+import SettingsPage from '../components/SettingsPage.vue'
+import SettingsRow from '../components/SettingsRow.vue'
+
 const settings = useSettingsStore()
 const { locale, t } = useI18n()
 const customColorInputRef = ref<HTMLInputElement | null>(null)
@@ -98,120 +101,73 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
 </script>
 
 <template>
-  <div class="settings-page">
-    <header class="page-header">
-      <h2>{{ t('app.settings.appearance.title') }}</h2>
-    </header>
+  <SettingsPage :title="t('app.settings.appearance.title')">
+    <SettingsRow
+      :title="t('app.settings.appearance.theme.title')"
+    >
+      <UiSelect
+        v-model="appTheme"
+        :options="themeOptions"
+        :aria-label="t('app.settings.appearance.theme.title')"
+        min-width="150px"
+        content-width="170px"
+      />
+    </SettingsRow>
 
-    <div class="settings-list">
-      <div class="setting-row">
-        <div class="setting-copy">
-          <strong>{{ t('app.settings.appearance.theme.title') }}</strong>
-          <span>{{ t('app.settings.appearance.theme.desc') }}</span>
+    <SettingsRow
+      :title="t('app.settings.appearance.theme_color.title')"
+    >
+      <RadioGroupRoot
+        as-child
+        orientation="horizontal"
+        :model-value="appThemeColor"
+        @update:model-value="selectThemeColor"
+      >
+        <div class="theme-color-grid" :aria-label="t('app.settings.appearance.theme_color.title')">
+          <RadioGroupItem
+            v-for="option in themeColorOptions"
+            :key="option.value"
+            class="theme-color-button"
+            :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
+            :style="themeColorButtonStyle(option.value)"
+            :value="option.value"
+            :title="option.label"
+            :aria-label="option.label"
+          >
+            <span class="theme-color-swatch" />
+            <span
+              v-if="option.value === ThemeColorEnum.Custom"
+              class="theme-color-icon i-lucide:pipette"
+            />
+          </RadioGroupItem>
+          <input
+            ref="customColorInputRef"
+            :value="appCustomThemeColor"
+            class="custom-color-input"
+            type="color"
+            tabindex="-1"
+            aria-hidden="true"
+            @input="updateCustomThemeColor"
+          >
         </div>
-        <UiSelect
-          v-model="appTheme"
-          :options="themeOptions"
-          :aria-label="t('app.settings.appearance.theme.title')"
-          min-width="150px"
-          content-width="170px"
-        />
-      </div>
+      </RadioGroupRoot>
+    </SettingsRow>
 
-      <div class="setting-row">
-        <div class="setting-copy">
-          <strong>{{ t('app.settings.appearance.theme_color.title') }}</strong>
-          <span>{{ t('app.settings.appearance.theme_color.desc') }}</span>
-        </div>
-        <RadioGroupRoot
-          as-child
-          orientation="horizontal"
-          :model-value="appThemeColor"
-          @update:model-value="selectThemeColor"
-        >
-          <div class="theme-color-grid" :aria-label="t('app.settings.appearance.theme_color.title')">
-            <RadioGroupItem
-              v-for="option in themeColorOptions"
-              :key="option.value"
-              class="theme-color-button"
-              :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
-              :style="themeColorButtonStyle(option.value)"
-              :value="option.value"
-              :title="option.label"
-              :aria-label="option.label"
-            >
-              <span class="theme-color-swatch" />
-              <span
-                v-if="option.value === ThemeColorEnum.Custom"
-                class="theme-color-icon i-lucide:pipette"
-              />
-            </RadioGroupItem>
-            <input
-              ref="customColorInputRef"
-              :value="appCustomThemeColor"
-              class="custom-color-input"
-              type="color"
-              :aria-label="t('app.settings.appearance.theme_color.custom')"
-              @input="updateCustomThemeColor"
-            >
-          </div>
-        </RadioGroupRoot>
-      </div>
-
-      <div class="setting-row">
-        <div class="setting-copy">
-          <strong>{{ t('app.settings.appearance.language.title') }}</strong>
-          <span>{{ t('app.settings.appearance.language.desc') }}</span>
-        </div>
-        <UiSelect
-          v-model="appLanguage"
-          :options="languageOptions"
-          :aria-label="t('app.settings.appearance.language.title')"
-          min-width="150px"
-          content-width="170px"
-        />
-      </div>
-    </div>
-  </div>
+    <SettingsRow
+      :title="t('app.settings.appearance.language.title')"
+    >
+      <UiSelect
+        v-model="appLanguage"
+        :options="languageOptions"
+        :aria-label="t('app.settings.appearance.language.title')"
+        min-width="150px"
+        content-width="170px"
+      />
+    </SettingsRow>
+  </SettingsPage>
 </template>
 
 <style lang="scss" scoped>
-.settings-page {
-  @apply flex flex-col gap-10px;
-}
-
-.page-header {
-  @apply flex items-end justify-between gap-10px;
-
-  h2 {
-    @apply m-0 text-16px font-650;
-  }
-
-  span {
-    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
-  }
-}
-
-.settings-list {
-  @apply flex flex-col gap-8px;
-}
-
-.setting-row {
-  @apply min-h-42px flex items-center justify-between gap-14px;
-}
-
-.setting-copy {
-  @apply min-w-0 flex flex-col gap-3px;
-
-  strong {
-    @apply text-13px font-620;
-  }
-
-  span {
-    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
-  }
-}
-
 .theme-color-grid {
   @apply relative shrink-0 flex items-center gap-7px;
 }

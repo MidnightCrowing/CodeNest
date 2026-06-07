@@ -132,9 +132,10 @@ watch(() => props.options.length, () => {
   @apply inline-flex items-center justify-between gap-7px;
   @apply text-12px cursor-pointer outline-none;
   @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
-  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  @apply transition duration-120 ease-out;
   appearance: none;
   border-style: solid;
+  box-shadow: var(--shadow-control);
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
@@ -143,7 +144,7 @@ watch(() => props.options.length, () => {
   &[data-state="open"],
   &:focus-visible {
     border-color: var(--ui-ring);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+    box-shadow: var(--shadow-focus);
   }
 
   &[data-disabled] {
@@ -165,9 +166,11 @@ watch(() => props.options.length, () => {
   @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
   @apply backdrop-blur-8px backdrop-saturate-140;
   border-style: solid;
-  box-shadow:
-    0 10px 28px rgb(0 0 0 / 14%),
-    0 2px 8px rgb(0 0 0 / 8%);
+  box-shadow: var(--shadow-popup);
+
+  &[data-state="open"] {
+    animation: select-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 .ui-select-viewport[data-reka-select-viewport] {
@@ -214,7 +217,7 @@ watch(() => props.options.length, () => {
 
   &[data-highlighted] {
     @apply color-$ui-accent-foreground;
-    background-color: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
+    background-color: var(--ui-option-hover-background);
   }
 
   &[data-disabled] {
@@ -240,5 +243,12 @@ watch(() => props.options.length, () => {
   @apply inline-flex items-center justify-center;
   @apply text-11px font-650;
   @apply bg-$ui-hover-background color-$ui-muted-foreground;
+}
+
+@keyframes select-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.985);
+  }
 }
 </style>

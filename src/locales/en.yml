@@ -1,155 +1,37 @@
-common:
-  detect: Auto Detect
-  not_supported: Not supported yet
-  platform:
-    windows: Windows
-    macos: macOS
-    linux: Linux
 language_pop:
   count: '{count} languages'
-  failed: Analysis failed
+  failed: Couldn't analyze languages
   loading: Analyzing
   more: '+{count} more'
+  other: Other
   overall_label: Languages used in this project
-project_card:
-  temporary: Temporary
-  opening: Opening...
-  actions:
-    open_in_explorer: Open in Explorer
-    open_in_terminal: Open in Terminal
-    copy_path: Copy Path
-    edit: Edit
-    remove: Remove
-    delete: Delete
-project_config:
-  name: Name
-  group: Project Group
-  optional: Optional
-  directory: Directory
-  fill: Fill In
-  kind:
-    source: Project Source
-    url: Project URL
-    name: Project Name
-  temporary: Temporary Project
-  main_lang: Main Language
-  lang_info: 'Type: {type}, Bytes: {bytes}, Lines: {lines}'
-  open_method: Opening Method
-  license: License
-  license_other: Other Licenses
-  path_in_list: 'Path "{path}" already exists in the project list'
-  path_tooltip: Path cannot be empty
-  name_tooltip: Name cannot be empty
-  lang_tooltip: Language cannot be empty
-  open_tooltip: Opening method cannot be empty
-  create: Create
-  finish: Finish
-  cancel: Cancel
 remove_project_dialog:
   dialog_title:
-    remove: Confirm Removal
-    delete: Confirm Deletion
+    remove: Remove Project?
+    delete: Delete Project?
   dialog_desc:
-    remove: 'Are you sure you want to remove the project "{name}" from the list?'
-    delete: 'Are you sure you want to delete the project "{name}"?'
-    delete_note: 'Note: This will also delete the project files and cannot be recovered.'
+    remove: 'Remove "{name}" from the project list?'
+    delete: 'Delete "{name}" and its files?'
+    delete_note: This can't be undone.
   cancel: Cancel
   remove: Remove
-  remove_from_list: Remove from List (Keep files)
+  remove_from_list: Keep files
   delete: Delete
 no_ide_path_dialog:
-  dialog_title: Launch Command Not Set
+  dialog_title: Launch Command Missing
   dialog_desc: Configure a launch command for this editor in settings.
   cancel: Cancel
-  set: Configure
-home:
-  side_panel:
-    projects: Projects
-    languages: Languages
-    kinds:
-      all: All
-      mine: Mine
-      fork: Fork
-      clone: Clone
-    temporary: Temporary
-  header:
-    add_item: Add Project
-    search_project: Search Project
-  overview:
-    empty_desc: No content to display
-settings:
-  appearance:
-    title: Appearance
-    app_theme:
-      title: Application theme
-      light: Light
-      dark: Dark
-    app_language: Language
-  ides_path:
-    title: IDEs Path
-    none: None
-    browse: Browse...
-  auto_scan:
-    title: Auto Scanner Project
-    desc: Automatically scans project root paths at startup.
-    method: Import Methods
-    methods_desc: Projects will be scanned and imported from the following methods at startup.
-    fs_tab: Import from file system
-    enable_fs: Enable importing from file system
-    ide_tab: Import from IDEs
-    enable_ide: Enable importing from IDEs
-    add_folder: Add Project Root
-    default_open_mode: Default Opening Method
-    auto_select_program: Automatically select program based on language
-    always_use_custom_program: Always use the specified program
-    temp_project_name_rule: Temporary Project Name Rule
-    clear_history: Clear Scan History
-    clear_history_desc: This will delete all scanned project records.
-    clear_history_warning: 'Warning: After deletion, the program will re-scan all project folders on next startup, which may cause a short freeze. Please proceed with caution.'
-    confirm: Yes
-    cancel: No
-    strategy: Import Strategy
-    jetbrains:
-      title: 'JetBrains IDEs:'
-      config_root: 'JetBrains IDE config root path:'
-      select_folder_dialog: Select JetBrains IDE config root directory
-      hint_title: 'Please choose the JetBrains IDE config root directory, usually at:'
-      path_samples:
-        windows: 'C:\\Users\\&lt;User&gt;\\AppData\\Roaming\\JetBrains'
-        macos: ~/Library/Application Support/JetBrains
-        linux: ~/.config/JetBrains or ~/.JetBrains
-      includes: Includes IntelliJ IDEA, PyCharm, WebStorm, etc.
-      scan_versions: All IDE versions under this path will be scanned.
-    vscode:
-      title: 'Visual Studio Code:'
-      recent_db_label: 'VS Code recent projects file:'
-      select_file_dialog: Select VS Code recent projects file
-      file_type_name: VS Code Database
-      hint_title: "Please choose VS Code's state.vscdb file, usually at:"
-      path_samples:
-        windows: 'C:\\Users\\&lt;User&gt;\\AppData\\Roaming\\Code\\User\\globalStorage\\state.vscdb'
-        macos: ~/Library/Application Support/Code/User/globalStorage/state.vscdb
-        linux: ~/.config/Code/User/globalStorage/state.vscdb
-    vs:
-      title: 'Visual Studio:'
-  about:
-    title: About
-    version:
-      title: Version
-      check_update: Check for updates
-      checking_update: Checking for updates...
-      is_latest: You are on the latest version
-      found_new: New version available
-    link: Link
-    import_export:
-      title: Import/Export
-      import_desc: Import project list
-      export_desc: Export project list
-  open_json_file: Open JSON file
-  save: Save
-  cancel: Cancel
-  apply: Apply
+  set: Open Settings
 app:
+  window:
+    minimize: Minimize
+    maximize: Maximize
+    close: Close
+  dialog:
+    file_types:
+      executable: Executable files
+      all: All files
+      vscode_database: VS Code database
   common:
     back: Back
     cancel: Cancel
@@ -157,10 +39,10 @@ app:
     save: Save
     clear: Clear
     detect: Detect
-    browse_folder: Browse folder
+    browse_folder: Choose folder
     no_editor: No editor
     not_set: Not set
-    unknown: unknown
+    unknown: Unknown
   license:
     none: No license
     other: Other
@@ -175,8 +57,8 @@ app:
     sync: Scan
     syncing: Scanning
     add_project: Add project
-    search_placeholder: Search name, path, group, language...
-    clear_count: Clear {count}
+    search_placeholder: Search projects
+    clear_count: Clear filters ({count})
     project_list: Project list
     filters:
       kind: Kind
@@ -215,9 +97,11 @@ app:
       forked_from: Forked from
       cloned_from: Cloned from
     actions:
-      open_project: Open project
-      open_explorer: Open in Explorer
-      open_terminal: Open terminal
+      open_project: Open
+      open_named: Open {name}
+      project_actions: '{name} actions'
+      open_explorer: Show in folder
+      open_terminal: Open in Terminal
       copy_path: Copy path
       copied: Copied
       copy_failed: Copy failed
@@ -236,26 +120,24 @@ app:
         desc: Theme and language
       editors:
         label: Editors
-        desc: Open projects fast
+        desc: Launch commands
       scanner:
         label: Scanner
         desc: Import rules
       data:
         label: Data
-        desc: Import/export and sync
+        desc: Import, export, sync
       about:
         label: About
-        desc: Version and repository
+        desc: Version and links
     appearance:
       title: Appearance
       theme:
         title: Theme
-        desc: Switch the desktop shell and interface colors.
         light: Light
         dark: Dark
       theme_color:
         title: Theme color
-        desc: Choose the accent used by actions and focused controls.
         contrast: Contrast
         system: System
         blue: Blue
@@ -267,37 +149,55 @@ app:
         custom: Custom
       language:
         title: Language
-        desc: Choose the interface language.
         english: English
         zh_cn: Simplified Chinese
     editors:
       title: Editors
-      desc: Configure launch targets used by project rows.
-      editor: Editor
-      path: Command
-      path_placeholder: Command for {editor}
       command_placeholder: Launch command for {editor}
-      clear_path: Clear command
       clear_command: Clear command
       browse_executable: Browse executable
       auto_detect: Auto detect
       terminal: Run in terminal
+      groups:
+        jetbrains: JetBrains
+        microsoft: Microsoft
+        ai_editors: AI editors
+        editors: Editors
+        terminal_editors: Terminal editors
+        ai_cli: AI CLI
+        google: Google
+      descriptions:
+        intellij_idea: Java, Kotlin, Spring
+        pycharm: Python, Django, Jupyter
+        phpstorm: PHP, Laravel, Symfony
+        goland: Go, JavaScript, TypeScript
+        rider: C#, .NET, ASP.NET
+        clion: C, C++, CMake
+        rust_rover: Rust, TOML, SQL
+        webstorm: JavaScript, TypeScript, React
+        rubymine: Ruby on Rails, Hotwire, RuboCop
+        cursor: AI code editor
+        windsurf: Agentic coding editor
+        trae: AI code editor
+        zed: Fast collaborative editor
+        codex_cli: OpenAI Codex in Terminal
+        claude_code: Claude Code in Terminal
+        gemini_cli: Gemini in Terminal
     scanner:
       title: Scanner
-      desc: Control which projects are imported on startup or manual scan.
       sources:
         title: Import sources
-        desc: Keep only the sources you actually use.
+        desc: Choose where projects are imported from.
       roots:
         title: Project roots
-        desc: Scan immediate subfolders under selected directories.
+        desc: Scan direct subfolders under selected directories.
         add: Add root
         count: '{count} roots'
         empty: No project roots configured.
         remove: Remove root
       ide:
         title: Recent IDE projects
-        desc: Import projects from editor history databases.
+        desc: Import projects from recent project history.
       jetbrains:
         placeholder: JetBrains config root
       vscode:
@@ -307,34 +207,31 @@ app:
         title: Import strategy
         desc: Decide how new projects are opened and classified.
       default_editor:
-        title: Default editor
-        desc: Use language mapping or force one editor.
+        title: Open projects with
+        desc: Choose an editor automatically or use one editor.
       specified_editor:
-        title: Specified editor
-        desc: Used when the strategy above is fixed.
+        title: Editor
+        desc: Used when "Specified editor" is selected.
       name_pattern:
         title: Temporary name pattern
         desc: Regex used to mark demo/test projects automatically.
       open_mode:
-        auto: Auto by language
-        specified: Always specified
+        auto: By language
+        specified: Specified editor
       history:
         title: Scan history
-        desc: Clear records and analysis cache when you want previously seen folders to be imported again.
+        desc: Clear records so previously scanned folders can be imported again.
         clear: Clear history
         dialog_title: Clear scan history?
         dialog_desc: Previously scanned folders can be imported again on the next scan, and the language analysis cache will be rebuilt.
     data:
       title: Data
-      desc: Project list portability and manual sync.
       projects:
         title: Project list
-        desc: Move your tracked projects between machines.
         import: Import
         export: Export
       webdav:
         title: WebDAV
-        desc: Manually upload or pull settings and project list data.
         server: WebDAV server URL
         server_placeholder: https://example.com/dav/
         remote_path: WebDAV folder
@@ -343,28 +240,36 @@ app:
         password: WebDAV password
         test: Test connection
         testing: Testing
-        connected: WebDAV connection succeeded.
+        connected: Connection succeeded.
         upload: Upload to cloud
         uploading: Uploading
-        uploaded: Uploaded to WebDAV.
+        uploaded: Upload complete.
         download: Download from cloud
         downloading: Downloading
-        pulled: Pulled from WebDAV.
-        pulled_with_backup: Pulled from WebDAV. A local backup was created.
+        pulled_with_backup: Download complete. A local backup was created.
         failed: WebDAV sync failed.
+        errors:
+          url_required: WebDAV server URL is required.
+          invalid_url: WebDAV server URL is invalid.
+          connection_failed: 'Connection failed: {detail}'
+          upload_failed: 'Failed to upload {file}: {detail}'
+          download_failed: 'Failed to download {file}: {detail}'
+          remote_file_missing: 'Remote file not found: {file}'
+          create_directory_failed: 'Failed to create remote folder: {detail}'
+          check_directory_failed: 'Failed to check remote folder: {detail}'
+          detail: 'WebDAV sync failed: {detail}'
     about:
       title: About
-      desc: Version and repository information.
       update:
-        check_desc: Check GitHub Releases for updates.
         available: 'New version available: v{version}'
-        latest: You are on the latest version.
+        latest: CodeNest is up to date.
         checking: Checking
-        check: Check update
+        check: Check for Updates
         open_release: Open release
+        request_failed: 'Update check failed: {detail}'
+        failed_detail: 'Update check failed: {detail}'
       repository:
-        title: Repository
-        desc: Open the project page in your browser.
+        title: GitHub
   project_editor:
     title:
       add: Add project
@@ -380,42 +285,36 @@ app:
     analyze: Analyze
     analyzing: Analyzing
     analyzing_desc: Analyzing project files...
-    detecting: Detecting
-    detecting_license_desc: Reading license file...
     select_editor: Select editor
     unnamed: Unnamed project
     no_language: No language
     no_folder: No folder selected
     sections:
       project: Project
-      metadata: Metadata
+      metadata: Language & Editor
     fields:
       folder: Folder
-      folder_desc: Local project root folder.
-      folder_duplicate: This folder is already tracked.
+      folder_duplicate: This folder is already in the project list.
       name: Name
-      name_desc: Display name in the project list.
       group: Group
       group_desc: Optional label for filtering.
       source: Source
-      source_desc: Used for fork/clone context in the list.
+      source_desc: Shows where forks and clones came from.
       source_url: Source URL
       source_name: Source name
       main_language: Main language
-      main_language_desc: Auto detected, still editable.
+      main_language_desc: Detected automatically. You can edit it.
       open_with: Open with
-      open_with_desc: Default editor for the open action.
       license: License
-      license_desc: Shown directly in the project list.
       temporary: Temporary project
-      temporary_desc: Mark experiments, demos, or short-lived folders.
+      temporary_desc: Mark experiments, demos, or short-lived projects.
     summary:
       mode: Mode
       kind: Kind
       editor: Editor
       license: License
     language_mix:
-      title: Language mix
-      entries: '{count} entries'
+      title: Languages
+      entries: '{count} languages'
       refresh: Refresh languages
-      empty: Choose a folder or run analysis.
+      empty: Analyze the project to show languages.

@@ -32,17 +32,18 @@ const emit = defineEmits<{
   @apply h-20px w-36px shrink-0 rounded-full border p-2px outline-none;
   @apply inline-flex items-center cursor-pointer;
   @apply border-$ui-input;
-  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  @apply transition duration-120 ease-out;
   appearance: none;
   background-color: var(--ui-switch-background);
   border-style: solid;
+  box-shadow: var(--shadow-control);
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 20%);
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+    box-shadow: var(--shadow-focus);
   }
 
   &[data-state="checked"] {
@@ -55,8 +56,11 @@ const emit = defineEmits<{
 }
 
 .ui-switch-thumb {
-  @apply size-14px rounded-full bg-white shadow-sm;
+  @apply size-14px rounded-full bg-white;
   border: 1px solid color-mix(in srgb, var(--ui-border), transparent 35%);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 22%),
+    0 1px 1px rgb(0 0 0 / 14%);
   transform: translateX(0);
   transition:
     background-color 120ms ease,

@@ -57,17 +57,18 @@ function toggleFromField() {
   @apply mt-1px size-16px shrink-0 rounded-4px border outline-none;
   @apply inline-flex items-center justify-center;
   @apply border-$ui-input bg-$ui-checkbox-background;
-  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  @apply transition duration-120 ease-out;
   @apply data-[disabled]:cursor-not-allowed;
   appearance: none;
   border-style: solid;
+  box-shadow: var(--shadow-control);
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 20%);
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+    box-shadow: var(--shadow-focus);
   }
 
   &[data-state="checked"] {
@@ -81,5 +82,6 @@ function toggleFromField() {
 
 .ui-checkbox-label {
   @apply min-w-0 text-12px;
+  overflow-wrap: anywhere;
 }
 </style>

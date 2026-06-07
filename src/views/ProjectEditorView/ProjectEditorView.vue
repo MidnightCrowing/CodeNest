@@ -15,7 +15,9 @@ import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
+import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
+import { useDelayedBusy } from '~/utils/useDelayedBusy'
 
 import {
   initializeNewProjectState,
@@ -34,13 +36,16 @@ const GITHUB_REPO_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
 
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 const projectsStore = useProjectsStore()
+const projectScannerStore = useProjectScannerStore()
 const editorLangGroupsStore = useEditorLangGroupsStore()
 const initialProjectPath = localProjectItem.value.path || ''
 const { t } = useI18n()
 
 const analyzing = ref(false)
 const detectingLicense = ref(false)
+const visibleAnalyzing = useDelayedBusy(analyzing, { delay: 220, minDuration: 320 })
 const lastAnalyzedPath = ref(initialProjectPath)
+const languageMixBodyRef = ref<HTMLElement | null>(null)
 const touchedFields = reactive<Record<FieldKey, boolean>>({
   path: false,
   name: false,
@@ -48,14 +53,20 @@ const touchedFields = reactive<Record<FieldKey, boolean>>({
   defaultOpen: false,
 })
 
+let languageMixHeightTimer: ReturnType<typeof window.setTimeout> | null = null
+
 const editorRows = computed(() =>
   Object.entries(codeEditors) as Array<[CodeEditorEnum, CodeEditorOption]>,
 )
 
+function editorGroupLabel(option: CodeEditorOption) {
+  return t(option.groupKey)
+}
+
 const editorOptions = computed(() =>
   editorRows.value.map(([editor, option]) => ({
     value: editor,
-    label: `${option.group ? `${option.group} / ` : ''}${option.label}`,
+    label: `${editorGroupLabel(option)} / ${option.label}`,
   })),
 )
 
@@ -108,6 +119,14 @@ const canSave = computed(() =>
   && !!localProjectItem.value.name
   && !!localProjectItem.value.mainLang
   && !!localProjectItem.value.defaultOpen,
+)
+
+const folderStatus = computed(() =>
+  duplicatePath.value ? t('app.project_editor.fields.folder_duplicate') : '',
+)
+
+const mainLanguageStatus = computed(() =>
+  visibleAnalyzing.value ? t('app.project_editor.analyzing_desc') : '',
 )
 
 const summaryItems = computed(() => [
@@ -247,6 +266,26 @@ function updateLanguage(language: string | null) {
     : null
 }
 
+async function hydrateLanguageMixFromCache() {
+  const path = localProjectItem.value.path
+  if (!path || localProjectItem.value.langGroup?.length)
+    return
+
+  await projectScannerStore.loadProjectScannerData()
+  const cached = projectScannerStore.getScanCacheEntry(path)
+  if (!cached?.langGroup?.length)
+    return
+  if (localProjectItem.value.path !== path)
+    return
+
+  localProjectItem.value.langGroup = cached.langGroup
+  localProjectItem.value.mainLang = localProjectItem.value.mainLang || cached.mainLang || cached.langGroup[0]?.text || null
+  localProjectItem.value.mainLangColor = localProjectItem.value.mainLangColor || cached.mainLangColor || cached.langGroup[0]?.color
+  if (!localProjectItem.value.defaultOpen && localProjectItem.value.mainLang) {
+    localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(localProjectItem.value.mainLang)
+  }
+}
+
 function validateFields() {
   touchedFields.path = true
   touchedFields.name = true
@@ -315,6 +354,12 @@ function kindLabel(kind: ProjectKind) {
   }
 }
 
+function languageLabel(language: string | null | undefined) {
+  if (!language)
+    return t('app.project_editor.no_language')
+  return language === 'Other' ? t('language_pop.other') : language
+}
+
 function shortLicense(license?: LicenseEnum | string | null) {
   if (!license || license === LicenseEnum.NONE)
     return t('app.license.none')
@@ -352,6 +397,58 @@ watch(
   () => localProjectItem.value.mainLang,
   language => updateLanguage(language),
 )
+
+onMounted(() => {
+  void hydrateLanguageMixFromCache()
+})
+
+watch(
+  () => localProjectItem.value.langGroup?.length || 0,
+  async () => {
+    const body = languageMixBodyRef.value
+    if (!body)
+      return
+
+    const startHeight = body.offsetHeight
+    body.style.height = `${startHeight}px`
+    body.style.overflow = 'hidden'
+
+    await nextTick()
+
+    const targetHeight = body.scrollHeight
+    if (startHeight === targetHeight) {
+      resetLanguageMixBodyHeight()
+      return
+    }
+
+    if (languageMixHeightTimer !== null)
+      window.clearTimeout(languageMixHeightTimer)
+
+    requestAnimationFrame(() => {
+      body.style.height = `${targetHeight}px`
+    })
+
+    languageMixHeightTimer = window.setTimeout(() => {
+      resetLanguageMixBodyHeight()
+    }, 180)
+  },
+  { flush: 'pre' },
+)
+
+onBeforeUnmount(() => {
+  if (languageMixHeightTimer !== null)
+    window.clearTimeout(languageMixHeightTimer)
+})
+
+function resetLanguageMixBodyHeight() {
+  const body = languageMixBodyRef.value
+  if (!body)
+    return
+
+  body.style.height = ''
+  body.style.overflow = ''
+  languageMixHeightTimer = null
+}
 </script>
 
 <template>
@@ -386,29 +483,36 @@ watch(
             <div class="setting-row">
               <label class="setting-copy" for="project-path">
                 <strong>{{ t('app.project_editor.fields.folder') }}</strong>
-                <span v-if="duplicatePath" class="error-text">{{ t('app.project_editor.fields.folder_duplicate') }}</span>
-                <span v-else>{{ t('app.project_editor.fields.folder_desc') }}</span>
               </label>
-              <div class="inline-field">
-                <input
-                  id="project-path"
-                  v-model="localProjectItem.path"
-                  class="text-input"
-                  :class="{ invalid: fieldInvalid('path') || duplicatePath }"
-                  :aria-label="t('app.project_editor.fields.folder')"
-                  spellcheck="false"
-                  @blur="handlePathBlur"
+              <div class="field-stack">
+                <div class="inline-field">
+                  <input
+                    id="project-path"
+                    v-model="localProjectItem.path"
+                    class="text-input"
+                    :class="{ invalid: fieldInvalid('path') || duplicatePath }"
+                    :aria-label="t('app.project_editor.fields.folder')"
+                    :title="localProjectItem.path || ''"
+                    spellcheck="false"
+                    @blur="handlePathBlur"
+                  >
+                  <button class="icon-button" type="button" :title="t('app.common.browse_folder')" :aria-label="t('app.common.browse_folder')" @click="browseProjectPath">
+                    <span class="i-lucide:folder-open" />
+                  </button>
+                </div>
+                <p
+                  class="field-message error"
+                  :class="{ empty: !folderStatus }"
+                  :aria-hidden="!folderStatus"
                 >
-                <button class="icon-button" type="button" :title="t('app.common.browse_folder')" :aria-label="t('app.common.browse_folder')" @click="browseProjectPath">
-                  <span class="i-lucide:folder-open" />
-                </button>
+                  {{ folderStatus }}
+                </p>
               </div>
             </div>
 
             <div class="setting-row">
               <label class="setting-copy" for="project-name">
                 <strong>{{ t('app.project_editor.fields.name') }}</strong>
-                <span>{{ t('app.project_editor.fields.name_desc') }}</span>
               </label>
               <div class="inline-field">
                 <input
@@ -417,6 +521,7 @@ watch(
                   class="text-input compact"
                   :class="{ invalid: fieldInvalid('name') }"
                   :aria-label="t('app.project_editor.fields.name')"
+                  :title="localProjectItem.name || ''"
                   spellcheck="false"
                   @blur="markTouched('name')"
                 >
@@ -432,33 +537,6 @@ watch(
             </div>
 
             <div class="setting-row">
-              <label class="setting-copy" for="project-group">
-                <strong>{{ t('app.project_editor.fields.group') }}</strong>
-                <span>{{ t('app.project_editor.fields.group_desc') }}</span>
-              </label>
-              <div class="inline-field">
-                <input
-                  id="project-group"
-                  v-model="localProjectItem.group"
-                  class="text-input compact"
-                  list="project-groups"
-                  spellcheck="false"
-                  :aria-label="t('app.project_editor.fields.group')"
-                  :placeholder="t('app.project_editor.no_group')"
-                >
-                <datalist id="project-groups">
-                  <option v-for="group in projectsStore.allGroups" :key="group" :value="group" />
-                </datalist>
-              </div>
-            </div>
-          </section>
-
-          <section class="form-section">
-            <header class="section-header">
-              <strong>{{ t('app.project_editor.sections.metadata') }}</strong>
-            </header>
-
-            <div class="setting-row">
               <div class="setting-copy">
                 <strong>{{ t('app.project_editor.fields.source') }}</strong>
                 <span>{{ t('app.project_editor.fields.source_desc') }}</span>
@@ -472,65 +550,116 @@ watch(
               />
             </div>
 
-            <div v-if="localProjectItem.kind !== ProjectKind.MINE" class="setting-row stacked">
-              <div class="source-grid">
-                <label>
-                  <span>{{ t('app.project_editor.fields.source_url') }}</span>
-                  <input
-                    v-model="localProjectItem.fromUrl"
-                    class="text-input"
-                    spellcheck="false"
-                    :aria-label="t('app.project_editor.fields.source_url')"
-                  >
-                </label>
-                <label>
-                  <span>{{ t('app.project_editor.fields.source_name') }}</span>
-                  <div class="inline-field">
+            <Transition name="source-details">
+              <div v-if="localProjectItem.kind !== ProjectKind.MINE" class="setting-row stacked source-details-row">
+                <div class="source-grid">
+                  <label>
+                    <span>{{ t('app.project_editor.fields.source_url') }}</span>
                     <input
-                      v-model="localProjectItem.fromName"
+                      v-model="localProjectItem.fromUrl"
                       class="text-input"
                       spellcheck="false"
-                      :aria-label="t('app.project_editor.fields.source_name')"
+                      :aria-label="t('app.project_editor.fields.source_url')"
+                      :title="localProjectItem.fromUrl || ''"
                     >
-                    <button
-                      v-if="sourceSuggestion && localProjectItem.fromName !== sourceSuggestion"
-                      class="ghost-button"
-                      type="button"
-                      @click="fillSourceName"
-                    >
-                      {{ t('app.project_editor.use_repo') }}
-                    </button>
-                  </div>
-                </label>
+                  </label>
+                  <label>
+                    <span>{{ t('app.project_editor.fields.source_name') }}</span>
+                    <div class="inline-field">
+                      <input
+                        v-model="localProjectItem.fromName"
+                        class="text-input"
+                        spellcheck="false"
+                        :aria-label="t('app.project_editor.fields.source_name')"
+                        :title="localProjectItem.fromName || ''"
+                      >
+                      <button
+                        v-if="sourceSuggestion && localProjectItem.fromName !== sourceSuggestion"
+                        class="ghost-button"
+                        type="button"
+                        @click="fillSourceName"
+                      >
+                        {{ t('app.project_editor.use_repo') }}
+                      </button>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </Transition>
+
+            <div class="setting-row">
+              <label class="setting-copy" for="project-group">
+                <strong>{{ t('app.project_editor.fields.group') }}</strong>
+                <span>{{ t('app.project_editor.fields.group_desc') }}</span>
+              </label>
+              <div class="inline-field">
+                <input
+                  id="project-group"
+                  v-model="localProjectItem.group"
+                  class="text-input compact"
+                  list="project-groups"
+                  spellcheck="false"
+                  :aria-label="t('app.project_editor.fields.group')"
+                  :placeholder="t('app.project_editor.no_group')"
+                  :title="localProjectItem.group || ''"
+                >
+                <datalist id="project-groups">
+                  <option v-for="group in projectsStore.allGroups" :key="group" :value="group" />
+                </datalist>
               </div>
             </div>
 
             <div class="setting-row">
+              <div class="setting-copy">
+                <strong>{{ t('app.project_editor.fields.temporary') }}</strong>
+                <span>{{ t('app.project_editor.fields.temporary_desc') }}</span>
+              </div>
+              <UiSwitch
+                v-model="localProjectItem.isTemporary"
+                :aria-label="t('app.project_editor.fields.temporary')"
+              />
+            </div>
+          </section>
+
+          <section class="form-section">
+            <header class="section-header">
+              <strong>{{ t('app.project_editor.sections.metadata') }}</strong>
+            </header>
+
+            <div class="setting-row">
               <label class="setting-copy" for="project-language">
                 <strong>{{ t('app.project_editor.fields.main_language') }}</strong>
-                <span>{{ analyzing ? t('app.project_editor.analyzing_desc') : t('app.project_editor.fields.main_language_desc') }}</span>
+                <span>{{ t('app.project_editor.fields.main_language_desc') }}</span>
               </label>
-              <div class="inline-field">
-                <UiCombobox
-                  v-model="localProjectItem.mainLang"
-                  :options="languageOptions"
-                  :invalid="fieldInvalid('mainLang')"
-                  :placeholder="t('app.project_editor.fields.main_language')"
-                  :aria-label="t('app.project_editor.fields.main_language')"
-                  min-width="220px"
-                  content-width="240px"
-                  @blur="markTouched('mainLang')"
-                />
-                <button class="ghost-button" type="button" :disabled="!localProjectItem.path || analyzing" @click="runAnalyzeProject">
-                  {{ analyzing ? t('app.project_editor.analyzing') : t('app.project_editor.analyze') }}
-                </button>
+              <div class="field-stack">
+                <div class="inline-field">
+                  <UiCombobox
+                    v-model="localProjectItem.mainLang"
+                    :options="languageOptions"
+                    :invalid="fieldInvalid('mainLang')"
+                    :placeholder="t('app.project_editor.fields.main_language')"
+                    :aria-label="t('app.project_editor.fields.main_language')"
+                    min-width="220px"
+                    content-width="240px"
+                    @blur="markTouched('mainLang')"
+                  />
+                  <button class="ghost-button" type="button" :disabled="!localProjectItem.path || analyzing" @click="runAnalyzeProject">
+                    {{ visibleAnalyzing ? t('app.project_editor.analyzing') : t('app.project_editor.analyze') }}
+                  </button>
+                </div>
+                <p
+                  class="field-message info"
+                  :class="{ empty: !mainLanguageStatus }"
+                  :aria-hidden="!mainLanguageStatus"
+                >
+                  {{ mainLanguageStatus }}
+                </p>
               </div>
             </div>
 
             <div class="setting-row">
               <label class="setting-copy" for="project-editor">
                 <strong>{{ t('app.project_editor.fields.open_with') }}</strong>
-                <span>{{ t('app.project_editor.fields.open_with_desc') }}</span>
               </label>
               <UiSelect
                 v-model="localProjectItem.defaultOpen"
@@ -547,45 +676,35 @@ watch(
             <div class="setting-row">
               <label class="setting-copy" for="project-license">
                 <strong>{{ t('app.project_editor.fields.license') }}</strong>
-                <span>{{ detectingLicense ? t('app.project_editor.detecting_license_desc') : t('app.project_editor.fields.license_desc') }}</span>
               </label>
-              <div class="inline-field">
-                <UiSelect
-                  v-model="localProjectItem.license"
-                  :options="licenseOptions"
-                  :placeholder="t('app.project_editor.fields.license')"
-                  :aria-label="t('app.project_editor.fields.license')"
-                  min-width="220px"
-                  content-width="240px"
-                />
-                <button
-                  class="ghost-button"
-                  type="button"
-                  :disabled="!localProjectItem.path || detectingLicense"
-                  @click="runDetectLicense"
-                >
-                  {{ detectingLicense ? t('app.project_editor.detecting') : t('app.common.detect') }}
-                </button>
+              <div class="field-stack">
+                <div class="inline-field">
+                  <UiSelect
+                    v-model="localProjectItem.license"
+                    :options="licenseOptions"
+                    :placeholder="t('app.project_editor.fields.license')"
+                    :aria-label="t('app.project_editor.fields.license')"
+                    min-width="220px"
+                    content-width="240px"
+                  />
+                  <button
+                    class="ghost-button"
+                    type="button"
+                    :disabled="!localProjectItem.path || detectingLicense"
+                    @click="runDetectLicense"
+                  >
+                    {{ t('app.common.detect') }}
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong>{{ t('app.project_editor.fields.temporary') }}</strong>
-                <span>{{ t('app.project_editor.fields.temporary_desc') }}</span>
-              </div>
-              <UiSwitch
-                v-model="localProjectItem.isTemporary"
-                :aria-label="t('app.project_editor.fields.temporary')"
-              />
             </div>
           </section>
         </div>
         <aside class="summary-panel">
           <section class="summary-card">
             <header class="summary-header">
-              <strong>{{ localProjectItem.name || t('app.project_editor.unnamed') }}</strong>
-              <span>{{ localProjectItem.mainLang || t('app.project_editor.no_language') }}</span>
+              <strong :title="localProjectItem.name || t('app.project_editor.unnamed')">{{ localProjectItem.name || t('app.project_editor.unnamed') }}</strong>
+              <span>{{ languageLabel(localProjectItem.mainLang) }}</span>
             </header>
 
             <div class="summary-path" :title="localProjectItem.path || ''">
@@ -595,7 +714,7 @@ watch(
             <div class="summary-list">
               <div v-for="item in summaryItems" :key="item.label">
                 <span>{{ item.label }}</span>
-                <strong>{{ item.value }}</strong>
+                <strong :title="item.value">{{ item.value }}</strong>
               </div>
             </div>
           </section>
@@ -614,24 +733,28 @@ watch(
                 :disabled="!localProjectItem.path || analyzing"
                 @click="runAnalyzeProject"
               >
-                <span class="i-lucide:refresh-cw" :class="{ spinning: analyzing }" />
+                <span class="i-lucide:refresh-cw" :class="{ spinning: visibleAnalyzing }" />
               </button>
             </header>
 
-            <div v-if="!localProjectItem.langGroup?.length" class="empty-inline">
-              {{ t('app.project_editor.language_mix.empty') }}
-            </div>
-            <div v-else class="language-list">
-              <div v-for="language in localProjectItem.langGroup" :key="language.text" class="language-row">
-                <div class="language-label">
-                  <span class="color-dot" :style="{ background: language.color || '#b8b8b8' }" />
-                  <strong>{{ language.text }}</strong>
-                  <span>{{ language.percentage }}%</span>
+            <div ref="languageMixBodyRef" class="language-mix-body">
+              <Transition name="language-mix">
+                <div v-if="!localProjectItem.langGroup?.length" key="empty" class="empty-inline">
+                  {{ t('app.project_editor.language_mix.empty') }}
                 </div>
-                <div class="language-bar">
-                  <span :style="{ width: `${Math.min(language.percentage, 100)}%`, background: language.color || '#b8b8b8' }" />
+                <div v-else key="list" class="language-list">
+                  <div v-for="language in localProjectItem.langGroup" :key="language.text" class="language-row">
+                    <div class="language-label">
+                      <span class="color-dot" :style="{ background: language.color || '#b8b8b8' }" />
+                      <strong>{{ languageLabel(language.text) }}</strong>
+                      <span>{{ language.percentage }}%</span>
+                    </div>
+                    <div class="language-bar">
+                      <span :style="{ width: `${Math.min(language.percentage, 100)}%`, background: language.color || '#b8b8b8' }" />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </Transition>
             </div>
           </section>
         </aside>
@@ -664,12 +787,16 @@ watch(
   @apply flex items-center gap-7px;
 }
 
+.field-stack {
+  @apply min-w-0 flex flex-col items-end gap-5px;
+}
+
 .editor-body-scroll {
   @apply min-h-0 flex-1;
 }
 
 .editor-body {
-  @apply min-h-full px-14px pb-12px grid items-start gap-12px;
+  @apply min-h-full px-14px pt-4px pb-14px grid items-start gap-12px;
   grid-template-columns: minmax(0, 1fr) 300px;
 }
 
@@ -683,15 +810,16 @@ watch(
 .summary-card {
   @apply rounded-6px overflow-hidden;
   @apply bg-$ui-surface-background;
+  box-shadow: var(--shadow-surface);
 }
 
 .section-header,
 .summary-header {
-  @apply min-h-42px px-12px py-8px border-b flex items-center justify-between gap-12px;
+  @apply min-h-42px px-14px py-8px border-b flex items-center justify-between gap-12px;
   @apply light:border-$gray-13 dark:border-$gray-3;
 
   strong {
-    @apply text-13px font-650;
+    @apply min-w-0 truncate text-13px font-650;
   }
 
   span {
@@ -700,13 +828,13 @@ watch(
 }
 
 .setting-row {
-  @apply min-h-52px px-12px py-8px border-b grid items-center gap-14px;
+  @apply min-h-52px px-14px py-8px border-b grid items-center gap-14px;
   @apply light:border-$gray-13 dark:border-$gray-3;
   grid-template-columns: minmax(0, 1fr) max-content;
 }
 
 .toggle-row {
-  @apply min-h-52px px-12px py-8px border-b flex items-center gap-14px;
+  @apply min-h-52px px-14px py-8px border-b flex items-center gap-14px;
   @apply light:border-$gray-13 dark:border-$gray-3;
 }
 
@@ -721,48 +849,17 @@ watch(
 
   strong {
     @apply text-13px font-620;
+    overflow-wrap: anywhere;
   }
 
   span {
-    @apply truncate text-12px light:color-$gray-6 dark:color-$gray-8;
+    @apply text-12px light:color-$gray-6 dark:color-$gray-8;
+    overflow-wrap: anywhere;
   }
 }
 
 .toggle-row {
   @apply justify-start;
-}
-
-.text-input {
-  @apply h-30px min-w-0 rounded-md border px-9px outline-none;
-  appearance: none;
-  border-style: solid;
-  border-color: var(--ui-input);
-  @apply bg-$ui-control-background color-$ui-foreground;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease;
-
-  &::placeholder {
-    color: var(--ui-muted-foreground);
-  }
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
-  }
-
-  &:focus {
-    border-color: var(--ui-ring);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
-  }
-
-  &.invalid {
-    border-color: var(--red-5);
-  }
-
-  &:disabled {
-    @apply opacity-55 cursor-not-allowed;
-  }
 }
 
 .text-input {
@@ -779,6 +876,10 @@ watch(
 
   label {
     @apply min-w-0 flex flex-col gap-5px text-12px color-$ui-foreground;
+
+    span {
+      overflow-wrap: anywhere;
+    }
   }
 
   .text-input {
@@ -786,16 +887,33 @@ watch(
   }
 }
 
-.primary-button,
-.ghost-button,
-.icon-button {
-  @apply h-28px border-0 rounded-5px px-9px;
-  @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
-  @apply text-12px font-560 cursor-pointer;
+.source-details-row {
+  min-height: 0;
+  overflow: hidden;
 }
 
-.icon-button {
-  @apply w-28px px-0;
+.source-details-enter-active,
+.source-details-leave-active {
+  max-height: 120px;
+  min-height: 0;
+  transition:
+    max-height 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 120ms ease-out,
+    border-color 140ms ease-out,
+    padding-top 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    padding-bottom 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.source-details-enter-from,
+.source-details-leave-to {
+  max-height: 0;
+  min-height: 0;
+  opacity: 0;
+  border-color: transparent;
+  padding-top: 0;
+  padding-bottom: 0;
+  transform: translateY(-4px);
 }
 
 .back-button {
@@ -803,25 +921,6 @@ watch(
 
   span {
     @apply text-16px;
-  }
-}
-
-.primary-button {
-  @apply bg-$ui-primary color-$ui-primary-foreground;
-  @apply hover:bg-$ui-primary-hover active:bg-$ui-primary-active;
-
-  &:disabled {
-    @apply opacity-55 cursor-not-allowed;
-  }
-}
-
-.ghost-button,
-.icon-button {
-  @apply bg-$ui-surface-background color-$ui-foreground;
-  @apply hover:bg-$ui-hover-background;
-
-  &:disabled {
-    @apply opacity-55 cursor-not-allowed;
   }
 }
 
@@ -850,13 +949,13 @@ watch(
 }
 
 .summary-path {
-  @apply px-12px py-9px truncate text-12px border-b;
+  @apply px-14px py-9px truncate text-12px border-b;
   @apply light:border-$gray-13 dark:border-$gray-3;
   @apply light:color-$gray-6 dark:color-$gray-8;
 }
 
 .summary-list {
-  @apply px-12px py-8px flex flex-col gap-7px;
+  @apply px-14px py-8px flex flex-col gap-7px;
 
   div {
     @apply flex items-center justify-between gap-10px;
@@ -872,7 +971,29 @@ watch(
 }
 
 .language-list {
-  @apply p-12px flex flex-col gap-9px;
+  @apply p-14px flex flex-col gap-9px;
+}
+
+.language-mix-body {
+  @apply relative;
+  transition: height 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.language-mix-enter-active,
+.language-mix-leave-active {
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.language-mix-leave-active {
+  @apply absolute left-0 right-0 top-0 pointer-events-none;
+}
+
+.language-mix-enter-from,
+.language-mix-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
 }
 
 .language-row {
@@ -896,24 +1017,62 @@ watch(
 }
 
 .language-bar {
-  @apply h-4px rounded-full overflow-hidden bg-$ui-hover-background;
+  @apply h-4px rounded-full overflow-hidden;
+  background: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
 
   span {
     @apply block h-full rounded-full;
   }
 }
 
+:global(.dark) .language-bar {
+  background: var(--ui-hover-background);
+}
+
 .empty-inline,
-.error-text {
+.field-message {
   @apply text-12px;
 }
 
 .empty-inline {
-  @apply px-12px py-10px light:color-$gray-6 dark:color-$gray-8;
+  @apply px-14px py-10px light:color-$gray-6 dark:color-$gray-8;
 }
 
-.error-text {
-  @apply color-$red-5;
+.field-message {
+  @apply m-0 min-h-16px max-w-420px text-right lh-16px;
+  overflow-wrap: anywhere;
+
+  &.empty {
+    visibility: hidden;
+  }
+
+  &.info {
+    color: color-mix(in srgb, var(--ui-primary) 72%, var(--ui-foreground));
+  }
+
+  &.success {
+    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
+  }
+
+  &.warning {
+    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
+  }
+
+  &.error {
+    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
+  }
+}
+
+:global(.dark) .field-message.success {
+  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
+}
+
+:global(.dark) .field-message.warning {
+  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
+}
+
+:global(.dark) .field-message.error {
+  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
 }
 
 @media (max-width: 960px) {

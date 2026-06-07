@@ -105,9 +105,11 @@ function selectItem(item: UiActionMenuItem) {
   @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
   @apply backdrop-blur-8px backdrop-saturate-140;
   border-style: solid;
-  box-shadow:
-    0 10px 28px rgb(0 0 0 / 14%),
-    0 2px 8px rgb(0 0 0 / 8%);
+  box-shadow: var(--shadow-popup);
+
+  &[data-state="open"] {
+    animation: menu-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 .ui-action-menu-item {
@@ -126,7 +128,7 @@ function selectItem(item: UiActionMenuItem) {
 
   &[data-highlighted] {
     @apply color-$ui-accent-foreground;
-    background-color: color-mix(in srgb, var(--ui-hover-background), var(--ui-foreground) 8%);
+    background-color: var(--ui-option-hover-background);
   }
 
   &[data-disabled] {
@@ -170,5 +172,12 @@ function selectItem(item: UiActionMenuItem) {
 
 .ui-action-menu-separator {
   @apply my-1 h-1px bg-$ui-border;
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.985);
+  }
 }
 </style>

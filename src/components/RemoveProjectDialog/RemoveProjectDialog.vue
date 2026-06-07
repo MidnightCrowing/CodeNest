@@ -67,20 +67,4 @@ function confirmRemove(deleteFiles = false) {
 .warning-text {
   @apply mt-8px mb-0 text-13px lh-18px color-$red-5;
 }
-
-.ghost-button,
-.danger-button {
-  @apply h-28px border-0 rounded-5px px-10px;
-  @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
-  @apply text-12px font-560 cursor-pointer;
-}
-
-.ghost-button {
-  @apply bg-$ui-control-background color-$ui-foreground;
-  @apply hover:bg-$ui-hover-background;
-}
-
-.danger-button {
-  @apply bg-$red-5 color-white hover:bg-$red-6;
-}
 </style>

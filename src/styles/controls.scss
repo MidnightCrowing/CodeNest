@@ -8,6 +8,12 @@ button:not(:disabled),
   @apply cursor-pointer;
 }
 
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 button:disabled,
 [aria-disabled="true"] {
   @apply cursor-not-allowed;
@@ -21,9 +27,10 @@ textarea:not(:disabled) {
 .primary-button,
 .ghost-button,
 .danger-button {
-  @apply h-28px border-0 rounded-5px px-9px;
+  @apply h-28px shrink-0 max-w-full border-0 rounded-5px px-9px;
   @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
   @apply text-12px font-560;
+  @apply transition duration-120 ease-out;
 }
 
 .primary-button {
@@ -59,6 +66,7 @@ textarea:not(:disabled) {
   @apply inline-flex items-center justify-center;
   @apply bg-$ui-surface-background color-$ui-foreground;
   @apply hover:bg-$ui-hover-background;
+  @apply transition duration-120 ease-out;
 }
 
 .icon-button:disabled {
@@ -69,10 +77,11 @@ textarea:not(:disabled) {
 .text-input {
   @apply h-30px min-w-0 rounded-md border px-9px outline-none;
   @apply bg-$ui-control-background color-$ui-foreground;
-  @apply shadow-[0_1px_2px_rgb(0_0_0_/_3%)] transition duration-120 ease-out;
+  @apply transition duration-120 ease-out;
   appearance: none;
   border-color: var(--ui-input);
   border-style: solid;
+  box-shadow: var(--shadow-control);
 }
 
 .path-input::placeholder,
@@ -88,7 +97,7 @@ textarea:not(:disabled) {
 .path-input:focus,
 .text-input:focus {
   border-color: var(--ui-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
+  box-shadow: var(--shadow-focus);
 }
 
 .path-input:disabled,

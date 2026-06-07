@@ -1,12 +1,5 @@
 import type { languagesGroupItem } from '~/constants/localProject'
 import type { LinguistLanguageResult } from '~/types/linguist'
-import { t } from '~/utils/i18n'
-
-interface LanguageOption {
-  value: string
-  label: string
-  description: string
-}
 
 /**
  * 用于分析项目语言的工具类
@@ -16,7 +9,6 @@ export class LanguageAnalyzer {
   public mainLang: string | null = null // 主要编程语言
   public mainLangColor: `#${string}` | null = null // 主要编程语言的颜色
   public langGroup: languagesGroupItem[] | null = null // 语言分组，用于展示比例
-  public mainLanguageOptions: LanguageOption[] = [] // 下拉选项列表
 
   /**
    * 构造函数
@@ -50,9 +42,6 @@ export class LanguageAnalyzer {
 
       // 转换为语言分组格式
       this.langGroup = this.convertToLangGroup(sortedResults)
-
-      // 转换为下拉选项格式
-      this.mainLanguageOptions = this.convertResultsToDropdownOptions(sortedResults)
 
       return true
     }
@@ -101,19 +90,6 @@ export class LanguageAnalyzer {
   }
 
   /**
-   * 将语言结果转换为下拉选项格式
-   * @param results - 排序后的语言结果
-   * @returns {LanguageOption[]} - 下拉选项
-   */
-  private convertResultsToDropdownOptions(results: Record<string, LinguistLanguageResult>): LanguageOption[] {
-    return Object.entries(results).map(([key, value]) => ({
-      value: key,
-      label: key,
-      description: t('project_config.lang_info', { type: value.type, bytes: value.bytes, lines: value.lines.total }),
-    }))
-  }
-
-  /**
    * 将语言结果转换为语言分组格式
    * @param sortedResults - 排序后的语言结果
    * @returns {languagesGroupItem[] | null} - 转换后的语言分组
@@ -153,6 +129,5 @@ export class LanguageAnalyzer {
     this.mainLang = null
     this.mainLangColor = null
     this.langGroup = null
-    this.mainLanguageOptions = []
   }
 }

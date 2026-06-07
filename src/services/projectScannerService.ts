@@ -8,6 +8,7 @@ import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { t } from '~/utils/i18n'
 
 const USER_REGEX_PATTERN_RE = /^\/(.*)\/([gimsuy]*)$/
 
@@ -48,7 +49,9 @@ export async function addNewProjectsFromScanner() {
 
     for (const item of items) {
       const path = item.path
-      const name = item.name || 'Unnamed Project'
+      const name = !item.name || item.name === 'Unnamed Project'
+        ? t('app.project_editor.unnamed')
+        : item.name
 
       scannerStore.addScannedPath(path)
 
