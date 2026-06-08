@@ -1,5 +1,6 @@
 {
   "npm": {
+    "allowSameVersion": true,
     "publish": false
   },
   "github": {
