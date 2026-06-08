@@ -4,18 +4,15 @@ Thank you for considering contributing to the CodeNest project! Please read the 
 
 ## Setting Up the Development Environment
 
-Ensure that [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) are installed on your local machine.
+Ensure that [Node.js](https://nodejs.org/), [pnpm](https://pnpm.io/), and [Rust](https://www.rust-lang.org/tools/install) are installed on your local machine.
 
 ## Installing Dependencies
 
 ```bash
-# Install all dependencies (including component library)
+# Install dependencies
 pnpm install
 
-# Build the component library
-pnpm ui:build
-
-# Run the project
+# Run the desktop development environment
 pnpm dev
 ```
 
@@ -23,21 +20,29 @@ pnpm dev
 
 ```
 CodeNest
-  ├── data        # Stores user data and configuration files
+  ├── .github     # GitHub Actions workflows
+  ├── docs        # Documentation and screenshots
+  ├── icons       # Icon source files
+  ├── scripts     # Automation scripts
+  ├── src         # Vue app source code
   ├── src-tauri   # Tauri desktop shell and native commands
-  ├── icons       # Icons and resource files used by the project
-  ├── scripts     # Scripts for automating tasks
-  ├── src         # Source code and core logic of the Vue app
+  ├── tests       # Frontend unit tests
 ```
 
 ## Building the Project
 
 ```bash
-# Build the project
+# Run lint, type checks, and tests
+pnpm check
+
+# Build the Tauri executable without installers
+pnpm build:exe
+
+# Build platform bundles/installers
 pnpm build
 ```
 
-You can find the built installation packages and extracted software in the `build` directory.
+Build outputs are written to `src-tauri/target/release` and `src-tauri/target/release/bundle`.
 
 ## Contributions
 

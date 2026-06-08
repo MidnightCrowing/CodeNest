@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useLocalStorage } from '@vueuse/core'
+import { refDebounced, useLocalStorage } from '@vueuse/core'
 import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n'
 
@@ -39,6 +39,11 @@ type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
 
 const MIN_SYNC_BUSY_MS = 280
 const PROJECT_ACTION_KEYS: ProjectActionKey[] = ['open', 'explorer', 'terminal', 'copy', 'more']
+const LIST_INITIAL_RENDER_COUNT = 160
+const LIST_RENDER_BATCH = 120
+const GRID_INITIAL_RENDER_COUNT = 72
+const GRID_RENDER_BATCH = 48
+const SEARCH_DEBOUNCE_MS = 100
 
 interface FilterOption<T extends string> {
   value: T
@@ -53,6 +58,7 @@ const activatedView = inject('activatedView') as Ref<ViewEnum>
 const { locale, t } = useI18n()
 
 const searchValue = ref('')
+const debouncedSearchValue = refDebounced(searchValue, SEARCH_DEBOUNCE_MS)
 const kindFilter = ref<KindFilter>('all')
 const statusFilter = ref<StatusFilter>('all')
 const languageFilter = ref('all')
@@ -64,11 +70,53 @@ const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
 const copyFeedbackTimers = new Map<number, number>()
 const projectItemRefs = new Map<number, HTMLElement>()
 const projectActionRefs = new Map<number, HTMLElement>()
+const renderedProjectLimit = ref(LIST_INITIAL_RENDER_COUNT)
+const loadMoreSentinelRef = ref<HTMLElement | null>(null)
+let loadMoreObserver: IntersectionObserver | null = null
 
 const totalProjects = computed(() => projectsStore.allProjects.length)
-const availableProjects = computed(() => projectsStore.allProjects.filter(project => project.isExists).length)
-const missingProjects = computed(() => projectsStore.allProjects.filter(project => !project.isExists).length)
-const temporaryProjects = computed(() => projectsStore.tempProjects.length)
+
+const projectStats = computed(() => {
+  const byKind = new Map<ProjectKind, number>()
+  const byGroup = new Map<string, number>()
+  let available = 0
+  let missing = 0
+  let temporary = 0
+  let ungrouped = 0
+
+  for (const project of projectsStore.allProjects) {
+    byKind.set(project.kind, (byKind.get(project.kind) || 0) + 1)
+
+    if (project.isExists)
+      available += 1
+    else
+      missing += 1
+
+    if (project.isTemporary)
+      temporary += 1
+
+    if (project.group?.trim())
+      byGroup.set(project.group, (byGroup.get(project.group) || 0) + 1)
+    else
+      ungrouped += 1
+  }
+
+  return {
+    total: projectsStore.allProjects.length,
+    available,
+    missing,
+    temporary,
+    ungrouped,
+    byKind,
+    groups: Array.from(byGroup.entries())
+      .map(([group, count]) => ({ group, count }))
+      .sort((a, b) => a.group.localeCompare(b.group)),
+  }
+})
+
+const availableProjects = computed(() => projectStats.value.available)
+const missingProjects = computed(() => projectStats.value.missing)
+const temporaryProjects = computed(() => projectStats.value.temporary)
 
 const kindOptions = computed<Array<FilterOption<KindFilter>>>(() => [
   { value: 'all', label: t('app.home.filters.all_projects'), count: totalProjects.value },
@@ -114,13 +162,21 @@ const languageOptions = computed(() => [
 
 const groupOptions = computed(() => [
   { value: 'all', label: t('app.home.filters.all_groups'), count: totalProjects.value },
-  { value: '__ungrouped__', label: t('app.home.filters.no_group'), count: projectsStore.allProjects.filter(project => !project.group).length },
-  ...projectsStore.allGroups.map(group => ({
+  { value: '__ungrouped__', label: t('app.home.filters.no_group'), count: projectStats.value.ungrouped },
+  ...projectStats.value.groups.map(({ group, count }) => ({
     value: group,
     label: group,
-    count: projectsStore.allProjects.filter(project => project.group === group).length,
+    count,
   })),
 ])
+
+const projectSearchIndex = computed(() =>
+  new Fuse(projectsStore.allProjects, {
+    keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
+    threshold: 0.35,
+    shouldSort: true,
+  }),
+)
 
 const filteredProjects = computed(() => {
   let result = projectsStore.allProjects
@@ -147,17 +203,32 @@ const filteredProjects = computed(() => {
     result = result.filter(project => project.group === groupFilter.value)
   }
 
-  const query = searchValue.value.trim()
+  const query = debouncedSearchValue.value.trim()
   if (query) {
-    result = new Fuse(result, {
-      keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
-      threshold: 0.35,
-      shouldSort: true,
-    }).search(query).map(match => match.item)
+    const matchedProjectIds = new Set(
+      projectSearchIndex.value.search(query).map(match => match.item.appendTime),
+    )
+    result = result.filter(project => matchedProjectIds.has(project.appendTime))
   }
 
   return [...result].sort(compareProjects)
 })
+
+const initialProjectRenderCount = computed(() =>
+  layoutMode.value === 'grid' ? GRID_INITIAL_RENDER_COUNT : LIST_INITIAL_RENDER_COUNT,
+)
+
+const projectRenderBatch = computed(() =>
+  layoutMode.value === 'grid' ? GRID_RENDER_BATCH : LIST_RENDER_BATCH,
+)
+
+const renderedProjects = computed(() =>
+  filteredProjects.value.slice(0, renderedProjectLimit.value),
+)
+
+const hasMoreProjects = computed(() =>
+  renderedProjects.value.length < filteredProjects.value.length,
+)
 
 const activeFilterCount = computed(() =>
   Number(!!searchValue.value.trim())
@@ -225,6 +296,63 @@ function compareProjects(a: LocalProject, b: LocalProject) {
   }
 }
 
+function resetRenderedProjects() {
+  renderedProjectLimit.value = initialProjectRenderCount.value
+  void nextTick(refreshLoadMoreObserver)
+}
+
+function showMoreProjects() {
+  if (!hasMoreProjects.value)
+    return
+
+  renderedProjectLimit.value = Math.min(
+    filteredProjects.value.length,
+    renderedProjectLimit.value + projectRenderBatch.value,
+  )
+  void nextTick(refreshLoadMoreObserver)
+}
+
+function setLoadMoreSentinelRef(element: unknown) {
+  loadMoreSentinelRef.value = element instanceof HTMLElement ? element : null
+  refreshLoadMoreObserver()
+}
+
+function refreshLoadMoreObserver() {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+
+  const sentinel = loadMoreSentinelRef.value
+  if (!sentinel || !hasMoreProjects.value)
+    return
+
+  if (!('IntersectionObserver' in window)) {
+    renderedProjectLimit.value = filteredProjects.value.length
+    return
+  }
+
+  loadMoreObserver = new IntersectionObserver((entries) => {
+    if (entries.some(entry => entry.isIntersecting))
+      showMoreProjects()
+  }, {
+    root: null,
+    rootMargin: '160px',
+  })
+  loadMoreObserver.observe(sentinel)
+}
+
+async function ensureProjectRendered(project: LocalProject) {
+  const index = filteredProjects.value.findIndex(item => item.appendTime === project.appendTime)
+  if (index < 0 || index < renderedProjectLimit.value)
+    return
+
+  renderedProjectLimit.value = Math.min(
+    filteredProjects.value.length,
+    index + projectRenderBatch.value,
+  )
+  await nextTick()
+  refreshLoadMoreObserver()
+}
+
 function addProject() {
   initializeNewProjectState()
   activatedView.value = ViewEnum.ProjectEditor
@@ -274,9 +402,11 @@ function setProjectActionsRef(projectId: number, element: unknown) {
   projectActionRefs.delete(projectId)
 }
 
-function focusProject(project: LocalProject | undefined) {
+async function focusProject(project: LocalProject | undefined) {
   if (!project?.isExists)
     return
+
+  await ensureProjectRendered(project)
 
   const element = projectItemRefs.get(project.appendTime)
   if (!element)
@@ -322,7 +452,7 @@ function openProjectContextMenuFromKeyboard(event: KeyboardEvent) {
 function findProjectByGridDirection(project: LocalProject, direction: 'left' | 'right' | 'up' | 'down', includeMissing = false) {
   const currentElement = projectItemRefs.get(project.appendTime)
   if (!currentElement)
-    return undefined
+    return findProjectByGridLinearDirection(project, direction, includeMissing)
 
   const currentRect = currentElement.getBoundingClientRect()
   const currentCenterX = currentRect.left + currentRect.width / 2
@@ -364,11 +494,45 @@ function findProjectByGridDirection(project: LocalProject, direction: 'left' | '
       return Math.abs(centerA - currentCenterX) - Math.abs(centerB - currentCenterX)
     })
 
-  return verticalCandidates[0]?.project
+  return verticalCandidates[0]?.project || findProjectByGridLinearDirection(project, direction, includeMissing)
 }
 
 function focusCardByDirection(project: LocalProject, direction: 'left' | 'right' | 'up' | 'down') {
   focusProject(findProjectByGridDirection(project, direction))
+}
+
+function findProjectByGridLinearDirection(project: LocalProject, direction: 'left' | 'right' | 'up' | 'down', includeMissing = false) {
+  const projects = filteredProjects.value.filter(item => includeMissing || item.isExists)
+  const currentIndex = projects.findIndex(item => item.appendTime === project.appendTime)
+  if (currentIndex < 0)
+    return undefined
+
+  const columnCount = getRenderedGridColumnCount()
+  const offset = {
+    left: -1,
+    right: 1,
+    up: -columnCount,
+    down: columnCount,
+  }[direction]
+
+  const targetIndex = Math.max(0, Math.min(projects.length - 1, currentIndex + offset))
+  return projects[targetIndex]
+}
+
+function getRenderedGridColumnCount() {
+  const firstElement = projectItemRefs.values().next().value
+  if (!(firstElement instanceof HTMLElement))
+    return 1
+
+  const firstTop = firstElement.getBoundingClientRect().top
+  let columnCount = 0
+
+  for (const element of projectItemRefs.values()) {
+    if (Math.abs(element.getBoundingClientRect().top - firstTop) <= 4)
+      columnCount += 1
+  }
+
+  return Math.max(1, columnCount)
 }
 
 function isProjectActionDisabled(project: LocalProject, action: ProjectActionKey) {
@@ -407,9 +571,11 @@ function focusToolbarButtonAtIndex(toolbar: HTMLElement, index: number) {
   buttons[targetIndex]?.focus({ preventScroll: true })
 }
 
-function focusProjectAction(project: LocalProject | undefined, preferredAction: ProjectActionKey | null, preferredIndex: number) {
+async function focusProjectAction(project: LocalProject | undefined, preferredAction: ProjectActionKey | null, preferredIndex: number) {
   if (!project)
     return
+
+  await ensureProjectRendered(project)
 
   const toolbar = projectActionRefs.get(project.appendTime)
   if (!toolbar)
@@ -654,6 +820,7 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
 onBeforeUnmount(() => {
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
+  loadMoreObserver?.disconnect()
 })
 
 function openInExplorer(project: LocalProject) {
@@ -716,7 +883,7 @@ function kindLabel(kind: ProjectKind) {
 }
 
 function countByKind(kind: ProjectKind) {
-  return projectsStore.allProjects.filter(project => project.kind === kind).length
+  return projectStats.value.byKind.get(kind) || 0
 }
 
 function kindClass(kind: ProjectKind) {
@@ -766,6 +933,17 @@ function formatTime(timestamp: number) {
 function updateLayoutMode(value: string) {
   layoutMode.value = value as LayoutMode
 }
+
+watch([
+  layoutMode,
+  debouncedSearchValue,
+  kindFilter,
+  statusFilter,
+  languageFilter,
+  groupFilter,
+  sortKey,
+  totalProjects,
+], resetRenderedProjects, { immediate: true })
 </script>
 
 <template>
@@ -889,7 +1067,7 @@ function updateLayoutMode(value: string) {
 
       <UiScrollArea v-else-if="layoutMode === 'list'" class="table-body">
         <UiActionMenu
-          v-for="project in filteredProjects"
+          v-for="project in renderedProjects"
           :key="project.appendTime"
           mode="context"
           :items="projectMenuItems(project)"
@@ -1020,12 +1198,18 @@ function updateLayoutMode(value: string) {
             </div>
           </div>
         </UiActionMenu>
+        <div
+          v-if="hasMoreProjects"
+          :ref="setLoadMoreSentinelRef"
+          class="load-more-sentinel"
+          aria-hidden="true"
+        />
       </UiScrollArea>
 
       <UiScrollArea v-else class="cards-scroll">
         <div class="cards-body">
           <UiActionMenu
-            v-for="project in filteredProjects"
+            v-for="project in renderedProjects"
             :key="project.appendTime"
             mode="context"
             :items="projectMenuItems(project)"
@@ -1156,6 +1340,12 @@ function updateLayoutMode(value: string) {
               </footer>
             </article>
           </UiActionMenu>
+          <div
+            v-if="hasMoreProjects"
+            :ref="setLoadMoreSentinelRef"
+            class="load-more-sentinel card-sentinel"
+            aria-hidden="true"
+          />
         </div>
       </UiScrollArea>
     </section>
@@ -1298,6 +1488,10 @@ function updateLayoutMode(value: string) {
   }
 }
 
+.load-more-sentinel {
+  @apply h-1px;
+}
+
 .project-main {
   @apply min-w-0 flex flex-col gap-3px;
 }
@@ -1307,7 +1501,8 @@ function updateLayoutMode(value: string) {
 }
 
 .project-title {
-  @apply min-w-0 flex-1 flex items-center truncate;
+  @apply min-w-0 max-w-full flex items-center overflow-hidden;
+  flex: 0 1 auto;
 }
 
 .project-group-prefix {
@@ -1441,6 +1636,10 @@ function updateLayoutMode(value: string) {
   @apply min-h-full p-12px;
   @apply grid gap-12px content-start;
   grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+}
+
+.card-sentinel {
+  @apply col-span-full;
 }
 
 .project-card {

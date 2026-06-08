@@ -25,6 +25,24 @@ const projectsPersistence = createPersistence<LocalProject[]>({
 const TRAILING_SLASH_RE = /\/+$/
 const WINDOWS_VERBATIM_UNC_RE = /^\\\\\?\\UNC\\/
 const WINDOWS_VERBATIM_RE = /^\\\\\?\\/
+const PROJECT_EXISTENCE_CONCURRENCY = 12
+
+async function runWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  task: (item: T) => Promise<void>,
+) {
+  let nextIndex = 0
+  const workerCount = Math.min(concurrency, items.length)
+
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < items.length) {
+      const item = items[nextIndex]
+      nextIndex += 1
+      await task(item)
+    }
+  }))
+}
 
 function stripWindowsVerbatimPrefix(path: string) {
   if (WINDOWS_VERBATIM_UNC_RE.test(path))
@@ -119,7 +137,10 @@ export const useProjectsStore = defineStore('projects', () => {
       return false
     }
 
-    const project = normalizeProject(updatedProject)
+    const project = normalizeProject({
+      ...updatedProject,
+      isPinned: updatedProject.isPinned ?? projects.value[index].isPinned,
+    })
     project.isExists = await checkProjectExistence(project)
     projects.value[index] = project
 
@@ -218,11 +239,36 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   async function refreshProjectExistence() {
-    await Promise.all(
-      projects.value.map(async (project) => {
-        project.isExists = await checkProjectExistence(project)
-      }),
-    )
+    const snapshot = projects.value.map(project => ({
+      appendTime: project.appendTime,
+      path: project.path,
+      isExists: project.isExists,
+    }))
+    const existenceByProjectId = new Map<LocalProject['appendTime'], boolean>()
+
+    await runWithConcurrency(snapshot, PROJECT_EXISTENCE_CONCURRENCY, async (project) => {
+      try {
+        const { exists } = await window.api.checkPathExistence(project.path)
+        existenceByProjectId.set(project.appendTime, exists)
+      }
+      catch (error) {
+        console.error(`Error checking project path '${project.path}':`, error)
+        existenceByProjectId.set(project.appendTime, project.isExists)
+      }
+    })
+
+    let changed = false
+    const nextProjects = projects.value.map((project) => {
+      const isExists = existenceByProjectId.get(project.appendTime)
+      if (isExists === undefined || isExists === project.isExists)
+        return project
+
+      changed = true
+      return { ...project, isExists }
+    })
+
+    if (changed)
+      projects.value.splice(0, projects.value.length, ...nextProjects)
   }
 
   async function moveProjectToTopByTime(appendTime: LocalProject['appendTime']) {

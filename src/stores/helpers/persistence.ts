@@ -14,10 +14,20 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
   const deserialize = options.deserialize ?? ((raw: string) => JSON.parse(raw) as T)
   const cacheKey = `codenest:data:${options.key}`
 
+  function deserializeSafely(raw: string, source: 'cache' | 'disk'): T | null {
+    try {
+      return deserialize(raw)
+    }
+    catch (e) {
+      console.error(`Error parsing '${options.key}' ${source} data:`, e)
+      return null
+    }
+  }
+
   function loadCached(): T | null {
     try {
       const raw = window.localStorage.getItem(cacheKey)
-      return raw ? deserialize(raw) : null
+      return raw ? deserializeSafely(raw, 'cache') : null
     }
     catch (e) {
       console.error(`Error reading '${options.key}' cache:`, e)
@@ -25,13 +35,17 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     }
   }
 
-  function saveCache(data: T): void {
+  function saveSerializedCache(raw: string): void {
     try {
-      window.localStorage.setItem(cacheKey, serialize(data))
+      window.localStorage.setItem(cacheKey, raw)
     }
     catch (e) {
       console.error(`Error writing '${options.key}' cache:`, e)
     }
+  }
+
+  function saveCache(data: T): void {
+    saveSerializedCache(serialize(data))
   }
 
   function clearCache(): void {
@@ -44,29 +58,43 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
   }
 
   async function load(): Promise<T | null> {
-    const result = await window.api.loadData(options.key)
+    const cachedData = loadCached()
+    let result
+    try {
+      result = await window.api.loadData(options.key)
+    }
+    catch (e) {
+      console.error(`Error loading '${options.key}' data from disk:`, e)
+      return cachedData
+    }
+
     if (result.success && result.data) {
-      try {
-        const data = deserialize(result.data)
-        try {
-          window.localStorage.setItem(cacheKey, result.data)
-        }
-        catch (e) {
-          console.error(`Error writing '${options.key}' cache:`, e)
-        }
+      const data = deserializeSafely(result.data, 'disk')
+      if (data) {
+        saveSerializedCache(result.data)
         return data
       }
-      catch (e) {
-        console.error(`Error parsing '${options.key}' data:`, e)
-      }
     }
-    clearCache()
-    return null
+
+    if (result.error)
+      console.error(`Error loading '${options.key}' data:`, result.error)
+    return cachedData
   }
 
   async function save(data: T): Promise<void> {
-    saveCache(data)
-    await window.api.saveData(options.key, serialize(data))
+    const raw = serialize(data)
+    try {
+      const result = await window.api.saveData(options.key, raw)
+      if (!result.success) {
+        saveSerializedCache(raw)
+        throw new Error(result.error || `Failed to save '${options.key}' data`)
+      }
+      saveSerializedCache(raw)
+    }
+    catch (e) {
+      saveSerializedCache(raw)
+      throw e
+    }
   }
 
   return { clearCache, load, loadCached, save, saveCache }

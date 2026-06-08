@@ -71,7 +71,7 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
   }
 
   const newTheme = theme ?? ThemeEnum.Light
-  const newThemeColor = themeColor ?? ThemeColorEnum.Blue
+  const newThemeColor = themeColor ?? ThemeColorEnum.Contrast
   const normalizedCustomThemeColor = normalizeCustomThemeColor(customThemeColor)
   const systemThemeColor = await getSystemThemeColor(newTheme)
   rootElement.classList.remove(ThemeEnum.Light, ThemeEnum.Dark)

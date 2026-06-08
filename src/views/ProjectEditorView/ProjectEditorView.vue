@@ -315,6 +315,7 @@ function toProject(): LocalProject {
       ? localProjectItem.value.license as LicenseEnum
       : undefined,
     isTemporary: !!localProjectItem.value.isTemporary,
+    isPinned: !!localProjectItem.value.isPinned,
     isExists: true,
   }
 }

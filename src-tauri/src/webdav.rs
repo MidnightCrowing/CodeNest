@@ -10,7 +10,7 @@ use serde_json::Value;
 use tauri::{AppHandle, Manager};
 use url::Url;
 
-use crate::data::{data_file_path, DataFileKind};
+use crate::data::{data_file_path, write_data_file_safely, DataFileKind};
 
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -152,7 +152,7 @@ async fn pull_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String
 
     let count = pulled_files.len();
     for (kind, content) in pulled_files {
-        write_local_file(data_file_path(&app, kind)?, content)?;
+        write_data_file_safely(&data_file_path(&app, kind)?, &content)?;
     }
 
     Ok(count)
@@ -285,13 +285,6 @@ fn read_or_default(path: PathBuf, fallback: &str) -> Result<String, String> {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(fallback.to_string()),
         Err(error) => Err(error.to_string()),
     }
-}
-
-fn write_local_file(path: PathBuf, content: String) -> Result<(), String> {
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-    }
-    fs::write(path, content).map_err(|error| error.to_string())
 }
 
 fn validate_config(config: &WebDavConfig) -> Result<(), String> {

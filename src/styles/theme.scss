@@ -117,7 +117,7 @@
   --ui-surface-muted-background: var(--gray-13);
   --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-1);
-  --theme-text-caret: var(--blue-5);
+  --theme-text-caret: var(--gray-1);
   --system-theme-color: var(--blue-5);
   --system-theme-foreground: rgb(255 255 255);
   --ui-background: var(--ui-surface-background);
@@ -131,13 +131,13 @@
   --ui-muted-foreground: var(--gray-7);
   --ui-border: var(--gray-12);
   --ui-input: var(--gray-11);
-  --ui-ring: var(--blue-5);
+  --ui-ring: var(--gray-1);
   --ui-accent: var(--gray-13);
   --ui-accent-foreground: var(--gray-1);
-  --ui-primary: var(--blue-5);
-  --ui-primary-hover: var(--blue-4);
-  --ui-primary-active: var(--blue-3);
-  --ui-primary-foreground: rgb(255 255 255);
+  --ui-primary: var(--gray-1);
+  --ui-primary-hover: var(--gray-3);
+  --ui-primary-active: var(--gray-4);
+  --ui-primary-foreground: var(--gray-14);
 }
 
 :root.dark {
@@ -264,7 +264,7 @@
   --ui-surface-muted-background: var(--gray-3);
   --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-12);
-  --theme-text-caret: var(--blue-8);
+  --theme-text-caret: var(--gray-14);
   --system-theme-color: var(--blue-8);
   --system-theme-foreground: rgb(255 255 255);
   --ui-background: var(--ui-surface-background);
@@ -278,13 +278,13 @@
   --ui-muted-foreground: var(--gray-8);
   --ui-border: var(--gray-4);
   --ui-input: var(--gray-5);
-  --ui-ring: var(--blue-8);
+  --ui-ring: var(--gray-14);
   --ui-accent: var(--gray-3);
   --ui-accent-foreground: var(--gray-13);
-  --ui-primary: var(--blue-8);
-  --ui-primary-hover: var(--blue-9);
-  --ui-primary-active: var(--blue-7);
-  --ui-primary-foreground: rgb(255 255 255);
+  --ui-primary: var(--gray-14);
+  --ui-primary-hover: var(--gray-13);
+  --ui-primary-active: var(--gray-12);
+  --ui-primary-foreground: var(--gray-1);
 }
 
 :root.theme-blue {

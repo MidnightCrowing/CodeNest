@@ -59,18 +59,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+      - name: Check
+        run: pnpm check
 
-      - name: Type check
-        run: pnpm typecheck
+      - name: Build Windows bundle
+        if: runner.os == 'Windows'
+        run: pnpm exec tauri build --ci --bundles nsis
 
-      - name: Build the project
+      - name: Build bundle
+        if: runner.os != 'Windows'
         run: pnpm build
 
       - name: Upload bundles
         uses: actions/upload-artifact@v4
         with:
-          name: codenest-${{ runner.os }}
+          name: codenest-${{ runner.os }}-${{ github.sha }}
           path: src-tauri/target/release/bundle/**/*
           if-no-files-found: error

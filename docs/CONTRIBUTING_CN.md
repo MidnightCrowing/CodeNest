@@ -4,18 +4,15 @@
 
 ## 设置开发环境
 
-请确保本地安装了 [Node.js](https://nodejs.org/) 和 [pnpm](https://pnpm.io/)。
+请确保本地安装了 [Node.js](https://nodejs.org/)、[pnpm](https://pnpm.io/) 和 [Rust](https://www.rust-lang.org/tools/install)。
 
 ## 安装依赖
 
 ```bash
-# 安装所有依赖（包括组件库）
+# 安装依赖
 pnpm install
 
-# 编译组件库
-pnpm ui:build
-
-# 运行项目
+# 运行桌面开发环境
 pnpm dev
 ```
 
@@ -23,21 +20,29 @@ pnpm dev
 
 ```
 CodeNest
-  ├── data        # 存储用户数据和配置文件
+  ├── .github     # GitHub Actions 工作流
+  ├── docs        # 文档和界面截图
+  ├── icons       # 图标源文件
+  ├── scripts     # 自动化脚本
+  ├── src         # Vue 应用源代码
   ├── src-tauri   # Tauri 桌面壳和本地命令
-  ├── icons       # 项目使用的图标和资源文件
-  ├── scripts     # 用于自动化任务的脚本文件
-  ├── src         # Vue 应用的源代码和核心逻辑
+  ├── tests       # 前端单元测试
 ```
 
 ## 构建
 
 ```bash
-# 构建项目
+# 检查代码、类型和测试
+pnpm check
+
+# 只构建 Tauri 可执行文件，不生成安装包
+pnpm build:exe
+
+# 构建平台安装包
 pnpm build
 ```
 
-你可以在 `build` 目录中找到构建后的安装包及解压的软件。
+构建产物位于 `src-tauri/target/release` 和 `src-tauri/target/release/bundle`。
 
 ## 贡献
 
