@@ -273,18 +273,20 @@ export const useProjectsStore = defineStore('projects', () => {
       }
     })
 
-    let changed = false
+    let changedCount = 0
     const nextProjects = projects.value.map((project) => {
       const isExists = existenceByProjectId.get(project.appendTime)
       if (isExists === undefined || isExists === project.isExists)
         return project
 
-      changed = true
+      changedCount += 1
       return { ...project, isExists }
     })
 
-    if (changed)
+    if (changedCount > 0)
       projects.value.splice(0, projects.value.length, ...nextProjects)
+
+    return changedCount
   }
 
   async function moveProjectToTopByTime(appendTime: LocalProject['appendTime']) {

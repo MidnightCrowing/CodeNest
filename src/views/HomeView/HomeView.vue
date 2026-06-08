@@ -5,19 +5,20 @@ import { useI18n } from 'vue-i18n'
 
 import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { showPop as showLanguagePop } from '~/components/LanguagePop/LanguagePopProvider'
-import { showNoIdePathDialog } from '~/components/NoIdePathDialog'
 import { showRemoveDialog } from '~/components/RemoveProjectDialog'
 import type { UiActionMenuItem } from '~/components/ui/actionMenu'
+import { showToast } from '~/components/ui/toast'
 import UiActionMenu from '~/components/ui/UiActionMenu.vue'
 import UiScrollArea from '~/components/ui/UiScrollArea.vue'
 import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
-import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
+import { SettingPageEnum, ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors, editorCommandOptions, isCodeEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
+import type { ProjectScannerImportResult } from '~/services/projectScannerService'
 import { addNewProjectsFromScanner } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
@@ -26,6 +27,7 @@ import {
   initializeNewProjectState,
   initializeUpdateProjectState,
 } from '~/views/ProjectEditorView'
+import { activatedPage } from '~/views/SettingsView'
 
 import LanguageFilterSelect from './LanguageFilterSelect.vue'
 
@@ -40,6 +42,8 @@ type LayoutMode = 'list' | 'grid'
 type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
 
 const MIN_SYNC_BUSY_MS = 280
+const SCAN_RESULT_TOAST_THRESHOLD_MS = 700
+const MIN_PROJECT_OPENING_VISIBLE_MS = 2200
 const PROJECT_ACTION_KEYS: ProjectActionKey[] = ['open', 'explorer', 'terminal', 'copy', 'more']
 const LIST_INITIAL_RENDER_COUNT = 160
 const LIST_RENDER_BATCH = 120
@@ -72,8 +76,11 @@ const groupFilter = ref('all')
 const sortKey = ref<SortKey>('recent')
 const layoutMode = useLocalStorage<LayoutMode>('codenest:home-layout', 'list')
 const syncing = ref(false)
+const openingProjectIds = ref(new Set<number>())
 const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
 const copyFeedbackTimers = new Map<number, number>()
+const projectOpeningStartedAt = new Map<number, number>()
+const projectOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
 const projectItemRefs = new Map<number, HTMLElement>()
 const projectActionRefs = new Map<number, HTMLElement>()
 const renderedProjectLimit = ref(LIST_INITIAL_RENDER_COUNT)
@@ -232,6 +239,9 @@ const renderedProjects = computed(() =>
   filteredProjects.value.slice(0, renderedProjectLimit.value),
 )
 
+const displayPathCache = reactive(new Map<string, string>())
+const pendingDisplayPaths = new Set<string>()
+
 const hasMoreProjects = computed(() =>
   renderedProjects.value.length < filteredProjects.value.length,
 )
@@ -289,6 +299,8 @@ function defaultEditorMenuItems(project: LocalProject): UiActionMenuItem[] {
 }
 
 function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
+  const canDeleteFiles = canDeleteProjectFiles(project)
+
   return [
     {
       id: 'open',
@@ -334,7 +346,7 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     },
     {
       id: 'remove',
-      label: t('app.home.actions.remove'),
+      label: canDeleteFiles ? t('app.home.actions.delete') : t('app.home.actions.remove'),
       icon: 'i-lucide:trash-2',
       danger: true,
       separatorBefore: true,
@@ -427,28 +439,94 @@ function editProject(project: LocalProject) {
 }
 
 async function openProject(project: LocalProject) {
+  if (isProjectOpening(project))
+    return
+
   await openProjectWithEditor(project, project.defaultOpen)
 }
 
 async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEnum) {
-  if (!project.isExists) {
+  if (!project.isExists || isProjectOpening(project)) {
     return
   }
 
   const launchConfig = settingsStore.getEditorLaunchConfig(editor)
   if (!launchConfig?.command) {
-    showNoIdePathDialog()
+    showMissingEditorCommandToast()
     return
   }
 
+  markProjectOpening(project.appendTime)
   try {
     await window.api.openProject(launchConfig.command, project.path, launchConfig.openInTerminal)
-    await projectsStore.moveProjectToTopByTime(project.appendTime)
+    void projectsStore.moveProjectToTopByTime(project.appendTime)
+    finishProjectOpening(project.appendTime)
   }
   catch (error) {
+    clearProjectOpening(project.appendTime)
     console.error('Failed to open project:', error)
-    showNoIdePathDialog()
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.open_failed'),
+      description: formatActionError(error),
+    })
   }
+}
+
+function setProjectOpeningVisible(projectId: number, visible: boolean) {
+  if (openingProjectIds.value.has(projectId) === visible)
+    return
+
+  const next = new Set(openingProjectIds.value)
+  if (visible)
+    next.add(projectId)
+  else
+    next.delete(projectId)
+  openingProjectIds.value = next
+}
+
+function clearProjectOpeningTimer(projectId: number) {
+  const timer = projectOpeningTimers.get(projectId)
+  if (timer !== undefined) {
+    window.clearTimeout(timer)
+    projectOpeningTimers.delete(projectId)
+  }
+}
+
+function markProjectOpening(projectId: number) {
+  clearProjectOpeningTimer(projectId)
+  projectOpeningStartedAt.set(projectId, performance.now())
+  setProjectOpeningVisible(projectId, true)
+}
+
+function finishProjectOpening(projectId: number) {
+  clearProjectOpeningTimer(projectId)
+
+  const startedAt = projectOpeningStartedAt.get(projectId) ?? performance.now()
+  const remaining = MIN_PROJECT_OPENING_VISIBLE_MS - (performance.now() - startedAt)
+  if (remaining <= 0) {
+    clearProjectOpening(projectId)
+    return
+  }
+
+  projectOpeningTimers.set(
+    projectId,
+    window.setTimeout(clearProjectOpening, remaining, projectId),
+  )
+}
+
+function clearProjectOpening(projectId: number) {
+  clearProjectOpeningTimer(projectId)
+  projectOpeningStartedAt.delete(projectId)
+  setProjectOpeningVisible(projectId, false)
+}
+
+function isProjectOpening(project: LocalProject) {
+  return openingProjectIds.value.has(project.appendTime)
+}
+
+function canDeleteProjectFiles(project: LocalProject) {
+  return project.isTemporary && project.isExists !== false
 }
 
 function setProjectItemRef(projectId: number, element: unknown) {
@@ -816,6 +894,38 @@ function setCopyFeedback(projectId: number, status: 'success' | 'error') {
   copyFeedbackTimers.set(projectId, timer)
 }
 
+function formatActionError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.replace(/^Error:\s*/i, '').trim() || t('app.common.unknown')
+}
+
+function scanResultDescription(result: ProjectScannerImportResult, changedStatusCount: number) {
+  const parts: string[] = []
+
+  if (result.added > 0)
+    parts.push(t('app.home.feedback.scan_added', { count: result.added }))
+  if (changedStatusCount > 0)
+    parts.push(t('app.home.feedback.scan_updated', { count: changedStatusCount }))
+  if (result.failed > 0)
+    parts.push(t('app.home.feedback.scan_failed_items', { count: result.failed }))
+
+  return parts.length > 0
+    ? parts.join(t('app.common.list_separator'))
+    : t('app.home.feedback.scan_no_changes')
+}
+
+function showScanResultToast(result: ProjectScannerImportResult, changedStatusCount: number, elapsed: number) {
+  const hasVisibleResult = result.added > 0 || result.failed > 0 || changedStatusCount > 0
+  if (!hasVisibleResult && elapsed < SCAN_RESULT_TOAST_THRESHOLD_MS)
+    return
+
+  showToast({
+    tone: result.failed > 0 ? 'warning' : hasVisibleResult ? 'success' : 'info',
+    title: t('app.home.feedback.scan_completed'),
+    description: scanResultDescription(result, changedStatusCount),
+  })
+}
+
 function copyButtonTitle(project: LocalProject) {
   const status = copyFeedback.value[project.appendTime]
   if (status === 'success')
@@ -839,6 +949,46 @@ function copyButtonClass(project: LocalProject) {
   return {
     'copy-success': status === 'success',
     'copy-error': status === 'error',
+  }
+}
+
+function openProjectButtonTitle(project: LocalProject) {
+  return isProjectOpening(project)
+    ? t('app.home.actions.opening_project')
+    : t('app.home.actions.open_project')
+}
+
+function openProjectButtonAriaLabel(project: LocalProject) {
+  return isProjectOpening(project)
+    ? t('app.home.actions.opening_named', { name: project.name })
+    : t('app.home.actions.open_named', { name: project.name })
+}
+
+function openProjectButtonIcon(project: LocalProject) {
+  return isProjectOpening(project)
+    ? 'i-lucide:loader-circle spinning'
+    : 'i-lucide:external-link'
+}
+
+function displayProjectPath(path: string) {
+  return displayPathCache.get(path) ?? path
+}
+
+async function cacheDisplayPath(path: string) {
+  if (!path || displayPathCache.has(path) || pendingDisplayPaths.has(path))
+    return
+
+  pendingDisplayPaths.add(path)
+  try {
+    const formattedPath = await window.api.formatPath(path)
+    displayPathCache.set(path, formattedPath || path)
+  }
+  catch (error) {
+    console.error('Failed to format project path:', error)
+    displayPathCache.set(path, path)
+  }
+  finally {
+    pendingDisplayPaths.delete(path)
   }
 }
 
@@ -897,7 +1047,7 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
       openInExplorer(project)
       break
     case 'terminal':
-      openInTerminal(project)
+      void openInTerminal(project)
       break
     case 'copy':
       void copyProjectPath(project)
@@ -914,6 +1064,9 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
 onBeforeUnmount(() => {
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
+  projectOpeningTimers.forEach(timer => window.clearTimeout(timer))
+  projectOpeningTimers.clear()
+  projectOpeningStartedAt.clear()
   loadMoreObserver?.disconnect()
 })
 
@@ -921,8 +1074,18 @@ function openInExplorer(project: LocalProject) {
   window.api.openInExplorer(project.path)
 }
 
-function openInTerminal(project: LocalProject) {
-  window.api.openInTerminal(project.path)
+async function openInTerminal(project: LocalProject) {
+  try {
+    await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+  }
+  catch (error) {
+    console.error('Failed to open project in terminal:', error)
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.terminal_failed'),
+      description: formatActionError(error),
+    })
+  }
 }
 
 async function syncProjects() {
@@ -930,18 +1093,38 @@ async function syncProjects() {
     return
 
   const startedAt = performance.now()
+  let workElapsed = 0
+  let changedStatusCount = 0
+  let scanResult: ProjectScannerImportResult | null = null
+  let scanError: unknown = null
   syncing.value = true
   try {
-    await projectsStore.refreshProjectExistence()
-    await addNewProjectsFromScanner()
+    changedStatusCount = await projectsStore.refreshProjectExistence()
+    scanResult = await addNewProjectsFromScanner()
+  }
+  catch (error) {
+    console.error('Project scanner failed:', error)
+    scanError = error
   }
   finally {
-    const elapsed = performance.now() - startedAt
-    if (elapsed < MIN_SYNC_BUSY_MS) {
-      await new Promise(resolve => setTimeout(resolve, MIN_SYNC_BUSY_MS - elapsed))
+    workElapsed = performance.now() - startedAt
+    if (workElapsed < MIN_SYNC_BUSY_MS) {
+      await new Promise(resolve => setTimeout(resolve, MIN_SYNC_BUSY_MS - workElapsed))
     }
     syncing.value = false
   }
+
+  if (scanError) {
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.scan_failed'),
+      description: formatActionError(scanError),
+    })
+    return
+  }
+
+  if (scanResult)
+    showScanResultToast(scanResult, changedStatusCount, workElapsed)
 }
 
 function clearFilters() {
@@ -960,8 +1143,31 @@ function showLanguage(project: LocalProject, event: MouseEvent) {
   showLanguagePop(project, event.currentTarget as HTMLElement)
 }
 
+watch(
+  renderedProjects,
+  projects => projects.forEach(project => void cacheDisplayPath(project.path)),
+  { immediate: true },
+)
+
 function openSettings() {
   activatedView.value = ViewEnum.Settings
+}
+
+function openEditorSettings() {
+  activatedPage.value = SettingPageEnum.Ides
+  activatedView.value = ViewEnum.Settings
+}
+
+function showMissingEditorCommandToast() {
+  showToast({
+    tone: 'warning',
+    title: t('no_ide_path_dialog.dialog_title'),
+    description: t('no_ide_path_dialog.dialog_desc'),
+    action: {
+      label: t('no_ide_path_dialog.set'),
+      onSelect: openEditorSettings,
+    },
+  })
 }
 
 function kindLabel(kind: ProjectKind) {
@@ -1186,13 +1392,16 @@ watch([
                   <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                   <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                 </span>
+                <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
+                  {{ t('app.home.filters.temporary') }}
+                </span>
                 <span class="editor-chip">
                   <span :class="editorIconClasses(project.defaultOpen)" />
                   <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
                 </span>
               </div>
               <div class="project-path" :title="project.path">
-                {{ project.path }}
+                {{ displayProjectPath(project.path) }}
               </div>
               <div v-if="project.fromUrl || project.fromName" class="project-source" :title="project.fromName || project.fromUrl">
                 {{ project.kind === ProjectKind.FORK ? t('app.home.source.forked_from') : t('app.home.source.cloned_from') }}
@@ -1226,15 +1435,17 @@ watch([
             >
               <button
                 class="icon-button primary-action"
+                :class="{ launching: isProjectOpening(project) }"
                 type="button"
                 data-project-action="open"
-                :title="t('app.home.actions.open_project')"
-                :aria-label="t('app.home.actions.open_project')"
+                :title="openProjectButtonTitle(project)"
+                :aria-label="openProjectButtonAriaLabel(project)"
+                :aria-busy="isProjectOpening(project)"
                 :disabled="!project.isExists"
                 :tabindex="actionButtonTabIndex(project, 'open')"
                 @click.stop="openProject(project)"
               >
-                <span class="i-lucide:external-link" />
+                <span :class="openProjectButtonIcon(project)" />
               </button>
               <button
                 class="icon-button"
@@ -1328,6 +1539,9 @@ watch([
                     <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                     <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                   </strong>
+                  <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
+                    {{ t('app.home.filters.temporary') }}
+                  </span>
                 </div>
                 <span class="kind-pill" :class="kindClass(project.kind)">
                   {{ kindLabel(project.kind) }}
@@ -1335,7 +1549,7 @@ watch([
               </header>
 
               <div class="card-path" :title="project.path">
-                {{ project.path }}
+                {{ displayProjectPath(project.path) }}
               </div>
 
               <div class="card-meta">
@@ -1367,15 +1581,17 @@ watch([
                 >
                   <button
                     class="icon-button primary-action"
+                    :class="{ launching: isProjectOpening(project) }"
                     type="button"
                     data-project-action="open"
-                    :title="t('app.home.actions.open_project')"
-                    :aria-label="t('app.home.actions.open_project')"
+                    :title="openProjectButtonTitle(project)"
+                    :aria-label="openProjectButtonAriaLabel(project)"
+                    :aria-busy="isProjectOpening(project)"
                     :disabled="!project.isExists"
                     :tabindex="actionButtonTabIndex(project, 'open')"
                     @click.stop="openProject(project)"
                   >
-                    <span class="i-lucide:external-link" />
+                    <span :class="openProjectButtonIcon(project)" />
                   </button>
                   <button
                     class="icon-button"
@@ -1607,6 +1823,18 @@ watch([
   @apply min-w-0 flex-1 truncate text-13px font-620 light:color-$gray-1 dark:color-$gray-13;
 }
 
+.temporary-badge {
+  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply inline-flex items-center text-10px font-650 lh-12px;
+  color: color-mix(in srgb, var(--yellow-2) 84%, var(--gray-1));
+  background: color-mix(in srgb, var(--yellow-4) 18%, var(--ui-surface-background));
+}
+
+.workspace-shell.theme-dark .temporary-badge {
+  color: color-mix(in srgb, var(--yellow-8) 88%, var(--gray-14));
+  background: color-mix(in srgb, var(--yellow-5) 16%, var(--ui-surface-background));
+}
+
 .pinned-marker {
   @apply mr-4px shrink-0 text-11px color-$ui-primary;
 }
@@ -1691,6 +1919,10 @@ watch([
   @apply bg-transparent color-$ui-muted-foreground;
   @apply hover:bg-$ui-hover-background hover:color-$ui-foreground;
 
+  > span {
+    @apply size-14px;
+  }
+
   &:disabled {
     @apply opacity-35 cursor-not-allowed;
   }
@@ -1702,6 +1934,11 @@ watch([
     &:focus-visible {
       @apply color-$ui-primary;
     }
+  }
+
+  &.launching {
+    color: var(--ui-primary);
+    cursor: progress;
   }
 
   &.danger {
@@ -1776,10 +2013,10 @@ watch([
 }
 
 .card-title {
-  @apply min-w-0 flex-1 flex flex-col gap-2px;
+  @apply min-w-0 flex-1 flex items-center gap-7px;
 
   strong {
-    @apply min-w-0 w-full inline-flex items-center truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
+    @apply min-w-0 flex-1 inline-flex items-center truncate text-13px font-650 light:color-$gray-1 dark:color-$gray-13;
   }
 }
 

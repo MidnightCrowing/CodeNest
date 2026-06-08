@@ -3,8 +3,8 @@ import '~/styles'
 
 import { useI18n } from 'vue-i18n'
 
-import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
 import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectDialog.vue'
+import UiToaster from '~/components/ui/UiToaster.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
@@ -93,7 +93,7 @@ provide('activatedView', activatedView)
 
     <!-- Dialog -->
     <RemoveProjectDialog />
-    <NoIdePathDialog />
+    <UiToaster />
   </main>
 </template>
 

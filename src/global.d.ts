@@ -123,7 +123,7 @@ declare global {
 
       openExternal: (url: string) => void
       openInExplorer: (path: string) => void
-      openInTerminal: (path: string) => void
+      openInTerminal: (path: string, terminalCommand?: string) => Promise<string>
 
       checkUpdate: () => Promise<UpdateCheckResult>
 

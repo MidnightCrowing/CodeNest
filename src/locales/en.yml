@@ -20,7 +20,6 @@ remove_project_dialog:
 no_ide_path_dialog:
   dialog_title: Launch Command Missing
   dialog_desc: Configure a launch command for this editor in settings.
-  cancel: Cancel
   set: Open Settings
 app:
   window:
@@ -43,6 +42,10 @@ app:
     no_editor: No editor
     not_set: Not set
     unknown: Unknown
+    close: Close
+    notifications: Notifications
+    more_notifications: '{count} more notifications'
+    list_separator: ', '
   license:
     none: No license
     other: Other
@@ -98,7 +101,9 @@ app:
       cloned_from: Cloned from
     actions:
       open_project: Open
+      opening_project: Opening
       open_named: Open {name}
+      opening_named: Opening {name}
       project_actions: '{name} actions'
       open_with: Open With
       default_editor: Default Editor
@@ -113,6 +118,16 @@ app:
       more: More actions
       edit: Edit
       remove: Remove
+      delete: Delete...
+    feedback:
+      open_failed: Couldn't open project
+      terminal_failed: Couldn't open Terminal
+      scan_completed: Scan complete
+      scan_failed: Scan failed
+      scan_no_changes: No new projects found
+      scan_added: Added {count} projects
+      scan_updated: Updated {count} project statuses
+      scan_failed_items: Couldn't analyze {count} projects
   settings:
     title: Settings
     open_json: Open settings JSON
@@ -162,6 +177,10 @@ app:
       browse_executable: Browse executable
       auto_detect: Auto detect
       terminal: Run in terminal
+      terminal_launcher: Terminal
+      terminal_command: Open folders
+      terminal_command_placeholder: System default
+      terminal_command_hint: Leave empty for system default, supports {cwd}
       groups:
         jetbrains: JetBrains
         microsoft: Microsoft
@@ -189,6 +208,7 @@ app:
         gemini_cli: Gemini in Terminal
     scanner:
       title: Scanner
+      auto_detect: Auto detect
       sources:
         title: Import sources
         desc: Choose where projects are imported from.
@@ -234,6 +254,10 @@ app:
         title: Project list
         import: Import
         export: Export
+        imported: Project list imported
+        exported: Project list exported
+        import_failed: Couldn't import project list
+        export_failed: Couldn't export project list
       webdav:
         title: WebDAV
         server: WebDAV server URL
@@ -252,6 +276,13 @@ app:
         downloading: Downloading
         pulled_with_backup: Download complete. A local backup was created.
         failed: WebDAV sync failed.
+        feedback:
+          connection_succeeded: WebDAV connection succeeded
+          connection_failed: WebDAV connection failed
+          upload_succeeded: Uploaded to cloud
+          upload_failed: Couldn't upload to cloud
+          download_succeeded: Downloaded from cloud
+          download_failed: Couldn't download from cloud
         errors:
           url_required: WebDAV server URL is required.
           invalid_url: WebDAV server URL is invalid.

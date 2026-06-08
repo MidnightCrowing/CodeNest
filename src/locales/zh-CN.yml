@@ -20,7 +20,6 @@ remove_project_dialog:
 no_ide_path_dialog:
   dialog_title: 缺少启动命令
   dialog_desc: 请在设置中配置这个编辑器的启动命令。
-  cancel: 取消
   set: 打开设置
 app:
   window:
@@ -43,6 +42,10 @@ app:
     no_editor: 未设置编辑器
     not_set: 未设置
     unknown: 未知
+    close: 关闭
+    notifications: 通知
+    more_notifications: 还有 {count} 条通知
+    list_separator: ，
   license:
     none: 无许可证
     other: 其他
@@ -98,7 +101,9 @@ app:
       cloned_from: Clone 自
     actions:
       open_project: 打开
+      opening_project: 打开中
       open_named: 打开 {name}
+      opening_named: 正在打开 {name}
       project_actions: '{name}操作'
       open_with: 打开方式
       default_editor: 默认编辑器
@@ -113,6 +118,16 @@ app:
       more: 更多操作
       edit: 编辑
       remove: 移除
+      delete: 删除...
+    feedback:
+      open_failed: 打开项目失败
+      terminal_failed: 打开终端失败
+      scan_completed: 扫描完成
+      scan_failed: 扫描失败
+      scan_no_changes: 没有发现新项目
+      scan_added: 新增 {count} 个项目
+      scan_updated: 更新 {count} 个项目状态
+      scan_failed_items: '{count} 个项目分析失败'
   settings:
     title: 设置
     open_json: 打开设置 JSON
@@ -162,6 +177,10 @@ app:
       browse_executable: 浏览可执行文件
       auto_detect: 自动检测
       terminal: 在终端中运行
+      terminal_launcher: 终端
+      terminal_command: 打开目录
+      terminal_command_placeholder: 系统默认
+      terminal_command_hint: 留空使用系统默认，支持 {cwd}
       groups:
         jetbrains: JetBrains
         microsoft: Microsoft
@@ -189,6 +208,7 @@ app:
         gemini_cli: 终端中的 Gemini
     scanner:
       title: 扫描器
+      auto_detect: 自动检测
       sources:
         title: 导入来源
         desc: 选择项目的导入来源。
@@ -234,6 +254,10 @@ app:
         title: 项目列表
         import: 导入
         export: 导出
+        imported: 项目列表已导入
+        exported: 项目列表已导出
+        import_failed: 导入项目列表失败
+        export_failed: 导出项目列表失败
       webdav:
         title: WebDAV
         server: WebDAV 服务器地址
@@ -252,6 +276,13 @@ app:
         downloading: 下载中
         pulled_with_backup: 下载完成，已创建本地备份。
         failed: WebDAV 同步失败。
+        feedback:
+          connection_succeeded: WebDAV 连接成功
+          connection_failed: WebDAV 连接失败
+          upload_succeeded: 已上传到云端
+          upload_failed: 上传到云端失败
+          download_succeeded: 已从云端下载
+          download_failed: 从云端下载失败
         errors:
           url_required: 需要填写 WebDAV 服务器地址。
           invalid_url: WebDAV 服务器地址无效。

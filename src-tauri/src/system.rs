@@ -1,6 +1,12 @@
-use std::{fs, path::PathBuf, process::Command};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use serde::Serialize;
+
+use crate::command_line::parse_command_line;
 
 #[cfg(target_os = "windows")]
 use winreg::{enums::HKEY_CURRENT_USER, RegKey};
@@ -18,11 +24,35 @@ pub fn format_path(file_path: String) -> String {
         return file_path;
     };
     let home = home.to_string_lossy().into_owned();
-    if file_path.starts_with(&home) {
-        file_path.replacen(&home, "~", 1)
-    } else {
-        file_path
+
+    let file_path_for_compare = normalize_path_for_home_compare(&file_path);
+    let home_for_compare = normalize_path_for_home_compare(&home);
+    if file_path_for_compare == home_for_compare {
+        return "~".to_string();
     }
+
+    let Some(normalized_remainder) = file_path_for_compare.strip_prefix(&home_for_compare) else {
+        return file_path;
+    };
+
+    if !normalized_remainder.starts_with('/') {
+        return file_path;
+    }
+
+    let remainder = &file_path[home_for_compare.len()..];
+    format!("~{remainder}")
+}
+
+#[cfg(target_os = "windows")]
+fn normalize_path_for_home_compare(path: &str) -> String {
+    path.replace('\\', "/")
+        .trim_end_matches('/')
+        .to_ascii_lowercase()
+}
+
+#[cfg(not(target_os = "windows"))]
+fn normalize_path_for_home_compare(path: &str) -> String {
+    path.replace('\\', "/").trim_end_matches('/').to_string()
 }
 
 #[tauri::command]
@@ -54,27 +84,188 @@ pub fn open_in_explorer(path: String) -> bool {
 }
 
 #[tauri::command]
-pub fn open_in_terminal(path: String) -> bool {
+pub fn open_in_terminal(path: String, terminal_command: Option<String>) -> Result<String, String> {
     let path = PathBuf::from(path);
     if !path.is_dir() {
-        return false;
+        return Err("Project path is not a directory".to_string());
     }
 
+    if let Some(command) = terminal_command
+        .as_deref()
+        .map(str::trim)
+        .filter(|cmd| !cmd.is_empty())
+    {
+        spawn_configured_terminal(command, &path)?;
+    } else {
+        spawn_default_terminal(&path)?;
+    }
+
+    Ok("Terminal opened".to_string())
+}
+
+fn spawn_configured_terminal(command_template: &str, cwd: &Path) -> Result<(), String> {
+    let args = configured_terminal_args(command_template, cwd)?;
+    let program = PathBuf::from(&args[0]);
+    spawn_terminal_program(&program, &args[1..], cwd)
+}
+
+fn configured_terminal_args(command_template: &str, cwd: &Path) -> Result<Vec<String>, String> {
+    let mut args = parse_command_line(command_template)?;
+    if args.is_empty() {
+        return Err("Terminal command cannot be empty".to_string());
+    }
+
+    let cwd_text = cwd.to_string_lossy().into_owned();
+    for arg in &mut args {
+        *arg = arg
+            .replace("{cwd}", &cwd_text)
+            .replace("{project}", &cwd_text);
+    }
+
+    Ok(args)
+}
+
+fn spawn_terminal_program(program: &Path, args: &[String], cwd: &Path) -> Result<(), String> {
     if cfg!(windows) {
-        Command::new("cmd.exe")
-            .arg("/K")
-            .current_dir(&path)
-            .spawn()
-            .is_ok()
+        if let Some(shell) = windows_shell_program_name(program) {
+            return spawn_windows_shell_terminal(&shell, args, cwd);
+        }
+
+        let extension = program
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .map(str::to_ascii_lowercase);
+        if matches!(extension.as_deref(), Some("bat" | "cmd")) {
+            let mut command = Command::new("cmd");
+            command.current_dir(cwd);
+            command.args(["/C", "start", "", &program.to_string_lossy()]);
+            command.args(args);
+            command.spawn().map_err(|error| error.to_string())?;
+            return Ok(());
+        }
+    }
+
+    Command::new(program)
+        .current_dir(cwd)
+        .args(args)
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format_spawn_error(program, error))
+}
+
+fn format_spawn_error(program: &Path, error: io::Error) -> String {
+    if error.kind() == io::ErrorKind::NotFound {
+        return format!("Command not found: {}", program.to_string_lossy());
+    }
+
+    error.to_string()
+}
+
+fn windows_shell_program_name(program: &Path) -> Option<String> {
+    let name = program
+        .file_stem()
+        .or_else(|| program.file_name())
+        .and_then(|name| name.to_str())?
+        .to_ascii_lowercase();
+
+    matches!(name.as_str(), "cmd" | "powershell" | "pwsh").then_some(name)
+}
+
+fn spawn_windows_shell_terminal(shell: &str, args: &[String], cwd: &Path) -> Result<(), String> {
+    let mut command = Command::new("cmd");
+    command.current_dir(cwd);
+    command.args(["/C", "start", "", shell]);
+
+    if args.is_empty() {
+        if shell == "cmd" {
+            command.arg("/K");
+        } else {
+            command.arg("-NoExit");
+        }
+    } else {
+        command.args(args);
+    }
+
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| error.to_string())
+}
+
+fn spawn_default_terminal(cwd: &Path) -> Result<(), String> {
+    if cfg!(windows) {
+        spawn_default_windows_terminal(cwd)
     } else if cfg!(target_os = "macos") {
         Command::new("open")
-            .args(["-a", "Terminal", &path.to_string_lossy()])
+            .arg("-a")
+            .arg("Terminal")
+            .arg(cwd)
             .spawn()
-            .is_ok()
+            .map(|_| ())
+            .map_err(|error| error.to_string())
     } else {
-        ["gnome-terminal", "konsole", "x-terminal-emulator"]
-            .iter()
-            .any(|terminal| Command::new(terminal).current_dir(&path).spawn().is_ok())
+        Command::new("x-terminal-emulator")
+            .current_dir(cwd)
+            .spawn()
+            .or_else(|_| Command::new("gnome-terminal").current_dir(cwd).spawn())
+            .or_else(|_| Command::new("konsole").current_dir(cwd).spawn())
+            .map(|_| ())
+            .map_err(|error| error.to_string())
+    }
+}
+
+fn spawn_default_windows_terminal(cwd: &Path) -> Result<(), String> {
+    let cwd_text = cwd.to_string_lossy();
+    let mut errors = Vec::new();
+
+    match Command::new("wt").arg("-d").arg(cwd).spawn() {
+        Ok(_) => return Ok(()),
+        Err(error) => errors.push(format!("wt: {error}")),
+    }
+
+    let powershell_command = format!(
+        "Set-Location -LiteralPath '{}'",
+        cwd_text.replace('\'', "''")
+    );
+    match Command::new("pwsh")
+        .args(["-NoExit", "-Command", &powershell_command])
+        .spawn()
+    {
+        Ok(_) => return Ok(()),
+        Err(error) => errors.push(format!("pwsh: {error}")),
+    }
+
+    match Command::new("powershell")
+        .args(["-NoExit", "-Command", &powershell_command])
+        .spawn()
+    {
+        Ok(_) => return Ok(()),
+        Err(error) => errors.push(format!("powershell: {error}")),
+    }
+
+    Command::new("cmd")
+        .current_dir(cwd)
+        .args(["/C", "start", "", "cmd", "/K"])
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| {
+            errors.push(format!("cmd: {error}"));
+            format!("Failed to open terminal: {}", errors.join("; "))
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::configured_terminal_args;
+
+    #[test]
+    fn configured_terminal_args_keeps_cwd_with_spaces_as_one_arg() {
+        let args =
+            configured_terminal_args("wt -d {cwd}", Path::new(r"E:\Projects\Example App")).unwrap();
+
+        assert_eq!(args, vec!["wt", "-d", r"E:\Projects\Example App"]);
     }
 }
 

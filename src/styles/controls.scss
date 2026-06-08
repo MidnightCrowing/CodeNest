@@ -69,6 +69,10 @@ textarea:not(:disabled) {
   @apply transition duration-120 ease-out;
 }
 
+.icon-button > span {
+  @apply size-14px;
+}
+
 .icon-button:disabled {
   @apply opacity-45 hover:bg-$ui-surface-background;
 }

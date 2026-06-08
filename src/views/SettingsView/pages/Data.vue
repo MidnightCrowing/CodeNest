@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
+import { showToast } from '~/components/ui/toast'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 
@@ -10,6 +11,8 @@ import SettingsRow from '../components/SettingsRow.vue'
 const projectsStore = useProjectsStore()
 const settings = useSettingsStore()
 const { t } = useI18n()
+
+type ProjectMutationResult = Awaited<ReturnType<typeof window.api.importProject>>
 
 const webdavBusy = ref<'test' | 'upload' | 'pull' | null>(null)
 const webdavStatus = ref<{ type: 'neutral' | 'info' | 'success' | 'warning' | 'error', text: string } | null>(null)
@@ -62,13 +65,75 @@ function formatWebDavError(error?: string) {
   return t('app.settings.data.webdav.errors.detail', { detail })
 }
 
-async function importProjects() {
-  await window.api.importProject()
-  await projectsStore.loadProjects()
+function isProjectMutationCancelled(result: ProjectMutationResult) {
+  return !result.success && !result.error
 }
 
-function exportProjects() {
-  void window.api.exportProject()
+function formatProjectMutationError(error: unknown) {
+  if (typeof error === 'string')
+    return error.replace(/^Error:\s*/i, '').trim()
+  if (error instanceof Error)
+    return error.message.replace(/^Error:\s*/i, '').trim()
+  return String(error).replace(/^Error:\s*/i, '').trim()
+}
+
+async function importProjects() {
+  try {
+    const result = await window.api.importProject()
+    if (result.success) {
+      await projectsStore.loadProjects()
+      showToast({
+        tone: 'success',
+        title: t('app.settings.data.projects.imported'),
+      })
+      return
+    }
+
+    if (isProjectMutationCancelled(result))
+      return
+
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.projects.import_failed'),
+      description: formatProjectMutationError(result.error || result.message || t('app.common.unknown')),
+    })
+  }
+  catch (error) {
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.projects.import_failed'),
+      description: formatProjectMutationError(error),
+    })
+  }
+}
+
+async function exportProjects() {
+  try {
+    const result = await window.api.exportProject()
+    if (result.success) {
+      showToast({
+        tone: 'success',
+        title: t('app.settings.data.projects.exported'),
+      })
+      return
+    }
+
+    if (isProjectMutationCancelled(result))
+      return
+
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.projects.export_failed'),
+      description: formatProjectMutationError(result.error || result.message || t('app.common.unknown')),
+    })
+  }
+  catch (error) {
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.projects.export_failed'),
+      description: formatProjectMutationError(error),
+    })
+  }
 }
 
 async function testWebDavConnection() {
@@ -86,9 +151,22 @@ async function testWebDavConnection() {
         ? t('app.settings.data.webdav.connected')
         : formatWebDavError(result.error),
     )
+    showToast({
+      tone: result.success ? 'success' : 'error',
+      title: result.success
+        ? t('app.settings.data.webdav.feedback.connection_succeeded')
+        : t('app.settings.data.webdav.feedback.connection_failed'),
+      description: result.success ? undefined : formatWebDavError(result.error),
+    })
   }
   catch (error) {
-    setWebDavStatus(false, formatWebDavError(String(error)))
+    const message = formatWebDavError(String(error))
+    setWebDavStatus(false, message)
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.webdav.feedback.connection_failed'),
+      description: message,
+    })
   }
   finally {
     webdavBusy.value = null
@@ -110,9 +188,22 @@ async function uploadWebDavData() {
         ? t('app.settings.data.webdav.uploaded')
         : formatWebDavError(result.error),
     )
+    showToast({
+      tone: result.success ? 'success' : 'error',
+      title: result.success
+        ? t('app.settings.data.webdav.feedback.upload_succeeded')
+        : t('app.settings.data.webdav.feedback.upload_failed'),
+      description: result.success ? undefined : formatWebDavError(result.error),
+    })
   }
   catch (error) {
-    setWebDavStatus(false, formatWebDavError(String(error)))
+    const message = formatWebDavError(String(error))
+    setWebDavStatus(false, message)
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.webdav.feedback.upload_failed'),
+      description: message,
+    })
   }
   finally {
     webdavBusy.value = null
@@ -134,13 +225,29 @@ async function pullWebDavData() {
         projectsStore.loadProjects(),
       ])
       setWebDavStatus(true, t('app.settings.data.webdav.pulled_with_backup'))
+      showToast({
+        tone: 'success',
+        title: t('app.settings.data.webdav.feedback.download_succeeded'),
+      })
     }
     else {
-      setWebDavStatus(false, formatWebDavError(result.error))
+      const message = formatWebDavError(result.error)
+      setWebDavStatus(false, message)
+      showToast({
+        tone: 'error',
+        title: t('app.settings.data.webdav.feedback.download_failed'),
+        description: message,
+      })
     }
   }
   catch (error) {
-    setWebDavStatus(false, formatWebDavError(String(error)))
+    const message = formatWebDavError(String(error))
+    setWebDavStatus(false, message)
+    showToast({
+      tone: 'error',
+      title: t('app.settings.data.webdav.feedback.download_failed'),
+      description: message,
+    })
   }
   finally {
     webdavBusy.value = null

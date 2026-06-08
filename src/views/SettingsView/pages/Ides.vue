@@ -29,6 +29,7 @@ const commandGroups = computed(() => {
 })
 
 const editorCommandRows = computed(() => commandGroups.value.flatMap(group => group.options))
+const terminalCommandHint = computed(() => t('app.settings.editors.terminal_command_hint', { cwd: '{cwd}' }))
 
 function commandGroup(option: EditorCommandOption) {
   return t(option.groupKey)
@@ -79,6 +80,10 @@ async function detectEditor(option: EditorCommandOption) {
 
 function clearEditor(option: EditorCommandOption) {
   settings.codeEditorsPath[option.key] = ''
+}
+
+function clearTerminalCommand() {
+  settings.terminalCommand = ''
 }
 
 function setEditorRowRef(key: EditorCommandKey, element: unknown) {
@@ -188,6 +193,43 @@ function quoteCommand(command: string) {
     </header>
 
     <div class="editor-groups">
+      <section class="editor-group">
+        <h3>{{ t('app.settings.editors.terminal_launcher') }}</h3>
+
+        <div class="terminal-row">
+          <div class="editor-name">
+            <span class="i-lucide:square-terminal" />
+            <div>
+              <strong>{{ t('app.settings.editors.terminal_command') }}</strong>
+              <span :title="terminalCommandHint">
+                {{ terminalCommandHint }}
+              </span>
+            </div>
+          </div>
+
+          <div class="command-input-wrap">
+            <input
+              v-model="settings.terminalCommand"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="t('app.settings.editors.terminal_command')"
+              :placeholder="t('app.settings.editors.terminal_command_placeholder')"
+              :title="settings.terminalCommand || terminalCommandHint"
+            >
+            <button
+              v-if="settings.terminalCommand"
+              class="clear-path-button"
+              type="button"
+              :title="t('app.settings.editors.clear_command')"
+              :aria-label="t('app.settings.editors.clear_command')"
+              @click="clearTerminalCommand"
+            >
+              <span class="i-lucide:x" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section
         v-for="group in commandGroups"
         :key="group.label"
@@ -301,7 +343,8 @@ function quoteCommand(command: string) {
   }
 }
 
-.editor-row {
+.editor-row,
+.terminal-row {
   @apply min-w-0 grid items-center gap-12px pl-18px;
   grid-template-columns: minmax(180px, 250px) minmax(0, 1fr);
 }
@@ -363,6 +406,7 @@ function quoteCommand(command: string) {
 
 @media (max-width: 900px) {
   .editor-row,
+  .terminal-row,
   .command-area {
     grid-template-columns: 1fr;
   }

@@ -1,4 +1,5 @@
 mod analyzer;
+mod command_line;
 mod data;
 mod dialog;
 mod project;

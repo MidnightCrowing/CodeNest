@@ -32,7 +32,8 @@ window.api = {
 
   openExternal: url => fire('open_external', { url }),
   openInExplorer: path => fire('open_in_explorer', { path }),
-  openInTerminal: path => fire('open_in_terminal', { path }),
+  openInTerminal: (path, terminalCommand) =>
+    call('open_in_terminal', { path, terminalCommand }),
 
   checkUpdate: () => call('check_update'),
   scanProjects: payload => call('scan_projects', { payload }),

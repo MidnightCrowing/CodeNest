@@ -8,12 +8,20 @@ import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditorOrder, codeEditors } from '~/constants/codeEditor'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { useDelayedBusyKeys } from '~/utils/useDelayedBusy'
+
+type ScannerDetectKey = 'jetbrains' | 'vscode'
 
 const settings = useSettingsStore()
 const projectScannerStore = useProjectScannerStore()
 const { t } = useI18n()
 const showClearConfirm = ref(false)
 const rootRowRefs = new Map<string, HTMLElement>()
+const detectingScannerKeys = ref<Set<ScannerDetectKey>>(new Set())
+const {
+  visibleKeys: visibleDetectingScannerKeys,
+  setKeyBusy: setVisibleDetectingScannerKey,
+} = useDelayedBusyKeys<ScannerDetectKey>({ delay: 220, minDuration: 320 })
 
 const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(() =>
   codeEditorOrder.map(editor => ({
@@ -158,22 +166,42 @@ async function browseVscodeDb() {
 }
 
 async function detectJetbrainsRoot() {
-  if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled)
+  if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled || detectingScannerKeys.value.has('jetbrains'))
     return
 
-  const detectedPath = await window.api.detectJetBrainsConfigRootPath()
-  if (detectedPath) {
-    settings.scanner.jetbrains.configRootPath = detectedPath
+  detectingScannerKeys.value = new Set([...detectingScannerKeys.value, 'jetbrains'])
+  setVisibleDetectingScannerKey('jetbrains', true)
+  try {
+    const detectedPath = await window.api.detectJetBrainsConfigRootPath()
+    if (detectedPath) {
+      settings.scanner.jetbrains.configRootPath = detectedPath
+    }
+  }
+  finally {
+    const next = new Set(detectingScannerKeys.value)
+    next.delete('jetbrains')
+    detectingScannerKeys.value = next
+    setVisibleDetectingScannerKey('jetbrains', false)
   }
 }
 
 async function detectVscodeDb() {
-  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled)
+  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled || detectingScannerKeys.value.has('vscode'))
     return
 
-  const detectedPath = await window.api.detectVscodeStateDbPath()
-  if (detectedPath) {
-    settings.scanner.vscode.stateDbPath = detectedPath
+  detectingScannerKeys.value = new Set([...detectingScannerKeys.value, 'vscode'])
+  setVisibleDetectingScannerKey('vscode', true)
+  try {
+    const detectedPath = await window.api.detectVscodeStateDbPath()
+    if (detectedPath) {
+      settings.scanner.vscode.stateDbPath = detectedPath
+    }
+  }
+  finally {
+    const next = new Set(detectingScannerKeys.value)
+    next.delete('vscode')
+    detectingScannerKeys.value = next
+    setVisibleDetectingScannerKey('vscode', false)
   }
 }
 
@@ -271,12 +299,14 @@ function clearScanHistory() {
               :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled"
             >
             <button
-              class="ghost-button"
+              class="icon-button"
               type="button"
-              :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled"
+              :title="t('app.settings.scanner.auto_detect')"
+              :aria-label="t('app.settings.scanner.auto_detect')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled || detectingScannerKeys.has('jetbrains')"
               @click="detectJetbrainsRoot"
             >
-              {{ t('app.common.detect') }}
+              <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has('jetbrains') }" />
             </button>
             <button
               class="icon-button"
@@ -306,12 +336,14 @@ function clearScanHistory() {
               :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
             >
             <button
-              class="ghost-button"
+              class="icon-button"
               type="button"
-              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
+              :title="t('app.settings.scanner.auto_detect')"
+              :aria-label="t('app.settings.scanner.auto_detect')"
+              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled || detectingScannerKeys.has('vscode')"
               @click="detectVscodeDb"
             >
-              {{ t('app.common.detect') }}
+              <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has('vscode') }" />
             </button>
             <button
               class="icon-button"
@@ -534,9 +566,23 @@ function clearScanHistory() {
 
 .source-row {
   @apply min-h-36px grid items-center gap-7px;
-  grid-template-columns: 84px minmax(160px, 1fr) 70px 28px;
+  grid-template-columns: 104px minmax(160px, 1fr) 28px 28px;
 
   @apply text-12px;
+
+  :deep(.ui-checkbox-label) {
+    @apply whitespace-nowrap;
+  }
+}
+
+.spinning {
+  animation: spin-detect 0.8s linear infinite;
+}
+
+@keyframes spin-detect {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .path-input.compact {
@@ -549,7 +595,7 @@ function clearScanHistory() {
   }
 
   .source-row {
-    grid-template-columns: 84px minmax(0, 1fr) 70px 28px;
+    grid-template-columns: 104px minmax(0, 1fr) 28px 28px;
   }
 }
 </style>

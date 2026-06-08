@@ -46,6 +46,7 @@ interface StoredSettings {
   theme?: ThemeEnum
   themeColor?: ThemeColorEnum
   customThemeColor?: string
+  terminalCommand?: string
   language?: LanguageEnum
   codeEditorsPath?: Partial<Record<EditorCommandKey | 'jetbrains', string>>
   codeEditorsOpenInTerminal?: Partial<Record<EditorCommandKey, boolean>>
@@ -91,6 +92,7 @@ export const useSettingsStore = defineStore('settings', () => {
   )
   const themeColor = ref<ThemeColorEnum>(ThemeColorEnum.Contrast)
   const customThemeColor = ref(DEFAULT_CUSTOM_THEME_COLOR)
+  const terminalCommand = ref('')
   const language = ref<LanguageEnum>(LanguageEnum.English)
   const loaded = ref(false)
   let saveTimer: number | null = null
@@ -174,6 +176,7 @@ export const useSettingsStore = defineStore('settings', () => {
     theme.value = ThemeEnum.System
     themeColor.value = ThemeColorEnum.Contrast
     customThemeColor.value = DEFAULT_CUSTOM_THEME_COLOR
+    terminalCommand.value = ''
     language.value = LanguageEnum.English
     autoDetectedEditorCommands.value = false
     for (const option of editorCommandOptions) {
@@ -193,6 +196,8 @@ export const useSettingsStore = defineStore('settings', () => {
     if (isThemeColor(loadedData.themeColor))
       themeColor.value = loadedData.themeColor
     customThemeColor.value = normalizeCustomThemeColor(loadedData.customThemeColor)
+    if (typeof loadedData.terminalCommand === 'string')
+      terminalCommand.value = loadedData.terminalCommand
     if (isLanguage(loadedData.language))
       language.value = loadedData.language
 
@@ -323,6 +328,7 @@ export const useSettingsStore = defineStore('settings', () => {
         theme: theme.value,
         themeColor: themeColor.value,
         customThemeColor: customThemeColor.value,
+        terminalCommand: terminalCommand.value,
         language: language.value,
         codeEditorsPath: { ...codeEditorsPath },
         codeEditorsOpenInTerminal: { ...codeEditorsOpenInTerminal },
@@ -348,7 +354,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(
-    [theme, themeColor, customThemeColor, language, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
+    [theme, themeColor, customThemeColor, terminalCommand, language, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
     queueSaveSettings,
     { deep: true },
   )
@@ -390,6 +396,7 @@ export const useSettingsStore = defineStore('settings', () => {
     resolvedTheme,
     themeColor,
     customThemeColor,
+    terminalCommand,
     language,
     codeEditorsPath,
     codeEditorsOpenInTerminal,
