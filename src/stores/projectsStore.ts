@@ -168,6 +168,22 @@ export const useProjectsStore = defineStore('projects', () => {
     return true
   }
 
+  async function setProjectDefaultOpen(
+    appendTime: LocalProject['appendTime'],
+    defaultOpen: LocalProject['defaultOpen'],
+  ) {
+    const project = getProjectByAppendTime(appendTime)
+    if (!project)
+      return false
+
+    if (project.defaultOpen === defaultOpen)
+      return true
+
+    project.defaultOpen = defaultOpen
+    await saveProjects()
+    return true
+  }
+
   function clearProjects() {
     projects.value.splice(0, projects.value.length)
   }
@@ -296,6 +312,7 @@ export const useProjectsStore = defineStore('projects', () => {
     updateProject,
     removeProject,
     toggleProjectPinned,
+    setProjectDefaultOpen,
     clearProjects,
     saveProjects,
     loadProjects,

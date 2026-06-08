@@ -9,6 +9,8 @@ import {
   isCodeEditor,
 } from '~/constants/codeEditor'
 import { createPersistence } from '~/stores/helpers/persistence'
+import type { ResolvedTheme } from '~/utils/theme'
+import { getPreferredSystemTheme } from '~/utils/theme'
 
 // Scanner settings shape
 export interface ScannerSettings {
@@ -82,7 +84,11 @@ function normalizeCustomThemeColor(value: unknown) {
 
 export const useSettingsStore = defineStore('settings', () => {
   // --- 基础配置项 ---
-  const theme = ref<ThemeEnum>(ThemeEnum.Light)
+  const theme = ref<ThemeEnum>(ThemeEnum.System)
+  const systemTheme = ref<ResolvedTheme>(getPreferredSystemTheme())
+  const resolvedTheme = computed<ResolvedTheme>(() =>
+    theme.value === ThemeEnum.System ? systemTheme.value : theme.value,
+  )
   const themeColor = ref<ThemeColorEnum>(ThemeColorEnum.Contrast)
   const customThemeColor = ref(DEFAULT_CUSTOM_THEME_COLOR)
   const language = ref<LanguageEnum>(LanguageEnum.English)
@@ -165,7 +171,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function resetSettingsState() {
-    theme.value = ThemeEnum.Light
+    theme.value = ThemeEnum.System
     themeColor.value = ThemeColorEnum.Contrast
     customThemeColor.value = DEFAULT_CUSTOM_THEME_COLOR
     language.value = LanguageEnum.English
@@ -268,6 +274,10 @@ export const useSettingsStore = defineStore('settings', () => {
     applyStoredSettings(cachedData)
     loaded.value = wasLoaded
     return true
+  }
+
+  function setSystemTheme(theme: ResolvedTheme) {
+    systemTheme.value = theme
   }
 
   // --- 加载配置 ---
@@ -377,6 +387,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   return {
     theme,
+    resolvedTheme,
     themeColor,
     customThemeColor,
     language,
@@ -392,5 +403,6 @@ export const useSettingsStore = defineStore('settings', () => {
     hydrateCachedSettings,
     loadSettings,
     saveSettings,
+    setSystemTheme,
   }
 })

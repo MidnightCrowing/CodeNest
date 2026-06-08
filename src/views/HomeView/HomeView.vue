@@ -13,11 +13,13 @@ import UiScrollArea from '~/components/ui/UiScrollArea.vue'
 import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
-import { codeEditors } from '~/constants/codeEditor'
+import type { CodeEditorEnum } from '~/constants/codeEditor'
+import { codeEditors, editorCommandOptions, isCodeEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { addNewProjectsFromScanner } from '~/services/projectScannerService'
+import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import {
@@ -44,6 +46,9 @@ const LIST_RENDER_BATCH = 120
 const GRID_INITIAL_RENDER_COUNT = 72
 const GRID_RENDER_BATCH = 48
 const SEARCH_DEBOUNCE_MS = 100
+const OPEN_WITH_ACTION_PREFIX = 'open-with:'
+const DEFAULT_EDITOR_ACTION_PREFIX = 'default-editor:'
+const DEFAULT_EDITOR_AUTO_ACTION = `${DEFAULT_EDITOR_ACTION_PREFIX}auto`
 
 interface FilterOption<T extends string> {
   value: T
@@ -54,6 +59,7 @@ interface FilterOption<T extends string> {
 
 const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
+const editorLangGroupsStore = useEditorLangGroupsStore()
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 const { locale, t } = useI18n()
 
@@ -238,12 +244,69 @@ const activeFilterCount = computed(() =>
   + Number(groupFilter.value !== 'all'),
 )
 
+function editorHasLaunchCommand(editor: CodeEditorEnum) {
+  return !!settingsStore.getEditorLaunchConfig(editor).command.trim()
+}
+
+function autoEditorForProject(project: LocalProject) {
+  return editorLangGroupsStore.getEditorByLanguage(project.mainLang, project.defaultOpen) ?? project.defaultOpen
+}
+
+function editorMenuIcon(option: (typeof editorCommandOptions)[number]) {
+  return option.icon
+    ? ['ide-icon', option.icon, option.monochromeIcon ? 'monochrome-editor-icon' : ''].filter(Boolean).join(' ')
+    : undefined
+}
+
+function editorMenuItems(project: LocalProject, mode: 'open-with' | 'default-editor'): UiActionMenuItem[] {
+  return editorCommandOptions.map((option, index) => {
+    const previousOption = editorCommandOptions[index - 1]
+    const isCurrentDefault = mode === 'default-editor' && option.key === project.defaultOpen
+    const hasLaunchCommand = editorHasLaunchCommand(option.key)
+
+    return {
+      id: `${mode === 'open-with' ? OPEN_WITH_ACTION_PREFIX : DEFAULT_EDITOR_ACTION_PREFIX}${option.key}`,
+      label: option.label,
+      icon: editorMenuIcon(option),
+      checked: isCurrentDefault,
+      disabled: mode === 'open-with' && (!project.isExists || !hasLaunchCommand),
+      separatorBefore: index > 0 && option.groupKey !== previousOption.groupKey,
+    }
+  })
+}
+
+function defaultEditorMenuItems(project: LocalProject): UiActionMenuItem[] {
+  return [
+    {
+      id: DEFAULT_EDITOR_AUTO_ACTION,
+      label: t('app.home.actions.auto_editor'),
+    },
+    ...editorMenuItems(project, 'default-editor').map((item, index) => ({
+      ...item,
+      separatorBefore: index === 0 || item.separatorBefore,
+    })),
+  ]
+}
+
 function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
   return [
     {
       id: 'open',
       label: t('app.home.actions.open_project'),
       disabled: !project.isExists,
+    },
+    {
+      id: 'open-with',
+      label: t('app.home.actions.open_with'),
+      disabled: !project.isExists,
+      submenuWidth: 220,
+      children: editorMenuItems(project, 'open-with'),
+    },
+    {
+      id: 'default-editor',
+      label: t('app.home.actions.default_editor'),
+      submenuWidth: 220,
+      children: defaultEditorMenuItems(project),
     },
     {
       id: 'edit',
@@ -364,11 +427,15 @@ function editProject(project: LocalProject) {
 }
 
 async function openProject(project: LocalProject) {
+  await openProjectWithEditor(project, project.defaultOpen)
+}
+
+async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEnum) {
   if (!project.isExists) {
     return
   }
 
-  const launchConfig = project.defaultOpen ? settingsStore.getEditorLaunchConfig(project.defaultOpen) : null
+  const launchConfig = settingsStore.getEditorLaunchConfig(editor)
   if (!launchConfig?.command) {
     showNoIdePathDialog()
     return
@@ -791,7 +858,34 @@ async function toggleProjectPinned(project: LocalProject) {
   await projectsStore.toggleProjectPinned(project.appendTime)
 }
 
+async function setProjectDefaultEditor(project: LocalProject, editor: CodeEditorEnum) {
+  await projectsStore.setProjectDefaultOpen(project.appendTime, editor)
+}
+
+async function setProjectDefaultEditorAutomatically(project: LocalProject) {
+  await setProjectDefaultEditor(project, autoEditorForProject(project))
+}
+
 function handleProjectMenuSelect(project: LocalProject, action: string) {
+  if (action.startsWith(OPEN_WITH_ACTION_PREFIX)) {
+    const editor = action.slice(OPEN_WITH_ACTION_PREFIX.length)
+    if (isCodeEditor(editor))
+      void openProjectWithEditor(project, editor)
+    return
+  }
+
+  if (action === DEFAULT_EDITOR_AUTO_ACTION) {
+    void setProjectDefaultEditorAutomatically(project)
+    return
+  }
+
+  if (action.startsWith(DEFAULT_EDITOR_ACTION_PREFIX)) {
+    const editor = action.slice(DEFAULT_EDITOR_ACTION_PREFIX.length)
+    if (isCodeEditor(editor))
+      void setProjectDefaultEditor(project, editor)
+    return
+  }
+
   switch (action) {
     case 'pin':
       void toggleProjectPinned(project)
@@ -947,7 +1041,7 @@ watch([
 </script>
 
 <template>
-  <main class="workspace-shell" :class="{ 'theme-dark': settingsStore.theme === ThemeEnum.Dark }">
+  <main class="workspace-shell" :class="{ 'theme-dark': settingsStore.resolvedTheme === ThemeEnum.Dark }">
     <section class="workspace-topbar">
       <div class="title-block">
         <div class="title-row">

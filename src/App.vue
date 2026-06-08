@@ -7,12 +7,12 @@ import NoIdePathDialog from '~/components/NoIdePathDialog/NoIdePathDialog.vue'
 import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectDialog.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
-import { ViewEnum } from '~/constants/appEnums'
+import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import { addNewProjectsFromScanner } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
-import { applyTheme } from '~/utils/theme'
+import { applyTheme, watchSystemTheme } from '~/utils/theme'
 import Home from '~/views/HomeView/HomeView.vue'
 
 const settingsStore = useSettingsStore()
@@ -31,9 +31,14 @@ const viewComponents: Record<ViewEnum, Component> = {
     () => import('~/views/SettingsView/SettingsView.vue'),
   ),
 }
+let stopWatchingSystemTheme: (() => void) | null = null
 
 async function applyLanguage(lang: LanguageEnum) {
   locale.value = lang
+}
+
+function applyCurrentTheme() {
+  return applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor)
 }
 
 function runDeferred(task: () => void) {
@@ -45,7 +50,7 @@ function runDeferred(task: () => void) {
 }
 
 if (settingsStore.hydrateCachedSettings()) {
-  void applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor)
+  void applyCurrentTheme()
   void applyLanguage(settingsStore.language)
 }
 void projectsStore.loadProjects()
@@ -54,13 +59,23 @@ onMounted(async () => {
   await settingsStore.loadSettings()
 
   await Promise.all([
-    applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor),
+    applyCurrentTheme(),
     applyLanguage(settingsStore.language),
   ])
+
+  stopWatchingSystemTheme = watchSystemTheme((systemTheme) => {
+    settingsStore.setSystemTheme(systemTheme)
+    if (settingsStore.theme === ThemeEnum.System)
+      void applyCurrentTheme()
+  })
 
   runDeferred(() => {
     void editorLangGroupsStore.loadEditorLangGroupsData().then(() => addNewProjectsFromScanner())
   })
+})
+
+onBeforeUnmount(() => {
+  stopWatchingSystemTheme?.()
 })
 
 provide('activatedView', activatedView)

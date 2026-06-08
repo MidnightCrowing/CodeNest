@@ -5,7 +5,7 @@ import UiCheckbox from '~/components/ui/UiCheckbox.vue'
 import UiDialog from '~/components/ui/UiDialog.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { codeEditors } from '~/constants/codeEditor'
+import { codeEditorOrder, codeEditors } from '~/constants/codeEditor'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 
@@ -16,7 +16,7 @@ const showClearConfirm = ref(false)
 const rootRowRefs = new Map<string, HTMLElement>()
 
 const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(() =>
-  (Object.keys(codeEditors) as CodeEditorEnum[]).map(editor => ({
+  codeEditorOrder.map(editor => ({
     value: editor,
     label: codeEditors[editor].label,
   })),

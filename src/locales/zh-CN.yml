@@ -100,6 +100,9 @@ app:
       open_project: 打开
       open_named: 打开 {name}
       project_actions: '{name}操作'
+      open_with: 打开方式
+      default_editor: 默认编辑器
+      auto_editor: 自动选择
       open_explorer: 在文件夹中显示
       open_terminal: 在终端中打开
       copy_path: 复制路径
@@ -134,6 +137,7 @@ app:
       title: 外观
       theme:
         title: 主题
+        system: 跟随系统
         light: 浅色
         dark: 暗色
       theme_color:

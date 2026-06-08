@@ -17,7 +17,7 @@ const { t } = useI18n()
 
 const visibleLanguages = computed(() => languagesGroup.value?.slice(0, 5) || [])
 const hiddenLanguageCount = computed(() => Math.max((languagesGroup.value?.length || 0) - visibleLanguages.value.length, 0))
-const isDarkTheme = computed(() => settingsStore.theme === ThemeEnum.Dark)
+const isDarkTheme = computed(() => settingsStore.resolvedTheme === ThemeEnum.Dark)
 const visibleAnalyzing = useDelayedBusy(analyzing, { delay: 220, minDuration: 320 })
 const hasLanguages = computed(() => !!languagesGroup.value?.length)
 const shouldRenderContent = computed(() =>

@@ -18,6 +18,7 @@ const { locale, t } = useI18n()
 const customColorInputRef = ref<HTMLInputElement | null>(null)
 
 const themeOptions = computed(() => [
+  { value: ThemeEnum.System, label: t('app.settings.appearance.theme.system') },
   { value: ThemeEnum.Light, label: t('app.settings.appearance.theme.light') },
   { value: ThemeEnum.Dark, label: t('app.settings.appearance.theme.dark') },
 ])

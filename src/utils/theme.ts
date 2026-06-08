@@ -1,9 +1,39 @@
 import { ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
 
+export type ResolvedTheme = ThemeEnum.Light | ThemeEnum.Dark
+
 const DEFAULT_CUSTOM_THEME_COLOR = '#4682fa'
 const DEFAULT_SYSTEM_THEME_COLOR = '#4682fa'
 const HEX_COLOR_RE = /^#[\da-f]{6}$/i
-const cachedSystemThemeColors: Partial<Record<ThemeEnum, string>> = {}
+const SYSTEM_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
+const cachedSystemThemeColors: Partial<Record<ResolvedTheme, string>> = {}
+
+export function getPreferredSystemTheme(): ResolvedTheme {
+  if (typeof window !== 'undefined' && window.matchMedia?.(SYSTEM_DARK_MEDIA_QUERY).matches)
+    return ThemeEnum.Dark
+
+  return ThemeEnum.Light
+}
+
+export function resolveTheme(theme?: ThemeEnum): ResolvedTheme {
+  if (theme === ThemeEnum.Dark || theme === ThemeEnum.Light)
+    return theme
+
+  return getPreferredSystemTheme()
+}
+
+export function watchSystemTheme(callback: (theme: ResolvedTheme) => void) {
+  if (typeof window === 'undefined' || !window.matchMedia)
+    return () => {}
+
+  const mediaQuery = window.matchMedia(SYSTEM_DARK_MEDIA_QUERY)
+  const listener = (event: MediaQueryListEvent) => {
+    callback(event.matches ? ThemeEnum.Dark : ThemeEnum.Light)
+  }
+
+  mediaQuery.addEventListener('change', listener)
+  return () => mediaQuery.removeEventListener('change', listener)
+}
 
 function normalizeCustomThemeColor(color?: string) {
   return color && HEX_COLOR_RE.test(color) ? color : DEFAULT_CUSTOM_THEME_COLOR
@@ -44,7 +74,7 @@ function getCssSystemAccentColor() {
   return normalizeThemeColor(color)
 }
 
-async function getSystemThemeColor(theme: ThemeEnum) {
+async function getSystemThemeColor(theme: ResolvedTheme) {
   const cachedSystemThemeColor = cachedSystemThemeColors[theme]
   if (cachedSystemThemeColor)
     return cachedSystemThemeColor
@@ -70,7 +100,7 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
     return
   }
 
-  const newTheme = theme ?? ThemeEnum.Light
+  const newTheme = resolveTheme(theme)
   const newThemeColor = themeColor ?? ThemeColorEnum.Contrast
   const normalizedCustomThemeColor = normalizeCustomThemeColor(customThemeColor)
   const systemThemeColor = await getSystemThemeColor(newTheme)

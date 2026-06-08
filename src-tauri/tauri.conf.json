@@ -34,9 +34,9 @@
       "../src/assets/app-icon.icns",
       "../src/assets/app-icon.png"
     ],
-    "resources": [
-      "../LICENSE.txt"
-    ],
+    "resources": {
+      "../LICENSE.txt": "LICENSE.txt"
+    },
     "windows": {
       "nsis": {
         "installMode": "both",

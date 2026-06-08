@@ -226,25 +226,52 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
   },
 }
 
+export const codeEditorOrder = [
+  CodeEditorEnum.Cursor,
+  CodeEditorEnum.Trae,
+  CodeEditorEnum.Windsurf,
+  CodeEditorEnum.ClaudeCode,
+  CodeEditorEnum.CodexCli,
+  CodeEditorEnum.GeminiCli,
+  CodeEditorEnum.VisualStudioCode,
+  CodeEditorEnum.VisualStudio,
+  CodeEditorEnum.Zed,
+  CodeEditorEnum.SublimeText,
+  CodeEditorEnum.IntellijIdea,
+  CodeEditorEnum.WebStorm,
+  CodeEditorEnum.PyCharm,
+  CodeEditorEnum.GoLand,
+  CodeEditorEnum.RustRover,
+  CodeEditorEnum.Rider,
+  CodeEditorEnum.Clion,
+  CodeEditorEnum.PhpStorm,
+  CodeEditorEnum.RubyMine,
+  CodeEditorEnum.AndroidStudio,
+  CodeEditorEnum.Neovim,
+] as const satisfies readonly CodeEditorEnum[]
+
 export const editorCommandOptions: EditorCommandOption[] = [
-  ...Object.entries(codeEditors)
-    .map(([editor, option]) => ({
-      key: editor as CodeEditorEnum,
-      label: option.label,
-      icon: option.icon,
-      descriptionKey: option.descriptionKey,
-      groupKey: option.groupKey,
-      defaultCommand: option.defaultCommand,
-      openInTerminal: option.openInTerminal === true,
-      monochromeIcon: option.monochromeIcon,
-      editors: [editor as CodeEditorEnum],
-    })),
+  ...codeEditorOrder
+    .map((editor) => {
+      const option = codeEditors[editor]
+      return {
+        key: editor,
+        label: option.label,
+        icon: option.icon,
+        descriptionKey: option.descriptionKey,
+        groupKey: option.groupKey,
+        defaultCommand: option.defaultCommand,
+        openInTerminal: option.openInTerminal === true,
+        monochromeIcon: option.monochromeIcon,
+        editors: [editor],
+      }
+    }),
 ]
 
 export const editorCommandKeys = editorCommandOptions.map(option => option.key)
 
 export const editorIconClasses = [
-  ...Object.values(codeEditors).map(option => option.icon),
+  ...codeEditorOrder.map(editor => codeEditors[editor].icon),
   ...editorCommandOptions.map(option => option.icon),
 ].filter(icon => icon !== undefined)
 

@@ -8,7 +8,7 @@ import UiSelect from '~/components/ui/UiSelect.vue'
 import UiSwitch from '~/components/ui/UiSwitch.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
-import { codeEditors } from '~/constants/codeEditor'
+import { codeEditorOrder, codeEditors } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -55,8 +55,8 @@ const touchedFields = reactive<Record<FieldKey, boolean>>({
 
 let languageMixHeightTimer: ReturnType<typeof window.setTimeout> | null = null
 
-const editorRows = computed(() =>
-  Object.entries(codeEditors) as Array<[CodeEditorEnum, CodeEditorOption]>,
+const editorRows = computed<Array<[CodeEditorEnum, CodeEditorOption]>>(() =>
+  codeEditorOrder.map(editor => [editor, codeEditors[editor]]),
 )
 
 function editorGroupLabel(option: CodeEditorOption) {
