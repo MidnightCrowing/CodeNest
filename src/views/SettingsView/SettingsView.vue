@@ -277,7 +277,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <div ref="settingsContentRef" class="settings-content">
+    <div ref="settingsContentRef" class="settings-content ui-native-scrollbar">
       <section :ref="el => setSectionRef(SettingPageEnum.Appearance, el)" class="settings-section">
         <AppearancePage />
       </section>
@@ -368,26 +368,6 @@ onUnmounted(() => {
 .settings-content {
   @apply min-h-0 min-w-0 mx-14px mb-12px pb-12px flex-1 overflow-y-auto;
   @apply flex flex-col gap-34px;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 55%) transparent;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--ui-muted-foreground), transparent 55%);
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--ui-muted-foreground), transparent 35%);
-  }
 }
 
 .settings-section {

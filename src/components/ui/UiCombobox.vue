@@ -34,9 +34,6 @@ const emit = defineEmits<{
   'blur': [event: FocusEvent]
 }>()
 
-const viewportRef = ref<HTMLElement | null>(null)
-const isScrollable = ref(false)
-
 const inputValue = computed({
   get: () => props.modelValue || '',
   set: (value: string) => {
@@ -59,16 +56,6 @@ function handleInput(event: Event) {
 function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
-
-async function updateScrollableState() {
-  await nextTick()
-  const viewport = viewportRef.value
-  isScrollable.value = !!viewport && viewport.scrollHeight > viewport.clientHeight + 1
-}
-
-watch(() => normalizedOptions.value.length, () => {
-  void updateScrollableState()
-})
 </script>
 
 <template>
@@ -104,10 +91,7 @@ watch(() => normalizedOptions.value.length, () => {
         :style="{ minWidth, width: contentWidth }"
       >
         <ComboboxViewport
-          ref="viewportRef"
-          class="ui-combobox-viewport"
-          :class="{ scrollable: isScrollable }"
-          @vue:mounted="updateScrollableState"
+          class="ui-combobox-viewport ui-thin-scrollbar"
         >
           <ComboboxItem
             v-for="option in normalizedOptions"
@@ -187,39 +171,6 @@ watch(() => normalizedOptions.value.length, () => {
 .ui-combobox-viewport[data-reka-combobox-viewport] {
   @apply overflow-y-auto;
   max-height: min(240px, var(--reka-combobox-content-available-height, 240px));
-  scrollbar-width: auto;
-}
-
-.ui-combobox-viewport[data-reka-combobox-viewport].scrollable {
-  @apply pr-2px;
-  scrollbar-gutter: stable;
-}
-
-.ui-combobox-viewport[data-reka-combobox-viewport]::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-  display: block;
-}
-
-.ui-combobox-viewport[data-reka-combobox-viewport]::-webkit-scrollbar-button {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-.ui-combobox-viewport[data-reka-combobox-viewport]::-webkit-scrollbar-thumb {
-  @apply rounded-full border-l-2px border-r-0;
-  border-color: transparent;
-  background-clip: content-box;
-  background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 58%);
-
-  &:hover {
-    background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 42%);
-  }
-}
-
-.ui-combobox-viewport[data-reka-combobox-viewport]::-webkit-scrollbar-track {
-  @apply bg-transparent;
 }
 
 .ui-combobox-item {

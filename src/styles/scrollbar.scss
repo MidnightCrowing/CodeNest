@@ -1,0 +1,84 @@
+:root {
+  --ui-scrollbar-size: 6px;
+  --ui-scrollbar-thin-size: 4px;
+  --ui-scrollbar-thumb: color-mix(in srgb, var(--ui-muted-foreground), transparent 55%);
+  --ui-scrollbar-thumb-hover: color-mix(in srgb, var(--ui-muted-foreground), transparent 35%);
+}
+
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:single-button,
+*::-webkit-scrollbar-button:double-button,
+*::-webkit-scrollbar-button:start,
+*::-webkit-scrollbar-button:end,
+*::-webkit-scrollbar-button:increment,
+*::-webkit-scrollbar-button:decrement,
+*::-webkit-scrollbar-button:vertical,
+*::-webkit-scrollbar-button:horizontal {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.ui-native-scrollbar,
+.ui-thin-scrollbar {
+  scrollbar-color: var(--ui-scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+.ui-native-scrollbar {
+  scrollbar-gutter: stable;
+}
+
+.ui-native-scrollbar::-webkit-scrollbar {
+  width: var(--ui-scrollbar-size);
+  height: var(--ui-scrollbar-size);
+  display: block;
+}
+
+.ui-thin-scrollbar::-webkit-scrollbar {
+  width: var(--ui-scrollbar-thin-size);
+  height: var(--ui-scrollbar-thin-size);
+  display: block;
+}
+
+.ui-thin-scrollbar[data-reka-select-viewport],
+.ui-thin-scrollbar[data-reka-combobox-viewport] {
+  scrollbar-width: thin !important;
+  -ms-overflow-style: auto !important;
+}
+
+.ui-thin-scrollbar[data-reka-select-viewport]::-webkit-scrollbar,
+.ui-thin-scrollbar[data-reka-combobox-viewport]::-webkit-scrollbar {
+  width: var(--ui-scrollbar-thin-size) !important;
+  height: var(--ui-scrollbar-thin-size) !important;
+  display: block !important;
+}
+
+.ui-native-scrollbar::-webkit-scrollbar-track,
+.ui-thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-native-scrollbar::-webkit-scrollbar-thumb,
+.ui-thin-scrollbar::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: var(--ui-scrollbar-thumb);
+}
+
+.ui-native-scrollbar::-webkit-scrollbar-thumb:hover,
+.ui-thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ui-scrollbar-thumb-hover);
+}
+
+.ui-native-scrollbar::-webkit-scrollbar-corner,
+.ui-thin-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}

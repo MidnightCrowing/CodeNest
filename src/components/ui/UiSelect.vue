@@ -39,9 +39,6 @@ const emit = defineEmits<{
   'blur': [event: FocusEvent]
 }>()
 
-const viewportRef = ref<HTMLElement | null>(null)
-const isScrollable = ref(false)
-
 const selectedOption = computed(() =>
   props.options.find(option => option.value === props.modelValue),
 )
@@ -53,16 +50,6 @@ const triggerLabel = computed(() =>
 function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
-
-async function updateScrollableState() {
-  await nextTick()
-  const viewport = viewportRef.value
-  isScrollable.value = !!viewport && viewport.scrollHeight > viewport.clientHeight + 1
-}
-
-watch(() => props.options.length, () => {
-  void updateScrollableState()
-})
 </script>
 
 <template>
@@ -98,10 +85,7 @@ watch(() => props.options.length, () => {
         :style="{ minWidth, width: contentWidth }"
       >
         <SelectViewport
-          ref="viewportRef"
-          class="ui-select-viewport"
-          :class="{ scrollable: isScrollable }"
-          @vue:mounted="updateScrollableState"
+          class="ui-select-viewport ui-thin-scrollbar"
         >
           <SelectItem
             v-for="option in options"
@@ -176,39 +160,6 @@ watch(() => props.options.length, () => {
 .ui-select-viewport[data-reka-select-viewport] {
   @apply overflow-y-auto;
   max-height: min(260px, var(--reka-select-content-available-height, 260px));
-  scrollbar-width: auto;
-}
-
-.ui-select-viewport[data-reka-select-viewport].scrollable {
-  @apply pr-2px;
-  scrollbar-gutter: stable;
-}
-
-.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-  display: block;
-}
-
-.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-button {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-thumb {
-  @apply rounded-full border-l-2px border-r-0;
-  border-color: transparent;
-  background-clip: content-box;
-  background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 58%);
-
-  &:hover {
-    background-color: color-mix(in srgb, var(--ui-muted-foreground), transparent 42%);
-  }
-}
-
-.ui-select-viewport[data-reka-select-viewport]::-webkit-scrollbar-track {
-  @apply bg-transparent;
 }
 
 .ui-select-item {

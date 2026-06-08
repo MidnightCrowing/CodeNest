@@ -36,9 +36,6 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const viewportRef = ref<HTMLElement | null>(null)
-const isScrollable = ref(false)
-
 const selectedOption = computed(() =>
   props.options.find(option => option.value === props.modelValue),
 )
@@ -52,16 +49,6 @@ function colorDotStyle(color?: string) {
     backgroundColor: color || 'currentColor',
   }
 }
-
-async function updateScrollableState() {
-  await nextTick()
-  const viewport = viewportRef.value
-  isScrollable.value = !!viewport && viewport.scrollHeight > viewport.clientHeight + 1
-}
-
-watch(() => props.options.length, () => {
-  void updateScrollableState()
-})
 </script>
 
 <template>
@@ -102,10 +89,7 @@ watch(() => props.options.length, () => {
         :style="{ minWidth, width: contentWidth }"
       >
         <SelectViewport
-          ref="viewportRef"
-          class="ui-select-viewport"
-          :class="{ scrollable: isScrollable }"
-          @vue:mounted="updateScrollableState"
+          class="ui-select-viewport ui-thin-scrollbar"
         >
           <SelectItem
             v-for="option in options"

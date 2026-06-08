@@ -214,7 +214,7 @@ function clearScanHistory() {
             <span class="subtle-count">{{ t('app.settings.scanner.roots.count', { count: settings.scanner.roots.length }) }}</span>
           </div>
 
-          <div class="path-list" role="list">
+          <div class="path-list ui-native-scrollbar" role="list">
             <div v-if="settings.scanner.roots.length === 0" class="empty-inline">
               {{ t('app.settings.scanner.roots.empty') }}
             </div>
@@ -510,7 +510,6 @@ function clearScanHistory() {
 
 .path-list {
   @apply max-h-128px overflow-auto;
-  scrollbar-gutter: stable;
 }
 
 .path-row {

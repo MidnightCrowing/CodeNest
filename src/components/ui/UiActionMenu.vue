@@ -66,7 +66,7 @@ function hasCheckedItems(items?: UiActionMenuItem[]) {
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
       <DropdownMenuContent
-        class="ui-action-menu-content"
+        class="ui-action-menu-content ui-thin-scrollbar"
         :class="{ 'has-check-column': hasCheckedItems(items) }"
         :style="contentStyle"
         :align="align"
@@ -87,7 +87,7 @@ function hasCheckedItems(items?: UiActionMenuItem[]) {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent
-                class="ui-action-menu-content ui-action-submenu-content"
+                class="ui-action-menu-content ui-action-submenu-content ui-thin-scrollbar"
                 :class="{ 'has-check-column': hasCheckedItems(item.children) }"
                 :style="submenuContentStyle(item)"
                 :side-offset="4"
@@ -137,7 +137,7 @@ function hasCheckedItems(items?: UiActionMenuItem[]) {
     </ContextMenuTrigger>
     <ContextMenuPortal>
       <ContextMenuContent
-        class="ui-action-menu-content"
+        class="ui-action-menu-content ui-thin-scrollbar"
         :class="{ 'has-check-column': hasCheckedItems(items) }"
         :style="contentStyle"
         :aria-label="ariaLabel"
@@ -156,7 +156,7 @@ function hasCheckedItems(items?: UiActionMenuItem[]) {
             </ContextMenuSubTrigger>
             <ContextMenuPortal>
               <ContextMenuSubContent
-                class="ui-action-menu-content ui-action-submenu-content"
+                class="ui-action-menu-content ui-action-submenu-content ui-thin-scrollbar"
                 :class="{ 'has-check-column': hasCheckedItems(item.children) }"
                 :style="submenuContentStyle(item)"
                 :side-offset="4"
