@@ -109,7 +109,28 @@ jobs:
       - name: Upload bundles
         shell: bash
         run: |
-          find src-tauri/target/release/bundle -type f -print0 \
-            | xargs -0 gh release upload "${{ needs.release.outputs.tag }}" --clobber
+          files=()
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(
+            find src-tauri/target/release/bundle -type f \
+              \( -name '*.AppImage' \
+                -o -name '*.deb' \
+                -o -name '*.rpm' \
+                -o -name '*.dmg' \
+                -o -name '*.app.tar.gz' \
+                -o -name '*.app.tar.gz.sig' \
+                -o -name '*setup.exe' \
+                -o -name '*.msi' \) \
+              -print0
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No release artifacts found."
+            find src-tauri/target/release/bundle -type f
+            exit 1
+          fi
+
+          gh release upload "${{ needs.release.outputs.tag }}" "${files[@]}" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
