@@ -5,7 +5,7 @@ import {
 } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 
-import UiSelect from '~/components/ui/UiSelect.vue'
+import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import { LanguageEnum, ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { applyTheme } from '~/utils/theme'
@@ -24,8 +24,11 @@ const themeOptions = computed(() => [
 ])
 
 const languageOptions = computed(() => [
+  // Keep this as a segmented control while the language list stays short.
+  // Switch it back to UiSelect if more languages are added later.
   { value: LanguageEnum.English, label: t('app.settings.appearance.language.english') },
   { value: LanguageEnum.zh_CN, label: t('app.settings.appearance.language.zh_cn') },
+  { value: LanguageEnum.zh_TW, label: t('app.settings.appearance.language.zh_tw') },
 ])
 
 const themeColorOptions = computed(() => [
@@ -106,12 +109,10 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
     <SettingsRow
       :title="t('app.settings.appearance.theme.title')"
     >
-      <UiSelect
+      <UiSegmentedControl
         v-model="appTheme"
         :options="themeOptions"
         :aria-label="t('app.settings.appearance.theme.title')"
-        min-width="150px"
-        content-width="170px"
       />
     </SettingsRow>
 
@@ -157,12 +158,10 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
     <SettingsRow
       :title="t('app.settings.appearance.language.title')"
     >
-      <UiSelect
+      <UiSegmentedControl
         v-model="appLanguage"
         :options="languageOptions"
         :aria-label="t('app.settings.appearance.language.title')"
-        min-width="150px"
-        content-width="170px"
       />
     </SettingsRow>
   </SettingsPage>

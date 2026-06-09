@@ -20,6 +20,12 @@ tauri-build = { version = "2.6.2", features = [ ] }
 [dependencies]
 dirs = "6.0.0"
 ignore = "0.4.26"
+keyring = { version = "3.6.3", default-features = false, features = [
+  "apple-native",
+  "crypto-rust",
+  "linux-native-sync-persistent",
+  "windows-native",
+] }
 open = "5.3.5"
 percent-encoding = "2.3.2"
 reqwest = { version = "0.13.4", default-features = false, features = [

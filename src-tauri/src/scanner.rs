@@ -12,10 +12,22 @@ use tauri::Manager;
 
 use crate::{
     analyzer::{self, LanguageStats, LanguageType},
-    recent::{collect_from_jetbrains, collect_from_vscode, RecentProject},
+    recent::{
+        collect_from_claude, collect_from_codex, collect_from_gemini, collect_from_jetbrains,
+        collect_from_vscode, RecentProject,
+    },
 };
 
 const DEFAULT_MAX_SCAN_BYTES: u64 = 800 * 1024 * 1024;
+const HISTORY_SCANNER_EDITORS: &[&str] = &[
+    "cursor",
+    "trae",
+    "windsurf",
+    "claude-code",
+    "codex-cli",
+    "gemini-cli",
+    "visual-studio-code",
+];
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,7 +36,12 @@ pub struct ScanPayload {
     roots: Vec<String>,
     ide_enabled: bool,
     jetbrains: JetbrainsScannerConfig,
-    vscode: VscodeScannerConfig,
+    #[serde(default)]
+    recent_editors: HashMap<String, VscodeScannerConfig>,
+    #[serde(default)]
+    cli_editors: HashMap<String, CliScannerConfig>,
+    #[serde(default)]
+    vscode: Option<VscodeScannerConfig>,
     existing_paths: Vec<String>,
     #[serde(default)]
     cache_entries: Vec<ScanCacheEntry>,
@@ -42,6 +59,13 @@ struct JetbrainsScannerConfig {
 struct VscodeScannerConfig {
     enabled: bool,
     state_db_path: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CliScannerConfig {
+    enabled: bool,
+    history_root_path: String,
 }
 
 #[derive(Serialize)]
@@ -137,34 +161,123 @@ pub fn detect_jetbrains_config_root_path(app: tauri::AppHandle) -> Option<String
 
 #[tauri::command]
 pub fn detect_vscode_state_db_path() -> Option<String> {
-    let path = if cfg!(windows) {
-        dirs::data_dir()?
-            .join("Code")
-            .join("User")
-            .join("globalStorage")
-            .join("state.vscdb")
-    } else if cfg!(target_os = "macos") {
-        dirs::home_dir()?
-            .join("Library")
-            .join("Application Support")
-            .join("Code")
-            .join("User")
-            .join("globalStorage")
-            .join("state.vscdb")
-    } else {
-        dirs::home_dir()?
-            .join(".config")
-            .join("Code")
-            .join("User")
-            .join("globalStorage")
-            .join("state.vscdb")
+    detect_recent_editor_state_db_path("visual-studio-code".to_string())
+}
+
+#[tauri::command]
+pub fn detect_recent_editor_state_db_path(editor: String) -> Option<String> {
+    vscode_history_state_db_candidates(&editor)
+        .into_iter()
+        .find(|path| path.is_file())
+        .map(|path| path.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
+pub fn detect_cli_history_root_path(editor: String) -> Option<String> {
+    let dir_name = match editor.as_str() {
+        "codex-cli" => ".codex",
+        "claude-code" => ".claude",
+        "gemini-cli" => ".gemini",
+        _ => return None,
+    };
+    dirs::home_dir()
+        .map(|home| home.join(dir_name))
+        .filter(|path| path.is_dir())
+        .map(|path| path.to_string_lossy().into_owned())
+}
+
+fn vscode_history_state_db_candidates(editor: &str) -> Vec<PathBuf> {
+    let app_names = match editor {
+        "visual-studio-code" => &["Code"][..],
+        "cursor" => &["Cursor", "cursor"][..],
+        "windsurf" => &["Windsurf", "windsurf"][..],
+        "trae" => &["Trae", "trae", "Trae CN", "TraeCN"][..],
+        _ => return Vec::new(),
     };
 
-    path.is_file().then(|| path.to_string_lossy().into_owned())
+    let mut candidates = Vec::new();
+    if cfg!(windows) {
+        if let Some(data_dir) = dirs::data_dir() {
+            for app_name in app_names {
+                candidates.push(vscode_history_state_db_path(&data_dir.join(app_name)));
+            }
+        }
+    } else if cfg!(target_os = "macos") {
+        if let Some(home) = dirs::home_dir() {
+            let support = home.join("Library").join("Application Support");
+            for app_name in app_names {
+                candidates.push(vscode_history_state_db_path(&support.join(app_name)));
+            }
+        }
+    } else if let Some(home) = dirs::home_dir() {
+        let config = home.join(".config");
+        for app_name in app_names {
+            candidates.push(vscode_history_state_db_path(&config.join(app_name)));
+        }
+    }
+
+    candidates
+}
+
+fn vscode_history_state_db_path(app_data_root: &Path) -> PathBuf {
+    app_data_root
+        .join("User")
+        .join("globalStorage")
+        .join("state.vscdb")
 }
 
 fn scan_projects_inner(payload: ScanPayload) -> Result<ScanResult, String> {
     let mut candidates = Vec::new();
+
+    if payload.ide_enabled {
+        for editor in HISTORY_SCANNER_EDITORS {
+            match *editor {
+                "cursor" | "trae" | "windsurf" | "visual-studio-code" => {
+                    let config = payload.recent_editors.get(*editor).or_else(|| {
+                        if *editor == "visual-studio-code" {
+                            payload.vscode.as_ref()
+                        } else {
+                            None
+                        }
+                    });
+                    let Some(config) = config.filter(|config| config.enabled) else {
+                        continue;
+                    };
+
+                    candidates.extend(
+                        collect_from_vscode(Some(&config.state_db_path))
+                            .into_iter()
+                            .map(|item| RecentProject {
+                                path: item.path,
+                                ide: Some((*editor).to_string()),
+                            }),
+                    );
+                }
+                "claude-code" | "codex-cli" | "gemini-cli" => {
+                    let Some(config) = payload
+                        .cli_editors
+                        .get(*editor)
+                        .filter(|config| config.enabled)
+                    else {
+                        continue;
+                    };
+                    let root = Some(config.history_root_path.as_str());
+                    candidates.extend(match *editor {
+                        "claude-code" => collect_from_claude(root),
+                        "codex-cli" => collect_from_codex(root),
+                        "gemini-cli" => collect_from_gemini(root),
+                        _ => Vec::new(),
+                    });
+                }
+                _ => {}
+            }
+        }
+        if payload.jetbrains.enabled {
+            candidates.extend(collect_from_jetbrains(Some(
+                &payload.jetbrains.config_root_path,
+            )));
+        }
+    }
 
     if payload.roots_enabled {
         for root in &payload.roots {
@@ -174,24 +287,6 @@ fn scan_projects_inner(payload: ScanPayload) -> Result<ScanResult, String> {
                     .map(|path| RecentProject {
                         path: analyzer::display_path(&path),
                         ide: None,
-                    }),
-            );
-        }
-    }
-
-    if payload.ide_enabled {
-        if payload.jetbrains.enabled {
-            candidates.extend(collect_from_jetbrains(Some(
-                &payload.jetbrains.config_root_path,
-            )));
-        }
-        if payload.vscode.enabled {
-            candidates.extend(
-                collect_from_vscode(Some(&payload.vscode.state_db_path))
-                    .into_iter()
-                    .map(|item| RecentProject {
-                        path: item.path,
-                        ide: Some("visual-studio-code".to_string()),
                     }),
             );
         }
@@ -444,4 +539,101 @@ fn to_lang_group(entries: &[(String, LanguageStats)]) -> Vec<LangGroupItem> {
 
 fn round2(value: f64) -> f64 {
     (value * 100.0).round() / 100.0
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    fn parses_legacy_vscode_scan_payload() {
+        let payload: ScanPayload = serde_json::from_value(json!({
+            "rootsEnabled": false,
+            "roots": [],
+            "ideEnabled": true,
+            "jetbrains": {
+                "enabled": false,
+                "configRootPath": ""
+            },
+            "vscode": {
+                "enabled": true,
+                "stateDbPath": "state.vscdb"
+            },
+            "existingPaths": []
+        }))
+        .expect("legacy vscode payload should parse");
+
+        assert!(payload.recent_editors.is_empty());
+        let vscode = payload.vscode.expect("legacy vscode config should exist");
+        assert!(vscode.enabled);
+        assert_eq!(vscode.state_db_path, "state.vscdb");
+    }
+
+    #[test]
+    fn parses_recent_editor_scan_payload() {
+        let payload: ScanPayload = serde_json::from_value(json!({
+            "rootsEnabled": false,
+            "roots": [],
+            "ideEnabled": true,
+            "jetbrains": {
+                "enabled": false,
+                "configRootPath": ""
+            },
+            "recentEditors": {
+                "cursor": {
+                    "enabled": true,
+                    "stateDbPath": "cursor.vscdb"
+                },
+                "visual-studio-code": {
+                    "enabled": false,
+                    "stateDbPath": ""
+                }
+            },
+            "existingPaths": []
+        }))
+        .expect("recent editor payload should parse");
+
+        assert!(payload.vscode.is_none());
+        let cursor = payload
+            .recent_editors
+            .get("cursor")
+            .expect("cursor config should exist");
+        assert!(cursor.enabled);
+        assert_eq!(cursor.state_db_path, "cursor.vscdb");
+    }
+
+    #[test]
+    fn parses_cli_editor_scan_payload() {
+        let payload: ScanPayload = serde_json::from_value(json!({
+            "rootsEnabled": false,
+            "roots": [],
+            "ideEnabled": true,
+            "jetbrains": {
+                "enabled": false,
+                "configRootPath": ""
+            },
+            "cliEditors": {
+                "codex-cli": {
+                    "enabled": true,
+                    "historyRootPath": ".codex"
+                }
+            },
+            "existingPaths": []
+        }))
+        .expect("cli editor payload should parse");
+
+        let codex = payload
+            .cli_editors
+            .get("codex-cli")
+            .expect("codex config should exist");
+        assert!(codex.enabled);
+        assert_eq!(codex.history_root_path, ".codex");
+    }
+
+    #[test]
+    fn ignores_unknown_recent_editor_for_auto_detect() {
+        assert!(vscode_history_state_db_candidates("unknown-editor").is_empty());
+    }
 }

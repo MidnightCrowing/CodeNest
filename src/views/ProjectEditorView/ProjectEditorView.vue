@@ -130,7 +130,6 @@ const mainLanguageStatus = computed(() =>
 )
 
 const summaryItems = computed(() => [
-  { label: t('app.project_editor.summary.mode'), value: isUpdateProject.value ? t('app.project_editor.mode.edit') : t('app.project_editor.mode.new') },
   { label: t('app.project_editor.summary.kind'), value: kindLabel(localProjectItem.value.kind) },
   { label: t('app.project_editor.summary.editor'), value: localProjectItem.value.defaultOpen ? codeEditors[localProjectItem.value.defaultOpen]?.label : t('app.common.not_set') },
   { label: t('app.project_editor.summary.license'), value: shortLicense(localProjectItem.value.license as LicenseEnum) },
@@ -170,6 +169,13 @@ function markTouched(field: FieldKey) {
 
 function hasDetectedMetadata() {
   return !!localProjectItem.value.mainLang && !!localProjectItem.value.defaultOpen
+}
+
+function fillDefaultEditorFromLanguage(language: string | null | undefined) {
+  if (!language || localProjectItem.value.defaultOpen)
+    return
+
+  localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(language)
 }
 
 function resetDetectedProjectMetadata() {
@@ -217,9 +223,7 @@ async function analyzeProject(targetPath = localProjectItem.value.path) {
     localProjectItem.value.mainLang = analyzer.mainLang
     localProjectItem.value.mainLangColor = analyzer.mainLangColor
     localProjectItem.value.langGroup = analyzer.langGroup
-    if (analyzer.mainLang) {
-      localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(analyzer.mainLang)
-    }
+    fillDefaultEditorFromLanguage(analyzer.mainLang)
   }
   finally {
     analyzing.value = false
@@ -261,9 +265,7 @@ function updateLanguage(language: string | null) {
   localProjectItem.value.mainLang = language
   const languageItem = localProjectItem.value.langGroup?.find(item => item.text === language)
   localProjectItem.value.mainLangColor = languageItem?.color || null
-  localProjectItem.value.defaultOpen = language
-    ? editorLangGroupsStore.getEditorByLanguage(language)
-    : null
+  fillDefaultEditorFromLanguage(language)
 }
 
 async function hydrateLanguageMixFromCache() {
@@ -281,9 +283,7 @@ async function hydrateLanguageMixFromCache() {
   localProjectItem.value.langGroup = cached.langGroup
   localProjectItem.value.mainLang = localProjectItem.value.mainLang || cached.mainLang || cached.langGroup[0]?.text || null
   localProjectItem.value.mainLangColor = localProjectItem.value.mainLangColor || cached.mainLangColor || cached.langGroup[0]?.color
-  if (!localProjectItem.value.defaultOpen && localProjectItem.value.mainLang) {
-    localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(localProjectItem.value.mainLang)
-  }
+  fillDefaultEditorFromLanguage(localProjectItem.value.mainLang)
 }
 
 function validateFields() {
@@ -297,16 +297,13 @@ function validateFields() {
 function toProject(): LocalProject {
   return {
     appendTime: localProjectItem.value.appendTime || Date.now(),
+    lastOpenedAt: localProjectItem.value.lastOpenedAt ?? undefined,
     path: localProjectItem.value.path!,
     name: localProjectItem.value.name!,
     group: localProjectItem.value.group || '',
     kind: localProjectItem.value.kind,
-    ...(localProjectItem.value.kind === ProjectKind.FORK || localProjectItem.value.kind === ProjectKind.CLONE
-      ? {
-          fromUrl: localProjectItem.value.fromUrl || undefined,
-          fromName: localProjectItem.value.fromName || undefined,
-        }
-      : {}),
+    fromUrl: localProjectItem.value.fromUrl || undefined,
+    fromName: localProjectItem.value.fromName || undefined,
     mainLang: localProjectItem.value.mainLang!,
     mainLangColor: localProjectItem.value.mainLangColor || undefined,
     langGroup: localProjectItem.value.langGroup || [],
@@ -539,14 +536,13 @@ function resetLanguageMixBodyHeight() {
 
             <div class="setting-row">
               <div class="setting-copy">
-                <strong>{{ t('app.project_editor.fields.source') }}</strong>
-                <span>{{ t('app.project_editor.fields.source_desc') }}</span>
+                <strong>{{ t('app.project_editor.fields.type') }}</strong>
               </div>
               <UiSegmentedControl
                 class="kind-control"
                 :model-value="localProjectItem.kind"
                 :options="projectKindOptions"
-                :aria-label="t('app.project_editor.fields.source')"
+                :aria-label="t('app.project_editor.fields.type')"
                 @update:model-value="updateProjectKind"
               />
             </div>
@@ -649,7 +645,7 @@ function resetLanguageMixBodyHeight() {
                   </button>
                 </div>
                 <p
-                  class="field-message info"
+                  class="field-message neutral"
                   :class="{ empty: !mainLanguageStatus }"
                   :aria-hidden="!mainLanguageStatus"
                 >
@@ -889,6 +885,7 @@ function resetLanguageMixBodyHeight() {
 }
 
 .source-details-row {
+  @apply pl-34px;
   min-height: 0;
   overflow: hidden;
 }
@@ -1047,8 +1044,12 @@ function resetLanguageMixBodyHeight() {
     visibility: hidden;
   }
 
+  &.neutral {
+    @apply color-$ui-muted-foreground;
+  }
+
   &.info {
-    color: color-mix(in srgb, var(--ui-primary) 72%, var(--ui-foreground));
+    @apply color-$ui-muted-foreground;
   }
 
   &.success {

@@ -8,6 +8,7 @@ export interface UiSegmentedControlOption {
   value: string
   label: string
   icon?: string
+  tooltip?: string
   disabled?: boolean
 }
 
@@ -41,6 +42,8 @@ function updateValue(value: unknown) {
         class="ui-segmented-button"
         :class="{ active: modelValue === option.value }"
         :value="option.value"
+        :title="option.tooltip"
+        :aria-label="option.tooltip ? `${option.label}: ${option.tooltip}` : option.label"
         :disabled="option.disabled"
       >
         <span v-if="option.icon" :class="option.icon" />
@@ -52,7 +55,7 @@ function updateValue(value: unknown) {
 
 <style lang="scss">
 .ui-segmented-control {
-  @apply h-28px rounded-5px p-2px flex items-center;
+  @apply h-27px rounded-5px p-2px flex items-center;
   @apply dark:bg-$ui-control-background;
   @apply light:[background:color-mix(in_srgb,var(--ui-switch-background)_46%,var(--ui-surface-background))];
 }

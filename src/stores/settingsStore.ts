@@ -1,18 +1,23 @@
 import { defineStore } from 'pinia'
 
 import { LanguageEnum, ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
-import type { EditorCommandKey } from '~/constants/codeEditor'
+import type { CliHistoryScannerEditor, EditorCommandKey, VscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import {
+  cliHistoryScannerEditors,
   CodeEditorEnum,
   editorCommandKeys,
   editorCommandOptions,
   isCodeEditor,
+  vscodeHistoryScannerEditors,
 } from '~/constants/codeEditor'
 import { createPersistence } from '~/stores/helpers/persistence'
 import type { ResolvedTheme } from '~/utils/theme'
 import { getPreferredSystemTheme } from '~/utils/theme'
 
 // Scanner settings shape
+export type ScannerRootOpenMode = 'language' | 'specified'
+export type ScannerIdeOpenMode = 'source' | 'language' | 'specified'
+
 export interface ScannerSettings {
   // file system roots scanning
   rootsEnabled: boolean
@@ -24,15 +29,24 @@ export interface ScannerSettings {
     enabled: boolean
     configRootPath: string
   }
-  vscode: {
-    enabled: boolean
-    stateDbPath: string
-  }
+  recentEditors: Record<VscodeHistoryScannerEditor, RecentEditorScannerConfig>
+  cliEditors: Record<CliHistoryScannerEditor, CliEditorScannerConfig>
 
   // import strategies
-  openMode: 'auto' | 'specified'
+  rootOpenMode: ScannerRootOpenMode
+  ideOpenMode: ScannerIdeOpenMode
   editor: CodeEditorEnum
   namePattern: string
+}
+
+export interface RecentEditorScannerConfig {
+  enabled: boolean
+  stateDbPath: string
+}
+
+export interface CliEditorScannerConfig {
+  enabled: boolean
+  historyRootPath: string
 }
 
 export interface WebDavSettings {
@@ -40,6 +54,10 @@ export interface WebDavSettings {
   username: string
   password: string
   remotePath: string
+}
+
+type StoredWebDavSettings = Partial<Omit<WebDavSettings, 'password'>> & {
+  password?: string
 }
 
 interface StoredSettings {
@@ -51,10 +69,13 @@ interface StoredSettings {
   codeEditorsPath?: Partial<Record<EditorCommandKey | 'jetbrains', string>>
   codeEditorsOpenInTerminal?: Partial<Record<EditorCommandKey, boolean>>
   autoDetectedEditorCommands?: boolean
-  webdav?: Partial<WebDavSettings>
-  scanner?: Partial<Omit<ScannerSettings, 'jetbrains' | 'vscode'>> & {
+  webdav?: StoredWebDavSettings
+  scanner?: Partial<Omit<ScannerSettings, 'jetbrains' | 'recentEditors' | 'cliEditors'>> & {
     jetbrains?: Partial<ScannerSettings['jetbrains']>
-    vscode?: Partial<ScannerSettings['vscode']>
+    recentEditors?: Partial<Record<VscodeHistoryScannerEditor, Partial<RecentEditorScannerConfig>>>
+    cliEditors?: Partial<Record<CliHistoryScannerEditor, Partial<CliEditorScannerConfig>>>
+    vscode?: Partial<RecentEditorScannerConfig>
+    openMode?: 'auto' | 'specified'
   }
 }
 
@@ -77,10 +98,30 @@ function isLanguage(value: unknown): value is LanguageEnum {
   return Object.values(LanguageEnum).includes(value as LanguageEnum)
 }
 
+function isScannerRootOpenMode(value: unknown): value is ScannerRootOpenMode {
+  return value === 'language' || value === 'specified'
+}
+
+function isScannerIdeOpenMode(value: unknown): value is ScannerIdeOpenMode {
+  return value === 'source' || value === 'language' || value === 'specified'
+}
+
 function normalizeCustomThemeColor(value: unknown) {
   return typeof value === 'string' && HEX_COLOR_RE.test(value)
     ? value.toLowerCase()
     : DEFAULT_CUSTOM_THEME_COLOR
+}
+
+function createDefaultRecentEditorScanners(): Record<VscodeHistoryScannerEditor, RecentEditorScannerConfig> {
+  return Object.fromEntries(
+    vscodeHistoryScannerEditors.map(editor => [editor, { enabled: false, stateDbPath: '' }]),
+  ) as Record<VscodeHistoryScannerEditor, RecentEditorScannerConfig>
+}
+
+function createDefaultCliEditorScanners(): Record<CliHistoryScannerEditor, CliEditorScannerConfig> {
+  return Object.fromEntries(
+    cliHistoryScannerEditors.map(editor => [editor, { enabled: false, historyRootPath: '' }]),
+  ) as Record<CliHistoryScannerEditor, CliEditorScannerConfig>
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -103,6 +144,8 @@ export const useSettingsStore = defineStore('settings', () => {
     Object.fromEntries(editorCommandOptions.map(option => [option.key, option.openInTerminal])) as Record<EditorCommandKey, boolean>,
   )
   const autoDetectedEditorCommands = ref(false)
+  let savedWebDavPassword = ''
+  let webDavPasswordStorageAvailable = true
   const webdav = reactive<WebDavSettings>({
     endpoint: '',
     username: '',
@@ -120,12 +163,11 @@ export const useSettingsStore = defineStore('settings', () => {
       enabled: false,
       configRootPath: '',
     },
-    vscode: {
-      enabled: false,
-      stateDbPath: '',
-    },
+    recentEditors: createDefaultRecentEditorScanners(),
+    cliEditors: createDefaultCliEditorScanners(),
 
-    openMode: 'auto',
+    rootOpenMode: 'language',
+    ideOpenMode: 'source',
     editor: CodeEditorEnum.VisualStudioCode,
     namePattern: '(demo|test)',
   })
@@ -135,7 +177,12 @@ export const useSettingsStore = defineStore('settings', () => {
       scanner.ideEnabled
       && (
         (scanner.jetbrains.enabled && !!scanner.jetbrains.configRootPath)
-        || (scanner.vscode.enabled && !!scanner.vscode.stateDbPath)
+        || vscodeHistoryScannerEditors.some(editor => (
+          scanner.recentEditors[editor].enabled && !!scanner.recentEditors[editor].stateDbPath
+        ))
+        || cliHistoryScannerEditors.some(editor => (
+          scanner.cliEditors[editor].enabled && !!scanner.cliEditors[editor].historyRootPath
+        ))
       )
     ),
   )
@@ -149,14 +196,42 @@ export const useSettingsStore = defineStore('settings', () => {
         enabled: scanner.jetbrains.enabled,
         configRootPath: scanner.jetbrains.configRootPath,
       },
-      vscode: {
-        enabled: scanner.vscode.enabled,
-        stateDbPath: scanner.vscode.stateDbPath,
-      },
-      openMode: scanner.openMode,
+      recentEditors: Object.fromEntries(
+        vscodeHistoryScannerEditors.map(editor => [
+          editor,
+          {
+            enabled: scanner.recentEditors[editor].enabled,
+            stateDbPath: scanner.recentEditors[editor].stateDbPath,
+          },
+        ]),
+      ) as Record<VscodeHistoryScannerEditor, RecentEditorScannerConfig>,
+      cliEditors: Object.fromEntries(
+        cliHistoryScannerEditors.map(editor => [
+          editor,
+          {
+            enabled: scanner.cliEditors[editor].enabled,
+            historyRootPath: scanner.cliEditors[editor].historyRootPath,
+          },
+        ]),
+      ) as Record<CliHistoryScannerEditor, CliEditorScannerConfig>,
+      rootOpenMode: scanner.rootOpenMode,
+      ideOpenMode: scanner.ideOpenMode,
       editor: scanner.editor,
       namePattern: scanner.namePattern,
     }
+  }
+
+  function snapshotWebDav(): StoredWebDavSettings {
+    const snapshot: StoredWebDavSettings = {
+      endpoint: webdav.endpoint,
+      username: webdav.username,
+      remotePath: webdav.remotePath,
+    }
+
+    if (!webDavPasswordStorageAvailable && webdav.password)
+      snapshot.password = webdav.password
+
+    return snapshot
   }
 
   function resetScanner() {
@@ -165,9 +240,16 @@ export const useSettingsStore = defineStore('settings', () => {
     scanner.ideEnabled = false
     scanner.jetbrains.enabled = false
     scanner.jetbrains.configRootPath = ''
-    scanner.vscode.enabled = false
-    scanner.vscode.stateDbPath = ''
-    scanner.openMode = 'auto'
+    for (const editor of vscodeHistoryScannerEditors) {
+      scanner.recentEditors[editor].enabled = false
+      scanner.recentEditors[editor].stateDbPath = ''
+    }
+    for (const editor of cliHistoryScannerEditors) {
+      scanner.cliEditors[editor].enabled = false
+      scanner.cliEditors[editor].historyRootPath = ''
+    }
+    scanner.rootOpenMode = 'language'
+    scanner.ideOpenMode = 'source'
     scanner.editor = CodeEditorEnum.VisualStudioCode
     scanner.namePattern = '(demo|test)'
   }
@@ -179,6 +261,7 @@ export const useSettingsStore = defineStore('settings', () => {
     terminalCommand.value = ''
     language.value = LanguageEnum.English
     autoDetectedEditorCommands.value = false
+    savedWebDavPassword = ''
     for (const option of editorCommandOptions) {
       codeEditorsPath[option.key] = ''
       codeEditorsOpenInTerminal[option.key] = option.openInTerminal
@@ -191,6 +274,8 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function applyStoredSettings(loadedData: StoredSettings) {
+    let legacyWebDavPassword: string | null = null
+
     if (isTheme(loadedData.theme))
       theme.value = loadedData.theme
     if (isThemeColor(loadedData.themeColor))
@@ -230,7 +315,7 @@ export const useSettingsStore = defineStore('settings', () => {
       if (typeof loadedData.webdav.username === 'string')
         webdav.username = loadedData.webdav.username
       if (typeof loadedData.webdav.password === 'string')
-        webdav.password = loadedData.webdav.password
+        legacyWebDavPassword = loadedData.webdav.password
       if (typeof loadedData.webdav.remotePath === 'string')
         webdav.remotePath = loadedData.webdav.remotePath
     }
@@ -245,8 +330,12 @@ export const useSettingsStore = defineStore('settings', () => {
         scanner.roots.splice(0, scanner.roots.length, ...s.roots)
       if (typeof s.ideEnabled === 'boolean')
         scanner.ideEnabled = s.ideEnabled
-      if (s.openMode === 'auto' || s.openMode === 'specified')
-        scanner.openMode = s.openMode
+      if (isScannerRootOpenMode(s.rootOpenMode))
+        scanner.rootOpenMode = s.rootOpenMode
+      else if (s.openMode === 'specified')
+        scanner.rootOpenMode = 'specified'
+      if (isScannerIdeOpenMode(s.ideOpenMode))
+        scanner.ideOpenMode = s.ideOpenMode
       if (isCodeEditor(s.editor))
         scanner.editor = s.editor
       if (typeof s.namePattern === 'string')
@@ -259,13 +348,37 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof s.jetbrains.configRootPath === 'string')
           scanner.jetbrains.configRootPath = s.jetbrains.configRootPath
       }
+      if (s.recentEditors) {
+        for (const editor of vscodeHistoryScannerEditors) {
+          const config = s.recentEditors[editor]
+          if (!config)
+            continue
+          if (typeof config.enabled === 'boolean')
+            scanner.recentEditors[editor].enabled = config.enabled
+          if (typeof config.stateDbPath === 'string')
+            scanner.recentEditors[editor].stateDbPath = config.stateDbPath
+        }
+      }
+      if (s.cliEditors) {
+        for (const editor of cliHistoryScannerEditors) {
+          const config = s.cliEditors[editor]
+          if (!config)
+            continue
+          if (typeof config.enabled === 'boolean')
+            scanner.cliEditors[editor].enabled = config.enabled
+          if (typeof config.historyRootPath === 'string')
+            scanner.cliEditors[editor].historyRootPath = config.historyRootPath
+        }
+      }
       if (s.vscode) {
         if (typeof s.vscode.enabled === 'boolean')
-          scanner.vscode.enabled = s.vscode.enabled
+          scanner.recentEditors[CodeEditorEnum.VisualStudioCode].enabled = s.vscode.enabled
         if (typeof s.vscode.stateDbPath === 'string')
-          scanner.vscode.stateDbPath = s.vscode.stateDbPath
+          scanner.recentEditors[CodeEditorEnum.VisualStudioCode].stateDbPath = s.vscode.stateDbPath
       }
     }
+
+    return legacyWebDavPassword
   }
 
   function hydrateCachedSettings() {
@@ -285,6 +398,59 @@ export const useSettingsStore = defineStore('settings', () => {
     systemTheme.value = theme
   }
 
+  async function persistWebDavPassword() {
+    if (webdav.password === savedWebDavPassword)
+      return
+    if (!webDavPasswordStorageAvailable)
+      return
+
+    try {
+      if (webdav.password)
+        await window.api.saveWebDavPassword(webdav.password)
+      else
+        await window.api.deleteWebDavPassword()
+    }
+    catch (error) {
+      webDavPasswordStorageAvailable = false
+      throw error
+    }
+
+    savedWebDavPassword = webdav.password
+  }
+
+  async function loadWebDavPassword(legacyPassword: string | null) {
+    try {
+      const password = await window.api.loadWebDavPassword()
+      webDavPasswordStorageAvailable = true
+      if (password !== null) {
+        webdav.password = password
+        savedWebDavPassword = password
+        return Boolean(legacyPassword)
+      }
+    }
+    catch (error) {
+      webDavPasswordStorageAvailable = false
+      console.error('Error loading WebDAV password from secure storage:', error)
+    }
+
+    if (legacyPassword) {
+      webdav.password = legacyPassword
+      if (webDavPasswordStorageAvailable) {
+        try {
+          await persistWebDavPassword()
+          return true
+        }
+        catch (error) {
+          console.error('Error migrating WebDAV password to secure storage:', error)
+        }
+      }
+      return false
+    }
+
+    savedWebDavPassword = ''
+    return false
+  }
+
   // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
     try {
@@ -292,19 +458,24 @@ export const useSettingsStore = defineStore('settings', () => {
       resetSettingsState()
 
       const cachedData = settingsPersistence.loadCached()
+      const cachedHadLegacyWebDavPassword = typeof cachedData?.webdav?.password === 'string'
       if (cachedData)
         applyStoredSettings(cachedData)
 
       const loadedData = await settingsPersistence.load()
       const isFirstRun = !loadedData
+      let legacyWebDavPassword: string | null = null
       if (loadedData) {
         resetSettingsState()
-        applyStoredSettings(loadedData)
+        legacyWebDavPassword = applyStoredSettings(loadedData)
       }
       else {
         resetSettingsState()
       }
+      const shouldSanitizeLegacyWebDavPassword = await loadWebDavPassword(legacyWebDavPassword)
       loaded.value = true
+      if (shouldSanitizeLegacyWebDavPassword || cachedHadLegacyWebDavPassword)
+        await saveSettings()
       if (!isFirstRun && !autoDetectedEditorCommands.value) {
         autoDetectedEditorCommands.value = true
         queueSaveSettings()
@@ -324,6 +495,13 @@ export const useSettingsStore = defineStore('settings', () => {
   // --- 保存配置 ---
   async function saveSettings(): Promise<void> {
     try {
+      try {
+        await persistWebDavPassword()
+      }
+      catch (error) {
+        console.error('Error saving WebDAV password to secure storage:', error)
+      }
+
       await settingsPersistence.save({
         theme: theme.value,
         themeColor: themeColor.value,
@@ -333,7 +511,7 @@ export const useSettingsStore = defineStore('settings', () => {
         codeEditorsPath: { ...codeEditorsPath },
         codeEditorsOpenInTerminal: { ...codeEditorsOpenInTerminal },
         autoDetectedEditorCommands: autoDetectedEditorCommands.value,
-        webdav: { ...webdav },
+        webdav: snapshotWebDav(),
         scanner: snapshotScanner(),
       })
     }

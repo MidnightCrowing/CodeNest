@@ -86,11 +86,17 @@ export async function addNewProjectsFromScanner(): Promise<ProjectScannerImportR
       }
     }
 
-    const defaultOpen: CodeEditorEnum = isCodeEditor(item.ide)
-      ? item.ide
-      : settingsStore.scanner.openMode === 'specified'
+    const sourceEditor = isCodeEditor(item.ide) ? item.ide : null
+    const languageEditor = editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) ?? settingsStore.scanner.editor
+    const defaultOpen: CodeEditorEnum = sourceEditor
+      ? settingsStore.scanner.ideOpenMode === 'source'
+        ? sourceEditor
+        : settingsStore.scanner.ideOpenMode === 'specified'
+          ? settingsStore.scanner.editor
+          : languageEditor
+      : settingsStore.scanner.rootOpenMode === 'specified'
         ? settingsStore.scanner.editor
-        : editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) ?? settingsStore.scanner.editor
+        : languageEditor
 
     const newProject: LocalProject = {
       appendTime: Date.now(),

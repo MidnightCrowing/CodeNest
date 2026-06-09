@@ -44,6 +44,7 @@ type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
 const MIN_SYNC_BUSY_MS = 280
 const SCAN_RESULT_TOAST_THRESHOLD_MS = 700
 const MIN_PROJECT_OPENING_VISIBLE_MS = 2200
+const MIN_TERMINAL_OPENING_VISIBLE_MS = 800
 const PROJECT_ACTION_KEYS: ProjectActionKey[] = ['open', 'explorer', 'terminal', 'copy', 'more']
 const LIST_INITIAL_RENDER_COUNT = 160
 const LIST_RENDER_BATCH = 120
@@ -53,12 +54,23 @@ const SEARCH_DEBOUNCE_MS = 100
 const OPEN_WITH_ACTION_PREFIX = 'open-with:'
 const DEFAULT_EDITOR_ACTION_PREFIX = 'default-editor:'
 const DEFAULT_EDITOR_AUTO_ACTION = `${DEFAULT_EDITOR_ACTION_PREFIX}auto`
+const GITHUB_SOURCE_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
 
 interface FilterOption<T extends string> {
   value: T
   label: string
   color?: string
   count?: number
+}
+
+interface ScrollAreaRef {
+  $el?: Element
+}
+
+interface HomeScrollSnapshot {
+  layoutMode: LayoutMode
+  scrollLeft: number
+  scrollTop: number
 }
 
 const projectsStore = useProjectsStore()
@@ -77,14 +89,21 @@ const sortKey = ref<SortKey>('recent')
 const layoutMode = useLocalStorage<LayoutMode>('codenest:home-layout', 'list')
 const syncing = ref(false)
 const openingProjectIds = ref(new Set<number>())
+const openingTerminalProjectIds = ref(new Set<number>())
 const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
 const copyFeedbackTimers = new Map<number, number>()
 const projectOpeningStartedAt = new Map<number, number>()
 const projectOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
+const terminalOpeningStartedAt = new Map<number, number>()
+const terminalOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
 const projectItemRefs = new Map<number, HTMLElement>()
 const projectActionRefs = new Map<number, HTMLElement>()
 const renderedProjectLimit = ref(LIST_INITIAL_RENDER_COUNT)
+const listScrollAreaRef = ref<ScrollAreaRef | null>(null)
+const cardsScrollAreaRef = ref<ScrollAreaRef | null>(null)
 const loadMoreSentinelRef = ref<HTMLElement | null>(null)
+const homeScrollSnapshot = ref<HomeScrollSnapshot | null>(null)
+const shouldRestoreHomeScroll = ref(false)
 let loadMoreObserver: IntersectionObserver | null = null
 
 const totalProjects = computed(() => projectsStore.allProjects.length)
@@ -300,11 +319,13 @@ function defaultEditorMenuItems(project: LocalProject): UiActionMenuItem[] {
 
 function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
   const canDeleteFiles = canDeleteProjectFiles(project)
+  const sourceUrl = projectSourceUrl(project)
 
   return [
     {
       id: 'open',
       label: t('app.home.actions.open_project'),
+      shortcut: 'enter',
       disabled: !project.isExists,
     },
     {
@@ -323,17 +344,26 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     {
       id: 'edit',
       label: t('app.home.actions.edit'),
+      shortcut: ['mod', 'i'],
     },
     {
       id: 'pin',
       label: pinButtonTitle(project),
       icon: pinButtonIcon(project),
     },
+    ...(sourceUrl
+      ? [{
+          id: 'source',
+          label: t('app.home.actions.open_source'),
+          trailingIcon: 'i-lucide:external-link',
+          separatorBefore: true,
+        }]
+      : []),
     {
       id: 'explorer',
       label: t('app.home.actions.open_explorer'),
       disabled: !project.isExists,
-      separatorBefore: true,
+      separatorBefore: !sourceUrl,
     },
     {
       id: 'terminal',
@@ -343,15 +373,21 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     {
       id: 'copy',
       label: t('app.home.actions.copy_path'),
+      shortcut: ['mod', 'c'],
     },
     {
       id: 'remove',
       label: canDeleteFiles ? t('app.home.actions.delete') : t('app.home.actions.remove'),
       icon: 'i-lucide:trash-2',
+      shortcut: 'delete',
       danger: true,
       separatorBefore: true,
     },
   ]
+}
+
+function recentSortTime(project: LocalProject) {
+  return project.lastOpenedAt ?? project.appendTime
 }
 
 function compareProjects(a: LocalProject, b: LocalProject) {
@@ -367,7 +403,7 @@ function compareProjects(a: LocalProject, b: LocalProject) {
       return (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name)
     case 'recent':
     default:
-      return b.appendTime - a.appendTime
+      return recentSortTime(b) - recentSortTime(a)
   }
 }
 
@@ -415,6 +451,58 @@ function refreshLoadMoreObserver() {
   loadMoreObserver.observe(sentinel)
 }
 
+function activeScrollAreaRef() {
+  return layoutMode.value === 'list' ? listScrollAreaRef.value : cardsScrollAreaRef.value
+}
+
+function activeScrollViewport() {
+  return activeScrollAreaRef()?.$el?.querySelector<HTMLElement>('.ui-scroll-viewport') ?? null
+}
+
+function rememberHomeScrollPosition() {
+  const viewport = activeScrollViewport()
+  if (!viewport)
+    return
+
+  homeScrollSnapshot.value = {
+    layoutMode: layoutMode.value,
+    scrollLeft: viewport.scrollLeft,
+    scrollTop: viewport.scrollTop,
+  }
+  shouldRestoreHomeScroll.value = true
+}
+
+function navigateFromHome(view: ViewEnum) {
+  rememberHomeScrollPosition()
+  activatedView.value = view
+}
+
+function restoreHomeScrollPosition() {
+  const snapshot = homeScrollSnapshot.value
+  if (!shouldRestoreHomeScroll.value || !snapshot || snapshot.layoutMode !== layoutMode.value)
+    return
+
+  let attempts = 0
+  const restore = () => {
+    attempts += 1
+    const viewport = activeScrollViewport()
+    if (!viewport && attempts < 4) {
+      window.requestAnimationFrame(restore)
+      return
+    }
+    if (!viewport)
+      return
+
+    viewport.scrollTo({
+      left: snapshot.scrollLeft,
+      top: snapshot.scrollTop,
+    })
+    shouldRestoreHomeScroll.value = false
+  }
+
+  void nextTick(() => window.requestAnimationFrame(restore))
+}
+
 async function ensureProjectRendered(project: LocalProject) {
   const index = filteredProjects.value.findIndex(item => item.appendTime === project.appendTime)
   if (index < 0 || index < renderedProjectLimit.value)
@@ -430,12 +518,12 @@ async function ensureProjectRendered(project: LocalProject) {
 
 function addProject() {
   initializeNewProjectState()
-  activatedView.value = ViewEnum.ProjectEditor
+  navigateFromHome(ViewEnum.ProjectEditor)
 }
 
 function editProject(project: LocalProject) {
   initializeUpdateProjectState(project)
-  activatedView.value = ViewEnum.ProjectEditor
+  navigateFromHome(ViewEnum.ProjectEditor)
 }
 
 async function openProject(project: LocalProject) {
@@ -459,7 +547,7 @@ async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEn
   markProjectOpening(project.appendTime)
   try {
     await window.api.openProject(launchConfig.command, project.path, launchConfig.openInTerminal)
-    void projectsStore.moveProjectToTopByTime(project.appendTime)
+    void projectsStore.markProjectOpened(project.appendTime)
     finishProjectOpening(project.appendTime)
   }
   catch (error) {
@@ -523,6 +611,58 @@ function clearProjectOpening(projectId: number) {
 
 function isProjectOpening(project: LocalProject) {
   return openingProjectIds.value.has(project.appendTime)
+}
+
+function setTerminalOpeningVisible(projectId: number, visible: boolean) {
+  if (openingTerminalProjectIds.value.has(projectId) === visible)
+    return
+
+  const next = new Set(openingTerminalProjectIds.value)
+  if (visible)
+    next.add(projectId)
+  else
+    next.delete(projectId)
+  openingTerminalProjectIds.value = next
+}
+
+function clearTerminalOpeningTimer(projectId: number) {
+  const timer = terminalOpeningTimers.get(projectId)
+  if (timer !== undefined) {
+    window.clearTimeout(timer)
+    terminalOpeningTimers.delete(projectId)
+  }
+}
+
+function markTerminalOpening(projectId: number) {
+  clearTerminalOpeningTimer(projectId)
+  terminalOpeningStartedAt.set(projectId, performance.now())
+  setTerminalOpeningVisible(projectId, true)
+}
+
+function finishTerminalOpening(projectId: number) {
+  clearTerminalOpeningTimer(projectId)
+
+  const startedAt = terminalOpeningStartedAt.get(projectId) ?? performance.now()
+  const remaining = MIN_TERMINAL_OPENING_VISIBLE_MS - (performance.now() - startedAt)
+  if (remaining <= 0) {
+    clearTerminalOpening(projectId)
+    return
+  }
+
+  terminalOpeningTimers.set(
+    projectId,
+    window.setTimeout(clearTerminalOpening, remaining, projectId),
+  )
+}
+
+function clearTerminalOpening(projectId: number) {
+  clearTerminalOpeningTimer(projectId)
+  terminalOpeningStartedAt.delete(projectId)
+  setTerminalOpeningVisible(projectId, false)
+}
+
+function isTerminalOpening(project: LocalProject) {
+  return openingTerminalProjectIds.value.has(project.appendTime)
 }
 
 function canDeleteProjectFiles(project: LocalProject) {
@@ -744,6 +884,9 @@ function handleProjectActionsKeydown(project: LocalProject, event: KeyboardEvent
   if (event.defaultPrevented)
     return
 
+  if (handleProjectShortcut(project, event))
+    return
+
   const toolbar = event.currentTarget
   if (!(toolbar instanceof HTMLElement))
     return
@@ -799,8 +942,41 @@ function handleProjectActionsKeydown(project: LocalProject, event: KeyboardEvent
   }
 }
 
+function handleProjectShortcut(project: LocalProject, event: KeyboardEvent) {
+  const usesCommandModifier = (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey
+  const key = event.key.toLowerCase()
+
+  if (usesCommandModifier && key === 'i') {
+    event.preventDefault()
+    event.stopPropagation()
+    editProject(project)
+    return true
+  }
+
+  if (usesCommandModifier && key === 'c') {
+    event.preventDefault()
+    event.stopPropagation()
+    void copyProjectPath(project)
+    return true
+  }
+
+  const isRemoveKey = !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
+    && (event.key === 'Delete' || event.key === 'Backspace')
+  if (isRemoveKey) {
+    event.preventDefault()
+    event.stopPropagation()
+    showRemoveDialog(project)
+    return true
+  }
+
+  return false
+}
+
 function handleProjectContainerKeydown(project: LocalProject, event: KeyboardEvent) {
   if (event.target !== event.currentTarget)
+    return
+
+  if (handleProjectShortcut(project, event))
     return
 
   switch (event.key) {
@@ -970,6 +1146,95 @@ function openProjectButtonIcon(project: LocalProject) {
     : 'i-lucide:external-link'
 }
 
+function terminalButtonTitle(project: LocalProject) {
+  return isTerminalOpening(project)
+    ? t('app.home.actions.opening_terminal')
+    : t('app.home.actions.open_terminal')
+}
+
+function terminalButtonAriaLabel(project: LocalProject) {
+  return isTerminalOpening(project)
+    ? t('app.home.actions.opening_terminal_named', { name: project.name })
+    : t('app.home.actions.open_terminal')
+}
+
+function terminalButtonIcon(project: LocalProject) {
+  return isTerminalOpening(project)
+    ? 'i-lucide:loader-circle spinning'
+    : 'i-lucide:square-terminal'
+}
+
+function isSourceProject(project: LocalProject) {
+  return project.kind === ProjectKind.FORK || project.kind === ProjectKind.CLONE
+}
+
+function projectSourceUrl(project: LocalProject) {
+  return isSourceProject(project) ? project.fromUrl?.trim() || '' : ''
+}
+
+function projectSourceExternalUrl(project: LocalProject) {
+  const sourceUrl = projectSourceUrl(project)
+  if (!sourceUrl)
+    return ''
+
+  const githubName = sourceUrl.match(GITHUB_SOURCE_RE)?.[1]
+  if (githubName)
+    return `https://github.com/${githubName.replace(/\.git$/, '')}`
+
+  if (/^https?:\/\//i.test(sourceUrl))
+    return sourceUrl
+
+  return `https://${sourceUrl}`
+}
+
+function sourceNameFromUrl(url: string) {
+  const githubName = url.match(GITHUB_SOURCE_RE)?.[1]
+  if (githubName)
+    return githubName
+
+  try {
+    const parsedUrl = new URL(url)
+    const pathParts = parsedUrl.pathname.split('/').filter(Boolean)
+    return pathParts.length >= 2
+      ? pathParts.slice(-2).join('/')
+      : parsedUrl.hostname
+  }
+  catch {
+    return url
+  }
+}
+
+function projectSourceName(project: LocalProject) {
+  const sourceUrl = projectSourceUrl(project)
+  return isSourceProject(project)
+    ? project.fromName?.trim() || (sourceUrl ? sourceNameFromUrl(sourceUrl) : '')
+    : ''
+}
+
+function hasProjectSource(project: LocalProject) {
+  return !!projectSourceName(project)
+}
+
+function projectSourcePrefix(project: LocalProject) {
+  return project.kind === ProjectKind.FORK
+    ? t('app.home.source.forked_from')
+    : t('app.home.source.cloned_from')
+}
+
+function projectSourceTitle(project: LocalProject) {
+  const sourceName = projectSourceName(project)
+  const sourceUrl = projectSourceUrl(project)
+  if (sourceName && sourceUrl && sourceName !== sourceUrl)
+    return `${projectSourcePrefix(project)} ${sourceName}\n${sourceUrl}`
+  return sourceName ? `${projectSourcePrefix(project)} ${sourceName}` : sourceUrl
+}
+
+function openProjectSource(project: LocalProject) {
+  const sourceUrl = projectSourceExternalUrl(project)
+  if (sourceUrl)
+    window.api.openExternal(sourceUrl)
+}
+
 function displayProjectPath(path: string) {
   return displayPathCache.get(path) ?? path
 }
@@ -1040,6 +1305,9 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
     case 'pin':
       void toggleProjectPinned(project)
       break
+    case 'source':
+      openProjectSource(project)
+      break
     case 'open':
       void openProject(project)
       break
@@ -1061,12 +1329,19 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
   }
 }
 
+onActivated(() => {
+  restoreHomeScrollPosition()
+})
+
 onBeforeUnmount(() => {
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
   projectOpeningTimers.forEach(timer => window.clearTimeout(timer))
   projectOpeningTimers.clear()
   projectOpeningStartedAt.clear()
+  terminalOpeningTimers.forEach(timer => window.clearTimeout(timer))
+  terminalOpeningTimers.clear()
+  terminalOpeningStartedAt.clear()
   loadMoreObserver?.disconnect()
 })
 
@@ -1075,10 +1350,16 @@ function openInExplorer(project: LocalProject) {
 }
 
 async function openInTerminal(project: LocalProject) {
+  if (!project.isExists || isTerminalOpening(project))
+    return
+
+  markTerminalOpening(project.appendTime)
   try {
     await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+    finishTerminalOpening(project.appendTime)
   }
   catch (error) {
+    clearTerminalOpening(project.appendTime)
     console.error('Failed to open project in terminal:', error)
     showToast({
       tone: 'error',
@@ -1150,12 +1431,12 @@ watch(
 )
 
 function openSettings() {
-  activatedView.value = ViewEnum.Settings
+  navigateFromHome(ViewEnum.Settings)
 }
 
 function openEditorSettings() {
   activatedPage.value = SettingPageEnum.Ides
-  activatedView.value = ViewEnum.Settings
+  navigateFromHome(ViewEnum.Settings)
 }
 
 function showMissingEditorCommandToast() {
@@ -1228,6 +1509,12 @@ function formatTime(timestamp: number) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(timestamp))
+}
+
+function formatLastOpened(project: LocalProject) {
+  return project.lastOpenedAt
+    ? formatTime(project.lastOpenedAt)
+    : t('app.home.table.never_opened')
 }
 
 function updateLayoutMode(value: string) {
@@ -1356,7 +1643,7 @@ watch([
         <span>{{ t('app.home.table.kind') }}</span>
         <span>{{ t('app.home.table.language') }}</span>
         <span>{{ t('app.home.table.license') }}</span>
-        <span>{{ t('app.home.table.updated') }}</span>
+        <span>{{ t('app.home.table.last_opened') }}</span>
         <span>{{ t('app.home.table.actions') }}</span>
       </div>
 
@@ -1365,7 +1652,7 @@ watch([
         <span>{{ t('app.home.empty.desc') }}</span>
       </div>
 
-      <UiScrollArea v-else-if="layoutMode === 'list'" class="table-body">
+      <UiScrollArea v-else-if="layoutMode === 'list'" ref="listScrollAreaRef" class="table-body">
         <UiActionMenu
           v-for="project in renderedProjects"
           :key="project.appendTime"
@@ -1382,7 +1669,7 @@ watch([
             :tabindex="project.isExists ? 0 : -1"
             :aria-disabled="!project.isExists"
             :aria-label="t('app.home.actions.open_named', { name: project.name })"
-            aria-keyshortcuts="Enter Space Shift+F10"
+            aria-keyshortcuts="Enter Space Shift+F10 Control+I Meta+I Control+C Meta+C Delete Backspace"
             @click="openProject(project)"
             @keydown="handleProjectContainerKeydown(project, $event)"
           >
@@ -1403,9 +1690,22 @@ watch([
               <div class="project-path" :title="project.path">
                 {{ displayProjectPath(project.path) }}
               </div>
-              <div v-if="project.fromUrl || project.fromName" class="project-source" :title="project.fromName || project.fromUrl">
-                {{ project.kind === ProjectKind.FORK ? t('app.home.source.forked_from') : t('app.home.source.cloned_from') }}
-                {{ project.fromName || project.fromUrl }}
+              <button
+                v-if="projectSourceUrl(project)"
+                class="project-source source-link"
+                type="button"
+                :title="projectSourceTitle(project)"
+                :aria-label="`${t('app.home.actions.open_source')}: ${projectSourceName(project)}`"
+                @click.stop="openProjectSource(project)"
+                @keydown.stop
+              >
+                <span class="source-prefix">{{ projectSourcePrefix(project) }}</span>
+                <span class="source-name">{{ projectSourceName(project) }}</span>
+                <span class="source-link-icon i-lucide:external-link" />
+              </button>
+              <div v-else-if="hasProjectSource(project)" class="project-source" :title="projectSourceTitle(project)">
+                <span class="source-prefix">{{ projectSourcePrefix(project) }}</span>
+                <span class="source-name">{{ projectSourceName(project) }}</span>
               </div>
             </div>
 
@@ -1423,7 +1723,7 @@ watch([
               {{ shortLicense(project.license) }}
             </span>
             <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
-            <span class="updated-cell">{{ formatTime(project.appendTime) }}</span>
+            <span class="recent-cell" :class="{ muted: !project.lastOpenedAt }">{{ formatLastOpened(project) }}</span>
 
             <div
               :ref="el => setProjectActionsRef(project.appendTime, el)"
@@ -1461,15 +1761,17 @@ watch([
               </button>
               <button
                 class="icon-button"
+                :class="{ 'action-loading': isTerminalOpening(project) }"
                 type="button"
                 data-project-action="terminal"
-                :title="t('app.home.actions.open_terminal')"
-                :aria-label="t('app.home.actions.open_terminal')"
+                :title="terminalButtonTitle(project)"
+                :aria-label="terminalButtonAriaLabel(project)"
+                :aria-busy="isTerminalOpening(project)"
                 :disabled="!project.isExists"
                 :tabindex="actionButtonTabIndex(project, 'terminal')"
                 @click.stop="openInTerminal(project)"
               >
-                <span class="i-lucide:square-terminal" />
+                <span :class="terminalButtonIcon(project)" />
               </button>
               <button
                 class="icon-button copy-action"
@@ -1511,7 +1813,7 @@ watch([
         />
       </UiScrollArea>
 
-      <UiScrollArea v-else class="cards-scroll">
+      <UiScrollArea v-else ref="cardsScrollAreaRef" class="cards-scroll">
         <div class="cards-body">
           <UiActionMenu
             v-for="project in renderedProjects"
@@ -1529,7 +1831,7 @@ watch([
               :tabindex="project.isExists ? 0 : -1"
               :aria-disabled="!project.isExists"
               :aria-label="t('app.home.actions.open_named', { name: project.name })"
-              aria-keyshortcuts="Enter Space Shift+F10"
+              aria-keyshortcuts="Enter Space Shift+F10 Control+I Meta+I Control+C Meta+C Delete Backspace"
               @click="openProject(project)"
               @keydown="handleProjectContainerKeydown(project, $event)"
             >
@@ -1550,6 +1852,24 @@ watch([
 
               <div class="card-path" :title="project.path">
                 {{ displayProjectPath(project.path) }}
+              </div>
+
+              <button
+                v-if="projectSourceUrl(project)"
+                class="project-source card-source source-link"
+                type="button"
+                :title="projectSourceTitle(project)"
+                :aria-label="`${t('app.home.actions.open_source')}: ${projectSourceName(project)}`"
+                @click.stop="openProjectSource(project)"
+                @keydown.stop
+              >
+                <span class="source-prefix">{{ projectSourcePrefix(project) }}</span>
+                <span class="source-name">{{ projectSourceName(project) }}</span>
+                <span class="source-link-icon i-lucide:external-link" />
+              </button>
+              <div v-else-if="hasProjectSource(project)" class="project-source card-source" :title="projectSourceTitle(project)">
+                <span class="source-prefix">{{ projectSourcePrefix(project) }}</span>
+                <span class="source-name">{{ projectSourceName(project) }}</span>
               </div>
 
               <div class="card-meta">
@@ -1607,15 +1927,17 @@ watch([
                   </button>
                   <button
                     class="icon-button"
+                    :class="{ 'action-loading': isTerminalOpening(project) }"
                     type="button"
                     data-project-action="terminal"
-                    :title="t('app.home.actions.open_terminal')"
-                    :aria-label="t('app.home.actions.open_terminal')"
+                    :title="terminalButtonTitle(project)"
+                    :aria-label="terminalButtonAriaLabel(project)"
+                    :aria-busy="isTerminalOpening(project)"
                     :disabled="!project.isExists"
                     :tabindex="actionButtonTabIndex(project, 'terminal')"
                     @click.stop="openInTerminal(project)"
                   >
-                    <span class="i-lucide:square-terminal" />
+                    <span :class="terminalButtonIcon(project)" />
                   </button>
                   <button
                     class="icon-button copy-action"
@@ -1692,7 +2014,7 @@ watch([
 }
 
 .clear-button {
-  @apply h-28px border-0 rounded-5px px-9px;
+  @apply h-30px border-0 rounded-5px px-9px;
   @apply inline-flex items-center gap-6px whitespace-nowrap;
   @apply text-12px font-560 cursor-pointer;
 }
@@ -1840,9 +2162,44 @@ watch([
 }
 
 .project-path,
-.project-source,
-.updated-cell {
+.recent-cell {
   @apply truncate text-11px light:color-$gray-7 dark:color-$gray-8;
+}
+
+.project-source {
+  @apply min-w-0 w-fit max-w-full self-start border-0 bg-transparent p-0 text-11px;
+  @apply inline-flex items-center gap-4px text-left;
+  @apply light:color-$gray-7 dark:color-$gray-8;
+}
+
+.source-prefix {
+  @apply shrink-0;
+}
+
+.source-name {
+  @apply min-w-0 truncate;
+}
+
+.source-link {
+  @apply cursor-pointer hover:color-$ui-foreground focus-visible:outline-none;
+}
+
+.source-link:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.source-link-icon {
+  @apply size-11px shrink-0 opacity-0;
+  transition: opacity 120ms ease-out;
+}
+
+.source-link:hover .source-link-icon,
+.source-link:focus-visible .source-link-icon {
+  @apply opacity-100;
+}
+
+.recent-cell.muted {
+  @apply color-$ui-muted-foreground;
 }
 
 .editor-chip {
@@ -1941,6 +2298,11 @@ watch([
     cursor: progress;
   }
 
+  &.action-loading {
+    @apply color-$ui-foreground;
+    cursor: progress;
+  }
+
   &.danger {
     @apply color-$red-5;
   }
@@ -1975,6 +2337,7 @@ watch([
 
 .project-card {
   @apply min-w-0 rounded-6px border p-12px cursor-pointer;
+  @apply flex flex-col;
   @apply border-$ui-border bg-$ui-control-background;
   @apply hover:bg-$ui-hover-background;
   @apply focus-visible:outline-none;
@@ -2024,8 +2387,12 @@ watch([
   @apply my-9px truncate text-11px light:color-$gray-6 dark:color-$gray-8;
 }
 
+.card-source {
+  @apply -mt-4px mb-9px;
+}
+
 .card-meta {
-  @apply flex-wrap;
+  @apply mt-auto flex-wrap;
 }
 
 .card-footer {

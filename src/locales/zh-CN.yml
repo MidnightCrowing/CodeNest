@@ -30,7 +30,7 @@ app:
     file_types:
       executable: 可执行文件
       all: 所有文件
-      vscode_database: VS Code 数据库
+      editor_history_database: 编辑器历史数据库
   common:
     back: 返回
     cancel: 取消
@@ -78,7 +78,7 @@ app:
       all_groups: 全部分组
       no_group: 无分组
     sort:
-      recent: 最近优先
+      recent: 最近打开
       name: 名称
       language: 语言
       group: 分组
@@ -91,7 +91,8 @@ app:
       kind: 类型
       language: 语言
       license: 许可证
-      updated: 更新时间
+      last_opened: 最近打开
+      never_opened: 未打开
       actions: 操作
     empty:
       title: 没有找到项目
@@ -108,8 +109,11 @@ app:
       open_with: 打开方式
       default_editor: 默认编辑器
       auto_editor: 自动选择
+      open_source: 打开来源
       open_explorer: 在文件夹中显示
       open_terminal: 在终端中打开
+      opening_terminal: 正在打开终端
+      opening_terminal_named: 正在为 {name} 打开终端
       copy_path: 复制路径
       copied: 已复制
       copy_failed: 复制失败
@@ -152,7 +156,7 @@ app:
       title: 外观
       theme:
         title: 主题
-        system: 跟随系统
+        system: 自动
         light: 浅色
         dark: 暗色
       theme_color:
@@ -170,13 +174,15 @@ app:
         title: 语言
         english: English
         zh_cn: 简体中文
+        zh_tw: 繁體中文
     editors:
       title: 编辑器
       command_placeholder: '{editor} 的启动命令'
       clear_command: 清空命令
       browse_executable: 浏览可执行文件
       auto_detect: 自动检测
-      terminal: 在终端中运行
+      terminal: 终端
+      terminal_desc: 在终端中运行命令
       terminal_launcher: 终端
       terminal_command: 打开目录
       terminal_command_placeholder: 系统默认
@@ -221,27 +227,38 @@ app:
         remove: 移除根目录
       ide:
         title: 最近 IDE 项目
-        desc: 从编辑器最近项目记录导入项目。
+        desc: 从 IDE 和 CLI 的最近项目记录导入项目。
       jetbrains:
         placeholder: JetBrains 配置根目录
-      vscode:
-        placeholder: state.vscdb 路径
+      recent_editor:
+        placeholder: '{editor} state.vscdb 路径'
         browse: 浏览数据库
+      cli_editor:
+        placeholder: '{editor} 数据目录'
       strategy:
-        title: 导入策略
-        desc: 决定新项目如何打开和分类。
-      default_editor:
-        title: 项目打开方式
-        desc: 自动按语言选择，或始终使用一个编辑器。
+        title: 默认打开方式
+        desc: 分别决定目录和 IDE/CLI 导入后的默认打开工具。
+      root_open_mode:
+        title: 目录导入
+        desc: 从项目根目录扫描导入。
+      ide_open_mode:
+        title: IDE / CLI 导入
+        desc: 从 IDE/CLI 最近项目记录导入。
       specified_editor:
-        title: 编辑器
-        desc: 选择“指定编辑器”时使用。
+        title: 指定编辑器
+        desc: 任一规则选择“指定”时使用。
       name_pattern:
         title: 临时项目名称规则
         desc: 用于自动标记 demo/test 项目的正则。
       open_mode:
-        auto: 按语言选择
-        specified: 指定编辑器
+        source: 来源工具
+        language: 按语言
+        specified: 指定
+      open_mode_help:
+        source: 使用导入来源对应的 IDE 或 CLI。
+        language: 按项目语言选择默认编辑器。
+        ide_language: 忽略来源，按项目语言选择默认编辑器。
+        specified: 使用下方指定编辑器。
       history:
         title: 扫描记录
         desc: 清除记录后，已扫描的文件夹可重新导入。
@@ -276,13 +293,6 @@ app:
         downloading: 下载中
         pulled_with_backup: 下载完成，已创建本地备份。
         failed: WebDAV 同步失败。
-        feedback:
-          connection_succeeded: WebDAV 连接成功
-          connection_failed: WebDAV 连接失败
-          upload_succeeded: 已上传到云端
-          upload_failed: 上传到云端失败
-          download_succeeded: 已从云端下载
-          download_failed: 从云端下载失败
         errors:
           url_required: 需要填写 WebDAV 服务器地址。
           invalid_url: WebDAV 服务器地址无效。
@@ -309,9 +319,6 @@ app:
     title:
       add: 添加项目
       edit: 编辑项目
-    mode:
-      new: 新项目
-      edit: 编辑项目
     add_project: 添加项目
     save_changes: 保存更改
     use_folder: 使用文件夹名
@@ -333,8 +340,7 @@ app:
       name: 名称
       group: 分组
       group_desc: 用于筛选的可选标签。
-      source: 来源
-      source_desc: 显示 Fork/Clone 的来源。
+      type: 类型
       source_url: 来源 URL
       source_name: 来源名称
       main_language: 主要语言
@@ -344,7 +350,6 @@ app:
       temporary: 临时项目
       temporary_desc: 标记实验、demo 或短期项目。
     summary:
-      mode: 模式
       kind: 类型
       editor: 编辑器
       license: 许可证

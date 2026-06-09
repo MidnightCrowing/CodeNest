@@ -24,6 +24,8 @@ export interface languagesGroupItem extends ProjectLanguageInfo {
 export interface LocalProject {
   // 项目被添加的时间戳（毫秒级）
   appendTime: number
+  // 项目最近一次通过 CodeNest 打开的时间戳（毫秒级）
+  lastOpenedAt?: number
 
   // 项目的本地路径
   path: string

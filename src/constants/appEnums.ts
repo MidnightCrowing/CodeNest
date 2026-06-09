@@ -33,4 +33,5 @@ export enum ThemeColorEnum {
 export enum LanguageEnum {
   English = 'en',
   zh_CN = 'zh-CN',
+  zh_TW = 'zh-TW',
 }

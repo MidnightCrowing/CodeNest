@@ -30,7 +30,7 @@ app:
     file_types:
       executable: Executable files
       all: All files
-      vscode_database: VS Code database
+      editor_history_database: Editor history database
   common:
     back: Back
     cancel: Cancel
@@ -78,7 +78,7 @@ app:
       all_groups: All groups
       no_group: No group
     sort:
-      recent: Recent first
+      recent: Last opened
       name: Name
       language: Language
       group: Group
@@ -91,7 +91,8 @@ app:
       kind: Kind
       language: Language
       license: License
-      updated: Updated
+      last_opened: Last opened
+      never_opened: Never opened
       actions: Actions
     empty:
       title: No projects found
@@ -108,8 +109,11 @@ app:
       open_with: Open With
       default_editor: Default Editor
       auto_editor: Auto
+      open_source: Open Source URL
       open_explorer: Show in folder
       open_terminal: Open in Terminal
+      opening_terminal: Opening Terminal
+      opening_terminal_named: Opening Terminal for {name}
       copy_path: Copy path
       copied: Copied
       copy_failed: Copy failed
@@ -152,7 +156,7 @@ app:
       title: Appearance
       theme:
         title: Theme
-        system: Follow system
+        system: Auto
         light: Light
         dark: Dark
       theme_color:
@@ -170,13 +174,15 @@ app:
         title: Language
         english: English
         zh_cn: Simplified Chinese
+        zh_tw: Traditional Chinese
     editors:
       title: Editors
       command_placeholder: Launch command for {editor}
       clear_command: Clear command
       browse_executable: Browse executable
       auto_detect: Auto detect
-      terminal: Run in terminal
+      terminal: Terminal
+      terminal_desc: Run command in terminal
       terminal_launcher: Terminal
       terminal_command: Open folders
       terminal_command_placeholder: System default
@@ -221,27 +227,38 @@ app:
         remove: Remove root
       ide:
         title: Recent IDE projects
-        desc: Import projects from recent project history.
+        desc: Import projects from IDE and CLI history.
       jetbrains:
         placeholder: JetBrains config root
-      vscode:
-        placeholder: state.vscdb path
+      recent_editor:
+        placeholder: '{editor} state.vscdb path'
         browse: Browse database
+      cli_editor:
+        placeholder: '{editor} data folder'
       strategy:
-        title: Import strategy
-        desc: Decide how new projects are opened and classified.
-      default_editor:
-        title: Open projects with
-        desc: Choose an editor automatically or use one editor.
+        title: Default opener
+        desc: Choose defaults separately for folder and IDE/CLI imports.
+      root_open_mode:
+        title: Folder imports
+        desc: Imported from configured project root folders.
+      ide_open_mode:
+        title: IDE / CLI imports
+        desc: Imported from IDE/CLI recent project history.
       specified_editor:
-        title: Editor
-        desc: Used when "Specified editor" is selected.
+        title: Specified editor
+        desc: Used when either rule is set to "Specified".
       name_pattern:
         title: Temporary name pattern
         desc: Regex used to mark demo/test projects automatically.
       open_mode:
-        auto: By language
-        specified: Specified editor
+        source: Source
+        language: Language
+        specified: Specified
+      open_mode_help:
+        source: Use the IDE or CLI that provided the project.
+        language: Pick the default editor by project language.
+        ide_language: Ignore the source and pick by project language.
+        specified: Use the editor selected below.
       history:
         title: Scan history
         desc: Clear records so previously scanned folders can be imported again.
@@ -276,13 +293,6 @@ app:
         downloading: Downloading
         pulled_with_backup: Download complete. A local backup was created.
         failed: WebDAV sync failed.
-        feedback:
-          connection_succeeded: WebDAV connection succeeded
-          connection_failed: WebDAV connection failed
-          upload_succeeded: Uploaded to cloud
-          upload_failed: Couldn't upload to cloud
-          download_succeeded: Downloaded from cloud
-          download_failed: Couldn't download from cloud
         errors:
           url_required: WebDAV server URL is required.
           invalid_url: WebDAV server URL is invalid.
@@ -309,9 +319,6 @@ app:
     title:
       add: Add project
       edit: Edit project
-    mode:
-      new: New project
-      edit: Edit project
     add_project: Add project
     save_changes: Save changes
     use_folder: Use folder
@@ -333,8 +340,7 @@ app:
       name: Name
       group: Group
       group_desc: Optional label for filtering.
-      source: Source
-      source_desc: Shows where forks and clones came from.
+      type: Type
       source_url: Source URL
       source_name: Source name
       main_language: Main language
@@ -344,7 +350,6 @@ app:
       temporary: Temporary project
       temporary_desc: Mark experiments, demos, or short-lived projects.
     summary:
-      mode: Mode
       kind: Kind
       editor: Editor
       license: License

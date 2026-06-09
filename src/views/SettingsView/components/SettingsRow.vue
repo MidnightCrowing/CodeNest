@@ -90,7 +90,7 @@ withDefaults(defineProps<{
   }
 
   &.info {
-    color: color-mix(in srgb, var(--ui-primary) 72%, var(--ui-foreground));
+    @apply color-$ui-muted-foreground;
   }
 
   &.success {

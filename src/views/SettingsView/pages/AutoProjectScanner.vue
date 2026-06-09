@@ -3,14 +3,40 @@ import { useI18n } from 'vue-i18n'
 
 import UiCheckbox from '~/components/ui/UiCheckbox.vue'
 import UiDialog from '~/components/ui/UiDialog.vue'
+import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
-import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { codeEditorOrder, codeEditors } from '~/constants/codeEditor'
+import type { CliHistoryScannerEditor, CodeEditorEnum, VscodeHistoryScannerEditor } from '~/constants/codeEditor'
+import {
+  codeEditorOrder,
+  codeEditors,
+  isCliHistoryScannerEditor,
+  isVscodeHistoryScannerEditor,
+  projectHistoryScannerEditors,
+  scannerEditorLabels,
+} from '~/constants/codeEditor'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
+import type { CliEditorScannerConfig, RecentEditorScannerConfig } from '~/stores/settingsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { useDelayedBusyKeys } from '~/utils/useDelayedBusy'
 
-type ScannerDetectKey = 'jetbrains' | 'vscode'
+type ScannerSourceKey = VscodeHistoryScannerEditor | CliHistoryScannerEditor
+type ScannerDetectKey = 'jetbrains' | ScannerSourceKey
+
+interface VscodeScannerSourceRow {
+  key: VscodeHistoryScannerEditor
+  kind: 'vscode-history'
+  label: string
+  config: RecentEditorScannerConfig
+}
+
+interface CliScannerSourceRow {
+  key: CliHistoryScannerEditor
+  kind: 'cli-history'
+  label: string
+  config: CliEditorScannerConfig
+}
+
+type ScannerSourceRow = VscodeScannerSourceRow | CliScannerSourceRow
 
 const settings = useSettingsStore()
 const projectScannerStore = useProjectScannerStore()
@@ -30,10 +56,65 @@ const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(
   })),
 )
 
-const openModeOptions = computed(() => [
-  { value: 'auto', label: t('app.settings.scanner.open_mode.auto') },
-  { value: 'specified', label: t('app.settings.scanner.open_mode.specified') },
+const rootOpenModeOptions = computed(() => [
+  {
+    value: 'language',
+    label: t('app.settings.scanner.open_mode.language'),
+    tooltip: t('app.settings.scanner.open_mode_help.language'),
+  },
+  {
+    value: 'specified',
+    label: t('app.settings.scanner.open_mode.specified'),
+    tooltip: t('app.settings.scanner.open_mode_help.specified'),
+  },
 ])
+
+const ideOpenModeOptions = computed(() => [
+  {
+    value: 'source',
+    label: t('app.settings.scanner.open_mode.source'),
+    tooltip: t('app.settings.scanner.open_mode_help.source'),
+  },
+  {
+    value: 'language',
+    label: t('app.settings.scanner.open_mode.language'),
+    tooltip: t('app.settings.scanner.open_mode_help.ide_language'),
+  },
+  {
+    value: 'specified',
+    label: t('app.settings.scanner.open_mode.specified'),
+    tooltip: t('app.settings.scanner.open_mode_help.specified'),
+  },
+])
+
+const specifiedEditorEnabled = computed(() =>
+  settings.scanner.rootOpenMode === 'specified' || settings.scanner.ideOpenMode === 'specified',
+)
+
+const scannerSourceRows = computed<ScannerSourceRow[]>(() =>
+  projectHistoryScannerEditors
+    .map((editor) => {
+      const label = scannerEditorLabels[editor] || codeEditors[editor].label
+      if (isVscodeHistoryScannerEditor(editor)) {
+        return {
+          key: editor,
+          kind: 'vscode-history',
+          label,
+          config: settings.scanner.recentEditors[editor],
+        }
+      }
+      if (isCliHistoryScannerEditor(editor)) {
+        return {
+          key: editor,
+          kind: 'cli-history',
+          label,
+          config: settings.scanner.cliEditors[editor],
+        }
+      }
+      return null
+    })
+    .filter((row): row is ScannerSourceRow => row !== null),
+)
 
 async function addProjectRoot() {
   if (!settings.scanner.rootsEnabled)
@@ -153,15 +234,44 @@ async function browseJetbrainsRoot() {
   }
 }
 
-async function browseVscodeDb() {
-  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled)
+function getScannerSourcePath(row: ScannerSourceRow) {
+  return row.kind === 'vscode-history'
+    ? row.config.stateDbPath
+    : row.config.historyRootPath
+}
+
+function setScannerSourcePath(row: ScannerSourceRow, value: string) {
+  if (row.kind === 'vscode-history') {
+    row.config.stateDbPath = value
+    return
+  }
+  row.config.historyRootPath = value
+}
+
+function handleScannerSourcePathInput(row: ScannerSourceRow, event: Event) {
+  const target = event.target
+  if (target instanceof HTMLInputElement)
+    setScannerSourcePath(row, target.value)
+}
+
+function getScannerSourcePlaceholder(row: ScannerSourceRow) {
+  return row.kind === 'vscode-history'
+    ? t('app.settings.scanner.recent_editor.placeholder', { editor: row.label })
+    : t('app.settings.scanner.cli_editor.placeholder', { editor: row.label })
+}
+
+async function browseScannerSource(row: ScannerSourceRow) {
+  if (!settings.scanner.ideEnabled || !row.config.enabled)
     return
 
-  const selectedPaths = await window.api.openFileDialog({
-    fileTypes: [{ name: t('app.dialog.file_types.vscode_database'), extensions: ['vscdb'] }],
-  })
+  const selectedPaths = row.kind === 'vscode-history'
+    ? await window.api.openFileDialog({
+        fileTypes: [{ name: t('app.dialog.file_types.editor_history_database'), extensions: ['vscdb'] }],
+      })
+    : await window.api.openFolderDialog()
+
   if (selectedPaths[0]) {
-    settings.scanner.vscode.stateDbPath = selectedPaths[0]
+    setScannerSourcePath(row, selectedPaths[0])
   }
 }
 
@@ -185,23 +295,25 @@ async function detectJetbrainsRoot() {
   }
 }
 
-async function detectVscodeDb() {
-  if (!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled || detectingScannerKeys.value.has('vscode'))
+async function detectScannerSource(row: ScannerSourceRow) {
+  if (!settings.scanner.ideEnabled || !row.config.enabled || detectingScannerKeys.value.has(row.key))
     return
 
-  detectingScannerKeys.value = new Set([...detectingScannerKeys.value, 'vscode'])
-  setVisibleDetectingScannerKey('vscode', true)
+  detectingScannerKeys.value = new Set([...detectingScannerKeys.value, row.key])
+  setVisibleDetectingScannerKey(row.key, true)
   try {
-    const detectedPath = await window.api.detectVscodeStateDbPath()
+    const detectedPath = row.kind === 'vscode-history'
+      ? await window.api.detectRecentEditorStateDbPath(row.key)
+      : await window.api.detectCliHistoryRootPath(row.key)
     if (detectedPath) {
-      settings.scanner.vscode.stateDbPath = detectedPath
+      setScannerSourcePath(row, detectedPath)
     }
   }
   finally {
     const next = new Set(detectingScannerKeys.value)
-    next.delete('vscode')
+    next.delete(row.key)
     detectingScannerKeys.value = next
-    setVisibleDetectingScannerKey('vscode', false)
+    setVisibleDetectingScannerKey(row.key, false)
   }
 }
 
@@ -282,7 +394,49 @@ function clearScanHistory() {
           </UiCheckbox>
         </div>
 
-        <div class="source-child-group" :class="{ disabled: !settings.scanner.ideEnabled }">
+        <div class="source-child-group ide-source-group" :class="{ disabled: !settings.scanner.ideEnabled }">
+          <div
+            v-for="row in scannerSourceRows"
+            :key="row.key"
+            class="source-row"
+          >
+            <UiCheckbox
+              v-model="row.config.enabled"
+              :disabled="!settings.scanner.ideEnabled"
+            >
+              {{ row.label }}
+            </UiCheckbox>
+            <input
+              :value="getScannerSourcePath(row)"
+              class="path-input"
+              spellcheck="false"
+              :aria-label="getScannerSourcePlaceholder(row)"
+              :placeholder="getScannerSourcePlaceholder(row)"
+              :disabled="!settings.scanner.ideEnabled || !row.config.enabled"
+              @input="handleScannerSourcePathInput(row, $event)"
+            >
+            <button
+              class="icon-button"
+              type="button"
+              :title="t('app.settings.scanner.auto_detect')"
+              :aria-label="t('app.settings.scanner.auto_detect')"
+              :disabled="!settings.scanner.ideEnabled || !row.config.enabled || detectingScannerKeys.has(row.key)"
+              @click="detectScannerSource(row)"
+            >
+              <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has(row.key) }" />
+            </button>
+            <button
+              class="icon-button"
+              type="button"
+              :title="row.kind === 'vscode-history' ? t('app.settings.scanner.recent_editor.browse') : t('app.common.browse_folder')"
+              :aria-label="row.kind === 'vscode-history' ? t('app.settings.scanner.recent_editor.browse') : t('app.common.browse_folder')"
+              :disabled="!settings.scanner.ideEnabled || !row.config.enabled"
+              @click="browseScannerSource(row)"
+            >
+              <span class="i-lucide:folder-open" />
+            </button>
+          </div>
+
           <div class="source-row">
             <UiCheckbox
               v-model="settings.scanner.jetbrains.enabled"
@@ -319,43 +473,6 @@ function clearScanHistory() {
               <span class="i-lucide:folder-open" />
             </button>
           </div>
-
-          <div class="source-row">
-            <UiCheckbox
-              v-model="settings.scanner.vscode.enabled"
-              :disabled="!settings.scanner.ideEnabled"
-            >
-              VS Code
-            </UiCheckbox>
-            <input
-              v-model="settings.scanner.vscode.stateDbPath"
-              class="path-input"
-              spellcheck="false"
-              :aria-label="t('app.settings.scanner.vscode.placeholder')"
-              :placeholder="t('app.settings.scanner.vscode.placeholder')"
-              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
-            >
-            <button
-              class="icon-button"
-              type="button"
-              :title="t('app.settings.scanner.auto_detect')"
-              :aria-label="t('app.settings.scanner.auto_detect')"
-              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled || detectingScannerKeys.has('vscode')"
-              @click="detectVscodeDb"
-            >
-              <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has('vscode') }" />
-            </button>
-            <button
-              class="icon-button"
-              type="button"
-              :title="t('app.settings.scanner.vscode.browse')"
-              :aria-label="t('app.settings.scanner.vscode.browse')"
-              :disabled="!settings.scanner.ideEnabled || !settings.scanner.vscode.enabled"
-              @click="browseVscodeDb"
-            >
-              <span class="i-lucide:folder-open" />
-            </button>
-          </div>
         </div>
       </section>
 
@@ -367,15 +484,25 @@ function clearScanHistory() {
 
         <div class="setting-row">
           <div class="setting-copy">
-            <strong>{{ t('app.settings.scanner.default_editor.title') }}</strong>
-            <span>{{ t('app.settings.scanner.default_editor.desc') }}</span>
+            <strong>{{ t('app.settings.scanner.root_open_mode.title') }}</strong>
+            <span>{{ t('app.settings.scanner.root_open_mode.desc') }}</span>
           </div>
-          <UiSelect
-            v-model="settings.scanner.openMode"
-            :options="openModeOptions"
-            :aria-label="t('app.settings.scanner.default_editor.title')"
-            min-width="160px"
-            content-width="180px"
+          <UiSegmentedControl
+            v-model="settings.scanner.rootOpenMode"
+            :options="rootOpenModeOptions"
+            :aria-label="t('app.settings.scanner.root_open_mode.title')"
+          />
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong>{{ t('app.settings.scanner.ide_open_mode.title') }}</strong>
+            <span>{{ t('app.settings.scanner.ide_open_mode.desc') }}</span>
+          </div>
+          <UiSegmentedControl
+            v-model="settings.scanner.ideOpenMode"
+            :options="ideOpenModeOptions"
+            :aria-label="t('app.settings.scanner.ide_open_mode.title')"
           />
         </div>
 
@@ -388,7 +515,7 @@ function clearScanHistory() {
             v-model="settings.scanner.editor"
             :options="editorOptions"
             :aria-label="t('app.settings.scanner.specified_editor.title')"
-            :disabled="settings.scanner.openMode !== 'specified'"
+            :disabled="!specifiedEditorEnabled"
             min-width="160px"
             content-width="210px"
           />
@@ -541,7 +668,8 @@ function clearScanHistory() {
 }
 
 .path-list {
-  @apply max-h-128px overflow-auto;
+  @apply max-h-128px overflow-auto pl-1px pr-0;
+  scrollbar-gutter: auto;
 }
 
 .path-row {
@@ -566,12 +694,21 @@ function clearScanHistory() {
 
 .source-row {
   @apply min-h-36px grid items-center gap-7px;
-  grid-template-columns: 104px minmax(160px, 1fr) 28px 28px;
+  grid-template-columns: max-content minmax(160px, 1fr) 28px 28px;
 
   @apply text-12px;
 
   :deep(.ui-checkbox-label) {
     @apply whitespace-nowrap;
+  }
+}
+
+.ide-source-group {
+  @apply grid items-center gap-x-7px gap-y-10px;
+  grid-template-columns: max-content minmax(160px, 1fr) 28px 28px;
+
+  .source-row {
+    display: contents;
   }
 }
 
@@ -594,8 +731,9 @@ function clearScanHistory() {
     grid-template-columns: 1fr;
   }
 
-  .source-row {
-    grid-template-columns: 104px minmax(0, 1fr) 28px 28px;
+  .source-row,
+  .ide-source-group {
+    grid-template-columns: max-content minmax(0, 1fr) 28px 28px;
   }
 }
 </style>

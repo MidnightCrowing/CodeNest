@@ -1,0 +1,360 @@
+language_pop:
+  count: '{count} 種語言'
+  failed: 無法分析語言
+  loading: 正在分析
+  more: '+{count} 更多'
+  other: 其他
+  overall_label: 該專案使用的語言
+remove_project_dialog:
+  dialog_title:
+    remove: 移除專案？
+    delete: 刪除專案？
+  dialog_desc:
+    remove: '從專案清單中移除“{name}”？'
+    delete: '刪除“{name}”及其檔案？'
+    delete_note: 此操作無法復原。
+  cancel: 取消
+  remove: 移除
+  remove_from_list: 保留檔案
+  delete: 刪除
+no_ide_path_dialog:
+  dialog_title: 缺少啟動指令
+  dialog_desc: 請在設定中設定這個編輯器的啟動指令。
+  set: 開啟設定
+app:
+  window:
+    minimize: 最小化
+    maximize: 最大化
+    close: 關閉
+  dialog:
+    file_types:
+      executable: 可執行檔案
+      all: 所有檔案
+      editor_history_database: 編輯器歷史資料庫
+  common:
+    back: 返回
+    cancel: 取消
+    apply: 套用
+    save: 儲存
+    clear: 清除
+    detect: 偵測
+    browse_folder: 選擇資料夾
+    no_editor: 未設定編輯器
+    not_set: 未設定
+    unknown: 未知
+    close: 關閉
+    notifications: 通知
+    more_notifications: 還有 {count} 條通知
+    list_separator: ，
+  license:
+    none: 無授權
+    other: 其他
+  project_kind:
+    mine: 個人
+    fork: Fork
+    clone: Clone
+    forks: Fork
+    clones: Clone
+  home:
+    title: 專案
+    sync: 掃描
+    syncing: 掃描中
+    add_project: 新增專案
+    search_placeholder: 搜尋專案
+    clear_count: 清除篩選 ({count})
+    project_list: 專案清單
+    filters:
+      kind: 類型
+      status: 狀態
+      language: 語言
+      group: 分組
+      sort: 排序
+      all_projects: 全部專案
+      all_status: 全部狀態
+      available: 可用
+      missing_path: 路徑遺失
+      temporary: 臨時
+      all_languages: 全部語言
+      all_groups: 全部分組
+      no_group: 無分組
+    sort:
+      recent: 最近開啟
+      name: 名稱
+      language: 語言
+      group: 分組
+    layout:
+      label: 專案版面
+      list: 清單
+      grid: 卡片
+    table:
+      project: 專案
+      kind: 類型
+      language: 語言
+      license: 授權
+      last_opened: 最近開啟
+      never_opened: 尚未開啟
+      actions: 操作
+    empty:
+      title: 沒有找到專案
+      desc: 調整篩選條件，或新增一個本地專案。
+    source:
+      forked_from: Fork 自
+      cloned_from: Clone 自
+    actions:
+      open_project: 開啟
+      opening_project: 開啟中
+      open_named: 開啟 {name}
+      opening_named: 正在開啟 {name}
+      project_actions: '{name}操作'
+      open_with: 開啟方式
+      default_editor: 預設編輯器
+      auto_editor: 自動選擇
+      open_source: 開啟來源
+      open_explorer: 在資料夾中顯示
+      open_terminal: 在終端機中開啟
+      opening_terminal: 正在開啟終端機
+      opening_terminal_named: 正在為 {name} 開啟終端機
+      copy_path: 複製路徑
+      copied: 已複製
+      copy_failed: 複製失敗
+      pin: 置頂
+      unpin: 取消置頂
+      more: 更多操作
+      edit: 編輯
+      remove: 移除
+      delete: 刪除...
+    feedback:
+      open_failed: 開啟專案失敗
+      terminal_failed: 開啟終端機失敗
+      scan_completed: 掃描完成
+      scan_failed: 掃描失敗
+      scan_no_changes: 沒有發現新專案
+      scan_added: 新增 {count} 個專案
+      scan_updated: 更新 {count} 個專案狀態
+      scan_failed_items: '{count} 個專案分析失敗'
+  settings:
+    title: 設定
+    open_json: 開啟設定 JSON
+    tabs:
+      label: 設定頁面
+      appearance:
+        label: 外觀
+        desc: 主題和語言
+      editors:
+        label: 編輯器
+        desc: 啟動指令
+      scanner:
+        label: 掃描器
+        desc: 匯入規則
+      data:
+        label: 資料
+        desc: 匯入、匯出、同步
+      about:
+        label: 關於
+        desc: 版本與連結
+    appearance:
+      title: 外觀
+      theme:
+        title: 主題
+        system: 自動
+        light: 淺色
+        dark: 深色
+      theme_color:
+        title: 主題色彩
+        contrast: 反色
+        system: 系統
+        blue: 藍色
+        green: 綠色
+        teal: 青色
+        orange: 橘色
+        purple: 紫色
+        red: 紅色
+        custom: 自訂
+      language:
+        title: 語言
+        english: English
+        zh_cn: 簡體中文
+        zh_tw: 繁體中文
+    editors:
+      title: 編輯器
+      command_placeholder: '{editor} 的啟動指令'
+      clear_command: 清空指令
+      browse_executable: 瀏覽可執行檔案
+      auto_detect: 自動偵測
+      terminal: 終端機
+      terminal_desc: 在終端機中執行指令
+      terminal_launcher: 終端機
+      terminal_command: 開啟目錄
+      terminal_command_placeholder: 系統預設
+      terminal_command_hint: 留空使用系統預設，支援 {cwd}
+      groups:
+        jetbrains: JetBrains
+        microsoft: Microsoft
+        ai_editors: AI 編輯器
+        editors: 編輯器
+        terminal_editors: 終端機編輯器
+        ai_cli: AI CLI
+        google: Google
+      descriptions:
+        intellij_idea: Java, Kotlin, Spring
+        pycharm: Python, Django, Jupyter
+        phpstorm: PHP, Laravel, Symfony
+        goland: Go, JavaScript, TypeScript
+        rider: C#, .NET, ASP.NET
+        clion: C, C++, CMake
+        rust_rover: Rust, TOML, SQL
+        webstorm: JavaScript, TypeScript, React
+        rubymine: Ruby on Rails, Hotwire, RuboCop
+        cursor: AI 程式碼編輯器
+        windsurf: AI Agent 程式設計編輯器
+        trae: AI 程式碼編輯器
+        zed: 快速協作編輯器
+        codex_cli: 終端機中的 OpenAI Codex
+        claude_code: 終端機中的 Claude Code
+        gemini_cli: 終端機中的 Gemini
+    scanner:
+      title: 掃描器
+      auto_detect: 自動偵測
+      sources:
+        title: 匯入來源
+        desc: 選擇專案的匯入來源。
+      roots:
+        title: 專案根目錄
+        desc: 掃描所選目錄下的一層子資料夾。
+        add: 新增根目錄
+        count: '{count} 個根目錄'
+        empty: 尚未設定專案根目錄。
+        remove: 移除根目錄
+      ide:
+        title: 最近 IDE 專案
+        desc: 從 IDE 和 CLI 的最近專案紀錄匯入專案。
+      jetbrains:
+        placeholder: JetBrains 設定根目錄
+      recent_editor:
+        placeholder: '{editor} state.vscdb 路徑'
+        browse: 瀏覽資料庫
+      cli_editor:
+        placeholder: '{editor} 資料目錄'
+      strategy:
+        title: 預設開啟方式
+        desc: 分別決定目錄和 IDE/CLI 匯入後的預設開啟工具。
+      root_open_mode:
+        title: 目錄匯入
+        desc: 從專案根目錄掃描匯入。
+      ide_open_mode:
+        title: IDE / CLI 匯入
+        desc: 從 IDE/CLI 最近專案紀錄匯入。
+      specified_editor:
+        title: 指定編輯器
+        desc: 任一規則選擇“指定”時使用。
+      name_pattern:
+        title: 臨時專案名稱規則
+        desc: 用於自動標記 demo/test 專案的正則。
+      open_mode:
+        source: 來源工具
+        language: 按語言
+        specified: 指定
+      open_mode_help:
+        source: 使用匯入來源對應的 IDE 或 CLI。
+        language: 按專案語言選擇預設編輯器。
+        ide_language: 忽略來源，按專案語言選擇預設編輯器。
+        specified: 使用下方指定編輯器。
+      history:
+        title: 掃描紀錄
+        desc: 清除紀錄後，已掃描的資料夾可重新匯入。
+        clear: 清除紀錄
+        dialog_title: 清除掃描紀錄？
+        dialog_desc: 下次掃描時，之前掃描過的資料夾也會重新參與匯入，語言分析快取也會重建。
+    data:
+      title: 資料
+      projects:
+        title: 專案清單
+        import: 匯入
+        export: 匯出
+        imported: 專案清單已匯入
+        exported: 專案清單已匯出
+        import_failed: 匯入專案清單失敗
+        export_failed: 匯出專案清單失敗
+      webdav:
+        title: WebDAV
+        server: WebDAV 伺服器位址
+        server_placeholder: https://example.com/dav/
+        remote_path: WebDAV 目錄
+        remote_path_placeholder: CodeNest
+        account: WebDAV 帳號
+        password: WebDAV 密碼
+        test: 測試連線
+        testing: 測試中
+        connected: 連線成功。
+        upload: 上傳到雲端
+        uploading: 上傳中
+        uploaded: 上傳完成。
+        download: 從雲端下載
+        downloading: 下載中
+        pulled_with_backup: 下載完成，已建立本地備份。
+        failed: WebDAV 同步失敗。
+        errors:
+          url_required: 需要填寫 WebDAV 伺服器位址。
+          invalid_url: WebDAV 伺服器位址無效。
+          connection_failed: '連線失敗：{detail}'
+          upload_failed: '上傳 {file} 失敗：{detail}'
+          download_failed: '下載 {file} 失敗：{detail}'
+          remote_file_missing: '雲端檔案不存在：{file}'
+          create_directory_failed: '建立雲端目錄失敗：{detail}'
+          check_directory_failed: '檢查雲端目錄失敗：{detail}'
+          detail: 'WebDAV 同步失敗：{detail}'
+    about:
+      title: 關於
+      update:
+        available: '發現新版本：v{version}'
+        latest: CodeNest 已是最新版本。
+        checking: 檢查中
+        check: 檢查更新
+        open_release: 開啟發布頁
+        request_failed: '檢查更新失敗：{detail}'
+        failed_detail: '檢查更新失敗：{detail}'
+      repository:
+        title: GitHub
+  project_editor:
+    title:
+      add: 新增專案
+      edit: 編輯專案
+    add_project: 新增專案
+    save_changes: 儲存變更
+    use_folder: 使用資料夾名稱
+    use_repo: 使用倉庫名稱
+    no_group: 無分組
+    analyze: 分析
+    analyzing: 分析中
+    analyzing_desc: 正在分析專案檔案...
+    select_editor: 選擇編輯器
+    unnamed: 未命名專案
+    no_language: 無語言
+    no_folder: 未選擇資料夾
+    sections:
+      project: 專案
+      metadata: 語言與編輯器
+    fields:
+      folder: 資料夾
+      folder_duplicate: 這個資料夾已在專案清單中。
+      name: 名稱
+      group: 分組
+      group_desc: 用於篩選的選填標籤。
+      type: 類型
+      source_url: 來源 URL
+      source_name: 來源名稱
+      main_language: 主要語言
+      main_language_desc: 自動偵測，可手動修改。
+      open_with: 開啟方式
+      license: 授權
+      temporary: 臨時專案
+      temporary_desc: 標記實驗、demo 或短期專案。
+    summary:
+      kind: 類型
+      editor: 編輯器
+      license: 授權
+    language_mix:
+      title: 語言
+      entries: '{count} 種語言'
+      refresh: 重新整理語言清單
+      empty: 分析專案後顯示語言佔比。

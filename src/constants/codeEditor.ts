@@ -250,6 +250,42 @@ export const codeEditorOrder = [
   CodeEditorEnum.Neovim,
 ] as const satisfies readonly CodeEditorEnum[]
 
+export const vscodeHistoryScannerEditors = [
+  CodeEditorEnum.Cursor,
+  CodeEditorEnum.Trae,
+  CodeEditorEnum.Windsurf,
+  CodeEditorEnum.VisualStudioCode,
+] as const satisfies readonly CodeEditorEnum[]
+
+export type VscodeHistoryScannerEditor = typeof vscodeHistoryScannerEditors[number]
+
+export const cliHistoryScannerEditors = [
+  CodeEditorEnum.ClaudeCode,
+  CodeEditorEnum.CodexCli,
+  CodeEditorEnum.GeminiCli,
+] as const satisfies readonly CodeEditorEnum[]
+
+export type CliHistoryScannerEditor = typeof cliHistoryScannerEditors[number]
+
+const vscodeHistoryScannerEditorSet = new Set<CodeEditorEnum>(vscodeHistoryScannerEditors)
+const cliHistoryScannerEditorSet = new Set<CodeEditorEnum>(cliHistoryScannerEditors)
+
+export function isVscodeHistoryScannerEditor(editor: CodeEditorEnum): editor is VscodeHistoryScannerEditor {
+  return vscodeHistoryScannerEditorSet.has(editor)
+}
+
+export function isCliHistoryScannerEditor(editor: CodeEditorEnum): editor is CliHistoryScannerEditor {
+  return cliHistoryScannerEditorSet.has(editor)
+}
+
+export const projectHistoryScannerEditors = codeEditorOrder.filter(editor =>
+  isVscodeHistoryScannerEditor(editor) || isCliHistoryScannerEditor(editor),
+) as Array<VscodeHistoryScannerEditor | CliHistoryScannerEditor>
+
+export const scannerEditorLabels: Partial<Record<CodeEditorEnum, string>> = {
+  [CodeEditorEnum.VisualStudioCode]: 'VS Code',
+}
+
 export const editorCommandOptions: EditorCommandOption[] = [
   ...codeEditorOrder
     .map((editor) => {

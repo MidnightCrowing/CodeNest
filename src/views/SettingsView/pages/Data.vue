@@ -151,22 +151,10 @@ async function testWebDavConnection() {
         ? t('app.settings.data.webdav.connected')
         : formatWebDavError(result.error),
     )
-    showToast({
-      tone: result.success ? 'success' : 'error',
-      title: result.success
-        ? t('app.settings.data.webdav.feedback.connection_succeeded')
-        : t('app.settings.data.webdav.feedback.connection_failed'),
-      description: result.success ? undefined : formatWebDavError(result.error),
-    })
   }
   catch (error) {
     const message = formatWebDavError(String(error))
     setWebDavStatus(false, message)
-    showToast({
-      tone: 'error',
-      title: t('app.settings.data.webdav.feedback.connection_failed'),
-      description: message,
-    })
   }
   finally {
     webdavBusy.value = null
@@ -188,22 +176,10 @@ async function uploadWebDavData() {
         ? t('app.settings.data.webdav.uploaded')
         : formatWebDavError(result.error),
     )
-    showToast({
-      tone: result.success ? 'success' : 'error',
-      title: result.success
-        ? t('app.settings.data.webdav.feedback.upload_succeeded')
-        : t('app.settings.data.webdav.feedback.upload_failed'),
-      description: result.success ? undefined : formatWebDavError(result.error),
-    })
   }
   catch (error) {
     const message = formatWebDavError(String(error))
     setWebDavStatus(false, message)
-    showToast({
-      tone: 'error',
-      title: t('app.settings.data.webdav.feedback.upload_failed'),
-      description: message,
-    })
   }
   finally {
     webdavBusy.value = null
@@ -225,29 +201,15 @@ async function pullWebDavData() {
         projectsStore.loadProjects(),
       ])
       setWebDavStatus(true, t('app.settings.data.webdav.pulled_with_backup'))
-      showToast({
-        tone: 'success',
-        title: t('app.settings.data.webdav.feedback.download_succeeded'),
-      })
     }
     else {
       const message = formatWebDavError(result.error)
       setWebDavStatus(false, message)
-      showToast({
-        tone: 'error',
-        title: t('app.settings.data.webdav.feedback.download_failed'),
-        description: message,
-      })
     }
   }
   catch (error) {
     const message = formatWebDavError(String(error))
     setWebDavStatus(false, message)
-    showToast({
-      tone: 'error',
-      title: t('app.settings.data.webdav.feedback.download_failed'),
-      description: message,
-    })
   }
   finally {
     webdavBusy.value = null
@@ -408,7 +370,7 @@ async function pullWebDavData() {
   }
 
   &.info {
-    color: color-mix(in srgb, var(--ui-primary) 72%, var(--ui-foreground));
+    @apply color-$ui-muted-foreground;
   }
 
   &.success {

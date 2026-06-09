@@ -84,7 +84,7 @@ interface ScanCacheEntry extends ScanItem {
   license?: LicenseEnum
 }
 
-export interface ScanStartPayload extends Omit<ScannerSettings, 'openMode' | 'editor' | 'namePattern'> {
+export interface ScanStartPayload extends Omit<ScannerSettings, 'rootOpenMode' | 'ideOpenMode' | 'editor' | 'namePattern'> {
   existingPaths: string[]
   cacheEntries: ScanCacheEntry[]
 }
@@ -130,7 +130,12 @@ declare global {
       scanProjects: (payload: ScanStartPayload) => Promise<ScanResult>
       getSystemAccentColor: (currentTheme?: ThemeEnum) => Promise<HexColor | null>
       detectJetBrainsConfigRootPath: () => Promise<string | null>
+      detectRecentEditorStateDbPath: (editor: EditorCommandKey) => Promise<string | null>
+      detectCliHistoryRootPath: (editor: EditorCommandKey) => Promise<string | null>
       detectVscodeStateDbPath: () => Promise<string | null>
+      loadWebDavPassword: () => Promise<string | null>
+      saveWebDavPassword: (password: string) => Promise<void>
+      deleteWebDavPassword: () => Promise<void>
       webdavTestConnection: (config: WebDavSettings) => Promise<WebDavSyncResult>
       webdavUploadData: (config: WebDavSettings) => Promise<WebDavSyncResult>
       webdavPullData: (config: WebDavSettings) => Promise<WebDavSyncResult>

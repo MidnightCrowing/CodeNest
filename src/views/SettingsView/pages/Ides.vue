@@ -275,9 +275,16 @@ function quoteCommand(command: string) {
               </button>
             </div>
 
-            <label class="terminal-toggle">
-              <UiSwitch v-model="settings.codeEditorsOpenInTerminal[option.key]" data-editor-control="terminal" />
+            <label
+              class="terminal-toggle"
+              :title="t('app.settings.editors.terminal_desc')"
+            >
               <span>{{ t('app.settings.editors.terminal') }}</span>
+              <UiSwitch
+                v-model="settings.codeEditorsOpenInTerminal[option.key]"
+                data-editor-control="terminal"
+                :aria-label="t('app.settings.editors.terminal_desc')"
+              />
             </label>
 
             <div
@@ -383,7 +390,7 @@ function quoteCommand(command: string) {
 }
 
 .terminal-toggle {
-  @apply min-w-0 flex items-center gap-6px text-12px color-$ui-muted-foreground cursor-pointer;
+  @apply min-w-0 flex items-center gap-7px text-12px color-$ui-muted-foreground cursor-pointer;
 
   span {
     @apply whitespace-nowrap;

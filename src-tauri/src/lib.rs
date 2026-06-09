@@ -5,6 +5,7 @@ mod dialog;
 mod project;
 mod recent;
 mod scanner;
+mod secret;
 mod system;
 mod updater;
 mod webdav;
@@ -25,9 +26,14 @@ pub fn run() {
             project::import_projects,
             project::open_project,
             project::read_project_license,
+            scanner::detect_cli_history_root_path,
             scanner::detect_jetbrains_config_root_path,
+            scanner::detect_recent_editor_state_db_path,
             scanner::detect_vscode_state_db_path,
             scanner::scan_projects,
+            secret::delete_webdav_password,
+            secret::load_webdav_password,
+            secret::save_webdav_password,
             system::check_path_existence,
             system::close_window,
             system::format_path,

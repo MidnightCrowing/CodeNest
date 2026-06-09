@@ -51,9 +51,12 @@ function stripWindowsVerbatimPrefix(path: string) {
 }
 
 function normalizeProject(project: LocalProject): LocalProject {
+  const lastOpenedAt = Number.isFinite(project.lastOpenedAt) ? project.lastOpenedAt : undefined
+
   return {
     ...project,
     path: stripWindowsVerbatimPrefix(project.path || ''),
+    lastOpenedAt,
     group: project.group || '',
     isTemporary: !!project.isTemporary,
     isPinned: !!project.isPinned,
@@ -140,6 +143,7 @@ export const useProjectsStore = defineStore('projects', () => {
     const project = normalizeProject({
       ...updatedProject,
       isPinned: updatedProject.isPinned ?? projects.value[index].isPinned,
+      lastOpenedAt: updatedProject.lastOpenedAt ?? projects.value[index].lastOpenedAt,
     })
     project.isExists = await checkProjectExistence(project)
     projects.value[index] = project
@@ -289,15 +293,14 @@ export const useProjectsStore = defineStore('projects', () => {
     return changedCount
   }
 
-  async function moveProjectToTopByTime(appendTime: LocalProject['appendTime']) {
-    const index = projects.value.findIndex(project => project.appendTime === appendTime)
-    if (index <= 0) {
-      return
-    }
+  async function markProjectOpened(appendTime: LocalProject['appendTime'], openedAt = Date.now()) {
+    const project = getProjectByAppendTime(appendTime)
+    if (!project)
+      return false
 
-    const [item] = projects.value.splice(index, 1)
-    projects.value.unshift(item)
-    void saveProjects()
+    project.lastOpenedAt = openedAt
+    await saveProjects()
+    return true
   }
 
   return {
@@ -321,6 +324,6 @@ export const useProjectsStore = defineStore('projects', () => {
     checkPathExistenceInProjects,
     checkProjectExistence,
     refreshProjectExistence,
-    moveProjectToTopByTime,
+    markProjectOpened,
   }
 })
