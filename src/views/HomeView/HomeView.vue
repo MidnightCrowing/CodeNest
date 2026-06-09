@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { refDebounced, useLocalStorage } from '@vueuse/core'
 import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n'
 
@@ -51,6 +50,7 @@ const LIST_RENDER_BATCH = 120
 const GRID_INITIAL_RENDER_COUNT = 72
 const GRID_RENDER_BATCH = 48
 const SEARCH_DEBOUNCE_MS = 100
+const HOME_LAYOUT_STORAGE_KEY = 'codenest:home-layout'
 const OPEN_WITH_ACTION_PREFIX = 'open-with:'
 const DEFAULT_EDITOR_ACTION_PREFIX = 'default-editor:'
 const DEFAULT_EDITOR_AUTO_ACTION = `${DEFAULT_EDITOR_ACTION_PREFIX}auto`
@@ -80,13 +80,13 @@ const activatedView = inject('activatedView') as Ref<ViewEnum>
 const { locale, t } = useI18n()
 
 const searchValue = ref('')
-const debouncedSearchValue = refDebounced(searchValue, SEARCH_DEBOUNCE_MS)
+const debouncedSearchValue = ref('')
 const kindFilter = ref<KindFilter>('all')
 const statusFilter = ref<StatusFilter>('all')
 const languageFilter = ref('all')
 const groupFilter = ref('all')
 const sortKey = ref<SortKey>('recent')
-const layoutMode = useLocalStorage<LayoutMode>('codenest:home-layout', 'list')
+const layoutMode = ref<LayoutMode>(readStoredLayoutMode())
 const syncing = ref(false)
 const openingProjectIds = ref(new Set<number>())
 const openingTerminalProjectIds = ref(new Set<number>())
@@ -105,6 +105,34 @@ const loadMoreSentinelRef = ref<HTMLElement | null>(null)
 const homeScrollSnapshot = ref<HomeScrollSnapshot | null>(null)
 const shouldRestoreHomeScroll = ref(false)
 let loadMoreObserver: IntersectionObserver | null = null
+let searchDebounceTimer: ReturnType<typeof window.setTimeout> | null = null
+
+function readStoredLayoutMode(): LayoutMode {
+  try {
+    const value = window.localStorage.getItem(HOME_LAYOUT_STORAGE_KEY)
+    return value === 'grid' || value === 'list' ? value : 'list'
+  }
+  catch {
+    return 'list'
+  }
+}
+
+function persistLayoutMode(value: LayoutMode) {
+  try {
+    window.localStorage.setItem(HOME_LAYOUT_STORAGE_KEY, value)
+  }
+  catch {
+    // Ignore storage errors. The layout toggle still works for the current session.
+  }
+}
+
+function clearSearchDebounceTimer() {
+  if (searchDebounceTimer === null)
+    return
+
+  window.clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = null
+}
 
 const totalProjects = computed(() => projectsStore.allProjects.length)
 
@@ -1334,6 +1362,7 @@ onActivated(() => {
 })
 
 onBeforeUnmount(() => {
+  clearSearchDebounceTimer()
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
   projectOpeningTimers.forEach(timer => window.clearTimeout(timer))
@@ -1531,6 +1560,22 @@ watch([
   sortKey,
   totalProjects,
 ], resetRenderedProjects, { immediate: true })
+
+watch(searchValue, (value) => {
+  clearSearchDebounceTimer()
+
+  if (!value) {
+    debouncedSearchValue.value = ''
+    return
+  }
+
+  searchDebounceTimer = window.setTimeout(() => {
+    debouncedSearchValue.value = value
+    searchDebounceTimer = null
+  }, SEARCH_DEBOUNCE_MS)
+})
+
+watch(layoutMode, persistLayoutMode)
 </script>
 
 <template>

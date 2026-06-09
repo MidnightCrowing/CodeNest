@@ -5,6 +5,44 @@
     <link rel="icon" href="~/assets/app-icon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeNest</title>
+    <script>
+      (() => {
+        const storageKey = 'codenest:data:settings'
+        const themeColors = ['contrast', 'system', 'blue', 'green', 'teal', 'orange', 'purple', 'red', 'custom']
+        const hexColorPattern = /^#[\da-f]{6}$/i
+        const root = document.documentElement
+
+        const readableForeground = (hexColor) => {
+          const value = hexColor.slice(1)
+          const red = Number.parseInt(value.slice(0, 2), 16)
+          const green = Number.parseInt(value.slice(2, 4), 16)
+          const blue = Number.parseInt(value.slice(4, 6), 16)
+          const luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255
+          return luminance > 0.58 ? '#111111' : '#ffffff'
+        }
+
+        let settings = {}
+        try {
+          settings = JSON.parse(window.localStorage.getItem(storageKey) || '{}')
+        }
+        catch {
+          settings = {}
+        }
+
+        const preferredTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        const theme = settings.theme === 'light' || settings.theme === 'dark' ? settings.theme : preferredTheme
+        const themeColor = themeColors.includes(settings.themeColor) ? settings.themeColor : 'contrast'
+        const customThemeColor = hexColorPattern.test(settings.customThemeColor || '') ? settings.customThemeColor : '#4682fa'
+        const systemThemeColor = theme === 'dark' ? '#548af7' : '#4682fa'
+
+        root.classList.add(theme, `theme-${themeColor}`)
+        root.style.colorScheme = theme
+        root.style.setProperty('--custom-theme-color', customThemeColor)
+        root.style.setProperty('--custom-theme-foreground', readableForeground(customThemeColor))
+        root.style.setProperty('--system-theme-color', systemThemeColor)
+        root.style.setProperty('--system-theme-foreground', readableForeground(systemThemeColor))
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

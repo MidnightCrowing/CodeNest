@@ -10,6 +10,19 @@ import { defineConfig } from 'vite'
 // 定义一个函数 `r`，用于解析相对路径
 export const r = (...args: string[]) => resolve(dirname(fileURLToPath(import.meta.url)), ...args)
 
+function dependencyName(id: string) {
+  const normalized = id.replace(/\\/g, '/')
+  const marker = '/node_modules/'
+  const index = normalized.lastIndexOf(marker)
+  if (index < 0)
+    return undefined
+
+  const segments = normalized.slice(index + marker.length).split('/')
+  return segments[0]?.startsWith('@')
+    ? `${segments[0]}/${segments[1]}`
+    : segments[0]
+}
+
 export default defineConfig({
   base: './',
   root: r('src'),
@@ -55,6 +68,10 @@ export default defineConfig({
     },
   },
   build: {
+    target: 'es2022',
+    modulePreload: {
+      polyfill: false,
+    },
     emptyOutDir: true,
     minify: 'terser', // 使用 Terser 进行代码压缩
     outDir: r('dist'), // 是否清空输出目录
@@ -62,17 +79,29 @@ export default defineConfig({
       input: r('src/index.html'),
       output: {
         format: 'es',
+        manualChunks(id) {
+          const name = dependencyName(id)
+          if (!name)
+            return
+
+          if (name === 'fuse.js')
+            return 'search'
+          if (name === 'reka-ui')
+            return 'ui'
+          if (['pinia', 'vue', 'vue-i18n'].includes(name))
+            return 'vue'
+        },
       },
     },
     sourcemap: false, // 是否生成 source map
     terserOptions: {
       mangle: true, // 是否混淆变量名
       compress: {
-        drop_console: false, // 删除 console 语句
-        drop_debugger: false, // 删除 debugger 语句
+        drop_console: true, // 删除 console 语句
+        drop_debugger: true, // 删除 debugger 语句
       },
       format: {
-        comments: true, // 是否保留注释
+        comments: false, // 是否保留注释
       },
     },
   },

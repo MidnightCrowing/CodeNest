@@ -4,6 +4,7 @@ export type ResolvedTheme = ThemeEnum.Light | ThemeEnum.Dark
 
 const DEFAULT_CUSTOM_THEME_COLOR = '#4682fa'
 const DEFAULT_SYSTEM_THEME_COLOR = '#4682fa'
+const DEFAULT_DARK_SYSTEM_THEME_COLOR = '#548af7'
 const HEX_COLOR_RE = /^#[\da-f]{6}$/i
 const SYSTEM_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 const cachedSystemThemeColors: Partial<Record<ResolvedTheme, string>> = {}
@@ -43,6 +44,10 @@ function normalizeThemeColor(color?: string | null, fallback = DEFAULT_SYSTEM_TH
   return color && HEX_COLOR_RE.test(color) ? color : fallback
 }
 
+function defaultSystemThemeColor(theme: ResolvedTheme) {
+  return theme === ThemeEnum.Dark ? DEFAULT_DARK_SYSTEM_THEME_COLOR : DEFAULT_SYSTEM_THEME_COLOR
+}
+
 function readableForeground(hexColor: string) {
   const value = hexColor.slice(1)
   const red = Number.parseInt(value.slice(0, 2), 16)
@@ -61,7 +66,7 @@ function rgbToHex(rgbColor: string) {
   return `#${[red, green, blue].map(value => Number(value).toString(16).padStart(2, '0')).join('')}`
 }
 
-function getCssSystemAccentColor() {
+function getCssSystemAccentColor(theme: ResolvedTheme) {
   const probe = document.createElement('span')
   probe.style.color = 'AccentColor'
   probe.style.position = 'fixed'
@@ -71,7 +76,7 @@ function getCssSystemAccentColor() {
   probeParent.append(probe)
   const color = rgbToHex(window.getComputedStyle(probe).color)
   probe.remove()
-  return normalizeThemeColor(color)
+  return normalizeThemeColor(color, defaultSystemThemeColor(theme))
 }
 
 async function getSystemThemeColor(theme: ResolvedTheme) {
@@ -79,14 +84,14 @@ async function getSystemThemeColor(theme: ResolvedTheme) {
   if (cachedSystemThemeColor)
     return cachedSystemThemeColor
 
-  let systemThemeColor = DEFAULT_SYSTEM_THEME_COLOR
+  let systemThemeColor = defaultSystemThemeColor(theme)
 
   try {
-    systemThemeColor = normalizeThemeColor(await window.api.getSystemAccentColor(theme))
+    systemThemeColor = normalizeThemeColor(await window.api.getSystemAccentColor(theme), defaultSystemThemeColor(theme))
   }
   catch (error) {
     console.error('Failed to get system accent color:', error)
-    systemThemeColor = getCssSystemAccentColor()
+    systemThemeColor = getCssSystemAccentColor(theme)
   }
 
   cachedSystemThemeColors[theme] = systemThemeColor
@@ -103,17 +108,17 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
   const newTheme = resolveTheme(theme)
   const newThemeColor = themeColor ?? ThemeColorEnum.Contrast
   const normalizedCustomThemeColor = normalizeCustomThemeColor(customThemeColor)
-  const systemThemeColor = await getSystemThemeColor(newTheme)
-  rootElement.classList.remove(ThemeEnum.Light, ThemeEnum.Dark)
-  rootElement.classList.remove(
-    ...Object.values(ThemeColorEnum).map(color => `theme-${color}`),
-  )
+  const initialSystemThemeColor = cachedSystemThemeColors[newTheme] ?? defaultSystemThemeColor(newTheme)
+  rootElement.classList.toggle(ThemeEnum.Light, newTheme === ThemeEnum.Light)
+  rootElement.classList.toggle(ThemeEnum.Dark, newTheme === ThemeEnum.Dark)
+  for (const color of Object.values(ThemeColorEnum)) {
+    rootElement.classList.toggle(`theme-${color}`, color === newThemeColor)
+  }
+  rootElement.style.colorScheme = newTheme
   rootElement.style.setProperty('--custom-theme-color', normalizedCustomThemeColor)
   rootElement.style.setProperty('--custom-theme-foreground', readableForeground(normalizedCustomThemeColor))
-  rootElement.style.setProperty('--system-theme-color', systemThemeColor)
-  rootElement.style.setProperty('--system-theme-foreground', readableForeground(systemThemeColor))
-  rootElement.classList.add(newTheme)
-  rootElement.classList.add(`theme-${newThemeColor}`)
+  rootElement.style.setProperty('--system-theme-color', initialSystemThemeColor)
+  rootElement.style.setProperty('--system-theme-foreground', readableForeground(initialSystemThemeColor))
 
   try {
     window.api.setWindowTheme(newTheme)
@@ -121,4 +126,8 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
   catch (error) {
     console.error('Failed to set window theme:', error)
   }
+
+  const systemThemeColor = await getSystemThemeColor(newTheme)
+  rootElement.style.setProperty('--system-theme-color', systemThemeColor)
+  rootElement.style.setProperty('--system-theme-foreground', readableForeground(systemThemeColor))
 }
