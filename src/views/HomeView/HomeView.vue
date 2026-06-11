@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { showPop as showLanguagePop } from '~/components/LanguagePop/LanguagePopProvider'
-import { showRemoveDialog } from '~/components/RemoveProjectDialog'
+import { setRemoveAnimationCallback, showRemoveDialog } from '~/components/RemoveProjectDialog'
 import type { UiActionMenuItem } from '~/components/ui/actionMenu'
 import { showToast } from '~/components/ui/toast'
 import UiActionMenu from '~/components/ui/UiActionMenu.vue'
@@ -1429,10 +1429,12 @@ onActivated(() => {
 
 onMounted(() => {
   window.addEventListener('project-removed', handleProjectRemoved as EventListener)
+  setRemoveAnimationCallback(playProjectRemoveAnimation)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('project-removed', handleProjectRemoved as EventListener)
+  setRemoveAnimationCallback(null)
   clearSearchDebounceTimer()
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
@@ -1452,6 +1454,20 @@ onBeforeUnmount(() => {
 
 function handleProjectRemoved(event: CustomEvent<{ projectId: number }>) {
   clearProjectFromMaps(event.detail.projectId)
+}
+
+async function playProjectRemoveAnimation(projectId: number): Promise<void> {
+  const element = projectItemRefs.get(projectId)
+  if (!element) {
+    return
+  }
+
+  const htmlElement = element as HTMLElement
+  htmlElement.style.transition = 'opacity 180ms ease-out, transform 180ms ease-out'
+  htmlElement.style.opacity = '0'
+  htmlElement.style.transform = 'translateX(-12px)'
+
+  await new Promise(resolve => setTimeout(resolve, 180))
 }
 
 function openInExplorer(project: LocalProject) {

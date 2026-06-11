@@ -1,1 +1,1 @@
-export { showRemoveDialog } from './RemoveProjectDialogProvider'
+export { setRemoveAnimationCallback, showRemoveDialog } from './RemoveProjectDialogProvider'

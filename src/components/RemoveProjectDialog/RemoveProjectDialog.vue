@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import UiDialog from '~/components/ui/UiDialog.vue'
 import { useProjectsStore } from '~/stores/projectsStore'
 
-import { hideRemoveDialog, isDialogVisible, projectToRemove } from './RemoveProjectDialogProvider'
+import { hideRemoveDialog, isDialogVisible, playRemoveAnimation, projectToRemove } from './RemoveProjectDialogProvider'
 
 const { t } = useI18n()
 const projectsStore = useProjectsStore()
@@ -18,13 +18,22 @@ const isRemove = computed(() => {
 
 function confirmRemove(deleteFiles = false) {
   if (projectToRemove.value) {
+    const projectId = projectToRemove.value.appendTime
+
     if (deleteFiles) {
       window.api.deleteProject(projectToRemove.value.path)
     }
 
-    projectsStore.removeProject(projectToRemove.value.appendTime)
+    hideRemoveDialog()
+
+    // 播放动画后再删除数据
+    playRemoveAnimation(projectId).then(() => {
+      projectsStore.removeProject(projectId)
+    })
   }
-  hideRemoveDialog()
+  else {
+    hideRemoveDialog()
+  }
 }
 </script>
 
