@@ -18,7 +18,7 @@ import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import type { ProjectScannerImportResult } from '~/services/projectScannerService'
-import { addNewProjectsFromScanner } from '~/services/projectScannerService'
+import { addNewProjectsFromScanner, scannerBusy } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -87,7 +87,10 @@ const languageFilter = ref('all')
 const groupFilter = ref('all')
 const sortKey = ref<SortKey>('recent')
 const layoutMode = ref<LayoutMode>(readStoredLayoutMode())
-const syncing = ref(false)
+// 手动同步的本地状态(带最短可见时长防闪烁);与服务层共享的
+// scannerBusy 合成,让启动自动扫描也能点亮同步按钮的进行中状态。
+const manualSyncing = ref(false)
+const syncing = computed(() => manualSyncing.value || scannerBusy.value)
 const openingProjectIds = ref(new Set<number>())
 const openingTerminalProjectIds = ref(new Set<number>())
 const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
@@ -1456,7 +1459,7 @@ async function openInTerminal(project: LocalProject) {
 }
 
 async function syncProjects() {
-  if (!settingsStore.scannerEnabled)
+  if (!settingsStore.scannerEnabled || syncing.value)
     return
 
   const startedAt = performance.now()
@@ -1464,7 +1467,7 @@ async function syncProjects() {
   let changedStatusCount = 0
   let scanResult: ProjectScannerImportResult | null = null
   let scanError: unknown = null
-  syncing.value = true
+  manualSyncing.value = true
   try {
     changedStatusCount = await projectsStore.refreshProjectExistence()
     scanResult = await addNewProjectsFromScanner()
@@ -1478,7 +1481,7 @@ async function syncProjects() {
     if (workElapsed < MIN_SYNC_BUSY_MS) {
       await new Promise(resolve => setTimeout(resolve, MIN_SYNC_BUSY_MS - workElapsed))
     }
-    syncing.value = false
+    manualSyncing.value = false
   }
 
   if (scanError) {

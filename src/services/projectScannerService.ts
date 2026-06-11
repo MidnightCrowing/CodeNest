@@ -113,7 +113,30 @@ export function toRegExp(pattern: string): RegExp | null {
   }
 }
 
-export async function addNewProjectsFromScanner(): Promise<ProjectScannerImportResult> {
+/** 扫描进行中状态(启动自动扫描与手动同步共享),供 UI 展示。 */
+const scannerBusyRef = ref(false)
+export const scannerBusy = readonly(scannerBusyRef)
+
+let inFlightScan: Promise<ProjectScannerImportResult> | null = null
+
+/**
+ * 扫描并导入新项目。单例执行:扫描进行中时再次调用会
+ * 复用同一个进行中的 Promise,不会并发跑两个扫描
+ * (并发会因 existingPaths 快照相同而导入重复项目)。
+ */
+export function addNewProjectsFromScanner(): Promise<ProjectScannerImportResult> {
+  if (inFlightScan)
+    return inFlightScan
+
+  scannerBusyRef.value = true
+  inFlightScan = runScan().finally(() => {
+    inFlightScan = null
+    scannerBusyRef.value = false
+  })
+  return inFlightScan
+}
+
+async function runScan(): Promise<ProjectScannerImportResult> {
   const projectsStore = useProjectsStore()
   const settingsStore = useSettingsStore()
   const scannerStore = useProjectScannerStore()
