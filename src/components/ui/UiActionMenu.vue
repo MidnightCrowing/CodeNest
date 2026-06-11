@@ -101,8 +101,16 @@ const standardShortcutLabels: Record<string, string> = {
   up: 'Up',
 }
 
-const contentStyle = computed(() => ({
+// reka 的 available-height 变量已扣除 collision-padding,
+// 与 420px 设计上限取较小值,保证菜单贴边时上下也留出 12px。
+const dropdownContentStyle = computed(() => ({
   width: `${props.width}px`,
+  maxHeight: 'min(420px, var(--reka-dropdown-menu-content-available-height, 72vh))',
+}))
+
+const contextContentStyle = computed(() => ({
+  width: `${props.width}px`,
+  maxHeight: 'min(420px, var(--reka-context-menu-content-available-height, 72vh))',
 }))
 
 const menuNavigationKeys = new Set([
@@ -124,9 +132,10 @@ function selectItem(item: UiActionMenuItem) {
   }
 }
 
-function submenuContentStyle(item: UiActionMenuItem) {
+function submenuContentStyle(item: UiActionMenuItem, kind: 'dropdown' | 'context') {
   return {
     width: `${item.submenuWidth ?? props.width}px`,
+    maxHeight: `min(420px, var(--reka-${kind}-menu-content-available-height, 72vh))`,
   }
 }
 
@@ -333,9 +342,10 @@ function handleMenuKeydown(event: KeyboardEvent) {
       <DropdownMenuContent
         class="ui-action-menu-content ui-thin-scrollbar"
         :class="{ 'has-check-column': hasCheckedItems(items) }"
-        :style="contentStyle"
+        :style="dropdownContentStyle"
         :align="align"
         :side-offset="5"
+        :collision-padding="12"
         :aria-label="ariaLabel"
         @keydown.capture="handleMenuKeydown"
       >
@@ -355,9 +365,10 @@ function handleMenuKeydown(event: KeyboardEvent) {
               <DropdownMenuSubContent
                 class="ui-action-menu-content ui-action-submenu-content ui-thin-scrollbar"
                 :class="{ 'has-check-column': hasCheckedItems(item.children) }"
-                :style="submenuContentStyle(item)"
+                :style="submenuContentStyle(item, 'dropdown')"
                 :side-offset="4"
                 :align-offset="-4"
+                :collision-padding="12"
                 @keydown.capture="handleMenuKeydown"
               >
                 <template v-for="child in item.children" :key="child.id">
@@ -412,7 +423,8 @@ function handleMenuKeydown(event: KeyboardEvent) {
       <ContextMenuContent
         class="ui-action-menu-content ui-thin-scrollbar"
         :class="{ 'has-check-column': hasCheckedItems(items) }"
-        :style="contentStyle"
+        :style="contextContentStyle"
+        :collision-padding="12"
         :aria-label="ariaLabel"
         @keydown.capture="handleMenuKeydown"
       >
@@ -432,9 +444,10 @@ function handleMenuKeydown(event: KeyboardEvent) {
               <ContextMenuSubContent
                 class="ui-action-menu-content ui-action-submenu-content ui-thin-scrollbar"
                 :class="{ 'has-check-column': hasCheckedItems(item.children) }"
-                :style="submenuContentStyle(item)"
+                :style="submenuContentStyle(item, 'context')"
                 :side-offset="4"
                 :align-offset="-4"
+                :collision-padding="12"
                 @keydown.capture="handleMenuKeydown"
               >
                 <template v-for="child in item.children" :key="child.id">
