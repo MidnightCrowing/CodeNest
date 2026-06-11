@@ -89,7 +89,7 @@ async function getSystemThemeColor(theme: ResolvedTheme) {
   try {
     systemThemeColor = normalizeThemeColor(await window.api.getSystemAccentColor(theme), defaultSystemThemeColor(theme))
   }
-  catch (error) {
+  catch (error: unknown) {
     console.error('Failed to get system accent color:', error)
     systemThemeColor = getCssSystemAccentColor(theme)
   }
@@ -123,7 +123,7 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
   try {
     window.api.setWindowTheme(newTheme)
   }
-  catch (error) {
+  catch (error: unknown) {
     console.error('Failed to set window theme:', error)
   }
 

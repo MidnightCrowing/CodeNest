@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import type { LicenseEnum } from '~/constants/license'
 import type { languagesGroupItem } from '~/constants/localProject'
 import { createPersistence } from '~/stores/helpers/persistence'
+import { normalizePathKey, stripWindowsVerbatimPrefix } from '~/utils/path'
 
 export interface ProjectScannerCacheEntry {
   path: string
@@ -24,23 +25,16 @@ const scannerPersistence = createPersistence<{
   key: 'projectScanner',
 })
 
-const WINDOWS_VERBATIM_UNC_RE = /^\\\\\?\\UNC\\/
-const WINDOWS_VERBATIM_RE = /^\\\\\?\\/
+const MAX_CACHE_SIZE = 1000
+const CACHE_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000 // 30天
 
-function stripWindowsVerbatimPrefix(path: string) {
-  if (WINDOWS_VERBATIM_UNC_RE.test(path))
-    return path.replace(WINDOWS_VERBATIM_UNC_RE, '\\\\')
-  return path.replace(WINDOWS_VERBATIM_RE, '')
-}
-
-function normalizePathKey(path: string) {
-  const normalized = stripWindowsVerbatimPrefix(path).trim().replaceAll('\\', '/').replace(/\/+$/, '')
-  return navigator.userAgent.includes('Windows') ? normalized.toLowerCase() : normalized
+export interface ProjectScannerCacheEntryWithTimestamp extends ProjectScannerCacheEntry {
+  cachedAt?: number
 }
 
 export const useProjectScannerStore = defineStore('projectScanner', () => {
   const historyScannedPaths = ref<Set<string>>(new Set())
-  const scanCache = ref<Map<string, ProjectScannerCacheEntry>>(new Map())
+  const scanCache = ref<Map<string, ProjectScannerCacheEntryWithTimestamp>>(new Map())
 
   const allHistoryScannedPaths = computed(() => historyScannedPaths.value)
   const scanCacheEntries = computed(() =>
@@ -52,7 +46,18 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
   }
 
   function getScanCacheEntry(path: string) {
-    return scanCache.value.get(normalizePathKey(path))
+    const entry = scanCache.value.get(normalizePathKey(path))
+    if (!entry)
+      return undefined
+
+    // 检查缓存是否过期
+    const cachedAt = entry.cachedAt ?? 0
+    if (Date.now() - cachedAt > CACHE_EXPIRY_MS) {
+      scanCache.value.delete(normalizePathKey(path))
+      return undefined
+    }
+
+    return entry
   }
 
   function setScanCacheEntry(entry: ProjectScannerCacheEntry) {
@@ -60,10 +65,31 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
       return
 
     const path = stripWindowsVerbatimPrefix(entry.path)
-    scanCache.value.set(normalizePathKey(path), {
+    const entryWithTimestamp: ProjectScannerCacheEntryWithTimestamp = {
       ...entry,
       path,
-    })
+      cachedAt: Date.now(),
+    }
+
+    scanCache.value.set(normalizePathKey(path), entryWithTimestamp)
+
+    // LRU: 如果缓存超过限制,删除最旧的条目
+    if (scanCache.value.size > MAX_CACHE_SIZE) {
+      let oldestKey: string | null = null
+      let oldestTime = Number.POSITIVE_INFINITY
+
+      for (const [key, value] of scanCache.value.entries()) {
+        const cachedAt = value.cachedAt ?? 0
+        if (cachedAt < oldestTime) {
+          oldestTime = cachedAt
+          oldestKey = key
+        }
+      }
+
+      if (oldestKey) {
+        scanCache.value.delete(oldestKey)
+      }
+    }
   }
 
   async function loadProjectScannerData() {
@@ -72,14 +98,33 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
       historyScannedPaths.value = new Set(data.historyScannedPaths.map(stripWindowsVerbatimPrefix))
     }
     if (data && Array.isArray(data.scanCache)) {
+      const now = Date.now()
+      let expiredCount = 0
       scanCache.value = new Map(
         data.scanCache
           .filter(entry => entry.path && entry.signature)
-          .map(entry => [normalizePathKey(entry.path), {
-            ...entry,
-            path: stripWindowsVerbatimPrefix(entry.path),
-          }]),
+          .map((entry) => {
+            const typedEntry = entry as ProjectScannerCacheEntryWithTimestamp
+            const cachedAt = typedEntry.cachedAt ?? 0
+            // 过滤过期的缓存条目
+            if (now - cachedAt > CACHE_EXPIRY_MS) {
+              expiredCount++
+              return null
+            }
+            return [normalizePathKey(entry.path), {
+              ...entry,
+              path: stripWindowsVerbatimPrefix(entry.path),
+              cachedAt,
+            }]
+          })
+          .filter(Boolean) as Array<[string, ProjectScannerCacheEntryWithTimestamp]>,
       )
+
+      // 如果有过期条目,持久化清理后的缓存
+      if (expiredCount > 0) {
+        console.warn(`Cleaned ${expiredCount} expired cache entries`)
+        void saveProjectScannerData()
+      }
     }
   }
 

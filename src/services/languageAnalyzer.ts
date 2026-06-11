@@ -45,7 +45,7 @@ export class LanguageAnalyzer {
 
       return true
     }
-    catch (error) {
+    catch (error: unknown) {
       console.warn('LanguageAnalyzer analyze failed:', error)
       this.reset()
       return false
@@ -102,7 +102,7 @@ export class LanguageAnalyzer {
 
     const languages = Object.entries(sortedResults).map(([lang, info]) => ({
       text: lang,
-      color: info.color ?? '#ccc',
+      color: (info.color ?? '#ccc') as `#${string}`,
       percentage: Number.parseFloat(((info.bytes / totalBytes) * 100).toFixed(2)),
     }))
 
@@ -110,16 +110,22 @@ export class LanguageAnalyzer {
     const otherLanguages = languages.filter(lang => lang.percentage < 0.5)
     const significantLanguages = languages.filter(lang => lang.percentage >= 0.5)
 
+    const grouped = [...significantLanguages]
     if (otherLanguages.length > 0) {
-      const otherTotalPercentage = otherLanguages.reduce((sum, lang) => sum + lang.percentage, 0)
-      significantLanguages.push({
+      grouped.push({
         text: 'Other',
         color: '#ccc',
-        percentage: Number.parseFloat(otherTotalPercentage.toFixed(2)),
-      } as languagesGroupItem)
+        percentage: otherLanguages.reduce((sum, lang) => sum + lang.percentage, 0),
+      })
     }
 
-    return significantLanguages
+    // 归一化到精确 100%: 最后一项补偿舍入误差
+    if (grouped.length > 0) {
+      const sumExceptLast = grouped.slice(0, -1).reduce((sum, lang) => sum + lang.percentage, 0)
+      grouped[grouped.length - 1].percentage = Number.parseFloat((100 - sumExceptLast).toFixed(2))
+    }
+
+    return grouped
   }
 
   /**

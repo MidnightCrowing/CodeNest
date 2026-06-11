@@ -254,7 +254,16 @@ export const useSettingsStore = defineStore('settings', () => {
     scanner.namePattern = '(demo|test)'
   }
 
+  function cancelQueuedSave() {
+    if (saveTimer !== null) {
+      window.clearTimeout(saveTimer)
+      saveTimer = null
+    }
+  }
+
   function resetSettingsState() {
+    // 取消 pending 的保存,避免定时器触发时保存已被重置的状态
+    cancelQueuedSave()
     theme.value = ThemeEnum.System
     themeColor.value = ThemeColorEnum.Contrast
     customThemeColor.value = DEFAULT_CUSTOM_THEME_COLOR
@@ -410,7 +419,7 @@ export const useSettingsStore = defineStore('settings', () => {
       else
         await window.api.deleteWebDavPassword()
     }
-    catch (error) {
+    catch (error: unknown) {
       webDavPasswordStorageAvailable = false
       throw error
     }
@@ -428,7 +437,7 @@ export const useSettingsStore = defineStore('settings', () => {
         return Boolean(legacyPassword)
       }
     }
-    catch (error) {
+    catch (error: unknown) {
       webDavPasswordStorageAvailable = false
       console.error('Error loading WebDAV password from secure storage:', error)
     }
@@ -440,7 +449,7 @@ export const useSettingsStore = defineStore('settings', () => {
           await persistWebDavPassword()
           return true
         }
-        catch (error) {
+        catch (error: unknown) {
           console.error('Error migrating WebDAV password to secure storage:', error)
         }
       }
@@ -515,7 +524,7 @@ export const useSettingsStore = defineStore('settings', () => {
         scanner: snapshotScanner(),
       })
     }
-    catch (error) {
+    catch (error: unknown) {
       console.error('Error saving settings data:', error)
     }
   }

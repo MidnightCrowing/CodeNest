@@ -18,7 +18,7 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     try {
       return deserialize(raw)
     }
-    catch (e) {
+    catch (e: unknown) {
       console.error(`Error parsing '${options.key}' ${source} data:`, e)
       return null
     }
@@ -29,7 +29,7 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
       const raw = window.localStorage.getItem(cacheKey)
       return raw ? deserializeSafely(raw, 'cache') : null
     }
-    catch (e) {
+    catch (e: unknown) {
       console.error(`Error reading '${options.key}' cache:`, e)
       return null
     }
@@ -39,7 +39,7 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     try {
       window.localStorage.setItem(cacheKey, raw)
     }
-    catch (e) {
+    catch (e: unknown) {
       console.error(`Error writing '${options.key}' cache:`, e)
     }
   }
@@ -52,7 +52,7 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     try {
       window.localStorage.removeItem(cacheKey)
     }
-    catch (e) {
+    catch (e: unknown) {
       console.error(`Error clearing '${options.key}' cache:`, e)
     }
   }
@@ -63,7 +63,7 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     try {
       result = await window.api.loadData(options.key)
     }
-    catch (e) {
+    catch (e: unknown) {
       console.error(`Error loading '${options.key}' data from disk:`, e)
       return cachedData
     }
@@ -86,12 +86,14 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
     try {
       const result = await window.api.saveData(options.key, raw)
       if (!result.success) {
+        // 磁盘保存失败时仍写入缓存:load() 在磁盘读取失败时会回退到
+        // 缓存,这让用户数据在磁盘故障(如磁盘满)时仍有恢复机会。
         saveSerializedCache(raw)
         throw new Error(result.error || `Failed to save '${options.key}' data`)
       }
       saveSerializedCache(raw)
     }
-    catch (e) {
+    catch (e: unknown) {
       saveSerializedCache(raw)
       throw e
     }

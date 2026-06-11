@@ -230,13 +230,27 @@ const groupOptions = computed(() => [
   })),
 ])
 
-const projectSearchIndex = computed(() =>
-  new Fuse(projectsStore.allProjects, {
+// Fuse 索引仅在搜索相关字段变化时重建,避免 isExists 刷新等
+// 无关更新触发昂贵的索引重建(大列表时可达 50-200ms)。
+const projectSearchSignature = computed(() =>
+  projectsStore.allProjects
+    .map(p => `${p.appendTime}\0${p.name}\0${p.group}\0${p.path}\0${p.mainLang}\0${p.defaultOpen}`)
+    .join('\n'),
+)
+
+const projectSearchIndex = shallowRef<Fuse<LocalProject>>(new Fuse<LocalProject>([], {
+  keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
+  threshold: 0.35,
+  shouldSort: true,
+}))
+
+watch(projectSearchSignature, () => {
+  projectSearchIndex.value = new Fuse([...projectsStore.allProjects], {
     keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
     threshold: 0.35,
     shouldSort: true,
-  }),
-)
+  })
+}, { immediate: true })
 
 const filteredProjects = computed(() => {
   let result = projectsStore.allProjects
@@ -286,8 +300,21 @@ const renderedProjects = computed(() =>
   filteredProjects.value.slice(0, renderedProjectLimit.value),
 )
 
+const DISPLAY_PATH_CACHE_LIMIT = 1000
 const displayPathCache = reactive(new Map<string, string>())
 const pendingDisplayPaths = new Set<string>()
+
+/** 缓存超限时清理不在当前项目列表中的条目,防止长期使用后无界增长。 */
+function pruneDisplayPathCache() {
+  if (displayPathCache.size <= DISPLAY_PATH_CACHE_LIMIT)
+    return
+
+  const livePaths = new Set(projectsStore.allProjects.map(project => project.path))
+  for (const path of displayPathCache.keys()) {
+    if (!livePaths.has(path))
+      displayPathCache.delete(path)
+  }
+}
 
 const hasMoreProjects = computed(() =>
   renderedProjects.value.length < filteredProjects.value.length,
@@ -578,7 +605,7 @@ async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEn
     void projectsStore.markProjectOpened(project.appendTime)
     finishProjectOpening(project.appendTime)
   }
-  catch (error) {
+  catch (error: unknown) {
     clearProjectOpening(project.appendTime)
     console.error('Failed to open project:', error)
     showToast({
@@ -607,6 +634,30 @@ function clearProjectOpeningTimer(projectId: number) {
     window.clearTimeout(timer)
     projectOpeningTimers.delete(projectId)
   }
+}
+
+function clearTerminalOpeningTimer(projectId: number) {
+  const timer = terminalOpeningTimers.get(projectId)
+  if (timer !== undefined) {
+    window.clearTimeout(timer)
+    terminalOpeningTimers.delete(projectId)
+  }
+}
+
+function clearProjectFromMaps(projectId: number) {
+  projectItemRefs.delete(projectId)
+  projectActionRefs.delete(projectId)
+
+  const copyTimer = copyFeedbackTimers.get(projectId)
+  if (copyTimer) {
+    window.clearTimeout(copyTimer)
+    copyFeedbackTimers.delete(projectId)
+  }
+
+  clearProjectOpeningTimer(projectId)
+  projectOpeningStartedAt.delete(projectId)
+  clearTerminalOpeningTimer(projectId)
+  terminalOpeningStartedAt.delete(projectId)
 }
 
 function markProjectOpening(projectId: number) {
@@ -651,14 +702,6 @@ function setTerminalOpeningVisible(projectId: number, visible: boolean) {
   else
     next.delete(projectId)
   openingTerminalProjectIds.value = next
-}
-
-function clearTerminalOpeningTimer(projectId: number) {
-  const timer = terminalOpeningTimers.get(projectId)
-  if (timer !== undefined) {
-    window.clearTimeout(timer)
-    terminalOpeningTimers.delete(projectId)
-  }
 }
 
 function markTerminalOpening(projectId: number) {
@@ -1361,7 +1404,12 @@ onActivated(() => {
   restoreHomeScrollPosition()
 })
 
+onMounted(() => {
+  window.addEventListener('project-removed', handleProjectRemoved as EventListener)
+})
+
 onBeforeUnmount(() => {
+  window.removeEventListener('project-removed', handleProjectRemoved as EventListener)
   clearSearchDebounceTimer()
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
@@ -1371,8 +1419,17 @@ onBeforeUnmount(() => {
   terminalOpeningTimers.forEach(timer => window.clearTimeout(timer))
   terminalOpeningTimers.clear()
   terminalOpeningStartedAt.clear()
+  projectItemRefs.clear()
+  projectActionRefs.clear()
+  displayPathCache.clear()
+  pendingDisplayPaths.clear()
   loadMoreObserver?.disconnect()
+  loadMoreObserver = null
 })
+
+function handleProjectRemoved(event: CustomEvent<{ projectId: number }>) {
+  clearProjectFromMaps(event.detail.projectId)
+}
 
 function openInExplorer(project: LocalProject) {
   window.api.openInExplorer(project.path)
@@ -1455,7 +1512,10 @@ function showLanguage(project: LocalProject, event: MouseEvent) {
 
 watch(
   renderedProjects,
-  projects => projects.forEach(project => void cacheDisplayPath(project.path)),
+  (projects) => {
+    pruneDisplayPathCache()
+    projects.forEach(project => void cacheDisplayPath(project.path))
+  },
   { immediate: true },
 )
 

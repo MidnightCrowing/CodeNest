@@ -3,14 +3,13 @@ import { computed, ref } from 'vue'
 
 import type { LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
 import { createPersistence } from '~/stores/helpers/persistence'
+import { normalizePathKey, stripWindowsVerbatimPrefix } from '~/utils/path'
 
 const projectsPersistence = createPersistence<LocalProject[]>({
   key: 'projects',
   serialize: data =>
     JSON.stringify(data, (key, value) => {
       if (key === 'group' && value === '')
-        return undefined
-      if (key === 'isExists')
         return undefined
       if (key === 'isTemporary' && value !== true)
         return undefined
@@ -22,9 +21,6 @@ const projectsPersistence = createPersistence<LocalProject[]>({
     }),
 })
 
-const TRAILING_SLASH_RE = /\/+$/
-const WINDOWS_VERBATIM_UNC_RE = /^\\\\\?\\UNC\\/
-const WINDOWS_VERBATIM_RE = /^\\\\\?\\/
 const PROJECT_EXISTENCE_CONCURRENCY = 12
 
 async function runWithConcurrency<T>(
@@ -44,18 +40,26 @@ async function runWithConcurrency<T>(
   }))
 }
 
-function stripWindowsVerbatimPrefix(path: string) {
-  if (WINDOWS_VERBATIM_UNC_RE.test(path))
-    return path.replace(WINDOWS_VERBATIM_UNC_RE, '\\\\')
-  return path.replace(WINDOWS_VERBATIM_RE, '')
-}
-
 function normalizeProject(project: LocalProject): LocalProject {
   const lastOpenedAt = Number.isFinite(project.lastOpenedAt) ? project.lastOpenedAt : undefined
+  const path = stripWindowsVerbatimPrefix(project.path || '')
+
+  // 快速检查:如果所有关键字段都已正确,直接返回
+  if (
+    project.path === path
+    && project.lastOpenedAt === lastOpenedAt
+    && typeof project.group === 'string'
+    && typeof project.isTemporary === 'boolean'
+    && typeof project.isPinned === 'boolean'
+    && typeof project.isExists === 'boolean'
+    && Array.isArray(project.langGroup)
+  ) {
+    return project
+  }
 
   return {
     ...project,
-    path: stripWindowsVerbatimPrefix(project.path || ''),
+    path,
     lastOpenedAt,
     group: project.group || '',
     isTemporary: !!project.isTemporary,
@@ -63,11 +67,6 @@ function normalizeProject(project: LocalProject): LocalProject {
     isExists: project.isExists ?? true,
     langGroup: project.langGroup || [],
   }
-}
-
-function normalizePathForCompare(path: string) {
-  const normalized = stripWindowsVerbatimPrefix(path).trim().replaceAll('\\', '/').replace(TRAILING_SLASH_RE, '')
-  return navigator.userAgent.includes('Windows') ? normalized.toLowerCase() : normalized
 }
 
 export const useProjectsStore = defineStore('projects', () => {
@@ -157,8 +156,15 @@ export const useProjectsStore = defineStore('projects', () => {
     if (index === -1)
       return false
 
+    const projectId = projects.value[index].appendTime
     projects.value.splice(index, 1)
     await saveProjects()
+
+    // 通知视图清理相关的 Map 条目
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('project-removed', { detail: { projectId } }))
+    }
+
     return true
   }
 
@@ -196,7 +202,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       await projectsPersistence.save(projects.value)
     }
-    catch (error) {
+    catch (error: unknown) {
       console.error('Error saving project data:', error)
     }
   }
@@ -235,7 +241,7 @@ export const useProjectsStore = defineStore('projects', () => {
         console.error('Error refreshing project existence:', error)
       })
     }
-    catch (error) {
+    catch (error: unknown) {
       console.error('Error loading project data:', error)
       loaded.value = true
     }
@@ -245,10 +251,10 @@ export const useProjectsStore = defineStore('projects', () => {
     path: LocalProject['path'],
     excludedPaths: LocalProject['path'][] = [],
   ) {
-    const targetPath = normalizePathForCompare(path)
-    const excluded = new Set(excludedPaths.map(normalizePathForCompare))
+    const targetPath = normalizePathKey(path)
+    const excluded = new Set(excludedPaths.map(normalizePathKey))
     return projects.value.some((project) => {
-      const projectPath = normalizePathForCompare(project.path)
+      const projectPath = normalizePathKey(project.path)
       return projectPath === targetPath && !excluded.has(projectPath)
     })
   }
@@ -271,14 +277,21 @@ export const useProjectsStore = defineStore('projects', () => {
         const { exists } = await window.api.checkPathExistence(project.path)
         existenceByProjectId.set(project.appendTime, exists)
       }
-      catch (error) {
+      catch (error: unknown) {
         console.error(`Error checking project path '${project.path}':`, error)
         existenceByProjectId.set(project.appendTime, project.isExists)
       }
     })
 
+    // 按 appendTime 回写,仅更新快照中存在的项目
     let changedCount = 0
+    const snapshotIds = new Set(snapshot.map(p => p.appendTime))
     const nextProjects = projects.value.map((project) => {
+      if (!snapshotIds.has(project.appendTime)) {
+        // 快照后新增的项目,保持原状
+        return project
+      }
+
       const isExists = existenceByProjectId.get(project.appendTime)
       if (isExists === undefined || isExists === project.isExists)
         return project
