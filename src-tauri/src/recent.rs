@@ -97,6 +97,11 @@ pub fn collect_from_vscode(db_path: Option<&str>) -> Vec<RecentProject> {
         Err(_) => return Vec::new(),
     };
 
+    // 设置忙等待超时和查询超时,避免数据库锁定或慢查询阻塞
+    let _ = connection.busy_timeout(std::time::Duration::from_millis(500));
+    // pragma_update 返回 Result<T, Error>,需要处理
+    let _ = connection.pragma_update(None, "query_only", true);
+
     let value: Option<String> = connection
         .query_row(
             "SELECT value FROM ItemTable WHERE key = 'history.recentlyOpenedPathsList'",
@@ -193,7 +198,7 @@ fn collect_cwd_history(
 
     let candidates = files
         .into_iter()
-        .take(500)
+        .take(MAX_RECENT_FILES)
         .filter_map(|path| extract_cwd_from_history_file(&path))
         .map(|path| RecentProject {
             path,
@@ -205,11 +210,19 @@ fn collect_cwd_history(
 }
 
 fn collect_json_history_files(root: &Path, out: &mut Vec<PathBuf>) {
+    const MAX_FILES: usize = 1000;
+    if out.len() >= MAX_FILES {
+        return;
+    }
+
     let Ok(entries) = fs::read_dir(root) else {
         return;
     };
 
     for entry in entries.flatten() {
+        if out.len() >= MAX_FILES {
+            break;
+        }
         let path = entry.path();
         if path.is_dir() {
             collect_json_history_files(&path, out);
@@ -233,10 +246,19 @@ fn extract_cwd_from_history_file(path: &Path) -> Option<String> {
     }
 }
 
+const MAX_CLI_HISTORY_JSON_SIZE: u64 = 512 * 1024;
+const MAX_JSON_DEPTH: usize = 32;
+const MAX_JSONL_LINE_SIZE: usize = 64 * 1024;
+const MAX_JSONL_LINES: usize = 80;
+const MAX_RECENT_FILES: usize = 500;
+
 fn extract_cwd_from_jsonl(path: &Path) -> Option<String> {
     let file = fs::File::open(path).ok()?;
     let reader = BufReader::new(file);
-    for line in reader.lines().map_while(Result::ok).take(80) {
+    for line in reader.lines().take(MAX_JSONL_LINES).map_while(Result::ok) {
+        if line.len() > MAX_JSONL_LINE_SIZE {
+            continue;
+        }
         let Ok(value) = serde_json::from_str::<Value>(&line) else {
             continue;
         };
@@ -248,14 +270,22 @@ fn extract_cwd_from_jsonl(path: &Path) -> Option<String> {
 }
 
 fn extract_cwd_from_json_file(path: &Path) -> Option<String> {
-    if fs::metadata(path).ok()?.len() > 2 * 1024 * 1024 {
+    if fs::metadata(path).ok()?.len() > MAX_CLI_HISTORY_JSON_SIZE {
         return None;
     }
     let value = serde_json::from_str::<Value>(&fs::read_to_string(path).ok()?).ok()?;
-    find_cwd_in_json(&value)
+    find_cwd_in_json_impl(&value, 0)
 }
 
 fn find_cwd_in_json(value: &Value) -> Option<String> {
+    find_cwd_in_json_impl(value, 0)
+}
+
+fn find_cwd_in_json_impl(value: &Value, depth: usize) -> Option<String> {
+    if depth > MAX_JSON_DEPTH {
+        return None;
+    }
+
     match value {
         Value::Object(map) => {
             if let Some(path) = map
@@ -269,13 +299,13 @@ fn find_cwd_in_json(value: &Value) -> Option<String> {
             }
 
             for child in map.values() {
-                if let Some(path) = find_cwd_in_json(child) {
+                if let Some(path) = find_cwd_in_json_impl(child, depth + 1) {
                     return Some(path);
                 }
             }
             None
         }
-        Value::Array(items) => items.iter().find_map(find_cwd_in_json),
+        Value::Array(items) => items.iter().find_map(|v| find_cwd_in_json_impl(v, depth + 1)),
         _ => None,
     }
 }

@@ -2,6 +2,7 @@ use std::{
     env, fs,
     path::{Path, PathBuf},
     process::Command,
+    sync::LazyLock,
 };
 
 use serde::Serialize;
@@ -14,6 +15,83 @@ use crate::{
 };
 
 const LICENSE_LINE_LIMIT: usize = 100;
+
+/// 受保护的系统目录根(缓存)
+static PROTECTED_SYSTEM_ROOTS: LazyLock<Vec<String>> = LazyLock::new(|| {
+    let mut roots = Vec::new();
+    if cfg!(windows) {
+        for var in [
+            "SystemRoot",
+            "ProgramFiles",
+            "ProgramFiles(x86)",
+            "ProgramW6432",
+        ] {
+            if let Some(value) = env::var_os(var) {
+                roots.push(normalize_for_protection_check(Path::new(&value)));
+            }
+        }
+        for fallback in [
+            r"C:\Windows",
+            r"C:\Program Files",
+            r"C:\Program Files (x86)",
+        ] {
+            roots.push(normalize_for_protection_check(Path::new(fallback)));
+        }
+    } else {
+        for root in [
+            "/etc", "/usr", "/bin", "/sbin", "/lib", "/lib64", "/var", "/sys", "/proc",
+            "/boot", "/system",
+        ] {
+            roots.push(root.to_string());
+        }
+    }
+    roots.sort();
+    roots.dedup();
+    roots
+});
+
+/// 去除 Windows canonicalize 产生的 verbatim 前缀(`\\?\` / `\\?\UNC\`)。
+fn strip_verbatim_prefix(path: &Path) -> PathBuf {
+    let text = path.to_string_lossy();
+    if let Some(stripped) = text.strip_prefix(r"\\?\UNC\") {
+        PathBuf::from(format!(r"\\{stripped}"))
+    } else if let Some(stripped) = text.strip_prefix(r"\\?\") {
+        PathBuf::from(stripped)
+    } else {
+        path.to_path_buf()
+    }
+}
+
+/// 将路径归一化为用于保护检查的形式:去 verbatim 前缀、统一斜杠、
+/// 去尾部斜杠,Windows 下转小写。
+fn normalize_for_protection_check(path: &Path) -> String {
+    let text = strip_verbatim_prefix(path)
+        .to_string_lossy()
+        .replace('\\', "/");
+    let trimmed = text.trim_end_matches('/').to_string();
+    if cfg!(windows) {
+        trimmed.to_lowercase()
+    } else {
+        trimmed
+    }
+}
+
+/// 判断(已 canonicalize 的)路径是否位于受保护的系统目录内。
+/// 使用规范化后的路径进行匹配,避免大小写和路径格式差异。
+fn is_protected_system_path(canonical: &Path) -> bool {
+    let normalized = normalize_for_protection_check(canonical);
+    let roots = &*PROTECTED_SYSTEM_ROOTS;
+
+    for root in roots {
+        // 精确匹配根目录或其子路径
+        if normalized == *root || normalized.starts_with(&format!("{root}/")) {
+            return true;
+        }
+    }
+
+    false
+}
+
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,6 +118,20 @@ pub struct ProjectMutationResult {
 
 #[tauri::command]
 pub async fn analyze_project(folder_path: String) -> Result<LinguistResult, String> {
+    let path = Path::new(&folder_path);
+
+    if !path.is_absolute() {
+        return Err("Path must be absolute".to_string());
+    }
+
+    let canonical_path = path
+        .canonicalize()
+        .map_err(|_| "Cannot access path".to_string())?;
+
+    if is_protected_system_path(&canonical_path) {
+        return Err("Cannot analyze system directory".to_string());
+    }
+
     tauri::async_runtime::spawn_blocking(move || analyzer::analyze_folder(Path::new(&folder_path)))
         .await
         .map_err(|error| error.to_string())?
@@ -48,6 +140,40 @@ pub async fn analyze_project(folder_path: String) -> Result<LinguistResult, Stri
 #[tauri::command]
 pub fn read_project_license(folder_path: String, max_lines: Option<usize>) -> LicenseReadResult {
     let root = Path::new(&folder_path);
+
+    if !root.is_absolute() {
+        return LicenseReadResult {
+            success: false,
+            filename: None,
+            snippet: None,
+            lines: None,
+            message: Some("Path must be absolute".to_string()),
+        };
+    }
+
+    let canonical_path = match root.canonicalize() {
+        Ok(path) => path,
+        Err(_) => {
+            return LicenseReadResult {
+                success: false,
+                filename: None,
+                snippet: None,
+                lines: None,
+                message: Some("Cannot access path".to_string()),
+            };
+        }
+    };
+
+    if is_protected_system_path(&canonical_path) {
+        return LicenseReadResult {
+            success: false,
+            filename: None,
+            snippet: None,
+            lines: None,
+            message: Some("Cannot read from system directory".to_string()),
+        };
+    }
+
     if !root.is_dir() {
         return LicenseReadResult {
             success: false,
@@ -107,6 +233,30 @@ pub fn read_project_license(folder_path: String, max_lines: Option<usize>) -> Li
         };
     }
 
+    // 检查文件大小,限制最大 1MB
+    const MAX_LICENSE_SIZE: u64 = 1024 * 1024;
+    match fs::metadata(&path) {
+        Ok(metadata) if metadata.len() > MAX_LICENSE_SIZE => {
+            return LicenseReadResult {
+                success: false,
+                filename: None,
+                snippet: None,
+                lines: None,
+                message: Some(format!("License file too large: {} bytes", metadata.len())),
+            };
+        }
+        Err(error) => {
+            return LicenseReadResult {
+                success: false,
+                filename: None,
+                snippet: None,
+                lines: None,
+                message: Some(error.to_string()),
+            };
+        }
+        _ => {}
+    }
+
     match fs::read_to_string(path) {
         Ok(content) => {
             let limit = max_lines.unwrap_or(20).clamp(1, LICENSE_LINE_LIMIT);
@@ -144,6 +294,10 @@ pub fn open_project(
         return Err("Project path must be absolute".to_string());
     }
 
+    if !project.exists() {
+        return Err("Project path does not exist".to_string());
+    }
+
     spawn_editor_command(&editor_command, &project, open_in_terminal.unwrap_or(false))?;
     Ok("Project opened".to_string())
 }
@@ -155,12 +309,39 @@ pub fn detect_editor_command(editor: String) -> Option<String> {
 
 #[tauri::command]
 pub fn delete_project(project_path: String) -> ProjectMutationResult {
-    let path = PathBuf::from(project_path);
+    let path = PathBuf::from(&project_path);
     if !path.exists() {
         return ProjectMutationResult {
             success: false,
             message: None,
             error: Some("Project path does not exist".to_string()),
+        };
+    }
+
+    if !path.is_absolute() {
+        return ProjectMutationResult {
+            success: false,
+            message: None,
+            error: Some("Path must be absolute".to_string()),
+        };
+    }
+
+    let canonical_path = match path.canonicalize() {
+        Ok(p) => p,
+        Err(_) => {
+            return ProjectMutationResult {
+                success: false,
+                message: None,
+                error: Some("Cannot access path".to_string()),
+            };
+        }
+    };
+
+    if is_protected_system_path(&canonical_path) {
+        return ProjectMutationResult {
+            success: false,
+            message: None,
+            error: Some("Cannot delete system directory".to_string()),
         };
     }
 
@@ -285,12 +466,11 @@ fn spawn_editor_command(
 ) -> Result<(), String> {
     let has_project_placeholder = editor_command.contains("{project}");
     let mut args = parse_command_line(editor_command)?;
-    if args.is_empty() {
-        return Err("Editor command cannot be empty".to_string());
-    }
 
     let project_text = project.to_string_lossy().into_owned();
     for arg in &mut args {
+        // 占位符替换发生在 parse_command_line 之后:GUI 路径下参数直接传给
+        // Command::args 不经过 shell;终端路径下由 shell_join/shell_quote 统一转义。
         *arg = arg
             .replace("{project}", &project_text)
             .replace("{cwd}", &project_text);
@@ -327,7 +507,7 @@ fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
         .args(args)
         .spawn()
         .map(|_| ())
-        .map_err(|error| error.to_string())
+        .map_err(|error| format!("Failed to launch {}: {error}", program.display()))
 }
 
 fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String> {
@@ -341,15 +521,21 @@ fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String>
             .map(|_| ())
             .map_err(|error| error.to_string())
     } else if cfg!(target_os = "macos") {
-        let command = format!(
-            "cd {}; {}",
-            shell_quote(&project.to_string_lossy()),
-            shell_command
-        );
+        // 使用 AppleScript 在 Terminal.app 中执行命令
+        let project_str = project.to_string_lossy();
+        let cd_command = format!("cd {}", shell_quote(&project_str));
+        let full_command = format!("{} ; {}", cd_command, shell_command);
+
+        // AppleScript 字符串需要转义反斜杠和双引号
+        let escaped = full_command
+            .replace('\\', "\\\\")
+            .replace('"', "\\\"");
+
         let script = format!(
             "tell application \"Terminal\" to do script \"{}\"",
-            command.replace('\\', "\\\\").replace('"', "\\\"")
+            escaped
         );
+
         Command::new("osascript")
             .args(["-e", &script])
             .spawn()
@@ -670,4 +856,56 @@ fn license_rank(file_name: &str) -> u8 {
     };
 
     base_score * 10 + extension_score
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::{is_protected_system_path, strip_verbatim_prefix};
+
+    #[test]
+    #[cfg(windows)]
+    fn strip_verbatim_prefix_removes_windows_prefix() {
+        assert_eq!(
+            strip_verbatim_prefix(Path::new(r"\\?\C:\Windows")),
+            Path::new(r"C:\Windows").to_path_buf()
+        );
+        assert_eq!(
+            strip_verbatim_prefix(Path::new(r"\\?\UNC\server\share")),
+            Path::new(r"\\server\share").to_path_buf()
+        );
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn protected_path_check_matches_system_roots() {
+        assert!(is_protected_system_path(Path::new(r"\\?\C:\Windows")));
+        assert!(is_protected_system_path(Path::new(
+            r"\\?\C:\Windows\System32"
+        )));
+        assert!(is_protected_system_path(Path::new(
+            r"C:\Program Files\Some App"
+        )));
+        assert!(is_protected_system_path(Path::new(
+            r"C:\Program Files (x86)\Some App"
+        )));
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn protected_path_check_does_not_overmatch_siblings() {
+        assert!(!is_protected_system_path(Path::new(r"C:\Windows-backup")));
+        assert!(!is_protected_system_path(Path::new(r"C:\Program Filesx")));
+        assert!(!is_protected_system_path(Path::new(r"E:\Projects\demo")));
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn protected_path_check_matches_unix_roots() {
+        assert!(is_protected_system_path(Path::new("/etc")));
+        assert!(is_protected_system_path(Path::new("/usr/bin")));
+        assert!(!is_protected_system_path(Path::new("/home/user/projects")));
+        assert!(!is_protected_system_path(Path::new("/etcetera")));
+    }
 }

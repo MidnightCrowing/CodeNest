@@ -1,5 +1,6 @@
 use std::{
     collections::BTreeMap,
+    env,
     fs::File,
     io::Read,
     path::{Path, PathBuf},
@@ -9,6 +10,18 @@ use ignore::{DirEntry, WalkBuilder};
 use serde::Serialize;
 
 const MAX_LINE_COUNT_BYTES: u64 = 1_500_000;
+const DEFAULT_MAX_SCAN_BYTES: u64 = 800 * 1024 * 1024;
+const MAX_ALLOWED_SCAN_BYTES: u64 = 10 * 1024 * 1024 * 1024; // 10GB 上限
+
+/// 单次语言分析/扫描允许处理的最大累计字节数。
+/// 可通过 `CODENEST_MAX_SCAN_BYTES` 环境变量调整(钳制在 10GB 内)。
+pub fn max_scan_bytes() -> u64 {
+    env::var("CODENEST_MAX_SCAN_BYTES")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .map(|value| value.min(MAX_ALLOWED_SCAN_BYTES))
+        .unwrap_or(DEFAULT_MAX_SCAN_BYTES)
+}
 
 #[derive(Clone, Copy, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -91,6 +104,7 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
         return Err("Provided path is not a directory".to_string());
     }
 
+    let byte_budget = max_scan_bytes();
     let mut result = LinguistResult::default();
     let walker = WalkBuilder::new(folder_path)
         .hidden(true)
@@ -123,6 +137,15 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
             Err(_) => continue,
         };
         let bytes = metadata.len();
+
+        // 累计体积熔断:超出预算时终止分析,避免对超大目录
+        // (如误选磁盘根目录)做无界的 IO 和行数统计。
+        if result.files.bytes.saturating_add(bytes) > byte_budget {
+            return Err(format!(
+                "Directory too large to analyze (over {} MB)",
+                byte_budget / (1024 * 1024)
+            ));
+        }
         let language = language_for_path(path);
         let lines = language
             .filter(|language| should_count_lines(language.language_type, bytes))
@@ -440,7 +463,15 @@ fn lang(name: &'static str, language_type: LanguageType, color: &'static str) ->
 }
 
 pub fn normalize_path_key(path: &Path) -> String {
-    display_path(&canonical_or_original(path)).to_ascii_lowercase()
+    let normalized = display_path(&canonical_or_original(path))
+        .replace('\\', "/")
+        .trim_end_matches('/')
+        .to_string();
+    if cfg!(windows) {
+        normalized.to_ascii_lowercase()
+    } else {
+        normalized
+    }
 }
 
 pub fn canonical_or_original(path: &Path) -> PathBuf {
@@ -459,4 +490,49 @@ pub fn strip_windows_verbatim_prefix(path: &str) -> String {
         return rest.to_string();
     }
     path.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{fs, sync::Mutex};
+
+    use super::analyze_folder;
+
+    /// 串行化涉及 `CODENEST_MAX_SCAN_BYTES` 环境变量的测试,避免并行干扰。
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn analyze_folder_rejects_directories_over_byte_budget() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = std::env::temp_dir().join("codenest-analyzer-budget-test");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("main.rs"), "fn main() {}\n".repeat(10)).unwrap();
+
+        // 预算缩到 1 字节,任何文件都会触发熔断
+        std::env::set_var("CODENEST_MAX_SCAN_BYTES", "1");
+        let result = analyze_folder(&dir);
+        std::env::remove_var("CODENEST_MAX_SCAN_BYTES");
+
+        let _ = fs::remove_dir_all(&dir);
+        match result {
+            Err(error) => assert!(error.contains("too large"), "unexpected error: {error}"),
+            Ok(_) => panic!("oversized directory should be rejected"),
+        }
+    }
+
+    #[test]
+    fn analyze_folder_succeeds_within_budget() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = std::env::temp_dir().join("codenest-analyzer-ok-test");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("main.rs"), "fn main() {}\n").unwrap();
+
+        let result = analyze_folder(&dir);
+
+        let _ = fs::remove_dir_all(&dir);
+        let result = result.expect("small directory should analyze fine");
+        assert!(result.languages.results.contains_key("Rust"));
+    }
 }

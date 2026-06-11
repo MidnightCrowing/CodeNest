@@ -35,6 +35,7 @@ keyring = { version = "3.6.3", default-features = false, features = [
 ] }
 open = "5.3.5"
 percent-encoding = "2.3.2"
+regex = "1.11.1"
 reqwest = { version = "0.13.4", default-features = false, features = [
   "json",
   "rustls",

@@ -1,9 +1,11 @@
 use std::{
     fs,
     path::PathBuf,
+    sync::LazyLock,
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use regex::Regex;
 use reqwest::{Client, Method, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -11,6 +13,23 @@ use tauri::{AppHandle, Manager};
 use url::Url;
 
 use crate::data::{data_file_path, write_data_file_safely, DataFileKind};
+
+static URL_CREDENTIALS_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"://[^:/@\s]+:[^@/\s]+@").expect("hardcoded regex should be valid")
+});
+
+/// 从错误消息中遮蔽 `scheme://user:pass@host` 形式的凭据,
+/// 防止 reqwest 错误把 Basic Auth 信息透传给前端。
+fn sanitize_url_for_error(error_msg: &str) -> String {
+    URL_CREDENTIALS_PATTERN
+        .replace_all(error_msg, "://***:***@")
+        .to_string()
+}
+
+/// reqwest 错误统一脱敏转换。
+fn request_error(error: reqwest::Error) -> String {
+    sanitize_url_for_error(&error.to_string())
+}
 
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -77,14 +96,17 @@ pub async fn webdav_test_connection(config: WebDavConfig) -> WebDavSyncResult {
 async fn test_connection(config: WebDavConfig) -> Result<(), String> {
     validate_config(&config)?;
 
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .map_err(|error| error.to_string())?;
     let response = with_auth(
         client.request(Method::OPTIONS, remote_url(&config, None, None)?),
         &config,
     )
     .send()
     .await
-    .map_err(|error| error.to_string())?;
+    .map_err(request_error)?;
 
     if response.status().is_success() {
         return Ok(());
@@ -96,7 +118,10 @@ async fn test_connection(config: WebDavConfig) -> Result<(), String> {
 async fn upload_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String> {
     validate_config(&config)?;
 
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .map_err(|error| error.to_string())?;
     create_remote_dir(&client, &config).await?;
 
     let mut count = 0;
@@ -107,7 +132,7 @@ async fn upload_data(app: AppHandle, config: WebDavConfig) -> Result<usize, Stri
         let url = remote_file_url(&config, file.name)?;
         let request = with_auth(client.put(url).body(content), &config)
             .header("Content-Type", "application/json");
-        let response = request.send().await.map_err(|error| error.to_string())?;
+        let response = request.send().await.map_err(request_error)?;
         if !response.status().is_success() {
             return Err(format!(
                 "Failed to upload {}: {}",
@@ -124,14 +149,17 @@ async fn upload_data(app: AppHandle, config: WebDavConfig) -> Result<usize, Stri
 async fn pull_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String> {
     validate_config(&config)?;
 
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .map_err(|error| error.to_string())?;
     let mut pulled_files = Vec::new();
     for file in SYNC_FILES {
         let url = remote_file_url(&config, file.name)?;
         let response = with_auth(client.get(url), &config)
             .send()
             .await
-            .map_err(|error| error.to_string())?;
+            .map_err(request_error)?;
         if response.status() == StatusCode::NOT_FOUND {
             return Err(format!("Remote file not found: {}", file.name));
         }
@@ -143,7 +171,7 @@ async fn pull_data(app: AppHandle, config: WebDavConfig) -> Result<usize, String
             ));
         }
 
-        let raw = response.text().await.map_err(|error| error.to_string())?;
+        let raw = response.text().await.map_err(request_error)?;
         let content = prepare_pull_content(&app, file.kind, &raw)?;
         pulled_files.push((file.kind, content));
     }
@@ -209,7 +237,7 @@ async fn create_remote_dir(client: &Client, config: &WebDavConfig) -> Result<(),
         )
         .send()
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(request_error)?;
         let status = response.status();
         if status.is_success() {
             continue;
@@ -243,7 +271,7 @@ async fn remote_dir_exists(
     )
     .send()
     .await
-    .map_err(|error| error.to_string())?;
+    .map_err(request_error)?;
 
     let status = response.status();
     if status.is_success() || status.as_u16() == 207 {
@@ -269,10 +297,24 @@ fn prepare_upload_content(kind: DataFileKind, raw: &str) -> Result<String, Strin
 fn prepare_pull_content(app: &AppHandle, kind: DataFileKind, raw: &str) -> Result<String, String> {
     let mut value = parse_json(raw)?;
     if matches!(kind, DataFileKind::Settings) {
-        let local = read_or_default(data_file_path(app, DataFileKind::Settings)?, "{}")?;
-        if let Some(webdav) = parse_json(&local)?.get("webdav").cloned() {
-            if let Some(object) = value.as_object_mut() {
-                object.insert("webdav".to_string(), webdav);
+        let local_path = data_file_path(app, DataFileKind::Settings)?;
+        if local_path.exists() {
+            let local = read_or_default(local_path, "{}")?;
+            match parse_json(&local) {
+                Ok(local_json) => {
+                    if let Some(webdav) = local_json.get("webdav").cloned() {
+                        if let Some(object) = value.as_object_mut() {
+                            object.insert("webdav".to_string(), webdav);
+                        }
+                    }
+                }
+                Err(error) => {
+                    // 本地 settings 损坏时跳过 webdav 合并(凭据可能丢失,
+                    // 用户需重新配置),但记录原因便于排查。
+                    eprintln!(
+                        "[webdav] Local settings.json is corrupted, skipping webdav config merge: {error}"
+                    );
+                }
             }
         }
     }
@@ -387,5 +429,42 @@ fn sync_error(error: String) -> WebDavSyncResult {
         success: false,
         message: None,
         error: Some(error),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sanitize_url_for_error;
+
+    #[test]
+    fn sanitize_url_for_error_masks_credentials() {
+        assert_eq!(
+            sanitize_url_for_error(
+                "error sending request for url (https://user:secret@dav.example.com/path)"
+            ),
+            "error sending request for url (https://***:***@dav.example.com/path)"
+        );
+    }
+
+    #[test]
+    fn sanitize_url_for_error_keeps_urls_without_credentials() {
+        let message = "error sending request for url (https://dav.example.com/path)";
+        assert_eq!(sanitize_url_for_error(message), message);
+    }
+
+    #[test]
+    fn sanitize_url_for_error_handles_multiple_urls() {
+        assert_eq!(
+            sanitize_url_for_error("from http://a:b@x.com to https://c:d@y.com"),
+            "from http://***:***@x.com to https://***:***@y.com"
+        );
+    }
+
+    #[test]
+    fn sanitize_url_for_error_handles_ipv6_hosts() {
+        assert_eq!(
+            sanitize_url_for_error("error at https://user:secret@[::1]:8080/path"),
+            "error at https://***:***@[::1]:8080/path"
+        );
     }
 }

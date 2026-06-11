@@ -548,6 +548,7 @@ dependencies = [
  "keyring",
  "open",
  "percent-encoding",
+ "regex",
  "reqwest",
  "rfd",
  "roxmltree",

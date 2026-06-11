@@ -111,12 +111,11 @@ fn spawn_configured_terminal(command_template: &str, cwd: &Path) -> Result<(), S
 
 fn configured_terminal_args(command_template: &str, cwd: &Path) -> Result<Vec<String>, String> {
     let mut args = parse_command_line(command_template)?;
-    if args.is_empty() {
-        return Err("Terminal command cannot be empty".to_string());
-    }
 
     let cwd_text = cwd.to_string_lossy().into_owned();
     for arg in &mut args {
+        // 占位符替换发生在 parse_command_line 之后,替换结果作为单个
+        // 参数直接传给 Command::args,不经过 shell 解析,无需再转义。
         *arg = arg
             .replace("{cwd}", &cwd_text)
             .replace("{project}", &cwd_text);
@@ -243,15 +242,17 @@ fn spawn_default_windows_terminal(cwd: &Path) -> Result<(), String> {
         Err(error) => errors.push(format!("powershell: {error}")),
     }
 
-    Command::new("cmd")
+    match Command::new("cmd")
         .current_dir(cwd)
         .args(["/C", "start", "", "cmd", "/K"])
         .spawn()
-        .map(|_| ())
-        .map_err(|error| {
+    {
+        Ok(_) => Ok(()),
+        Err(error) => {
             errors.push(format!("cmd: {error}"));
-            format!("Failed to open terminal: {}", errors.join("; "))
-        })
+            Err(format!("Failed to open terminal: {}", errors.join("; ")))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -347,9 +348,9 @@ pub fn get_system_accent_color(current_theme: Option<String>) -> Option<String> 
     #[cfg(target_os = "windows")]
     {
         let current_theme = current_theme.as_deref();
-        return read_windows_accent_palette_color(current_theme)
+        read_windows_accent_palette_color(current_theme)
             .or_else(read_windows_accent_color_menu)
-            .or_else(read_windows_dwm_accent_color);
+            .or_else(read_windows_dwm_accent_color)
     }
 
     #[cfg(not(target_os = "windows"))]

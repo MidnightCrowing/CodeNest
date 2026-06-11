@@ -135,10 +135,11 @@ pub fn write_data_file_safely(path: &Path, content: &str) -> Result<(), String> 
 
     if let Err(error) = replace_with_temp_file(&temp_path, path) {
         let _ = restore_backup_file(path);
-        let _ = fs::remove_file(temp_path);
+        let _ = fs::remove_file(&temp_path);
         return Err(error);
     }
 
+    // rename 成功后 temp 文件已成为目标文件,无需清理
     Ok(())
 }
 

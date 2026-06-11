@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    env, fs,
+    fs,
     hash::{Hash, Hasher},
     path::{Path, PathBuf},
     time::UNIX_EPOCH,
@@ -18,7 +18,6 @@ use crate::{
     },
 };
 
-const DEFAULT_MAX_SCAN_BYTES: u64 = 800 * 1024 * 1024;
 const HISTORY_SCANNER_EDITORS: &[&str] = &[
     "cursor",
     "trae",
@@ -307,10 +306,8 @@ fn scan_projects_inner(payload: ScanPayload) -> Result<ScanResult, String> {
             )
         })
         .collect::<HashMap<_, _>>();
-    let max_scan_bytes = env::var("CODENEST_MAX_SCAN_BYTES")
-        .ok()
-        .and_then(|value| value.parse::<u64>().ok())
-        .unwrap_or(DEFAULT_MAX_SCAN_BYTES);
+
+    let max_scan_bytes = analyzer::max_scan_bytes();
 
     let mut seen = HashSet::new();
     let mut items = Vec::new();
@@ -375,7 +372,7 @@ fn scan_one_project(
             main_lang_color: None,
             lang_group: None,
             ide,
-            error: None,
+            error: Some(format!("Directory too large ({} MB)", state.total_bytes / (1024 * 1024))),
             signature: Some(state.signature),
         },
         Err(error) => ScanItem {
@@ -438,7 +435,7 @@ struct DirectoryState {
 }
 
 fn directory_state_capped(root: &Path, cap: u64) -> Result<DirectoryState, String> {
-    let mut total = 0;
+    let mut total: u64 = 0;
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     let walker = WalkBuilder::new(root)
         .hidden(true)
@@ -465,14 +462,15 @@ fn directory_state_capped(root: &Path, cap: u64) -> Result<DirectoryState, Strin
         };
         let relative = entry.path().strip_prefix(root).unwrap_or(entry.path());
         relative.to_string_lossy().hash(&mut hasher);
-        metadata.len().hash(&mut hasher);
+        let len = metadata.len();
+        len.hash(&mut hasher);
         if let Ok(modified) = metadata.modified() {
             if let Ok(duration) = modified.duration_since(UNIX_EPOCH) {
                 duration.as_secs().hash(&mut hasher);
                 duration.subsec_nanos().hash(&mut hasher);
             }
         }
-        total += metadata.len();
+        total = total.saturating_add(len);
         if total > cap {
             return Ok(DirectoryState {
                 total_bytes: total,
