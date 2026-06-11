@@ -18,7 +18,10 @@ function createMemoryStorage() {
 describe('projectsStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    vi.stubGlobal('navigator', { userAgent: 'Windows' })
+    vi.stubGlobal('navigator', {
+      platform: 'Win32',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    })
     vi.stubGlobal('window', {
       localStorage: createMemoryStorage(),
       api: {
