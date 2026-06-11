@@ -35,7 +35,7 @@ defineOptions({
 })
 
 type KindFilter = ProjectKind | 'all'
-type StatusFilter = 'all' | 'available' | 'missing' | 'temporary'
+type StatusFilter = 'all' | 'available' | 'missing' | 'temporary' | 'archived'
 type SortKey = 'recent' | 'name' | 'language' | 'group'
 type LayoutMode = 'list' | 'grid'
 type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
@@ -137,7 +137,8 @@ function clearSearchDebounceTimer() {
   searchDebounceTimer = null
 }
 
-const totalProjects = computed(() => projectsStore.allProjects.length)
+const totalProjects = computed(() => projectsStore.activeProjects.length)
+const archivedProjectsCount = computed(() => projectsStore.archivedProjects.length)
 
 const projectStats = computed(() => {
   const byKind = new Map<ProjectKind, number>()
@@ -147,7 +148,7 @@ const projectStats = computed(() => {
   let temporary = 0
   let ungrouped = 0
 
-  for (const project of projectsStore.allProjects) {
+  for (const project of projectsStore.activeProjects) {
     byKind.set(project.kind, (byKind.get(project.kind) || 0) + 1)
 
     if (project.isExists)
@@ -193,6 +194,7 @@ const statusOptions = computed<Array<FilterOption<StatusFilter>>>(() => [
   { value: 'available', label: t('app.home.filters.available'), count: availableProjects.value },
   { value: 'missing', label: t('app.home.filters.missing_path'), count: missingProjects.value },
   { value: 'temporary', label: t('app.home.filters.temporary'), count: temporaryProjects.value },
+  { value: 'archived', label: t('app.home.filters.archived'), count: archivedProjectsCount.value },
 ])
 
 const sortOptions = computed<Array<FilterOption<SortKey>>>(() => [
@@ -256,19 +258,25 @@ watch(projectSearchSignature, () => {
 }, { immediate: true })
 
 const filteredProjects = computed(() => {
-  let result = projectsStore.allProjects
+  // 归档视图 vs 活跃视图的基础数据源分离
+  let result = statusFilter.value === 'archived'
+    ? projectsStore.archivedProjects
+    : projectsStore.activeProjects
 
   if (kindFilter.value !== 'all') {
     result = result.filter(project => project.kind === kindFilter.value)
   }
-  if (statusFilter.value === 'available') {
-    result = result.filter(project => project.isExists)
-  }
-  if (statusFilter.value === 'missing') {
-    result = result.filter(project => !project.isExists)
-  }
-  if (statusFilter.value === 'temporary') {
-    result = result.filter(project => project.isTemporary)
+  // 归档视图下忽略其他 status 细分过滤
+  if (statusFilter.value !== 'archived') {
+    if (statusFilter.value === 'available') {
+      result = result.filter(project => project.isExists)
+    }
+    if (statusFilter.value === 'missing') {
+      result = result.filter(project => !project.isExists)
+    }
+    if (statusFilter.value === 'temporary') {
+      result = result.filter(project => project.isTemporary)
+    }
   }
   if (languageFilter.value !== 'all') {
     result = result.filter(project => project.mainLang === languageFilter.value)
@@ -408,6 +416,11 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
       id: 'pin',
       label: pinButtonTitle(project),
       icon: pinButtonIcon(project),
+    },
+    {
+      id: 'archive',
+      label: project.isArchived ? t('app.home.actions.unarchive') : t('app.home.actions.archive'),
+      icon: project.isArchived ? 'i-lucide:archive-restore' : 'i-lucide:archive',
     },
     ...(sourceUrl
       ? [{
@@ -1347,6 +1360,10 @@ async function toggleProjectPinned(project: LocalProject) {
   await projectsStore.toggleProjectPinned(project.appendTime)
 }
 
+async function toggleProjectArchived(project: LocalProject) {
+  await projectsStore.toggleProjectArchived(project.appendTime)
+}
+
 async function setProjectDefaultEditor(project: LocalProject, editor: CodeEditorEnum) {
   await projectsStore.setProjectDefaultOpen(project.appendTime, editor)
 }
@@ -1378,6 +1395,9 @@ function handleProjectMenuSelect(project: LocalProject, action: string) {
   switch (action) {
     case 'pin':
       void toggleProjectPinned(project)
+      break
+    case 'archive':
+      void toggleProjectArchived(project)
       break
     case 'source':
       openProjectSource(project)

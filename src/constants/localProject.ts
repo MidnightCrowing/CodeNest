@@ -58,6 +58,8 @@ export interface LocalProject {
   isTemporary: boolean
   // 标识该项目是否置顶
   isPinned?: boolean
+  // 标识该项目是否已归档（归档项目不出现在默认列表中）
+  isArchived?: boolean
   // 标识该项目是否仍然存在于文件系统中
   isExists: boolean
 }

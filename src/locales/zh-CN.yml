@@ -74,6 +74,7 @@ app:
       available: 可用
       missing_path: 路径缺失
       temporary: 临时
+      archived: 已归档
       all_languages: 全部语言
       all_groups: 全部分组
       no_group: 无分组
@@ -119,6 +120,8 @@ app:
       copy_failed: 复制失败
       pin: 置顶
       unpin: 取消置顶
+      archive: 归档
+      unarchive: 取消归档
       more: 更多操作
       edit: 编辑
       remove: 移除

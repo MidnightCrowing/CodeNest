@@ -15,6 +15,8 @@ const projectsPersistence = createPersistence<LocalProject[]>({
         return undefined
       if (key === 'isPinned' && value !== true)
         return undefined
+      if (key === 'isArchived' && value !== true)
+        return undefined
       if (key === 'license' && value === 'None')
         return undefined
       return value
@@ -51,6 +53,7 @@ function normalizeProject(project: LocalProject): LocalProject {
     && typeof project.group === 'string'
     && typeof project.isTemporary === 'boolean'
     && typeof project.isPinned === 'boolean'
+    && typeof project.isArchived === 'boolean'
     && typeof project.isExists === 'boolean'
     && Array.isArray(project.langGroup)
   ) {
@@ -64,6 +67,7 @@ function normalizeProject(project: LocalProject): LocalProject {
     group: project.group || '',
     isTemporary: !!project.isTemporary,
     isPinned: !!project.isPinned,
+    isArchived: !!project.isArchived,
     isExists: project.isExists ?? true,
     langGroup: project.langGroup || [],
   }
@@ -75,6 +79,8 @@ export const useProjectsStore = defineStore('projects', () => {
   let loadingPromise: Promise<void> | null = null
 
   const allProjects = computed(() => projects.value)
+  const activeProjects = computed(() => projects.value.filter(project => !project.isArchived))
+  const archivedProjects = computed(() => projects.value.filter(project => project.isArchived))
   const tempProjects = computed(() => projects.value.filter(project => project.isTemporary))
 
   const mainLangSummary = computed(() => {
@@ -142,6 +148,7 @@ export const useProjectsStore = defineStore('projects', () => {
     const project = normalizeProject({
       ...updatedProject,
       isPinned: updatedProject.isPinned ?? projects.value[index].isPinned,
+      isArchived: updatedProject.isArchived ?? projects.value[index].isArchived,
       lastOpenedAt: updatedProject.lastOpenedAt ?? projects.value[index].lastOpenedAt,
     })
     project.isExists = await checkProjectExistence(project)
@@ -174,6 +181,16 @@ export const useProjectsStore = defineStore('projects', () => {
       return false
 
     project.isPinned = !project.isPinned
+    await saveProjects()
+    return true
+  }
+
+  async function toggleProjectArchived(appendTime: LocalProject['appendTime']) {
+    const project = getProjectByAppendTime(appendTime)
+    if (!project)
+      return false
+
+    project.isArchived = !project.isArchived
     await saveProjects()
     return true
   }
@@ -320,6 +337,8 @@ export const useProjectsStore = defineStore('projects', () => {
     projects,
     loaded,
     allProjects,
+    activeProjects,
+    archivedProjects,
     tempProjects,
     mainLangSummary,
     allGroups,
@@ -330,6 +349,7 @@ export const useProjectsStore = defineStore('projects', () => {
     updateProject,
     removeProject,
     toggleProjectPinned,
+    toggleProjectArchived,
     setProjectDefaultOpen,
     clearProjects,
     saveProjects,

@@ -74,6 +74,7 @@ app:
       available: Available
       missing_path: Missing path
       temporary: Temporary
+      archived: Archived
       all_languages: All languages
       all_groups: All groups
       no_group: No group
@@ -119,6 +120,8 @@ app:
       copy_failed: Copy failed
       pin: Pin
       unpin: Unpin
+      archive: Archive
+      unarchive: Unarchive
       more: More actions
       edit: Edit
       remove: Remove
