@@ -70,10 +70,11 @@ app:
       group: 分組
       sort: 排序
       all_projects: 全部專案
-      all_status: 全部狀態
+      active: 活躍
       available: 可用
       missing_path: 路徑遺失
       temporary: 臨時
+      archived: 已封存
       all_languages: 全部語言
       all_groups: 全部分組
       no_group: 無分組
@@ -119,6 +120,8 @@ app:
       copy_failed: 複製失敗
       pin: 置頂
       unpin: 取消置頂
+      archive: 封存
+      unarchive: 取消封存
       more: 更多操作
       edit: 編輯
       remove: 移除

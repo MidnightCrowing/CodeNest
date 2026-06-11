@@ -70,7 +70,7 @@ app:
       group: 分组
       sort: 排序
       all_projects: 全部项目
-      all_status: 全部状态
+      active: 活跃
       available: 可用
       missing_path: 路径缺失
       temporary: 临时

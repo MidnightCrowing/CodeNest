@@ -190,7 +190,7 @@ const kindOptions = computed<Array<FilterOption<KindFilter>>>(() => [
 ])
 
 const statusOptions = computed<Array<FilterOption<StatusFilter>>>(() => [
-  { value: 'all', label: t('app.home.filters.all_status'), count: totalProjects.value },
+  { value: 'all', label: t('app.home.filters.active'), count: totalProjects.value },
   { value: 'available', label: t('app.home.filters.available'), count: availableProjects.value },
   { value: 'missing', label: t('app.home.filters.missing_path'), count: missingProjects.value },
   { value: 'temporary', label: t('app.home.filters.temporary'), count: temporaryProjects.value },

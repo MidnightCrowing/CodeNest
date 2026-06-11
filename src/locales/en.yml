@@ -70,7 +70,7 @@ app:
       group: Group
       sort: Sort
       all_projects: All projects
-      all_status: All status
+      active: Active
       available: Available
       missing_path: Missing path
       temporary: Temporary
