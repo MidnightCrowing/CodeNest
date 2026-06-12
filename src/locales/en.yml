@@ -9,10 +9,14 @@ remove_project_dialog:
   dialog_title:
     remove: Remove Project?
     delete: Delete Project?
+    batch_remove: Remove {count} Projects?
+    batch_delete: Delete {count} Projects?
   dialog_desc:
     remove: 'Remove "{name}" from the project list?'
     delete: 'Delete "{name}" and its files?'
     delete_note: This can't be undone.
+    batch_remove: Remove these {count} projects from the list?
+    batch_delete: Delete these {count} projects and their files?
   cancel: Cancel
   remove: Remove
   remove_from_list: Keep files
@@ -63,6 +67,8 @@ app:
     search_placeholder: Search projects
     clear_count: Clear filters ({count})
     project_list: Project list
+    selection:
+      selected: '{count} selected'
     filters:
       kind: Kind
       status: Status
