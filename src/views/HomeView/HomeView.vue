@@ -2381,9 +2381,16 @@ watch(layoutMode, persistLayoutMode)
   }
 
   &.selected {
-    background-color: color-mix(in srgb, var(--ui-accent) 15%, transparent);
+    background-color: var(--ui-accent);
     border-color: var(--ui-accent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-accent) 30%, transparent);
+    box-shadow: inset 0 0 0 1px var(--ui-accent);
+
+    .project-name,
+    .project-desc,
+    .project-meta,
+    .project-actions {
+      @apply color-white;
+    }
   }
 }
 
@@ -2632,9 +2639,20 @@ watch(layoutMode, persistLayoutMode)
   }
 
   &.selected {
-    background-color: color-mix(in srgb, var(--ui-accent) 15%, transparent);
+    background-color: var(--ui-accent);
     border-color: var(--ui-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 30%, transparent);
+    box-shadow: 0 0 0 2px var(--ui-accent);
+
+    .card-header,
+    .card-footer,
+    .card-meta {
+      @apply color-white;
+    }
+
+    .project-name,
+    .project-desc {
+      @apply color-white;
+    }
   }
 }
 
