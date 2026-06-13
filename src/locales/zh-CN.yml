@@ -180,7 +180,8 @@ app:
         zh_tw: 繁體中文
     editors:
       title: 编辑器
-      command_placeholder: '{editor} 的启动命令'
+      command_label: '{editor} 的启动命令'
+      command_placeholder: 命令或可执行文件路径
       clear_command: 清空命令
       browse_executable: 浏览可执行文件
       auto_detect: 自动检测

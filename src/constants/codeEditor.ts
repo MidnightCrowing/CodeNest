@@ -29,7 +29,7 @@ export interface CodeEditorOption {
   icon?: string
   descriptionKey?: string
   groupKey: string
-  defaultCommand: string
+  initialCommand?: string
   openInTerminal?: boolean
   monochromeIcon?: boolean
 }
@@ -40,7 +40,7 @@ export interface EditorCommandOption {
   icon?: string
   descriptionKey?: string
   groupKey: string
-  defaultCommand: string
+  initialCommand?: string
   openInTerminal: boolean
   monochromeIcon?: boolean
   editors: CodeEditorEnum[]
@@ -78,82 +78,72 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'IntelliJ IDEA',
     descriptionKey: 'app.settings.editors.descriptions.intellij_idea',
     icon: 'i-custom:jetbrains-intellij-idea',
-    defaultCommand: 'idea {project}',
   },
   [CodeEditorEnum.PyCharm]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'PyCharm',
     descriptionKey: 'app.settings.editors.descriptions.pycharm',
     icon: 'i-custom:jetbrains-pycharm',
-    defaultCommand: 'pycharm {project}',
   },
   [CodeEditorEnum.PhpStorm]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'PhpStorm',
     descriptionKey: 'app.settings.editors.descriptions.phpstorm',
     icon: 'i-custom:jetbrains-phpstorm',
-    defaultCommand: 'phpstorm {project}',
   },
   [CodeEditorEnum.GoLand]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'GoLand',
     descriptionKey: 'app.settings.editors.descriptions.goland',
     icon: 'i-custom:jetbrains-goland',
-    defaultCommand: 'goland {project}',
   },
   [CodeEditorEnum.Rider]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'Rider',
     descriptionKey: 'app.settings.editors.descriptions.rider',
     icon: 'i-custom:jetbrains-rider',
-    defaultCommand: 'rider {project}',
   },
   [CodeEditorEnum.Clion]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'CLion',
     descriptionKey: 'app.settings.editors.descriptions.clion',
     icon: 'i-custom:jetbrains-clion',
-    defaultCommand: 'clion {project}',
   },
   [CodeEditorEnum.RustRover]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'RustRover',
     descriptionKey: 'app.settings.editors.descriptions.rust_rover',
     icon: 'i-custom:jetbrains-rustrover',
-    defaultCommand: 'rustrover {project}',
   },
   [CodeEditorEnum.WebStorm]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'WebStorm',
     descriptionKey: 'app.settings.editors.descriptions.webstorm',
     icon: 'i-custom:jetbrains-webstorm',
-    defaultCommand: 'webstorm {project}',
   },
   [CodeEditorEnum.RubyMine]: {
     groupKey: 'app.settings.editors.groups.jetbrains',
     label: 'RubyMine',
     descriptionKey: 'app.settings.editors.descriptions.rubymine',
     icon: 'i-custom:jetbrains-rubymine',
-    defaultCommand: 'rubymine {project}',
   },
   [CodeEditorEnum.VisualStudio]: {
     groupKey: 'app.settings.editors.groups.microsoft',
     label: 'Visual Studio',
     icon: 'i-custom:visual-studio',
-    defaultCommand: 'devenv {project}',
   },
   [CodeEditorEnum.VisualStudioCode]: {
     groupKey: 'app.settings.editors.groups.microsoft',
     label: 'Visual Studio Code',
     icon: 'i-custom:visual-studio-code',
-    defaultCommand: 'code {project}',
+    initialCommand: 'code {project}',
   },
   [CodeEditorEnum.Cursor]: {
     groupKey: 'app.settings.editors.groups.ai_editors',
     label: 'Cursor',
     descriptionKey: 'app.settings.editors.descriptions.cursor',
     icon: 'i-custom:cursor',
-    defaultCommand: 'cursor {project}',
+    initialCommand: 'cursor {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Windsurf]: {
@@ -161,7 +151,7 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Windsurf',
     descriptionKey: 'app.settings.editors.descriptions.windsurf',
     icon: 'i-custom:windsurf',
-    defaultCommand: 'windsurf {project}',
+    initialCommand: 'windsurf {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Trae]: {
@@ -169,28 +159,27 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Trae',
     descriptionKey: 'app.settings.editors.descriptions.trae',
     icon: 'i-custom:trae-color',
-    defaultCommand: 'trae {project}',
   },
   [CodeEditorEnum.Zed]: {
     groupKey: 'app.settings.editors.groups.editors',
     label: 'Zed',
     descriptionKey: 'app.settings.editors.descriptions.zed',
     icon: 'i-custom:zed-industries',
-    defaultCommand: 'zed {project}',
+    initialCommand: 'zed {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.SublimeText]: {
     groupKey: 'app.settings.editors.groups.editors',
     label: 'Sublime Text',
     icon: 'i-custom:sublime-text',
-    defaultCommand: 'subl {project}',
+    initialCommand: 'subl {project}',
     monochromeIcon: true,
   },
   [CodeEditorEnum.Neovim]: {
     groupKey: 'app.settings.editors.groups.terminal_editors',
     label: 'Neovim',
     icon: 'i-custom:neovim',
-    defaultCommand: 'nvim .',
+    initialCommand: 'nvim .',
     openInTerminal: true,
     monochromeIcon: true,
   },
@@ -199,7 +188,7 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Codex CLI',
     descriptionKey: 'app.settings.editors.descriptions.codex_cli',
     icon: 'i-custom:codex-color',
-    defaultCommand: 'codex',
+    initialCommand: 'codex',
     openInTerminal: true,
   },
   [CodeEditorEnum.ClaudeCode]: {
@@ -207,7 +196,7 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Claude Code',
     descriptionKey: 'app.settings.editors.descriptions.claude_code',
     icon: 'i-custom:claude-color',
-    defaultCommand: 'claude',
+    initialCommand: 'claude',
     openInTerminal: true,
   },
   [CodeEditorEnum.GeminiCli]: {
@@ -215,14 +204,13 @@ export const codeEditors: Record<CodeEditorEnum, CodeEditorOption> = {
     label: 'Gemini CLI',
     descriptionKey: 'app.settings.editors.descriptions.gemini_cli',
     icon: 'i-custom:gemini-color',
-    defaultCommand: 'gemini',
+    initialCommand: 'gemini',
     openInTerminal: true,
   },
   [CodeEditorEnum.AndroidStudio]: {
     groupKey: 'app.settings.editors.groups.google',
     label: 'Android Studio',
     icon: 'i-custom:android-studio-stable',
-    defaultCommand: 'studio {project}',
   },
 }
 
@@ -296,7 +284,7 @@ export const editorCommandOptions: EditorCommandOption[] = [
         icon: option.icon,
         descriptionKey: option.descriptionKey,
         groupKey: option.groupKey,
-        defaultCommand: option.defaultCommand,
+        initialCommand: option.initialCommand,
         openInTerminal: option.openInTerminal === true,
         monochromeIcon: option.monochromeIcon,
         editors: [editor],

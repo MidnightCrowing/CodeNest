@@ -66,6 +66,7 @@ interface StoredSettings {
   customThemeColor?: string
   terminalCommand?: string
   language?: LanguageEnum
+  editorInitialCommandsVersion?: number
   codeEditorsPath?: Partial<Record<EditorCommandKey | 'jetbrains', string>>
   codeEditorsOpenInTerminal?: Partial<Record<EditorCommandKey, boolean>>
   autoDetectedEditorCommands?: boolean
@@ -84,6 +85,7 @@ const settingsPersistence = createPersistence<StoredSettings>({
 })
 
 const DEFAULT_CUSTOM_THEME_COLOR = '#4682fa'
+const EDITOR_INITIAL_COMMANDS_VERSION = 1
 const HEX_COLOR_RE = /^#[\da-f]{6}$/i
 
 function isTheme(value: unknown): value is ThemeEnum {
@@ -124,6 +126,12 @@ function createDefaultCliEditorScanners(): Record<CliHistoryScannerEditor, CliEd
   ) as Record<CliHistoryScannerEditor, CliEditorScannerConfig>
 }
 
+function createInitialEditorCommands(): Record<EditorCommandKey, string> {
+  return Object.fromEntries(
+    editorCommandOptions.map(option => [option.key, option.initialCommand || '']),
+  ) as Record<EditorCommandKey, string>
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   // --- 基础配置项 ---
   const theme = ref<ThemeEnum>(ThemeEnum.System)
@@ -135,11 +143,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const customThemeColor = ref(DEFAULT_CUSTOM_THEME_COLOR)
   const terminalCommand = ref('')
   const language = ref<LanguageEnum>(LanguageEnum.English)
+  const editorInitialCommandsVersion = ref(EDITOR_INITIAL_COMMANDS_VERSION)
   const loaded = ref(false)
   let saveTimer: number | null = null
-  const codeEditorsPath = reactive<Record<EditorCommandKey, string>>(
-    Object.fromEntries(editorCommandKeys.map(key => [key, ''])) as Record<EditorCommandKey, string>,
-  )
+  const codeEditorsPath = reactive<Record<EditorCommandKey, string>>(createInitialEditorCommands())
   const codeEditorsOpenInTerminal = reactive<Record<EditorCommandKey, boolean>>(
     Object.fromEntries(editorCommandOptions.map(option => [option.key, option.openInTerminal])) as Record<EditorCommandKey, boolean>,
   )
@@ -269,10 +276,11 @@ export const useSettingsStore = defineStore('settings', () => {
     customThemeColor.value = DEFAULT_CUSTOM_THEME_COLOR
     terminalCommand.value = ''
     language.value = LanguageEnum.English
+    editorInitialCommandsVersion.value = EDITOR_INITIAL_COMMANDS_VERSION
     autoDetectedEditorCommands.value = false
     savedWebDavPassword = ''
     for (const option of editorCommandOptions) {
-      codeEditorsPath[option.key] = ''
+      codeEditorsPath[option.key] = option.initialCommand || ''
       codeEditorsOpenInTerminal[option.key] = option.openInTerminal
     }
     webdav.endpoint = ''
@@ -294,12 +302,16 @@ export const useSettingsStore = defineStore('settings', () => {
       terminalCommand.value = loadedData.terminalCommand
     if (isLanguage(loadedData.language))
       language.value = loadedData.language
+    editorInitialCommandsVersion.value = typeof loadedData.editorInitialCommandsVersion === 'number'
+      ? loadedData.editorInitialCommandsVersion
+      : 0
 
     // editor launch commands
     if (loadedData.codeEditorsPath) {
       for (const option of editorCommandOptions) {
         const command = loadedData.codeEditorsPath[option.key]
-        codeEditorsPath[option.key] = typeof command === 'string' ? command : ''
+        if (typeof command === 'string')
+          codeEditorsPath[option.key] = command
       }
 
       const legacyJetBrainsCommand = loadedData.codeEditorsPath.jetbrains
@@ -390,6 +402,18 @@ export const useSettingsStore = defineStore('settings', () => {
     return legacyWebDavPassword
   }
 
+  function applyInitialEditorCommandsMigration() {
+    if (editorInitialCommandsVersion.value >= EDITOR_INITIAL_COMMANDS_VERSION)
+      return false
+
+    for (const option of editorCommandOptions) {
+      if (option.initialCommand && !codeEditorsPath[option.key].trim())
+        codeEditorsPath[option.key] = option.initialCommand
+    }
+    editorInitialCommandsVersion.value = EDITOR_INITIAL_COMMANDS_VERSION
+    return true
+  }
+
   function hydrateCachedSettings() {
     const cachedData = settingsPersistence.loadCached()
     if (!cachedData)
@@ -399,6 +423,7 @@ export const useSettingsStore = defineStore('settings', () => {
     loaded.value = false
     resetSettingsState()
     applyStoredSettings(cachedData)
+    applyInitialEditorCommandsMigration()
     loaded.value = wasLoaded
     return true
   }
@@ -474,16 +499,18 @@ export const useSettingsStore = defineStore('settings', () => {
       const loadedData = await settingsPersistence.load()
       const isFirstRun = !loadedData
       let legacyWebDavPassword: string | null = null
+      let shouldSaveInitialEditorCommands = false
       if (loadedData) {
         resetSettingsState()
         legacyWebDavPassword = applyStoredSettings(loadedData)
+        shouldSaveInitialEditorCommands = applyInitialEditorCommandsMigration()
       }
       else {
         resetSettingsState()
       }
       const shouldSanitizeLegacyWebDavPassword = await loadWebDavPassword(legacyWebDavPassword)
       loaded.value = true
-      if (shouldSanitizeLegacyWebDavPassword || cachedHadLegacyWebDavPassword)
+      if (shouldSanitizeLegacyWebDavPassword || cachedHadLegacyWebDavPassword || shouldSaveInitialEditorCommands)
         await saveSettings()
       if (!isFirstRun && !autoDetectedEditorCommands.value) {
         autoDetectedEditorCommands.value = true
@@ -517,6 +544,7 @@ export const useSettingsStore = defineStore('settings', () => {
         customThemeColor: customThemeColor.value,
         terminalCommand: terminalCommand.value,
         language: language.value,
+        editorInitialCommandsVersion: editorInitialCommandsVersion.value,
         codeEditorsPath: { ...codeEditorsPath },
         codeEditorsOpenInTerminal: { ...codeEditorsOpenInTerminal },
         autoDetectedEditorCommands: autoDetectedEditorCommands.value,
@@ -541,7 +569,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(
-    [theme, themeColor, customThemeColor, terminalCommand, language, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
+    [theme, themeColor, customThemeColor, terminalCommand, language, editorInitialCommandsVersion, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
     queueSaveSettings,
     { deep: true },
   )

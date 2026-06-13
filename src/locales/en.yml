@@ -180,7 +180,8 @@ app:
         zh_tw: Traditional Chinese
     editors:
       title: Editors
-      command_placeholder: Launch command for {editor}
+      command_label: Launch command for {editor}
+      command_placeholder: Command or executable path
       clear_command: Clear command
       browse_executable: Browse executable
       auto_detect: Auto detect

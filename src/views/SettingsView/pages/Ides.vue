@@ -35,10 +35,6 @@ function commandGroup(option: EditorCommandOption) {
   return t(option.groupKey)
 }
 
-function commandPlaceholder(option: EditorCommandOption) {
-  return option.defaultCommand
-}
-
 function editorDescription(option: EditorCommandOption) {
   return option.descriptionKey ? t(option.descriptionKey) : commandGroup(option)
 }
@@ -259,9 +255,9 @@ function quoteCommand(command: string) {
                 class="path-input"
                 data-editor-control="command"
                 spellcheck="false"
-                :aria-label="t('app.settings.editors.command_placeholder', { editor: option.label })"
-                :placeholder="commandPlaceholder(option)"
-                :title="settings.codeEditorsPath[option.key] || commandPlaceholder(option)"
+                :aria-label="t('app.settings.editors.command_label', { editor: option.label })"
+                :placeholder="t('app.settings.editors.command_placeholder')"
+                :title="settings.codeEditorsPath[option.key] || t('app.settings.editors.command_placeholder')"
               >
               <button
                 v-if="settings.codeEditorsPath[option.key]"
