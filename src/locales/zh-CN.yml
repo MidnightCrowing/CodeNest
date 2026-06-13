@@ -9,14 +9,10 @@ remove_project_dialog:
   dialog_title:
     remove: 移除项目？
     delete: 删除项目？
-    batch_remove: 移除 {count} 个项目？
-    batch_delete: 删除 {count} 个项目？
   dialog_desc:
-    remove: '从项目列表中移除”{name}”？'
-    delete: '删除”{name}”及其文件？'
+    remove: '从项目列表中移除“{name}”？'
+    delete: '删除“{name}”及其文件？'
     delete_note: 此操作无法撤销。
-    batch_remove: 从项目列表中移除这 {count} 个项目？
-    batch_delete: 删除这 {count} 个项目及其文件？
   cancel: 取消
   remove: 移除
   remove_from_list: 保留文件
@@ -67,8 +63,6 @@ app:
     search_placeholder: 搜索项目
     clear_count: 清除筛选 ({count})
     project_list: 项目列表
-    selection:
-      selected: 已选 {count} 项
     filters:
       kind: 类型
       status: 状态

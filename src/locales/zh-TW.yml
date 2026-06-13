@@ -9,14 +9,10 @@ remove_project_dialog:
   dialog_title:
     remove: 移除專案？
     delete: 刪除專案？
-    batch_remove: 移除 {count} 個專案？
-    batch_delete: 刪除 {count} 個專案？
   dialog_desc:
-    remove: '從專案清單中移除”{name}”？'
-    delete: '刪除”{name}”及其檔案？'
+    remove: '從專案清單中移除“{name}”？'
+    delete: '刪除“{name}”及其檔案？'
     delete_note: 此操作無法復原。
-    batch_remove: 從專案清單中移除這 {count} 個專案？
-    batch_delete: 刪除這 {count} 個專案及其檔案？
   cancel: 取消
   remove: 移除
   remove_from_list: 保留檔案
@@ -67,8 +63,6 @@ app:
     search_placeholder: 搜尋專案
     clear_count: 清除篩選 ({count})
     project_list: 專案清單
-    selection:
-      selected: 已選 {count} 項
     filters:
       kind: 類型
       status: 狀態

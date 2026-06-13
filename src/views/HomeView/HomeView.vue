@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { showPop as showLanguagePop } from '~/components/LanguagePop/LanguagePopProvider'
-import { setRemoveAnimationCallback, showBatchRemoveDialog, showRemoveDialog } from '~/components/RemoveProjectDialog'
+import { setRemoveAnimationCallback, showRemoveDialog } from '~/components/RemoveProjectDialog'
 import type { UiActionMenuItem } from '~/components/ui/actionMenu'
 import { showToast } from '~/components/ui/toast'
 import UiActionMenu from '~/components/ui/UiActionMenu.vue'
@@ -29,7 +29,6 @@ import {
 import { activatedPage } from '~/views/SettingsView'
 
 import LanguageFilterSelect from './LanguageFilterSelect.vue'
-import SelectionToolbar from './SelectionToolbar.vue'
 
 defineOptions({
   name: 'Home',
@@ -108,8 +107,6 @@ const cardsScrollAreaRef = ref<ScrollAreaRef | null>(null)
 const loadMoreSentinelRef = ref<HTMLElement | null>(null)
 const homeScrollSnapshot = ref<HomeScrollSnapshot | null>(null)
 const shouldRestoreHomeScroll = ref(false)
-const selectedProjectIds = ref<Set<number>>(new Set())
-const isMultiSelectMode = computed(() => selectedProjectIds.value.size > 0)
 let loadMoreObserver: IntersectionObserver | null = null
 let searchDebounceTimer: ReturnType<typeof window.setTimeout> | null = null
 
@@ -341,13 +338,6 @@ const activeFilterCount = computed(() =>
   + Number(languageFilter.value !== 'all')
   + Number(groupFilter.value !== 'all'),
 )
-
-// 清空多选状态当筛选结果变化时
-watch(filteredProjects, () => {
-  if (selectedProjectIds.value.size > 0) {
-    selectedProjectIds.value.clear()
-  }
-})
 
 function editorHasLaunchCommand(editor: CodeEditorEnum) {
   return !!settingsStore.getEditorLaunchConfig(editor).command.trim()
@@ -605,92 +595,6 @@ function addProject() {
 function editProject(project: LocalProject) {
   initializeUpdateProjectState(project)
   navigateFromHome(ViewEnum.ProjectEditor)
-}
-
-function toggleProjectSelection(project: LocalProject) {
-  if (selectedProjectIds.value.has(project.appendTime)) {
-    selectedProjectIds.value.delete(project.appendTime)
-  }
-  else {
-    selectedProjectIds.value.add(project.appendTime)
-  }
-}
-
-function selectProjectRange(fromProject: LocalProject, toProject: LocalProject) {
-  const projects = filteredProjects.value
-  const fromIndex = projects.findIndex(p => p.appendTime === fromProject.appendTime)
-  const toIndex = projects.findIndex(p => p.appendTime === toProject.appendTime)
-
-  if (fromIndex < 0 || toIndex < 0)
-    return
-
-  const start = Math.min(fromIndex, toIndex)
-  const end = Math.max(fromIndex, toIndex)
-
-  for (let i = start; i <= end; i++) {
-    selectedProjectIds.value.add(projects[i].appendTime)
-  }
-}
-
-let lastClickedProject: LocalProject | null = null
-
-function handleProjectClick(project: LocalProject, event: MouseEvent) {
-  // 多选模式下，普通点击切换选中状态
-  if (isMultiSelectMode.value) {
-    if (event.shiftKey && lastClickedProject) {
-      selectProjectRange(lastClickedProject, project)
-    }
-    else {
-      toggleProjectSelection(project)
-    }
-    lastClickedProject = project
-    return
-  }
-
-  // Shift/Cmd+点击进入多选模式
-  if (event.shiftKey || event.metaKey || event.ctrlKey) {
-    toggleProjectSelection(project)
-    lastClickedProject = project
-    return
-  }
-
-  // 普通点击打开项目
-  lastClickedProject = project
-  openProject(project)
-}
-
-function clearSelection() {
-  selectedProjectIds.value.clear()
-  lastClickedProject = null
-}
-
-async function batchArchiveProjects() {
-  const ids = Array.from(selectedProjectIds.value)
-  clearSelection()
-
-  for (const id of ids) {
-    await projectsStore.toggleProjectArchived(id)
-  }
-}
-
-async function batchUnarchiveProjects() {
-  const ids = Array.from(selectedProjectIds.value)
-  clearSelection()
-
-  for (const id of ids) {
-    await projectsStore.toggleProjectArchived(id)
-  }
-}
-
-function batchRemoveProjects() {
-  const projects = Array.from(selectedProjectIds.value)
-    .map(id => projectsStore.allProjects.find(p => p.appendTime === id))
-    .filter(Boolean) as LocalProject[]
-
-  if (projects.length === 0)
-    return
-
-  showBatchRemoveDialog(projects)
 }
 
 async function openProject(project: LocalProject) {
@@ -1159,20 +1063,8 @@ function handleProjectContainerKeydown(project: LocalProject, event: KeyboardEve
   if (event.target !== event.currentTarget)
     return
 
-  // Escape 退出多选模式
-  if (event.key === 'Escape' && isMultiSelectMode.value) {
-    event.preventDefault()
-    clearSelection()
-    return
-  }
-
   if (handleProjectShortcut(project, event))
     return
-
-  // 多选模式下禁用 Enter/Space 打开
-  if (isMultiSelectMode.value && (event.key === 'Enter' || event.key === ' ')) {
-    return
-  }
 
   switch (event.key) {
     case 'Enter':
@@ -1889,15 +1781,6 @@ watch(layoutMode, persistLayoutMode)
       />
     </section>
 
-    <SelectionToolbar
-      v-if="isMultiSelectMode"
-      :count="selectedProjectIds.size"
-      @archive="batchArchiveProjects"
-      @unarchive="batchUnarchiveProjects"
-      @remove="batchRemoveProjects"
-      @clear="clearSelection"
-    />
-
     <section class="project-table" :class="`layout-${layoutMode}`" :aria-label="t('app.home.project_list')">
       <div v-if="layoutMode === 'list'" class="project-grid table-head">
         <span>{{ t('app.home.table.project') }}</span>
@@ -1925,13 +1808,13 @@ watch(layoutMode, persistLayoutMode)
           <div
             :ref="el => setProjectItemRef(project.appendTime, el)"
             class="project-grid project-row"
-            :class="{ missing: !project.isExists, selected: selectedProjectIds.has(project.appendTime) }"
+            :class="{ missing: !project.isExists }"
             role="button"
             :tabindex="project.isExists ? 0 : -1"
             :aria-disabled="!project.isExists"
             :aria-label="t('app.home.actions.open_named', { name: project.name })"
             aria-keyshortcuts="Enter Space Shift+F10 Control+I Meta+I Control+C Meta+C Delete Backspace"
-            @click="handleProjectClick(project, $event)"
+            @click="openProject(project)"
             @keydown="handleProjectContainerKeydown(project, $event)"
           >
             <div class="project-main">
@@ -2087,13 +1970,13 @@ watch(layoutMode, persistLayoutMode)
             <article
               :ref="el => setProjectItemRef(project.appendTime, el)"
               class="project-card"
-              :class="{ missing: !project.isExists, selected: selectedProjectIds.has(project.appendTime) }"
+              :class="{ missing: !project.isExists }"
               role="button"
               :tabindex="project.isExists ? 0 : -1"
               :aria-disabled="!project.isExists"
               :aria-label="t('app.home.actions.open_named', { name: project.name })"
               aria-keyshortcuts="Enter Space Shift+F10 Control+I Meta+I Control+C Meta+C Delete Backspace"
-              @click="handleProjectClick(project, $event)"
+              @click="openProject(project)"
               @keydown="handleProjectContainerKeydown(project, $event)"
             >
               <header class="card-header">
@@ -2379,12 +2262,6 @@ watch(layoutMode, persistLayoutMode)
   &.missing {
     @apply cursor-default opacity-78;
   }
-
-  &.selected {
-    background-color: color-mix(in srgb, var(--ui-accent) 15%, transparent);
-    border-color: var(--ui-accent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-accent) 30%, transparent);
-  }
 }
 
 .load-more-sentinel {
@@ -2629,12 +2506,6 @@ watch(layoutMode, persistLayoutMode)
     @apply cursor-default opacity-78;
     box-shadow: var(--shadow-surface);
     transform: none;
-  }
-
-  &.selected {
-    background-color: color-mix(in srgb, var(--ui-accent) 15%, transparent);
-    border-color: var(--ui-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 30%, transparent);
   }
 }
 
