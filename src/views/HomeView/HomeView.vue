@@ -1837,10 +1837,9 @@ watch(layoutMode, persistLayoutMode)
     <section class="project-table" :class="`layout-${layoutMode}`" :aria-label="t('app.home.project_list')">
       <div v-if="layoutMode === 'list'" class="project-grid table-head">
         <span>{{ t('app.home.table.project') }}</span>
-        <span>{{ t('app.home.table.kind') }}</span>
         <span>{{ t('app.home.table.language') }}</span>
-        <span>{{ t('app.home.table.license') }}</span>
         <span>{{ t('app.home.table.editor') }}</span>
+        <span>{{ t('app.home.table.license') }}</span>
         <span>{{ t('app.home.table.last_opened') }}</span>
         <span>{{ t('app.home.table.actions') }}</span>
       </div>
@@ -1877,6 +1876,13 @@ watch(layoutMode, persistLayoutMode)
                   <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                   <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                 </span>
+                <span
+                  v-if="project.kind !== ProjectKind.MINE"
+                  class="kind-badge"
+                  :class="kindClass(project.kind)"
+                >
+                  {{ kindLabel(project.kind) }}
+                </span>
                 <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
                   {{ t('app.home.remote.badge') }}
                 </span>
@@ -1906,13 +1912,14 @@ watch(layoutMode, persistLayoutMode)
               </div>
             </div>
 
-            <span class="kind-pill" :class="kindClass(project.kind)">
-              {{ kindLabel(project.kind) }}
-            </span>
             <button class="inline-pill" type="button" :title="project.mainLang || t('app.common.unknown')" @click.stop="showLanguage(project, $event)">
               <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
               {{ project.mainLang || t('app.common.unknown') }}
             </button>
+            <span class="editor-cell" :title="codeEditors[project.defaultOpen]?.label || t('app.common.no_editor')">
+              <span :class="editorIconClasses(project.defaultOpen)" />
+              <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
+            </span>
             <span
               v-if="project.license && project.license !== LicenseEnum.NONE"
               class="license-cell"
@@ -1920,10 +1927,6 @@ watch(layoutMode, persistLayoutMode)
               {{ shortLicense(project.license) }}
             </span>
             <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
-            <span class="editor-cell" :title="codeEditors[project.defaultOpen]?.label || t('app.common.no_editor')">
-              <span :class="editorIconClasses(project.defaultOpen)" />
-              <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
-            </span>
             <span class="recent-cell" :class="{ muted: !project.lastOpenedAt }">{{ formatLastOpened(project) }}</span>
 
             <div
@@ -2043,6 +2046,13 @@ watch(layoutMode, persistLayoutMode)
                     <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                     <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                   </strong>
+                  <span
+                    v-if="project.kind !== ProjectKind.MINE"
+                    class="kind-badge"
+                    :class="kindClass(project.kind)"
+                  >
+                    {{ kindLabel(project.kind) }}
+                  </span>
                   <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
                     {{ t('app.home.remote.badge') }}
                   </span>
@@ -2050,9 +2060,6 @@ watch(layoutMode, persistLayoutMode)
                     {{ t('app.home.filters.temporary') }}
                   </span>
                 </div>
-                <span class="kind-pill" :class="kindClass(project.kind)">
-                  {{ kindLabel(project.kind) }}
-                </span>
               </header>
 
               <div class="card-path" :title="project.path">
@@ -2294,7 +2301,13 @@ watch(layoutMode, persistLayoutMode)
 
 .project-grid {
   @apply grid items-center gap-9px;
-  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 120px 122px 136px;
+  grid-template-columns: minmax(220px, 1.7fr) 110px 140px 104px 122px 136px;
+}
+
+/* 加大"编辑器"(第3列)与"许可证"(第4列)之间的间距:只给许可证列加左边距,
+   表头与每一行都是 .project-grid 的直接子元素,因此自动保持对齐。 */
+.project-grid > :nth-child(4) {
+  @apply ml-8px;
 }
 
 .table-head {
@@ -2442,8 +2455,23 @@ watch(layoutMode, persistLayoutMode)
   @apply shrink-0;
 }
 
+/* 列表视图:中性元数据格(语言/许可证/编辑器)渲染为纯文本,只有"类型"保留彩色标签。
+   作用域限定在 .project-row,卡片视图的药丸不受影响。 */
+.project-row > .inline-pill,
+.project-row > .license-cell,
+.project-row > .editor-cell {
+  @apply bg-transparent px-0;
+}
+
+.project-row > .inline-pill {
+  @apply cursor-pointer;
+
+  &:hover {
+    @apply underline;
+  }
+}
+
 .inline-pill,
-.kind-pill,
 .license-cell,
 .editor-cell {
   @apply min-w-0 max-w-full h-23px rounded-4px px-7px border-0;
@@ -2483,12 +2511,14 @@ watch(layoutMode, persistLayoutMode)
   @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_95%,var(--gray-1))];
 }
 
-.kind-pill {
+.kind-badge {
+  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply inline-flex items-center text-10px font-650 lh-12px;
   @apply [background:color-mix(in_srgb,var(--kind-color)_var(--kind-bg-light-strength),var(--ui-surface-background))];
   @apply [color:var(--kind-text-light)];
 }
 
-.workspace-shell.theme-dark .kind-pill {
+.workspace-shell.theme-dark .kind-badge {
   @apply [background:color-mix(in_srgb,var(--kind-bg-dark-color,var(--kind-color))_var(--kind-bg-dark-strength),var(--kind-bg-dark-base,var(--ui-surface-background)))];
   @apply [color:var(--kind-text-dark)];
 }
@@ -2659,10 +2689,10 @@ watch(layoutMode, persistLayoutMode)
 
 @media (max-width: 1020px) {
   .project-grid {
-    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 120px 136px;
+    grid-template-columns: minmax(220px, 1fr) 104px 140px 112px 136px;
   }
 
-  .project-grid > :nth-child(6) {
+  .project-grid > :nth-child(5) {
     display: none;
   }
 }
@@ -2693,13 +2723,13 @@ watch(layoutMode, persistLayoutMode)
   }
 
   .project-grid {
-    grid-template-columns: minmax(210px, 1fr) 76px 136px;
+    grid-template-columns: minmax(210px, 1fr) 136px;
   }
 
+  .project-grid > :nth-child(2),
   .project-grid > :nth-child(3),
   .project-grid > :nth-child(4),
-  .project-grid > :nth-child(5),
-  .project-grid > :nth-child(6) {
+  .project-grid > :nth-child(5) {
     display: none;
   }
 }
@@ -2736,7 +2766,7 @@ watch(layoutMode, persistLayoutMode)
   }
 
   .project-grid {
-    grid-template-columns: minmax(180px, 1fr) 76px 84px;
+    grid-template-columns: minmax(180px, 1fr) 84px;
   }
 
   .row-actions .icon-button:not(.primary-action):not(.copy-action):not(.more-action) {
