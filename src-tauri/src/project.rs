@@ -528,25 +528,60 @@ fn spawn_editor_command(
 }
 
 fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
-    if cfg!(windows) {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // CREATE_NO_WINDOW 抑制控制台窗口:编辑器启动器常是 code.cmd 之类的批处理,
+        // 默认会让 Windows 给它分配一个控制台窗口(表现为弹出终端)。
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
         let extension = program
             .extension()
             .and_then(|extension| extension.to_str())
             .map(str::to_ascii_lowercase);
+
         if matches!(extension.as_deref(), Some("bat" | "cmd")) {
-            let mut command = Command::new("cmd");
-            command.args(["/C", "start", "", &program.to_string_lossy()]);
-            command.args(args);
-            command.spawn().map_err(|error| error.to_string())?;
-            return Ok(());
+            // .cmd/.bat 不是 PE 可执行文件,必须经 cmd 运行(直接 CreateProcess 会报
+            // “不是有效的 Win32 应用程序”)。cmd /C 会去除整条命令行的首尾引号,因此把
+            // “程序 + 参数”整体再包一层引号;参数(路径 / --remote / ssh-remote+host)
+            // 不含双引号,逐个加引号即可安全。
+            let mut line = String::new();
+            line.push('"'); // 外层起始引号
+            line.push('"');
+            line.push_str(&program.to_string_lossy());
+            line.push('"'); // 程序路径引号
+            for arg in args {
+                line.push_str(" \"");
+                line.push_str(arg);
+                line.push('"');
+            }
+            line.push('"'); // 外层结束引号
+
+            return Command::new("cmd")
+                .raw_arg("/C")
+                .raw_arg(&line)
+                .creation_flags(CREATE_NO_WINDOW)
+                .spawn()
+                .map(|_| ())
+                .map_err(|error| format!("Failed to launch {}: {error}", program.display()));
         }
+
+        return Command::new(program)
+            .args(args)
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn()
+            .map(|_| ())
+            .map_err(|error| format!("Failed to launch {}: {error}", program.display()));
     }
 
-    Command::new(program)
-        .args(args)
-        .spawn()
-        .map(|_| ())
-        .map_err(|error| format!("Failed to launch {}: {error}", program.display()))
+    #[cfg(not(windows))]
+    {
+        Command::new(program)
+            .args(args)
+            .spawn()
+            .map(|_| ())
+            .map_err(|error| format!("Failed to launch {}: {error}", program.display()))
+    }
 }
 
 fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String> {
@@ -616,16 +651,36 @@ fn posix_single_quote(value: &str) -> String {
 
 /// 打开终端并通过 ssh 进入远程目录。
 fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
-    // 远端命令:cd <path> 后保留交互 shell。$SHELL 由远端展开,故整体单引号保护。
+    // 远端命令:cd <path> 后保留交互 shell。$SHELL 由远端展开,故路径用 POSIX 单引号保护。
     let inner = format!("cd {} ; exec $SHELL -l", posix_single_quote(remote_path));
-    let args = vec![
-        "ssh".to_string(),
-        "-t".to_string(),
-        host.to_string(),
-        inner,
-    ];
-    let shell_command = shell_join(&args);
-    spawn_terminal_raw(&shell_command, None)
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // 用 raw_arg 精确拼出命令行:Rust 默认的 MSVCRT 转义(\")与 cmd 的解析规则冲突,
+        // 会把 host 连同引号一起塞给 ssh,导致 “hostname contains invalid characters”。
+        // host 不含空格,直接传;远端命令整体用双引号包成 ssh 的单个参数。
+        return Command::new("cmd")
+            .raw_arg("/C")
+            .raw_arg("start")
+            .raw_arg("\"\"")
+            .raw_arg("cmd")
+            .raw_arg("/K")
+            .raw_arg("ssh")
+            .raw_arg("-t")
+            .raw_arg(host)
+            .raw_arg(format!("\"{inner}\""))
+            .spawn()
+            .map(|_| ())
+            .map_err(|error| error.to_string());
+    }
+
+    #[cfg(not(windows))]
+    {
+        let args = vec!["ssh".to_string(), "-t".to_string(), host.to_string(), inner];
+        let shell_command = shell_join(&args);
+        spawn_terminal_raw(&shell_command, None)
+    }
 }
 
 fn detect_editor_command_template(editor: &str) -> Option<String> {
