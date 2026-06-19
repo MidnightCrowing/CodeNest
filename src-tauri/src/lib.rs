@@ -25,6 +25,7 @@ pub fn run() {
             project::export_projects,
             project::import_projects,
             project::open_project,
+            project::open_remote_project,
             project::read_project_license,
             scanner::detect_cli_history_root_path,
             scanner::detect_jetbrains_config_root_path,

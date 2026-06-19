@@ -27,7 +27,7 @@ export interface LocalProject {
   // 项目最近一次通过 CodeNest 打开的时间戳（毫秒级）
   lastOpenedAt?: number
 
-  // 项目的本地路径
+  // 项目的本地路径（远程项目存合成串 `${remoteHost}:${remotePath}`，仅用于展示与去重）
   path: string
   // 项目的名称
   name: string
@@ -62,4 +62,11 @@ export interface LocalProject {
   isArchived?: boolean
   // 标识该项目是否仍然存在于文件系统中
   isExists: boolean
+
+  // 标识该项目是否为远程 SSH 项目（远程项目没有本地路径）
+  isRemote?: boolean
+  // （远程项目）SSH 主机：~/.ssh/config 别名或 user@host[:port]，认证/端口/密钥委托给 ssh
+  remoteHost?: string
+  // （远程项目）远程绝对路径（POSIX，如 /home/user/proj）
+  remotePath?: string
 }

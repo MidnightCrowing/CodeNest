@@ -63,6 +63,8 @@ app:
     search_placeholder: 搜尋專案
     clear_count: 清除篩選 ({count})
     project_list: 專案清單
+    remote:
+      badge: 遠端
     filters:
       kind: 類型
       status: 狀態
@@ -92,6 +94,7 @@ app:
       kind: 類型
       language: 語言
       license: 授權
+      editor: 編輯器
       last_opened: 最近開啟
       never_opened: 尚未開啟
       actions: 操作
@@ -135,6 +138,7 @@ app:
       scan_added: 新增 {count} 個專案
       scan_updated: 更新 {count} 個專案狀態
       scan_failed_items: '{count} 個專案分析失敗'
+      remote_editor_unsupported: 此編輯器不支援遠端專案
   settings:
     title: 設定
     open_json: 開啟設定 JSON
@@ -335,12 +339,21 @@ app:
     unnamed: 未命名專案
     no_language: 無語言
     no_folder: 未選擇資料夾
+    mode:
+      local: 本機
+      remote: 遠端
     sections:
       project: 專案
       metadata: 語言與編輯器
     fields:
       folder: 資料夾
       folder_duplicate: 這個資料夾已在專案清單中。
+      location: 位置
+      remote_host: SSH 主機
+      remote_host_desc: "~/.ssh/config 別名或 user{'@'}host"
+      remote_host_placeholder: "例如 my-server 或 user{'@'}host"
+      remote_path: 遠端路徑
+      remote_path_placeholder: 例如 /home/user/project
       name: 名稱
       group: 分組
       group_desc: 用於篩選的選填標籤。

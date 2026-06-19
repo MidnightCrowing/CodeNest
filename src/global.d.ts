@@ -111,6 +111,7 @@ declare global {
       analyzeProject: (folderPath: string) => Promise<LinguistResult | ErrorResult>
       readProjectLicense: (folderPath: string, maxLines?: number) => Promise<LicenseReadResult>
       openProject: (editorCommand: string, projectPath: string, openInTerminal?: boolean) => Promise<string>
+      openRemoteProject: (host: string, remotePath: string, editorCommand: string, mode: 'vscode' | 'terminal') => Promise<string>
       detectEditorCommand: (editor: EditorCommandKey) => Promise<string | null>
       deleteProject: (projectPath: string) => Promise<ProjectMutationResult>
       importProject: () => Promise<ProjectMutationResult>

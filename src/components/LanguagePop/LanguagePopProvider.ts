@@ -15,6 +15,10 @@ export const analyzing: Ref<boolean> = ref(false)
 let analyzeRequestId = 0
 
 export function showPop(newProjectItem: LocalProject, anchor: HTMLElement) {
+  // 远程项目没有本地文件可分析,不展示语言分析弹层
+  if (newProjectItem.isRemote)
+    return
+
   const requestId = ++analyzeRequestId
   project.value = newProjectItem
   mainLang.value = newProjectItem.mainLang

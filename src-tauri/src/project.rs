@@ -302,6 +302,45 @@ pub fn open_project(
     Ok("Project opened".to_string())
 }
 
+/// 打开远程 SSH 项目:VS Code 系走 Remote-SSH,终端走 ssh -t。
+///
+/// 远程项目没有本地路径,故不做 `is_absolute()/exists()` 校验;
+/// 认证/端口/密钥由用户的 ~/.ssh/config 与 ssh 负责。
+#[tauri::command]
+pub fn open_remote_project(
+    host: String,
+    remote_path: String,
+    editor_command: String,
+    mode: String,
+) -> Result<String, String> {
+    let host = host.trim();
+    let remote_path = remote_path.trim();
+    if host.is_empty() || remote_path.is_empty() {
+        return Err("Remote host and path cannot be empty".to_string());
+    }
+
+    match mode.as_str() {
+        "terminal" => spawn_remote_terminal(host, remote_path)?,
+        "vscode" => {
+            if editor_command.trim().is_empty() {
+                return Err("Editor command cannot be empty".to_string());
+            }
+            // 取已配置命令的程序名 token(如 "code"),其余 {project} 之类占位符丢弃
+            let args = parse_command_line(&editor_command)?;
+            let program = PathBuf::from(&args[0]);
+            let remote_args = vec![
+                "--remote".to_string(),
+                format!("ssh-remote+{host}"),
+                remote_path.to_string(),
+            ];
+            spawn_editor(&program, &remote_args)?;
+        }
+        other => return Err(format!("Unknown remote open mode: {other}")),
+    }
+
+    Ok("Remote project opened".to_string())
+}
+
 #[tauri::command]
 pub fn detect_editor_command(editor: String) -> Option<String> {
     detect_editor_command_template(&editor)
@@ -513,28 +552,36 @@ fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
 fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String> {
     let shell_command = shell_join(args);
 
+    if cfg!(target_os = "macos") {
+        // macOS 的 Terminal.app 通过 osascript 启动,不继承 current_dir,
+        // 因此把 cd 前缀嵌入命令字符串。
+        let project_str = project.to_string_lossy();
+        let full_command = format!("cd {} ; {}", shell_quote(&project_str), shell_command);
+        spawn_terminal_raw(&full_command, None)
+    } else {
+        spawn_terminal_raw(&shell_command, Some(project))
+    }
+}
+
+/// 在系统终端窗口中运行一条 shell 命令。
+///
+/// `cwd` 仅用于 Windows/Linux 的 `current_dir`;macOS 不继承 current_dir,
+/// 调用方需把 `cd` 嵌入命令字符串(远程场景由 ssh 自身 cd,无需本地 cwd)。
+fn spawn_terminal_raw(shell_command: &str, cwd: Option<&Path>) -> Result<(), String> {
     if cfg!(windows) {
-        Command::new("cmd")
-            .current_dir(project)
-            .args(["/C", "start", "", "cmd", "/K", &shell_command])
+        let mut command = Command::new("cmd");
+        if let Some(dir) = cwd {
+            command.current_dir(dir);
+        }
+        command
+            .args(["/C", "start", "", "cmd", "/K", shell_command])
             .spawn()
             .map(|_| ())
             .map_err(|error| error.to_string())
     } else if cfg!(target_os = "macos") {
-        // 使用 AppleScript 在 Terminal.app 中执行命令
-        let project_str = project.to_string_lossy();
-        let cd_command = format!("cd {}", shell_quote(&project_str));
-        let full_command = format!("{} ; {}", cd_command, shell_command);
-
         // AppleScript 字符串需要转义反斜杠和双引号
-        let escaped = full_command
-            .replace('\\', "\\\\")
-            .replace('"', "\\\"");
-
-        let script = format!(
-            "tell application \"Terminal\" to do script \"{}\"",
-            escaped
-        );
+        let escaped = shell_command.replace('\\', "\\\\").replace('"', "\\\"");
+        let script = format!("tell application \"Terminal\" to do script \"{}\"", escaped);
 
         Command::new("osascript")
             .args(["-e", &script])
@@ -542,19 +589,43 @@ fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String>
             .map(|_| ())
             .map_err(|error| error.to_string())
     } else {
-        Command::new("x-terminal-emulator")
-            .current_dir(project)
-            .args(["-e", "sh", "-lc", &shell_command])
+        let mut primary = Command::new("x-terminal-emulator");
+        if let Some(dir) = cwd {
+            primary.current_dir(dir);
+        }
+        primary
+            .args(["-e", "sh", "-lc", shell_command])
             .spawn()
             .or_else(|_| {
-                Command::new("gnome-terminal")
-                    .current_dir(project)
-                    .args(["--", "sh", "-lc", &shell_command])
-                    .spawn()
+                let mut fallback = Command::new("gnome-terminal");
+                if let Some(dir) = cwd {
+                    fallback.current_dir(dir);
+                }
+                fallback.args(["--", "sh", "-lc", shell_command]).spawn()
             })
             .map(|_| ())
             .map_err(|error| error.to_string())
     }
+}
+
+/// 以 POSIX 单引号包裹远程路径(始终面向远程的 POSIX shell,
+/// 不能用本地平台相关的 shell_quote)。
+fn posix_single_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
+}
+
+/// 打开终端并通过 ssh 进入远程目录。
+fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
+    // 远端命令:cd <path> 后保留交互 shell。$SHELL 由远端展开,故整体单引号保护。
+    let inner = format!("cd {} ; exec $SHELL -l", posix_single_quote(remote_path));
+    let args = vec![
+        "ssh".to_string(),
+        "-t".to_string(),
+        host.to_string(),
+        inner,
+    ];
+    let shell_command = shell_join(&args);
+    spawn_terminal_raw(&shell_command, None)
 }
 
 fn detect_editor_command_template(editor: &str) -> Option<String> {

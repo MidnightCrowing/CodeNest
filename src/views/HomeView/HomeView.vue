@@ -13,7 +13,7 @@ import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import { SettingPageEnum, ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { codeEditors, editorCommandOptions, isCodeEditor } from '~/constants/codeEditor'
+import { codeEditors, editorCommandOptions, isCodeEditor, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -364,7 +364,8 @@ function editorMenuItems(project: LocalProject, mode: 'open-with' | 'default-edi
       label: option.label,
       icon: editorMenuIcon(option),
       checked: isCurrentDefault,
-      disabled: mode === 'open-with' && (!project.isExists || !hasLaunchCommand),
+      disabled: (mode === 'open-with' && (!project.isExists || !hasLaunchCommand))
+        || (project.isRemote && !isVscodeHistoryScannerEditor(option.key)),
       separatorBefore: index > 0 && option.groupKey !== previousOption.groupKey,
     }
   })
@@ -433,7 +434,7 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     {
       id: 'explorer',
       label: t('app.home.actions.open_explorer'),
-      disabled: !project.isExists,
+      disabled: !project.isExists || !!project.isRemote,
       separatorBefore: !sourceUrl,
     },
     {
@@ -609,6 +610,11 @@ async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEn
     return
   }
 
+  if (project.isRemote) {
+    await openRemoteProjectWithEditor(project, editor)
+    return
+  }
+
   const launchConfig = settingsStore.getEditorLaunchConfig(editor)
   if (!launchConfig?.command) {
     showMissingEditorCommandToast()
@@ -624,6 +630,43 @@ async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEn
   catch (error: unknown) {
     clearProjectOpening(project.appendTime)
     console.error('Failed to open project:', error)
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.open_failed'),
+      description: formatActionError(error),
+    })
+  }
+}
+
+async function openRemoteProjectWithEditor(project: LocalProject, editor: CodeEditorEnum) {
+  if (!project.remoteHost || !project.remotePath)
+    return
+
+  // 远程仅支持 VS Code 系（Remote-SSH）
+  if (!isVscodeHistoryScannerEditor(editor)) {
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.open_failed'),
+      description: t('app.home.feedback.remote_editor_unsupported'),
+    })
+    return
+  }
+
+  const launchConfig = settingsStore.getEditorLaunchConfig(editor)
+  if (!launchConfig?.command) {
+    showMissingEditorCommandToast()
+    return
+  }
+
+  markProjectOpening(project.appendTime)
+  try {
+    await window.api.openRemoteProject(project.remoteHost, project.remotePath, launchConfig.command, 'vscode')
+    void projectsStore.markProjectOpened(project.appendTime)
+    finishProjectOpening(project.appendTime)
+  }
+  catch (error: unknown) {
+    clearProjectOpening(project.appendTime)
+    console.error('Failed to open remote project:', error)
     showToast({
       tone: 'error',
       title: t('app.home.feedback.open_failed'),
@@ -753,7 +796,8 @@ function isTerminalOpening(project: LocalProject) {
 }
 
 function canDeleteProjectFiles(project: LocalProject) {
-  return project.isTemporary && project.isExists !== false
+  // 远程项目没有本地文件,只能从列表移除
+  return project.isTemporary && project.isExists !== false && !project.isRemote
 }
 
 function setProjectItemRef(projectId: number, element: unknown) {
@@ -1480,7 +1524,12 @@ async function openInTerminal(project: LocalProject) {
 
   markTerminalOpening(project.appendTime)
   try {
-    await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+    if (project.isRemote && project.remoteHost && project.remotePath) {
+      await window.api.openRemoteProject(project.remoteHost, project.remotePath, '', 'terminal')
+    }
+    else {
+      await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+    }
     finishTerminalOpening(project.appendTime)
   }
   catch (error) {
@@ -1553,7 +1602,11 @@ watch(
   renderedProjects,
   (projects) => {
     pruneDisplayPathCache()
-    projects.forEach(project => void cacheDisplayPath(project.path))
+    projects.forEach((project) => {
+      // 远程项目的 path 是 host:remotePath 合成串,不走本地路径格式化
+      if (!project.isRemote)
+        void cacheDisplayPath(project.path)
+    })
   },
   { immediate: true },
 )
@@ -1787,6 +1840,7 @@ watch(layoutMode, persistLayoutMode)
         <span>{{ t('app.home.table.kind') }}</span>
         <span>{{ t('app.home.table.language') }}</span>
         <span>{{ t('app.home.table.license') }}</span>
+        <span>{{ t('app.home.table.editor') }}</span>
         <span>{{ t('app.home.table.last_opened') }}</span>
         <span>{{ t('app.home.table.actions') }}</span>
       </div>
@@ -1823,12 +1877,11 @@ watch(layoutMode, persistLayoutMode)
                   <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                   <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                 </span>
+                <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+                  {{ t('app.home.remote.badge') }}
+                </span>
                 <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
                   {{ t('app.home.filters.temporary') }}
-                </span>
-                <span class="editor-chip">
-                  <span :class="editorIconClasses(project.defaultOpen)" />
-                  <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
                 </span>
               </div>
               <div class="project-path" :title="project.path">
@@ -1867,6 +1920,10 @@ watch(layoutMode, persistLayoutMode)
               {{ shortLicense(project.license) }}
             </span>
             <span v-else class="license-cell muted">{{ t('app.license.none') }}</span>
+            <span class="editor-cell" :title="codeEditors[project.defaultOpen]?.label || t('app.common.no_editor')">
+              <span :class="editorIconClasses(project.defaultOpen)" />
+              <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
+            </span>
             <span class="recent-cell" :class="{ muted: !project.lastOpenedAt }">{{ formatLastOpened(project) }}</span>
 
             <div
@@ -1892,6 +1949,7 @@ watch(layoutMode, persistLayoutMode)
                 <span :class="openProjectButtonIcon(project)" />
               </button>
               <button
+                v-if="!project.isRemote"
                 class="icon-button"
                 type="button"
                 data-project-action="explorer"
@@ -1985,6 +2043,9 @@ watch(layoutMode, persistLayoutMode)
                     <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                     <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                   </strong>
+                  <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+                    {{ t('app.home.remote.badge') }}
+                  </span>
                   <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
                     {{ t('app.home.filters.temporary') }}
                   </span>
@@ -2058,6 +2119,7 @@ watch(layoutMode, persistLayoutMode)
                     <span :class="openProjectButtonIcon(project)" />
                   </button>
                   <button
+                    v-if="!project.isRemote"
                     class="icon-button"
                     type="button"
                     data-project-action="explorer"
@@ -2232,7 +2294,7 @@ watch(layoutMode, persistLayoutMode)
 
 .project-grid {
   @apply grid items-center gap-9px;
-  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 122px 136px;
+  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 120px 122px 136px;
 }
 
 .table-head {
@@ -2261,6 +2323,10 @@ watch(layoutMode, persistLayoutMode)
 
   &.missing {
     @apply cursor-default opacity-78;
+
+    .project-name {
+      @apply color-$gray-7;
+    }
   }
 }
 
@@ -2299,6 +2365,18 @@ watch(layoutMode, persistLayoutMode)
 .workspace-shell.theme-dark .temporary-badge {
   color: color-mix(in srgb, var(--yellow-8) 88%, var(--gray-14));
   background: color-mix(in srgb, var(--yellow-5) 16%, var(--ui-surface-background));
+}
+
+.remote-badge {
+  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply inline-flex items-center text-10px font-650 lh-12px;
+  color: color-mix(in srgb, var(--teal-2) 84%, var(--gray-1));
+  background: color-mix(in srgb, var(--teal-4) 18%, var(--ui-surface-background));
+}
+
+.workspace-shell.theme-dark .remote-badge {
+  color: color-mix(in srgb, var(--teal-8) 88%, var(--gray-14));
+  background: color-mix(in srgb, var(--teal-5) 16%, var(--ui-surface-background));
 }
 
 .pinned-marker {
@@ -2360,9 +2438,14 @@ watch(layoutMode, persistLayoutMode)
   @apply min-w-0 truncate;
 }
 
+.project-row > .editor-cell > span:first-child {
+  @apply shrink-0;
+}
+
 .inline-pill,
 .kind-pill,
-.license-cell {
+.license-cell,
+.editor-cell {
   @apply min-w-0 max-w-full h-23px rounded-4px px-7px border-0;
   @apply inline-flex items-center gap-5px truncate text-11px;
   @apply bg-$ui-control-background color-$ui-foreground;
@@ -2506,6 +2589,10 @@ watch(layoutMode, persistLayoutMode)
     @apply cursor-default opacity-78;
     box-shadow: var(--shadow-surface);
     transform: none;
+
+    .card-title strong {
+      @apply color-$gray-7;
+    }
   }
 }
 
@@ -2572,10 +2659,10 @@ watch(layoutMode, persistLayoutMode)
 
 @media (max-width: 1020px) {
   .project-grid {
-    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 136px;
+    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 120px 136px;
   }
 
-  .project-grid > :nth-child(5) {
+  .project-grid > :nth-child(6) {
     display: none;
   }
 }
@@ -2611,7 +2698,8 @@ watch(layoutMode, persistLayoutMode)
 
   .project-grid > :nth-child(3),
   .project-grid > :nth-child(4),
-  .project-grid > :nth-child(5) {
+  .project-grid > :nth-child(5),
+  .project-grid > :nth-child(6) {
     display: none;
   }
 }

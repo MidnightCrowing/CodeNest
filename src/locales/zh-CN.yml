@@ -63,6 +63,8 @@ app:
     search_placeholder: 搜索项目
     clear_count: 清除筛选 ({count})
     project_list: 项目列表
+    remote:
+      badge: 远程
     filters:
       kind: 类型
       status: 状态
@@ -92,6 +94,7 @@ app:
       kind: 类型
       language: 语言
       license: 许可证
+      editor: 编辑器
       last_opened: 最近打开
       never_opened: 未打开
       actions: 操作
@@ -135,6 +138,7 @@ app:
       scan_added: 新增 {count} 个项目
       scan_updated: 更新 {count} 个项目状态
       scan_failed_items: '{count} 个项目分析失败'
+      remote_editor_unsupported: 该编辑器不支持远程项目
   settings:
     title: 设置
     open_json: 打开设置 JSON
@@ -335,12 +339,21 @@ app:
     unnamed: 未命名项目
     no_language: 无语言
     no_folder: 未选择文件夹
+    mode:
+      local: 本地
+      remote: 远程
     sections:
       project: 项目
       metadata: 语言与编辑器
     fields:
       folder: 文件夹
       folder_duplicate: 这个文件夹已在项目列表中。
+      location: 位置
+      remote_host: SSH 主机
+      remote_host_desc: "~/.ssh/config 别名或 user{'@'}host"
+      remote_host_placeholder: "例如 my-server 或 user{'@'}host"
+      remote_path: 远程路径
+      remote_path_placeholder: 例如 /home/user/project
       name: 名称
       group: 分组
       group_desc: 用于筛选的可选标签。

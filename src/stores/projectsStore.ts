@@ -17,6 +17,10 @@ const projectsPersistence = createPersistence<LocalProject[]>({
         return undefined
       if (key === 'isArchived' && value !== true)
         return undefined
+      if (key === 'isRemote' && value !== true)
+        return undefined
+      if ((key === 'remoteHost' || key === 'remotePath') && !value)
+        return undefined
       if (key === 'license' && value === 'None')
         return undefined
       return value
@@ -44,7 +48,10 @@ async function runWithConcurrency<T>(
 
 function normalizeProject(project: LocalProject): LocalProject {
   const lastOpenedAt = Number.isFinite(project.lastOpenedAt) ? project.lastOpenedAt : undefined
-  const path = stripWindowsVerbatimPrefix(project.path || '')
+  // 远程项目的 path 是合成串(host:remotePath),不做本地 verbatim 处理,且恒为存在
+  const isRemote = !!project.isRemote
+  const path = isRemote ? (project.path || '') : stripWindowsVerbatimPrefix(project.path || '')
+  const isExists = isRemote ? true : (project.isExists ?? true)
 
   // 快速检查:如果所有关键字段都已正确,直接返回
   if (
@@ -54,7 +61,7 @@ function normalizeProject(project: LocalProject): LocalProject {
     && typeof project.isTemporary === 'boolean'
     && typeof project.isPinned === 'boolean'
     && typeof project.isArchived === 'boolean'
-    && typeof project.isExists === 'boolean'
+    && project.isExists === isExists
     && Array.isArray(project.langGroup)
   ) {
     return project
@@ -68,7 +75,7 @@ function normalizeProject(project: LocalProject): LocalProject {
     isTemporary: !!project.isTemporary,
     isPinned: !!project.isPinned,
     isArchived: !!project.isArchived,
-    isExists: project.isExists ?? true,
+    isExists,
     langGroup: project.langGroup || [],
   }
 }
@@ -117,7 +124,9 @@ export const useProjectsStore = defineStore('projects', () => {
 
   async function addProject(newProject: LocalProject, save?: boolean) {
     const project = normalizeProject(newProject)
-    project.isExists = await checkProjectExistence(project)
+    if (!project.isRemote) {
+      project.isExists = await checkProjectExistence(project)
+    }
     projects.value.unshift(project)
     if (save) {
       await saveProjects()
@@ -151,7 +160,9 @@ export const useProjectsStore = defineStore('projects', () => {
       isArchived: updatedProject.isArchived ?? projects.value[index].isArchived,
       lastOpenedAt: updatedProject.lastOpenedAt ?? projects.value[index].lastOpenedAt,
     })
-    project.isExists = await checkProjectExistence(project)
+    if (!project.isRemote) {
+      project.isExists = await checkProjectExistence(project)
+    }
     projects.value[index] = project
 
     await saveProjects()
@@ -282,11 +293,13 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   async function refreshProjectExistence() {
-    const snapshot = projects.value.map(project => ({
-      appendTime: project.appendTime,
-      path: project.path,
-      isExists: project.isExists,
-    }))
+    const snapshot = projects.value
+      .filter(project => !project.isRemote)
+      .map(project => ({
+        appendTime: project.appendTime,
+        path: project.path,
+        isExists: project.isExists,
+      }))
     const existenceByProjectId = new Map<LocalProject['appendTime'], boolean>()
 
     await runWithConcurrency(snapshot, PROJECT_EXISTENCE_CONCURRENCY, async (project) => {

@@ -8,7 +8,7 @@ import UiSelect from '~/components/ui/UiSelect.vue'
 import UiSwitch from '~/components/ui/UiSwitch.vue'
 import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
-import { codeEditorOrder, codeEditors } from '~/constants/codeEditor'
+import { codeEditorOrder, codeEditors, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -29,7 +29,7 @@ defineOptions({
   name: 'ProjectEditor',
 })
 
-type FieldKey = 'path' | 'name' | 'mainLang' | 'defaultOpen'
+type FieldKey = 'path' | 'name' | 'mainLang' | 'defaultOpen' | 'remoteHost' | 'remotePath'
 
 const PATH_SPLIT_RE = /[\\/]+/
 const GITHUB_REPO_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
@@ -41,6 +41,8 @@ const editorLangGroupsStore = useEditorLangGroupsStore()
 const initialProjectPath = localProjectItem.value.path || ''
 const { t } = useI18n()
 
+const isRemote = computed(() => !!localProjectItem.value.isRemote)
+
 const analyzing = ref(false)
 const detectingLicense = ref(false)
 const visibleAnalyzing = useDelayedBusy(analyzing, { delay: 220, minDuration: 320 })
@@ -51,6 +53,8 @@ const touchedFields = reactive<Record<FieldKey, boolean>>({
   name: false,
   mainLang: false,
   defaultOpen: false,
+  remoteHost: false,
+  remotePath: false,
 })
 
 let languageMixHeightTimer: ReturnType<typeof window.setTimeout> | null = null
@@ -64,11 +68,21 @@ function editorGroupLabel(option: CodeEditorOption) {
 }
 
 const editorOptions = computed(() =>
-  editorRows.value.map(([editor, option]) => ({
-    value: editor,
-    label: `${editorGroupLabel(option)} / ${option.label}`,
-  })),
+  editorRows.value
+    // 远程项目仅支持 VS Code 系（Remote-SSH）
+    .filter(([editor]) => !isRemote.value || isVscodeHistoryScannerEditor(editor))
+    .map(([editor, option]) => ({
+      value: editor,
+      label: `${editorGroupLabel(option)} / ${option.label}`,
+    })),
 )
+
+const modeOptions = computed(() => [
+  { value: 'local', label: t('app.project_editor.mode.local') },
+  { value: 'remote', label: t('app.project_editor.mode.remote') },
+])
+
+const projectMode = computed(() => (isRemote.value ? 'remote' : 'local'))
 
 const licenseOptions = computed(() =>
   [
@@ -93,16 +107,26 @@ const languageOptions = computed(() =>
     .map(language => language.text),
 )
 
-const repositoryFolderName = computed(() =>
-  localProjectItem.value.path
-    ? localProjectItem.value.path.split(PATH_SPLIT_RE).filter(Boolean).at(-1) || ''
-    : '',
-)
+const repositoryFolderName = computed(() => {
+  const source = isRemote.value ? localProjectItem.value.remotePath : localProjectItem.value.path
+  return source
+    ? source.split(PATH_SPLIT_RE).filter(Boolean).at(-1) || ''
+    : ''
+})
+
+// 去重/展示用的有效路径:本地为 path,远程为合成串 host:remotePath
+const effectivePath = computed(() => {
+  if (!isRemote.value)
+    return localProjectItem.value.path || ''
+  const host = localProjectItem.value.remoteHost?.trim()
+  const remotePath = localProjectItem.value.remotePath?.trim()
+  return host && remotePath ? `${host}:${remotePath}` : ''
+})
 
 const duplicatePath = computed(() =>
-  !!localProjectItem.value.path
+  !!effectivePath.value
   && projectsStore.checkPathExistenceInProjects(
-    localProjectItem.value.path,
+    effectivePath.value,
     isUpdateProject.value && initialProjectPath ? [initialProjectPath] : [],
   ),
 )
@@ -114,12 +138,18 @@ const sourceSuggestion = computed(() => {
   return url.match(GITHUB_REPO_RE)?.[1] || ''
 })
 
-const canSave = computed(() =>
-  !!localProjectItem.value.path
-  && !!localProjectItem.value.name
-  && !!localProjectItem.value.mainLang
-  && !!localProjectItem.value.defaultOpen,
-)
+const canSave = computed(() => {
+  if (isRemote.value) {
+    return !!localProjectItem.value.remoteHost
+      && !!localProjectItem.value.remotePath
+      && !!localProjectItem.value.name
+      && !!localProjectItem.value.defaultOpen
+  }
+  return !!localProjectItem.value.path
+    && !!localProjectItem.value.name
+    && !!localProjectItem.value.mainLang
+    && !!localProjectItem.value.defaultOpen
+})
 
 const folderStatus = computed(() =>
   duplicatePath.value ? t('app.project_editor.fields.folder_duplicate') : '',
@@ -287,24 +317,33 @@ async function hydrateLanguageMixFromCache() {
 }
 
 function validateFields() {
-  touchedFields.path = true
   touchedFields.name = true
-  touchedFields.mainLang = true
   touchedFields.defaultOpen = true
+  if (isRemote.value) {
+    touchedFields.remoteHost = true
+    touchedFields.remotePath = true
+  }
+  else {
+    touchedFields.path = true
+    touchedFields.mainLang = true
+  }
   return canSave.value && !duplicatePath.value
 }
 
 function toProject(): LocalProject {
+  const remote = isRemote.value
+  const remoteHost = localProjectItem.value.remoteHost?.trim() || undefined
+  const remotePath = localProjectItem.value.remotePath?.trim() || undefined
   return {
     appendTime: localProjectItem.value.appendTime || Date.now(),
     lastOpenedAt: localProjectItem.value.lastOpenedAt ?? undefined,
-    path: localProjectItem.value.path!,
+    path: remote ? effectivePath.value : localProjectItem.value.path!,
     name: localProjectItem.value.name!,
     group: localProjectItem.value.group || '',
     kind: localProjectItem.value.kind,
     fromUrl: localProjectItem.value.fromUrl || undefined,
     fromName: localProjectItem.value.fromName || undefined,
-    mainLang: localProjectItem.value.mainLang!,
+    mainLang: remote ? (localProjectItem.value.mainLang || '') : localProjectItem.value.mainLang!,
     mainLangColor: localProjectItem.value.mainLangColor || undefined,
     langGroup: localProjectItem.value.langGroup || [],
     defaultOpen: localProjectItem.value.defaultOpen!,
@@ -314,6 +353,9 @@ function toProject(): LocalProject {
     isTemporary: !!localProjectItem.value.isTemporary,
     isPinned: !!localProjectItem.value.isPinned,
     isExists: true,
+    isRemote: remote || undefined,
+    remoteHost: remote ? remoteHost : undefined,
+    remotePath: remote ? remotePath : undefined,
   }
 }
 
@@ -338,6 +380,25 @@ function closeEditor() {
 
 function updateProjectKind(kind: string) {
   localProjectItem.value.kind = kind as ProjectKind
+}
+
+function setProjectMode(mode: string) {
+  const remote = mode === 'remote'
+  if (remote === !!localProjectItem.value.isRemote)
+    return
+
+  localProjectItem.value.isRemote = remote
+  if (remote) {
+    // 切到远程:清空本地路径(连带触发元数据重置),并把不支持远程的编辑器清掉
+    localProjectItem.value.path = null
+    if (localProjectItem.value.defaultOpen && !isVscodeHistoryScannerEditor(localProjectItem.value.defaultOpen)) {
+      localProjectItem.value.defaultOpen = null
+    }
+  }
+  else {
+    localProjectItem.value.remoteHost = null
+    localProjectItem.value.remotePath = null
+  }
 }
 
 function kindLabel(kind: ProjectKind) {
@@ -478,7 +539,20 @@ function resetLanguageMixBodyHeight() {
               <strong>{{ t('app.project_editor.sections.project') }}</strong>
             </header>
 
-            <div class="setting-row">
+            <div v-if="!isUpdateProject" class="setting-row">
+              <div class="setting-copy">
+                <strong>{{ t('app.project_editor.fields.location') }}</strong>
+              </div>
+              <UiSegmentedControl
+                class="kind-control"
+                :model-value="projectMode"
+                :options="modeOptions"
+                :aria-label="t('app.project_editor.fields.location')"
+                @update:model-value="setProjectMode"
+              />
+            </div>
+
+            <div v-if="!isRemote" class="setting-row">
               <label class="setting-copy" for="project-path">
                 <strong>{{ t('app.project_editor.fields.folder') }}</strong>
               </label>
@@ -507,6 +581,64 @@ function resetLanguageMixBodyHeight() {
                 </p>
               </div>
             </div>
+
+            <template v-else>
+              <div class="setting-row">
+                <label class="setting-copy" for="project-remote-host">
+                  <strong>{{ t('app.project_editor.fields.remote_host') }}</strong>
+                  <span>{{ t('app.project_editor.fields.remote_host_desc') }}</span>
+                </label>
+                <div class="field-stack">
+                  <div class="inline-field">
+                    <input
+                      id="project-remote-host"
+                      v-model="localProjectItem.remoteHost"
+                      class="text-input"
+                      :class="{ invalid: fieldInvalid('remoteHost') || duplicatePath }"
+                      :aria-label="t('app.project_editor.fields.remote_host')"
+                      :placeholder="t('app.project_editor.fields.remote_host_placeholder')"
+                      :title="localProjectItem.remoteHost || ''"
+                      spellcheck="false"
+                      @blur="markTouched('remoteHost')"
+                    >
+                  </div>
+                  <p
+                    class="field-message error"
+                    :class="{ empty: !folderStatus }"
+                    :aria-hidden="!folderStatus"
+                  >
+                    {{ folderStatus }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <label class="setting-copy" for="project-remote-path">
+                  <strong>{{ t('app.project_editor.fields.remote_path') }}</strong>
+                </label>
+                <div class="inline-field">
+                  <input
+                    id="project-remote-path"
+                    v-model="localProjectItem.remotePath"
+                    class="text-input compact"
+                    :class="{ invalid: fieldInvalid('remotePath') }"
+                    :aria-label="t('app.project_editor.fields.remote_path')"
+                    :placeholder="t('app.project_editor.fields.remote_path_placeholder')"
+                    :title="localProjectItem.remotePath || ''"
+                    spellcheck="false"
+                    @blur="markTouched('remotePath')"
+                  >
+                  <button
+                    v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
+                    class="ghost-button"
+                    type="button"
+                    @click="fillProjectName"
+                  >
+                    {{ t('app.project_editor.use_folder') }}
+                  </button>
+                </div>
+              </div>
+            </template>
 
             <div class="setting-row">
               <label class="setting-copy" for="project-name">
@@ -623,7 +755,7 @@ function resetLanguageMixBodyHeight() {
               <strong>{{ t('app.project_editor.sections.metadata') }}</strong>
             </header>
 
-            <div class="setting-row">
+            <div v-if="!isRemote" class="setting-row">
               <label class="setting-copy" for="project-language">
                 <strong>{{ t('app.project_editor.fields.main_language') }}</strong>
                 <span>{{ t('app.project_editor.fields.main_language_desc') }}</span>
@@ -670,7 +802,7 @@ function resetLanguageMixBodyHeight() {
               />
             </div>
 
-            <div class="setting-row">
+            <div v-if="!isRemote" class="setting-row">
               <label class="setting-copy" for="project-license">
                 <strong>{{ t('app.project_editor.fields.license') }}</strong>
               </label>
@@ -704,8 +836,8 @@ function resetLanguageMixBodyHeight() {
               <span>{{ languageLabel(localProjectItem.mainLang) }}</span>
             </header>
 
-            <div class="summary-path" :title="localProjectItem.path || ''">
-              {{ localProjectItem.path || t('app.project_editor.no_folder') }}
+            <div class="summary-path" :title="effectivePath || ''">
+              {{ effectivePath || t('app.project_editor.no_folder') }}
             </div>
 
             <div class="summary-list">
@@ -716,7 +848,7 @@ function resetLanguageMixBodyHeight() {
             </div>
           </section>
 
-          <section class="summary-card">
+          <section v-if="!isRemote" class="summary-card">
             <header class="summary-header">
               <div class="summary-title">
                 <strong>{{ t('app.project_editor.language_mix.title') }}</strong>
