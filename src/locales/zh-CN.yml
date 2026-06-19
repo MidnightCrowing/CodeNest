@@ -69,7 +69,6 @@ app:
       kind: 类型
       status: 状态
       language: 语言
-      group: 分组
       sort: 排序
       all_projects: 全部项目
       active: 活跃
@@ -78,8 +77,6 @@ app:
       temporary: 临时
       archived: 已归档
       all_languages: 全部语言
-      all_groups: 全部分组
-      no_group: 无分组
     sort:
       recent: 最近打开
       name: 名称

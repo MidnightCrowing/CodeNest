@@ -69,7 +69,6 @@ app:
       kind: 類型
       status: 狀態
       language: 語言
-      group: 分組
       sort: 排序
       all_projects: 全部專案
       active: 活躍
@@ -78,8 +77,6 @@ app:
       temporary: 臨時
       archived: 已封存
       all_languages: 全部語言
-      all_groups: 全部分組
-      no_group: 無分組
     sort:
       recent: 最近開啟
       name: 名稱

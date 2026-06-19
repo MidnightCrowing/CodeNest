@@ -628,14 +628,6 @@ function resetLanguageMixBodyHeight() {
                     spellcheck="false"
                     @blur="markTouched('remotePath')"
                   >
-                  <button
-                    v-if="repositoryFolderName && localProjectItem.name !== repositoryFolderName"
-                    class="ghost-button"
-                    type="button"
-                    @click="fillProjectName"
-                  >
-                    {{ t('app.project_editor.use_folder') }}
-                  </button>
                 </div>
               </div>
             </template>

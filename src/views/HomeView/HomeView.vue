@@ -84,7 +84,6 @@ const debouncedSearchValue = ref('')
 const kindFilter = ref<KindFilter>('all')
 const statusFilter = ref<StatusFilter>('all')
 const languageFilter = ref('all')
-const groupFilter = ref('all')
 const sortKey = ref<SortKey>('recent')
 const layoutMode = ref<LayoutMode>(readStoredLayoutMode())
 // 手动同步的本地状态(带最短可见时长防闪烁);与服务层共享的
@@ -142,11 +141,9 @@ const archivedProjectsCount = computed(() => projectsStore.archivedProjects.leng
 
 const projectStats = computed(() => {
   const byKind = new Map<ProjectKind, number>()
-  const byGroup = new Map<string, number>()
   let available = 0
   let missing = 0
   let temporary = 0
-  let ungrouped = 0
 
   for (const project of projectsStore.activeProjects) {
     byKind.set(project.kind, (byKind.get(project.kind) || 0) + 1)
@@ -158,11 +155,6 @@ const projectStats = computed(() => {
 
     if (project.isTemporary)
       temporary += 1
-
-    if (project.group?.trim())
-      byGroup.set(project.group, (byGroup.get(project.group) || 0) + 1)
-    else
-      ungrouped += 1
   }
 
   return {
@@ -170,11 +162,7 @@ const projectStats = computed(() => {
     available,
     missing,
     temporary,
-    ungrouped,
     byKind,
-    groups: Array.from(byGroup.entries())
-      .map(([group, count]) => ({ group, count }))
-      .sort((a, b) => a.group.localeCompare(b.group)),
   }
 })
 
@@ -225,16 +213,6 @@ const languageOptions = computed(() => [
   })),
 ])
 
-const groupOptions = computed(() => [
-  { value: 'all', label: t('app.home.filters.all_groups'), count: totalProjects.value },
-  { value: '__ungrouped__', label: t('app.home.filters.no_group'), count: projectStats.value.ungrouped },
-  ...projectStats.value.groups.map(({ group, count }) => ({
-    value: group,
-    label: group,
-    count,
-  })),
-])
-
 // Fuse 索引仅在搜索相关字段变化时重建,避免 isExists 刷新等
 // 无关更新触发昂贵的索引重建(大列表时可达 50-200ms)。
 const projectSearchSignature = computed(() =>
@@ -280,12 +258,6 @@ const filteredProjects = computed(() => {
   }
   if (languageFilter.value !== 'all') {
     result = result.filter(project => project.mainLang === languageFilter.value)
-  }
-  if (groupFilter.value === '__ungrouped__') {
-    result = result.filter(project => !project.group)
-  }
-  else if (groupFilter.value !== 'all') {
-    result = result.filter(project => project.group === groupFilter.value)
   }
 
   const query = debouncedSearchValue.value.trim()
@@ -335,8 +307,7 @@ const activeFilterCount = computed(() =>
   Number(!!searchValue.value.trim())
   + Number(kindFilter.value !== 'all')
   + Number(statusFilter.value !== 'all')
-  + Number(languageFilter.value !== 'all')
-  + Number(groupFilter.value !== 'all'),
+  + Number(languageFilter.value !== 'all'),
 )
 
 function editorHasLaunchCommand(editor: CodeEditorEnum) {
@@ -434,7 +405,7 @@ function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     {
       id: 'explorer',
       label: t('app.home.actions.open_explorer'),
-      disabled: !project.isExists || !!project.isRemote,
+      disabled: isProjectActionDisabled(project, 'explorer'),
       separatorBefore: !sourceUrl,
     },
     {
@@ -952,6 +923,9 @@ function getRenderedGridColumnCount() {
 }
 
 function isProjectActionDisabled(project: LocalProject, action: ProjectActionKey) {
+  // 远程项目没有本地文件夹,“在文件夹中显示”不可用(置灰而非隐藏,保持按钮组对齐)
+  if (project.isRemote && action === 'explorer')
+    return true
   return !project.isExists && (action === 'open' || action === 'explorer' || action === 'terminal')
 }
 
@@ -1587,7 +1561,6 @@ function clearFilters() {
   kindFilter.value = 'all'
   statusFilter.value = 'all'
   languageFilter.value = 'all'
-  groupFilter.value = 'all'
 }
 
 function clearSearch() {
@@ -1708,7 +1681,6 @@ watch([
   kindFilter,
   statusFilter,
   languageFilter,
-  groupFilter,
   sortKey,
   totalProjects,
 ], resetRenderedProjects, { immediate: true })
@@ -1800,15 +1772,6 @@ watch(layoutMode, persistLayoutMode)
         :placeholder="t('app.home.filters.language')"
         :aria-label="t('app.home.filters.language')"
         min-width="150px"
-        content-width="210px"
-      />
-
-      <UiSelect
-        v-model="groupFilter"
-        :options="groupOptions"
-        :placeholder="t('app.home.filters.group')"
-        :aria-label="t('app.home.filters.group')"
-        min-width="128px"
         content-width="210px"
       />
 
@@ -1952,13 +1915,12 @@ watch(layoutMode, persistLayoutMode)
                 <span :class="openProjectButtonIcon(project)" />
               </button>
               <button
-                v-if="!project.isRemote"
                 class="icon-button"
                 type="button"
                 data-project-action="explorer"
                 :title="t('app.home.actions.open_explorer')"
                 :aria-label="t('app.home.actions.open_explorer')"
-                :disabled="!project.isExists"
+                :disabled="isProjectActionDisabled(project, 'explorer')"
                 :tabindex="actionButtonTabIndex(project, 'explorer')"
                 @click.stop="openInExplorer(project)"
               >
@@ -2126,13 +2088,12 @@ watch(layoutMode, persistLayoutMode)
                     <span :class="openProjectButtonIcon(project)" />
                   </button>
                   <button
-                    v-if="!project.isRemote"
                     class="icon-button"
                     type="button"
                     data-project-action="explorer"
                     :title="t('app.home.actions.open_explorer')"
                     :aria-label="t('app.home.actions.open_explorer')"
-                    :disabled="!project.isExists"
+                    :disabled="isProjectActionDisabled(project, 'explorer')"
                     :tabindex="actionButtonTabIndex(project, 'explorer')"
                     @click.stop="openInExplorer(project)"
                   >

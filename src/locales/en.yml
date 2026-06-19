@@ -69,7 +69,6 @@ app:
       kind: Kind
       status: Status
       language: Language
-      group: Group
       sort: Sort
       all_projects: All projects
       active: Active
@@ -78,8 +77,6 @@ app:
       temporary: Temporary
       archived: Archived
       all_languages: All languages
-      all_groups: All groups
-      no_group: No group
     sort:
       recent: Last opened
       name: Name
