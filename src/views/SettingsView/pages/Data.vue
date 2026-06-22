@@ -222,7 +222,10 @@ async function pullWebDavData() {
     <SettingsRow
       :title="t('app.settings.data.projects.title')"
     >
-      <div class="row-actions">
+      <div
+        shrink-0 flex flex-wrap items-center justify-end
+        gap-7px
+      >
         <button class="ghost-button" type="button" @click="importProjects">
           <span class="i-custom:import" />
           {{ t('app.settings.data.projects.import') }}
@@ -238,50 +241,57 @@ async function pullWebDavData() {
       :title="t('app.settings.data.webdav.title')"
       align="start"
     >
-      <div class="webdav-panel">
-        <div class="webdav-fields">
-          <label class="field-control wide">
-            <span>{{ t('app.settings.data.webdav.server') }}</span>
+      <div
+        min-w-0 w-520px max-w-full flex flex-col
+        gap-10px
+      >
+        <div grid gap-9px grid-cols="[repeat(2,minmax(0,1fr))]">
+          <label min-w-0 flex flex-col gap-5px col-span-2>
+            <span text-12px color="$ui-foreground" break-anywhere>{{ t('app.settings.data.webdav.server') }}</span>
             <input
               v-model="settings.webdav.endpoint"
               class="path-input"
+              w-full
               spellcheck="false"
               :aria-label="t('app.settings.data.webdav.server')"
               :placeholder="t('app.settings.data.webdav.server_placeholder')"
             >
           </label>
-          <label class="field-control wide">
-            <span>{{ t('app.settings.data.webdav.remote_path') }}</span>
+          <label min-w-0 flex flex-col gap-5px col-span-2>
+            <span text-12px color="$ui-foreground" break-anywhere>{{ t('app.settings.data.webdav.remote_path') }}</span>
             <input
               v-model="settings.webdav.remotePath"
               class="path-input"
+              w-full
               spellcheck="false"
               :aria-label="t('app.settings.data.webdav.remote_path')"
               :placeholder="t('app.settings.data.webdav.remote_path_placeholder')"
             >
           </label>
-          <label class="field-control">
-            <span>{{ t('app.settings.data.webdav.account') }}</span>
+          <label min-w-0 flex flex-col gap-5px>
+            <span text-12px color="$ui-foreground" break-anywhere>{{ t('app.settings.data.webdav.account') }}</span>
             <input
               v-model="settings.webdav.username"
               class="path-input"
+              w-full
               spellcheck="false"
               :aria-label="t('app.settings.data.webdav.account')"
               :placeholder="t('app.settings.data.webdav.account')"
             >
           </label>
-          <label class="field-control">
-            <span>{{ t('app.settings.data.webdav.password') }}</span>
+          <label min-w-0 flex flex-col gap-5px>
+            <span text-12px color="$ui-foreground" break-anywhere>{{ t('app.settings.data.webdav.password') }}</span>
             <input
               v-model="settings.webdav.password"
               class="path-input"
+              w-full
               type="password"
               :aria-label="t('app.settings.data.webdav.password')"
               :placeholder="t('app.settings.data.webdav.password')"
             >
           </label>
         </div>
-        <div class="webdav-actions">
+        <div flex flex-wrap items-center justify-end gap-7px>
           <button
             class="ghost-button"
             type="button"
@@ -323,40 +333,6 @@ async function pullWebDavData() {
 </template>
 
 <style lang="scss" scoped>
-.row-actions {
-  @apply shrink-0 flex flex-wrap items-center justify-end gap-7px;
-}
-
-.webdav-panel {
-  @apply min-w-0 w-520px max-w-full flex flex-col gap-10px;
-}
-
-.webdav-fields {
-  @apply grid gap-9px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field-control {
-  @apply min-w-0 flex flex-col gap-5px;
-
-  span {
-    @apply text-12px color-$ui-foreground;
-    overflow-wrap: anywhere;
-  }
-}
-
-.field-control.wide {
-  @apply col-span-2;
-}
-
-.path-input {
-  @apply w-full;
-}
-
-.webdav-actions {
-  @apply flex flex-wrap items-center justify-end gap-7px;
-}
-
 .webdav-status {
   @apply m-0 min-h-16px text-right text-12px lh-16px;
   overflow-wrap: anywhere;

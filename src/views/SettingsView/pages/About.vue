@@ -84,7 +84,7 @@ async function onCheckUpdate() {
       :status-tone="updateStatusTone"
       reserve-status
     >
-      <div class="row-actions">
+      <div shrink-0 flex items-center gap-7px>
         <button class="ghost-button" type="button" :disabled="checking" @click="onCheckUpdate">
           {{ checking ? t('app.settings.about.update.checking') : t('app.settings.about.update.check') }}
         </button>
@@ -109,9 +109,3 @@ async function onCheckUpdate() {
     </SettingsRow>
   </SettingsPage>
 </template>
-
-<style lang="scss" scoped>
-.row-actions {
-  @apply shrink-0 flex items-center gap-7px;
-}
-</style>

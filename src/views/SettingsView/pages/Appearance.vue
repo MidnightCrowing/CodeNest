@@ -125,7 +125,10 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
         :model-value="appThemeColor"
         @update:model-value="selectThemeColor"
       >
-        <div class="theme-color-grid" :aria-label="t('app.settings.appearance.theme_color.title')">
+        <div
+          relative shrink-0 flex items-center gap-7px
+          :aria-label="t('app.settings.appearance.theme_color.title')"
+        >
           <RadioGroupItem
             v-for="option in themeColorOptions"
             :key="option.value"
@@ -145,7 +148,7 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
           <input
             ref="customColorInputRef"
             :value="appCustomThemeColor"
-            class="custom-color-input"
+            absolute size-1px opacity-0 pointer-events-none
             type="color"
             tabindex="-1"
             aria-hidden="true"
@@ -168,10 +171,6 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
 </template>
 
 <style lang="scss" scoped>
-.theme-color-grid {
-  @apply relative shrink-0 flex items-center gap-7px;
-}
-
 .theme-color-button {
   @apply relative size-24px rounded-full border p-0 cursor-pointer outline-none;
   @apply inline-flex items-center justify-center;
@@ -238,9 +237,5 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
 .theme-color-icon {
   @apply absolute text-10px;
   color: var(--custom-theme-foreground);
-}
-
-.custom-color-input {
-  @apply absolute size-1px opacity-0 pointer-events-none;
 }
 </style>

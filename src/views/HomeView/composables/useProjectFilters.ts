@@ -4,8 +4,7 @@ import { computed, ref } from 'vue'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { useProjectsStore } from '~/stores/projectsStore'
-
-import { formatProjectLanguage } from '../utils/projectFormatters'
+import { formatProjectLanguage } from '~/utils/projectFormatters'
 
 type KindFilter = ProjectKind | 'all'
 type StatusFilter = 'all' | 'available' | 'missing' | 'temporary' | 'archived'

@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 
-import LanguageFilterSelect from '../LanguageFilterSelect.vue'
 import type { LayoutMode } from '../types'
+import LanguageFilterSelect from './LanguageFilterSelect.vue'
 
 type FilterValue = string
 

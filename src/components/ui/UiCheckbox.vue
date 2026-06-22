@@ -27,18 +27,31 @@ function toggleFromField() {
 </script>
 
 <template>
-  <div class="ui-checkbox-field" :class="{ disabled }">
+  <div
+    class="ui-checkbox-field"
+    min-w-0 inline-flex items-start gap-8px cursor-pointer
+    :class="{ disabled }"
+  >
     <CheckboxRoot
       class="ui-checkbox-root"
+      mt-1px size-16px shrink-0 rounded-4px border
+      outline-none
+      inline-flex items-center justify-center
+      bg="$ui-checkbox-background"
+      transition duration-120 ease-out
+      data-disabled:cursor-not-allowed
       :model-value="modelValue"
       :disabled="disabled"
       @update:model-value="updateChecked"
     >
-      <CheckboxIndicator class="ui-checkbox-indicator">
+      <CheckboxIndicator
+        class="ui-checkbox-indicator" flex items-center justify-center text-12px
+        color="$ui-primary-foreground"
+      >
         <span class="i-lucide:check" />
       </CheckboxIndicator>
     </CheckboxRoot>
-    <span class="ui-checkbox-label" @click="toggleFromField">
+    <span class="ui-checkbox-label" min-w-0 text-12px @click="toggleFromField">
       <slot />
     </span>
   </div>
@@ -46,20 +59,14 @@ function toggleFromField() {
 
 <style lang="scss">
 .ui-checkbox-field {
-  @apply min-w-0 inline-flex items-start gap-8px cursor-pointer;
-
   &.disabled {
     @apply opacity-55 cursor-not-allowed;
   }
 }
 
 .ui-checkbox-root {
-  @apply mt-1px size-16px shrink-0 rounded-4px border outline-none;
-  @apply inline-flex items-center justify-center;
-  @apply border-$ui-input bg-$ui-checkbox-background;
-  @apply transition duration-120 ease-out;
-  @apply data-[disabled]:cursor-not-allowed;
   appearance: none;
+  border-color: var(--ui-input);
   border-style: solid;
   box-shadow: var(--shadow-control);
 
@@ -76,12 +83,7 @@ function toggleFromField() {
   }
 }
 
-.ui-checkbox-indicator {
-  @apply flex items-center justify-center text-12px color-$ui-primary-foreground;
-}
-
 .ui-checkbox-label {
-  @apply min-w-0 text-12px;
   overflow-wrap: anywhere;
 }
 </style>

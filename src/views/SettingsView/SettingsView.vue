@@ -225,22 +225,37 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="settings-shell">
-    <header class="settings-topbar">
+  <main
+    class="settings-shell" size-full overflow-hidden flex flex-col
+    bg="$ui-page-background"
+  >
+    <header
+      class="settings-topbar"
+      shrink-0 px-14px py-10px
+      grid items-center gap-10px
+    >
       <button class="icon-button back-button" type="button" :title="t('app.common.back')" :aria-label="t('app.common.back')" @click="changeHomeView">
         <span class="i-lucide:chevron-left" />
       </button>
 
-      <div class="settings-title">
-        <h1>{{ t('app.settings.title') }}</h1>
+      <div min-w-0 flex items-center>
+        <h1 m-0 text-17px lh-21px font-650>
+          {{ t('app.settings.title') }}
+        </h1>
       </div>
 
       <TabsRoot
         class="settings-tabs-root"
+        min-w-0
         :model-value="activatedPage"
         @update:model-value="updateActivatedPage"
       >
-        <TabsList class="settings-tabs" :aria-label="t('app.settings.tabs.label')">
+        <TabsList
+          class="settings-tabs"
+          min-w-0 flex items-center gap-6px overflow-x-auto
+          px-2px py-3px
+          :aria-label="t('app.settings.tabs.label')"
+        >
           <TabsTrigger
             v-for="item in menuItems"
             :key="item.value"
@@ -255,7 +270,7 @@ onUnmounted(() => {
         </TabsList>
       </TabsRoot>
 
-      <div class="settings-actions">
+      <div class="settings-actions" shrink-0 flex items-center gap-6px>
         <button
           class="icon-button json-button"
           type="button"
@@ -277,20 +292,45 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <div ref="settingsContentRef" class="settings-content ui-native-scrollbar">
-      <section :ref="el => setSectionRef(SettingPageEnum.Appearance, el)" class="settings-section">
+    <div
+      ref="settingsContentRef"
+      class="settings-content ui-native-scrollbar"
+      min-h-0 min-w-0 mx-14px mb-12px pb-12px
+      flex-1 overflow-y-auto flex flex-col gap-34px
+    >
+      <section
+        :ref="el => setSectionRef(SettingPageEnum.Appearance, el)"
+        class="settings-section"
+        box-border px-30px pt-15px pb-5px scroll-mt-8px
+      >
         <AppearancePage />
       </section>
-      <section :ref="el => setSectionRef(SettingPageEnum.Ides, el)" class="settings-section">
+      <section
+        :ref="el => setSectionRef(SettingPageEnum.Ides, el)"
+        class="settings-section"
+        box-border px-30px pt-15px pb-5px scroll-mt-8px
+      >
         <IdesPage />
       </section>
-      <section :ref="el => setSectionRef(SettingPageEnum.AutoScan, el)" class="settings-section">
+      <section
+        :ref="el => setSectionRef(SettingPageEnum.AutoScan, el)"
+        class="settings-section"
+        box-border px-30px pt-15px pb-5px scroll-mt-8px
+      >
         <AutoProjectScannerPage />
       </section>
-      <section :ref="el => setSectionRef(SettingPageEnum.Data, el)" class="settings-section">
+      <section
+        :ref="el => setSectionRef(SettingPageEnum.Data, el)"
+        class="settings-section"
+        box-border px-30px pt-15px pb-5px scroll-mt-8px
+      >
         <DataPage />
       </section>
-      <section :ref="el => setSectionRef(SettingPageEnum.About, el)" class="settings-section">
+      <section
+        :ref="el => setSectionRef(SettingPageEnum.About, el)"
+        class="settings-section"
+        box-border px-30px pt-15px pb-5px scroll-mt-8px
+      >
         <AboutPage />
       </section>
     </div>
@@ -298,30 +338,11 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.settings-shell {
-  @apply size-full overflow-hidden flex flex-col;
-  @apply bg-$ui-page-background;
-}
-
 .settings-topbar {
-  @apply shrink-0 px-14px py-10px grid items-center gap-10px;
   grid-template-columns: auto minmax(128px, auto) minmax(0, 1fr) auto;
 }
 
-.settings-title {
-  @apply min-w-0 flex items-center;
-
-  h1 {
-    @apply m-0 text-17px lh-21px font-650;
-  }
-}
-
-.settings-tabs-root {
-  @apply min-w-0;
-}
-
 .settings-tabs {
-  @apply min-w-0 flex items-center gap-6px overflow-x-auto px-2px py-3px;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -352,10 +373,6 @@ onUnmounted(() => {
   }
 }
 
-.settings-actions {
-  @apply shrink-0 flex items-center gap-6px;
-}
-
 .back-button {
   @apply light:bg-transparent dark:bg-transparent;
   @apply hover:bg-$ui-hover-background;
@@ -365,14 +382,7 @@ onUnmounted(() => {
   }
 }
 
-.settings-content {
-  @apply min-h-0 min-w-0 mx-14px mb-12px pb-12px flex-1 overflow-y-auto;
-  @apply flex flex-col gap-34px;
-}
-
 .settings-section {
-  @apply box-border px-30px pt-15px pb-5px scroll-mt-8px;
-
   :deep(.settings-page) {
     @apply gap-12px;
   }
@@ -432,10 +442,6 @@ onUnmounted(() => {
   .settings-tabs-root {
     grid-column: 1 / -1;
     grid-row: 2;
-  }
-
-  .settings-title span {
-    @apply hidden;
   }
 
   .settings-tab {

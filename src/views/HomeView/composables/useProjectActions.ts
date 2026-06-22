@@ -8,6 +8,11 @@ import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { isCodeEditor, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
+import {
+  DEFAULT_EDITOR_ACTION_PREFIX,
+  DEFAULT_EDITOR_AUTO_ACTION,
+  OPEN_WITH_ACTION_PREFIX,
+} from '~/constants/projectActions'
 import type { ProjectScannerImportResult } from '~/services/projectScannerService'
 import { addNewProjectsFromScanner, scannerBusy } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
@@ -21,10 +26,7 @@ import {
 import { activatedPage } from '~/views/SettingsView'
 
 import {
-  DEFAULT_EDITOR_ACTION_PREFIX,
-  DEFAULT_EDITOR_AUTO_ACTION,
   MIN_SYNC_BUSY_MS,
-  OPEN_WITH_ACTION_PREFIX,
   SCAN_RESULT_TOAST_THRESHOLD_MS,
 } from '../constants'
 import { projectSourceExternalUrl } from '../utils/projectSource'
@@ -285,6 +287,7 @@ export function useProjectActions(options: UseProjectActionsOptions) {
         void toggleProjectArchived(project)
         break
       case 'source':
+      case 'open-source':
         openProjectSource(project)
         break
       case 'open':
@@ -297,6 +300,7 @@ export function useProjectActions(options: UseProjectActionsOptions) {
         void openInTerminal(project)
         break
       case 'copy':
+      case 'copy-path':
         void copyProjectPath(project)
         break
       case 'edit':

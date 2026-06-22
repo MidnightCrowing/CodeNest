@@ -54,7 +54,10 @@ function confirmRemove(deleteFiles = false) {
       }}
     </template>
 
-    <p v-if="!isRemove" class="warning-text">
+    <p
+      v-if="!isRemove" mt-8px mb-0 text-13px lh-18px
+      color="$red-5"
+    >
       {{ t('remove_project_dialog.dialog_desc.delete_note') }}
     </p>
 
@@ -71,9 +74,3 @@ function confirmRemove(deleteFiles = false) {
     </template>
   </UiDialog>
 </template>
-
-<style lang="scss" scoped>
-.warning-text {
-  @apply mt-8px mb-0 text-13px lh-18px color-$red-5;
-}
-</style>

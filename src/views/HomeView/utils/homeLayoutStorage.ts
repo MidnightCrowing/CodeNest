@@ -1,4 +1,5 @@
-import { HOME_LAYOUT_STORAGE_KEY } from '../constants'
+import { HOME_LAYOUT_STORAGE_KEY } from '~/constants/storageKeys'
+
 import type { LayoutMode } from '../types'
 
 export function readStoredLayoutMode(): LayoutMode {

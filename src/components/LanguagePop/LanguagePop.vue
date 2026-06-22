@@ -48,6 +48,10 @@ function languageLabel(text: string) {
     <PopoverPortal v-if="anchorElement && shouldRenderContent">
       <PopoverContent
         class="language-pop"
+        z-50 w-270px rounded-6px border px-12px
+        py-10px outline-none
+        color="$ui-foreground"
+        backdrop-blur-8px backdrop-saturate-140
         :class="{ 'loading': visibleAnalyzing || !hasLanguages, 'dark-language-pop': isDarkTheme }"
         :reference="anchorElement"
         side="top"
@@ -58,44 +62,76 @@ function languageLabel(text: string) {
         @open-auto-focus.prevent
         @close-auto-focus.prevent
       >
-        <div v-if="visibleAnalyzing" class="state-panel">
-          <span class="state-loader" />
+        <div
+          v-if="visibleAnalyzing"
+          class="state-panel"
+          h-44px flex items-center justify-center gap-8px
+          text-12px color="$ui-muted-foreground"
+        >
+          <span
+            class="state-loader"
+            block size-13px shrink-0 rounded-full border-2
+          />
           <span>{{ t('language_pop.loading') }}</span>
         </div>
 
-        <div v-else-if="getAnalyzeError || !languagesGroup?.length" class="state-panel error">
+        <div
+          v-else-if="getAnalyzeError || !languagesGroup?.length"
+          class="state-panel error"
+          h-44px flex items-center justify-center gap-8px
+          text-12px color="$ui-muted-foreground"
+        >
           <span class="i-lucide:triangle-alert" />
           <span>{{ t('language_pop.failed') }}</span>
         </div>
 
         <template v-else>
-          <header class="language-pop-header">
-            <span>{{ t('language_pop.count', { count: languagesGroup.length }) }}</span>
+          <header mb-8px flex items-center justify-end>
+            <span shrink-0 text-11px color="$ui-muted-foreground">{{ t('language_pop.count', { count: languagesGroup.length }) }}</span>
           </header>
 
-          <div class="language-bar" :aria-label="t('language_pop.overall_label')">
+          <div
+            class="language-bar"
+            h-6px mb-9px rounded-full overflow-hidden flex
+            gap-1px
+            bg="$ui-hover-background"
+            :aria-label="t('language_pop.overall_label')"
+          >
             <span
               v-for="languageItem in languagesGroup"
               :key="languageItem.text"
+              block h-full
               :style="{ backgroundColor: languageItem.color ?? '#ccc', width: `${languageItem.percentage}%` }"
               :aria-label="`${languageLabel(languageItem.text)} ${languageItem.percentage}%`"
             />
           </div>
 
-          <ul class="language-list">
+          <ul
+            m-0 p-0 flex flex-col gap-7px
+            list-none
+          >
             <li
               v-for="languageItem in visibleLanguages"
               :key="languageItem.text"
+              min-w-0 flex items-center justify-between gap-10px
+              text-12px
             >
-              <div>
-                <span class="color-dot" :style="{ backgroundColor: languageItem.color ?? '#ccc' }" />
+              <div min-w-0 flex items-center gap-6px truncate>
+                <span
+                  class="color-dot"
+                  size-8px rounded-full shrink-0
+                  :style="{ backgroundColor: languageItem.color ?? '#ccc' }"
+                />
                 {{ languageLabel(languageItem.text) }}
               </div>
-              <span>
+              <span shrink-0 light:color="$gray-7" dark:color="$gray-8">
                 {{ languageItem.percentage }}%
               </span>
             </li>
-            <li v-if="hiddenLanguageCount" class="more-row">
+            <li
+              v-if="hiddenLanguageCount"
+              justify-start text-11px color="$ui-muted-foreground"
+            >
               <div>{{ t('language_pop.more', { count: hiddenLanguageCount }) }}</div>
             </li>
           </ul>
@@ -107,9 +143,7 @@ function languageLabel(text: string) {
 
 <style lang="scss">
 .language-pop {
-  @apply z-50 w-270px rounded-6px border px-12px py-10px outline-none;
-  @apply border-$ui-border color-$ui-foreground;
-  @apply backdrop-blur-8px backdrop-saturate-140;
+  border-color: var(--ui-border);
   background: var(--ui-popover-background);
   box-shadow: var(--shadow-popup);
 
@@ -123,60 +157,16 @@ function languageLabel(text: string) {
 }
 
 .state-panel {
-  @apply h-44px flex items-center justify-center gap-8px;
-  @apply text-12px color-$ui-muted-foreground;
-}
-
-.state-panel.error {
-  @apply color-$red-5;
+  &.error {
+    @apply color-$red-5;
+  }
 }
 
 .state-loader {
-  @apply block size-13px shrink-0 rounded-full border-2;
   border-style: solid;
   border-color: var(--ui-border);
   border-top-color: var(--ui-primary);
   animation: state-loader-spin 0.75s linear infinite;
-}
-
-.language-pop-header {
-  @apply mb-8px flex items-center justify-end;
-
-  > span {
-    @apply shrink-0 text-11px color-$ui-muted-foreground;
-  }
-}
-
-.language-bar {
-  @apply h-6px mb-9px rounded-full overflow-hidden flex gap-1px bg-$ui-hover-background;
-
-  span {
-    @apply block h-full;
-  }
-}
-
-.language-list {
-  @apply m-0 p-0 flex flex-col gap-7px list-none;
-}
-
-.language-list li {
-  @apply min-w-0 flex items-center justify-between gap-10px text-12px;
-
-  div {
-    @apply min-w-0 flex items-center gap-6px truncate;
-  }
-
-  > span {
-    @apply shrink-0 light:color-$gray-7 dark:color-$gray-8;
-  }
-}
-
-.language-list .more-row {
-  @apply justify-start text-11px color-$ui-muted-foreground;
-}
-
-.color-dot {
-  @apply size-8px rounded-full shrink-0;
 }
 
 .language-pop.dark-language-pop {

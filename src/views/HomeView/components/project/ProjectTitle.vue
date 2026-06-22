@@ -3,8 +3,9 @@ import { useI18n } from 'vue-i18n'
 
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
+import { kindLabel } from '~/utils/projectFormatters'
 
-import { kindClass, kindLabel } from '../../utils/projectFormatters'
+import { kindClass } from '../../utils/projectFormatters'
 
 withDefaults(defineProps<{
   project: LocalProject

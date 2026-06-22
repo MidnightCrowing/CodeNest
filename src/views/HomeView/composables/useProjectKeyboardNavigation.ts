@@ -2,8 +2,8 @@ import type { Ref } from 'vue'
 
 import { showRemoveDialog } from '~/components/RemoveProjectDialog'
 import type { LocalProject } from '~/constants/localProject'
+import { PROJECT_ACTION_KEYS } from '~/constants/projectActions'
 
-import { PROJECT_ACTION_KEYS } from '../constants'
 import type { LayoutMode, ProjectActionKey } from '../types'
 
 interface ProjectRefs {

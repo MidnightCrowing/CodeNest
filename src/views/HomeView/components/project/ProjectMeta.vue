@@ -3,8 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
-
-import { formatProjectLanguage, shortLicense } from '../../utils/projectFormatters'
+import { formatProjectLanguage, shortLicense } from '~/utils/projectFormatters'
 
 const props = withDefaults(defineProps<{
   project: LocalProject
@@ -42,7 +41,6 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
   </button>
   <span
     v-if="showLicense && project.license && project.license !== LicenseEnum.NONE"
-    class="license-cell"
     min-w-0 max-w-full h-23px rounded-4px px-7px
     border-0
     inline-flex items-center gap-5px truncate text-11px
@@ -52,16 +50,10 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
   </span>
   <span
     v-else-if="showLicense"
-    class="license-cell muted"
     min-w-0 max-w-full h-23px rounded-4px px-7px
     border-0
     inline-flex items-center gap-5px truncate text-11px
     bg="$ui-control-background"
+    light:color="$gray-8" dark:color="$gray-7"
   >{{ t('app.license.none') }}</span>
 </template>
-
-<style lang="scss" scoped>
-.license-cell.muted {
-  @apply light:color-$gray-8 dark:color-$gray-7;
-}
-</style>

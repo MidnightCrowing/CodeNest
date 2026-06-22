@@ -39,7 +39,7 @@ const emit = defineEmits<{
   <UiScrollArea :ref="element => emit('scrollRef', element)" min-h-0 flex-1>
     <div
       min-h-full p-12px grid gap-12px content-start
-      class="cards-body"
+      grid-cols="[repeat(auto-fill,minmax(min(320px,100%),1fr))]"
     >
       <ProjectCard
         v-for="project in projects"
@@ -73,9 +73,3 @@ const emit = defineEmits<{
     </div>
   </UiScrollArea>
 </template>
-
-<style lang="scss" scoped>
-.cards-body {
-  @apply grid-cols-[repeat(auto-fill,minmax(min(320px,100%),1fr))];
-}
-</style>

@@ -1,7 +1,9 @@
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-
-import { GITHUB_SOURCE_RE } from '../constants'
+import {
+  normalizeProjectSourceExternalUrl,
+  sourceNameFromUrl,
+} from '~/utils/projectSource'
 
 export function isSourceProject(project: LocalProject) {
   return project.kind === ProjectKind.FORK || project.kind === ProjectKind.CLONE
@@ -16,31 +18,7 @@ export function projectSourceExternalUrl(project: LocalProject) {
   if (!sourceUrl)
     return ''
 
-  const githubName = sourceUrl.match(GITHUB_SOURCE_RE)?.[1]
-  if (githubName)
-    return `https://github.com/${githubName.replace(/\.git$/, '')}`
-
-  if (/^https?:\/\//i.test(sourceUrl))
-    return sourceUrl
-
-  return `https://${sourceUrl}`
-}
-
-export function sourceNameFromUrl(url: string) {
-  const githubName = url.match(GITHUB_SOURCE_RE)?.[1]
-  if (githubName)
-    return githubName
-
-  try {
-    const parsedUrl = new URL(url)
-    const pathParts = parsedUrl.pathname.split('/').filter(Boolean)
-    return pathParts.length >= 2
-      ? pathParts.slice(-2).join('/')
-      : parsedUrl.hostname
-  }
-  catch {
-    return url
-  }
+  return normalizeProjectSourceExternalUrl(sourceUrl)
 }
 
 export function projectSourceName(project: LocalProject) {

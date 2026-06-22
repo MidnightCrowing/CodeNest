@@ -3,12 +3,11 @@ import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { editorCommandOptions, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-
 import {
   DEFAULT_EDITOR_ACTION_PREFIX,
   DEFAULT_EDITOR_AUTO_ACTION,
   OPEN_WITH_ACTION_PREFIX,
-} from '../constants'
+} from '~/constants/projectActions'
 
 /**
  * 项目菜单构建

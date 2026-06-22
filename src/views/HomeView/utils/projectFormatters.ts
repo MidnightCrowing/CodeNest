@@ -1,20 +1,7 @@
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { codeEditors } from '~/constants/codeEditor'
-import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
-
-export function kindLabel(kind: ProjectKind, t: (key: string) => string) {
-  switch (kind) {
-    case ProjectKind.FORK:
-      return t('app.project_kind.fork')
-    case ProjectKind.CLONE:
-      return t('app.project_kind.clone')
-    case ProjectKind.MINE:
-    default:
-      return t('app.project_kind.mine')
-  }
-}
 
 export function kindClass(kind: ProjectKind) {
   switch (kind) {
@@ -26,31 +13,6 @@ export function kindClass(kind: ProjectKind) {
     default:
       return 'kind-mine'
   }
-}
-
-export function shortLicense(license: LicenseEnum | undefined, t: (key: string) => string) {
-  if (!license || license === LicenseEnum.NONE)
-    return t('app.license.none')
-  if (license === LicenseEnum.MIT)
-    return 'MIT'
-  if (license === LicenseEnum.APACHE_2_0)
-    return 'Apache-2.0'
-  if (license === LicenseEnum.GPLV3)
-    return 'GPL-3.0'
-  if (license === LicenseEnum.GPLV2)
-    return 'GPL-2.0'
-  if (license === LicenseEnum.OTHER)
-    return t('app.license.other')
-  return license.replace(' License', '').replace('GNU ', '')
-}
-
-export function formatProjectLanguage(language: string | null | undefined, t: (key: string) => string) {
-  const normalized = language?.trim()
-  if (!normalized || normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'unknow')
-    return t('app.common.unknown')
-  if (normalized === 'Other')
-    return t('language_pop.other')
-  return normalized
 }
 
 export function editorIconClasses(editor?: CodeEditorEnum | null) {
