@@ -416,7 +416,10 @@ function kindLabel(kind: ProjectKind) {
 function languageLabel(language: string | null | undefined) {
   if (!language)
     return t('app.project_editor.no_language')
-  return language === 'Other' ? t('language_pop.other') : language
+  const normalized = language.trim()
+  if (normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'unknow')
+    return t('app.common.unknown')
+  return normalized === 'Other' ? t('language_pop.other') : normalized
 }
 
 function shortLicense(license?: LicenseEnum | string | null) {

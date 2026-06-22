@@ -4,21 +4,29 @@ import { useI18n } from 'vue-i18n'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 
-import { shortLicense } from '../../utils/projectFormatters'
+import { formatProjectLanguage, shortLicense } from '../../utils/projectFormatters'
 
-defineProps<{
+const props = withDefaults(defineProps<{
   project: LocalProject
-}>()
+  variant?: 'all' | 'language' | 'license'
+}>(), {
+  variant: 'all',
+})
 
 const emit = defineEmits<{
   showLanguage: [project: LocalProject, event: MouseEvent]
 }>()
 
 const { t } = useI18n()
+
+const showLanguage = computed(() => props.variant !== 'license')
+const showLicense = computed(() => props.variant !== 'language')
+const languageLabel = computed(() => formatProjectLanguage(props.project.mainLang, t))
 </script>
 
 <template>
   <button
+    v-if="showLanguage"
     class="inline-pill"
     min-w-0 max-w-full h-23px rounded-4px px-7px
     border-0
@@ -26,14 +34,14 @@ const { t } = useI18n()
     bg="$ui-control-background" color="$ui-foreground"
     cursor-pointer hover:bg="$ui-hover-background"
     type="button"
-    :title="project.mainLang || t('app.common.unknown')"
+    :title="languageLabel"
     @click.stop="emit('showLanguage', project, $event)"
   >
     <span size-8px rounded-full shrink-0 :style="{ background: project.mainLangColor || '#b8b8b8' }" />
-    {{ project.mainLang || t('app.common.unknown') }}
+    {{ languageLabel }}
   </button>
   <span
-    v-if="project.license && project.license !== LicenseEnum.NONE"
+    v-if="showLicense && project.license && project.license !== LicenseEnum.NONE"
     class="license-cell"
     min-w-0 max-w-full h-23px rounded-4px px-7px
     border-0
@@ -43,7 +51,7 @@ const { t } = useI18n()
     {{ shortLicense(project.license, t) }}
   </span>
   <span
-    v-else
+    v-else-if="showLicense"
     class="license-cell muted"
     min-w-0 max-w-full h-23px rounded-4px px-7px
     border-0

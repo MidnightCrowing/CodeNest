@@ -75,8 +75,13 @@ const { t } = useI18n()
         <ProjectSource :project="project" @open="emit('openSource', project)" />
       </div>
 
-      <ProjectMeta :project="project" @show-language="(p, event) => emit('showLanguage', p, event)" />
+      <ProjectMeta
+        :project="project"
+        variant="language"
+        @show-language="(p, event) => emit('showLanguage', p, event)"
+      />
       <ProjectEditorChip :editor="project.defaultOpen" list-cell />
+      <ProjectMeta :project="project" variant="license" />
       <span
         truncate text-11px light:color="$gray-7" dark:color="$gray-8"
         class="recent-cell"

@@ -33,7 +33,10 @@ function updateOpen(open: boolean) {
 }
 
 function languageLabel(text: string) {
-  return text === 'Other' ? t('language_pop.other') : text
+  const normalized = text.trim()
+  if (normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'unknow')
+    return t('app.common.unknown')
+  return normalized === 'Other' ? t('language_pop.other') : normalized
 }
 </script>
 

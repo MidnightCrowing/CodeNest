@@ -44,6 +44,15 @@ export function shortLicense(license: LicenseEnum | undefined, t: (key: string) 
   return license.replace(' License', '').replace('GNU ', '')
 }
 
+export function formatProjectLanguage(language: string | null | undefined, t: (key: string) => string) {
+  const normalized = language?.trim()
+  if (!normalized || normalized.toLowerCase() === 'unknown' || normalized.toLowerCase() === 'unknow')
+    return t('app.common.unknown')
+  if (normalized === 'Other')
+    return t('language_pop.other')
+  return normalized
+}
+
 export function editorIconClasses(editor?: CodeEditorEnum | null) {
   if (!editor)
     return []

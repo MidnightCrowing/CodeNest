@@ -81,7 +81,7 @@ const { t } = useI18n()
 .temporary-badge,
 .remote-badge,
 .kind-badge {
-  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply h-19px shrink-0 rounded-4px border border-transparent border-solid px-5px;
   @apply inline-flex items-center text-10px font-650 lh-12px;
 }
 
@@ -91,8 +91,9 @@ const { t } = useI18n()
 }
 
 :global(.workspace-shell.theme-dark) .temporary-badge {
-  @apply [color:color-mix(in_srgb,var(--yellow-8)_88%,var(--gray-14))];
-  @apply [background:color-mix(in_srgb,var(--yellow-5)_16%,var(--ui-surface-background))];
+  @apply [color:var(--yellow-11)];
+  @apply [background:color-mix(in_srgb,var(--yellow-5)_30%,var(--ui-surface-background))];
+  @apply [border-color:color-mix(in_srgb,var(--yellow-8)_34%,transparent)];
 }
 
 .remote-badge {
@@ -101,8 +102,9 @@ const { t } = useI18n()
 }
 
 :global(.workspace-shell.theme-dark) .remote-badge {
-  @apply [color:color-mix(in_srgb,var(--teal-8)_88%,var(--gray-14))];
-  @apply [background:color-mix(in_srgb,var(--teal-5)_16%,var(--ui-surface-background))];
+  @apply [color:var(--teal-11)];
+  @apply [background:color-mix(in_srgb,var(--teal-5)_32%,var(--ui-surface-background))];
+  @apply [border-color:color-mix(in_srgb,var(--teal-8)_36%,transparent)];
 }
 
 .kind-mine {
@@ -113,16 +115,16 @@ const { t } = useI18n()
 
 .kind-fork {
   @apply [--kind-color:var(--purple-5)];
-  @apply [--kind-bg-light-strength:14%] [--kind-bg-dark-strength:20%];
+  @apply [--kind-bg-light-strength:14%] [--kind-bg-dark-strength:34%];
   @apply [--kind-text-light:color-mix(in_srgb,var(--purple-5)_92%,var(--gray-1))];
-  @apply [--kind-text-dark:color-mix(in_srgb,var(--purple-8)_86%,var(--gray-1))];
+  @apply [--kind-text-dark:var(--purple-11)] [--kind-border-dark:color-mix(in_srgb,var(--purple-8)_38%,transparent)];
 }
 
 .kind-clone {
-  @apply [--kind-color:var(--yellow-5)] [--kind-bg-dark-color:var(--yellow-3)] [--kind-bg-dark-base:var(--gray-1)];
-  @apply [--kind-bg-light-strength:27%] [--kind-bg-dark-strength:30%];
+  @apply [--kind-color:var(--yellow-5)] [--kind-bg-dark-color:var(--yellow-4)] [--kind-bg-dark-base:var(--ui-surface-background)];
+  @apply [--kind-bg-light-strength:27%] [--kind-bg-dark-strength:38%];
   @apply [--kind-text-light:color-mix(in_srgb,var(--yellow-2)_96%,var(--gray-1))];
-  @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_95%,var(--gray-1))];
+  @apply [--kind-text-dark:var(--yellow-11)] [--kind-border-dark:color-mix(in_srgb,var(--yellow-8)_38%,transparent)];
 }
 
 .kind-badge {
@@ -133,5 +135,6 @@ const { t } = useI18n()
 :global(.workspace-shell.theme-dark) .kind-badge {
   @apply [background:color-mix(in_srgb,var(--kind-bg-dark-color,var(--kind-color))_var(--kind-bg-dark-strength),var(--kind-bg-dark-base,var(--ui-surface-background)))];
   @apply [color:var(--kind-text-dark)];
+  @apply [border-color:var(--kind-border-dark,color-mix(in_srgb,var(--kind-text-dark)_28%,transparent))];
 }
 </style>

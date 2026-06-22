@@ -37,9 +37,11 @@ export function useProjectRefs() {
     if (!element)
       return
 
+    element.style.pointerEvents = 'none'
+    element.style.transformOrigin = 'center'
     element.style.transition = 'opacity 180ms ease-out, transform 180ms ease-out'
     element.style.opacity = '0'
-    element.style.transform = 'translateX(-12px)'
+    element.style.transform = 'scale(0.985)'
 
     await new Promise(resolve => setTimeout(resolve, 180))
   }
