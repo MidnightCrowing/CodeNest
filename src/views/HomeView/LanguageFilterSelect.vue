@@ -62,22 +62,28 @@ function colorDotStyle(color?: string) {
       :aria-label="triggerLabel"
     >
       <SelectValue :placeholder="placeholder">
-        <span class="ui-select-label language-filter-label">
+        <span class="ui-select-label" min-w-0 inline-flex items-center gap-7px>
           <span
             v-if="selectedOption?.color"
-            class="language-filter-dot"
+            size-8px shrink-0 rounded-full
             :style="colorDotStyle(selectedOption?.color)"
           />
-          <span class="language-filter-label-text">
+          <span min-w-0 truncate>
             {{ selectedOption?.label || placeholder }}
           </span>
         </span>
-        <span v-if="selectedOption?.count !== undefined" class="language-filter-count-badge">
+        <span
+          v-if="selectedOption?.count !== undefined"
+          shrink-0 size-18px rounded-full px-0
+          inline-flex items-center justify-center
+          text-11px font-650
+          bg="$ui-hover-background" color="$ui-muted-foreground"
+        >
           {{ selectedOption.count }}
         </span>
       </SelectValue>
       <SelectIcon class="ui-select-icon">
-        <span class="i-lucide:chevron-down" />
+        <span i-lucide:chevron-down />
       </SelectIcon>
     </SelectTrigger>
 
@@ -98,18 +104,24 @@ function colorDotStyle(color?: string) {
             :value="option.value"
           >
             <SelectItemIndicator class="ui-select-check">
-              <span class="i-lucide:check" />
+              <span i-lucide:check />
             </SelectItemIndicator>
             <SelectItemText class="ui-select-item-text">
-              <span class="language-filter-option-main">
+              <span min-w-0 flex items-center gap-7px>
                 <span
-                  class="language-filter-dot"
-                  :class="{ placeholder: !option.color }"
+                  size-8px shrink-0 rounded-full
+                  :class="{ 'opacity-0': !option.color }"
                   :style="colorDotStyle(option.color)"
                 />
-                <span>{{ option.label }}</span>
+                <span min-w-0 truncate>{{ option.label }}</span>
               </span>
-              <span v-if="option.count !== undefined" class="language-filter-count-badge">
+              <span
+                v-if="option.count !== undefined"
+                shrink-0 size-18px rounded-full px-0
+                inline-flex items-center justify-center
+                text-11px font-650
+                bg="$ui-hover-background" color="$ui-muted-foreground"
+              >
                 {{ option.count }}
               </span>
             </SelectItemText>
@@ -119,36 +131,3 @@ function colorDotStyle(color?: string) {
     </SelectPortal>
   </SelectRoot>
 </template>
-
-<style lang="scss">
-.language-filter-label {
-  @apply min-w-0 inline-flex items-center gap-7px;
-}
-
-.language-filter-label-text {
-  @apply min-w-0 truncate;
-}
-
-.language-filter-dot {
-  @apply size-8px shrink-0 rounded-full;
-
-  &.placeholder {
-    @apply opacity-0;
-  }
-}
-
-.language-filter-option-main {
-  @apply min-w-0 flex items-center gap-7px;
-
-  span:last-child {
-    @apply min-w-0 truncate;
-  }
-}
-
-.language-filter-count-badge {
-  @apply shrink-0 size-18px rounded-full px-0;
-  @apply inline-flex items-center justify-center;
-  @apply text-11px font-650;
-  @apply bg-$ui-hover-background color-$ui-muted-foreground;
-}
-</style>
