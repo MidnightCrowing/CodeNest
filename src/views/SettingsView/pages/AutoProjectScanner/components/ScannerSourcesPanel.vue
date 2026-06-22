@@ -149,7 +149,7 @@ const settings = useSettingsStore()
           :disabled="!settings.scanner.ideEnabled || !row.config.enabled || detectingScannerKeys.has(row.key)"
           @click="detectScannerSource(row)"
         >
-          <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has(row.key) }" />
+          <span class="i-lucide:wand-sparkles" :class="{ 'is-spinning': visibleDetectingScannerKeys.has(row.key) }" />
         </button>
         <button
           class="icon-button"
@@ -189,7 +189,7 @@ const settings = useSettingsStore()
           :disabled="!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled || detectingScannerKeys.has('jetbrains')"
           @click="detectJetbrainsRoot"
         >
-          <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingScannerKeys.has('jetbrains') }" />
+          <span class="i-lucide:wand-sparkles" :class="{ 'is-spinning': visibleDetectingScannerKeys.has('jetbrains') }" />
         </button>
         <button
           class="icon-button"
@@ -252,16 +252,6 @@ span {
 
   .source-row {
     display: contents;
-  }
-}
-
-.spinning {
-  animation: spin-detect 0.8s linear infinite;
-}
-
-@keyframes spin-detect {
-  to {
-    transform: rotate(360deg);
   }
 }
 

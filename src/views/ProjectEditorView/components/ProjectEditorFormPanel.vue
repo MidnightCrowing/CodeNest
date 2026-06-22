@@ -100,7 +100,7 @@ const { t } = useI18n()
             </button>
           </div>
           <p
-            class="field-message error"
+            class="field-message status-message error"
             :class="{ empty: !folderStatus }"
             :aria-hidden="!folderStatus"
           >
@@ -152,7 +152,7 @@ const { t } = useI18n()
               >
             </div>
             <p
-              class="field-message error"
+              class="field-message status-message error"
               :class="{ empty: !folderStatus }"
               :aria-hidden="!folderStatus"
             >
@@ -314,7 +314,7 @@ const { t } = useI18n()
             </button>
           </div>
           <p
-            class="field-message neutral"
+            class="field-message status-message neutral"
             :class="{ empty: !mainLanguageStatus }"
             :aria-hidden="!mainLanguageStatus"
           >
@@ -418,39 +418,6 @@ const { t } = useI18n()
 
 .field-message {
   @apply m-0 min-h-16px max-w-420px text-right text-12px lh-16px break-anywhere;
-
-  &.empty {
-    visibility: hidden;
-  }
-
-  &.neutral,
-  &.info {
-    @apply color-$ui-muted-foreground;
-  }
-
-  &.success {
-    @apply [color:color-mix(in_srgb,var(--green-5)_90%,var(--ui-foreground))];
-  }
-
-  &.warning {
-    @apply [color:color-mix(in_srgb,var(--yellow-4)_90%,var(--ui-foreground))];
-  }
-
-  &.error {
-    @apply [color:color-mix(in_srgb,var(--red-5)_92%,var(--ui-foreground))];
-  }
-}
-
-:global(.dark) .field-message.success {
-  @apply [color:color-mix(in_srgb,var(--green-7)_86%,var(--gray-14))];
-}
-
-:global(.dark) .field-message.warning {
-  @apply [color:color-mix(in_srgb,var(--yellow-7)_86%,var(--gray-14))];
-}
-
-:global(.dark) .field-message.error {
-  @apply [color:color-mix(in_srgb,var(--red-7)_86%,var(--gray-14))];
 }
 
 @media (max-width: 680px) {

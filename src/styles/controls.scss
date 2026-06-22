@@ -125,3 +125,50 @@ textarea:not(:disabled) {
   @apply bg-$ui-hover-background color-$ui-muted-foreground;
   @apply hover:color-$ui-foreground;
 }
+
+.status-message {
+  overflow-wrap: anywhere;
+
+  &.empty {
+    visibility: hidden;
+  }
+
+  &.neutral,
+  &.info {
+    @apply color-$ui-muted-foreground;
+  }
+
+  &.success {
+    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
+  }
+
+  &.warning {
+    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
+  }
+
+  &.error {
+    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
+  }
+}
+
+.dark .status-message.success {
+  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
+}
+
+.dark .status-message.warning {
+  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
+}
+
+.dark .status-message.error {
+  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
+}
+
+.is-spinning {
+  animation: spin-detect 0.8s linear infinite;
+}
+
+@keyframes spin-detect {
+  to {
+    transform: rotate(360deg);
+  }
+}

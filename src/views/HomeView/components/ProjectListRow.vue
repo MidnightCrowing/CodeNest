@@ -129,7 +129,6 @@ const { t } = useI18n()
 }
 
 .project-row > :deep(.inline-pill),
-.project-row > :deep(.license-cell),
 .project-row > :deep(.editor-cell) {
   @apply bg-transparent px-0;
 }

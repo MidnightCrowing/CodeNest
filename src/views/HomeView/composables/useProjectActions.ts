@@ -19,6 +19,7 @@ import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 import { formatActionError } from '~/utils/error'
+import { projectSourceExternalUrl } from '~/utils/projectSource'
 import {
   initializeNewProjectState,
   initializeUpdateProjectState,
@@ -29,7 +30,6 @@ import {
   MIN_SYNC_BUSY_MS,
   SCAN_RESULT_TOAST_THRESHOLD_MS,
 } from '../constants'
-import { projectSourceExternalUrl } from '../utils/projectSource'
 
 interface ProjectActionsOpenState {
   clearProjectOpening: (projectId: number) => void

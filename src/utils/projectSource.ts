@@ -1,3 +1,6 @@
+import type { LocalProject } from '~/constants/localProject'
+import { ProjectKind } from '~/constants/localProject'
+
 export const GITHUB_REPOSITORY_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
 
 export function extractGithubRepositoryName(url: string) {
@@ -30,4 +33,31 @@ export function sourceNameFromUrl(url: string) {
   catch {
     return url
   }
+}
+
+export function isSourceProject(project: LocalProject) {
+  return project.kind === ProjectKind.FORK || project.kind === ProjectKind.CLONE
+}
+
+export function projectSourceUrl(project: LocalProject) {
+  return isSourceProject(project) ? project.fromUrl?.trim() || '' : ''
+}
+
+export function projectSourceExternalUrl(project: LocalProject) {
+  const sourceUrl = projectSourceUrl(project)
+  if (!sourceUrl)
+    return ''
+
+  return normalizeProjectSourceExternalUrl(sourceUrl)
+}
+
+export function projectSourceName(project: LocalProject) {
+  const sourceUrl = projectSourceUrl(project)
+  return isSourceProject(project)
+    ? project.fromName?.trim() || (sourceUrl ? sourceNameFromUrl(sourceUrl) : '')
+    : ''
+}
+
+export function hasProjectSource(project: LocalProject) {
+  return !!projectSourceName(project)
 }

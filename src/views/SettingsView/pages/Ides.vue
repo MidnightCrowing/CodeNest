@@ -314,7 +314,7 @@ function quoteCommand(command: string) {
                 :disabled="detectingKeys.has(option.key)"
                 @click="detectEditor(option)"
               >
-                <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingKeys.has(option.key) }" />
+                <span class="i-lucide:wand-sparkles" :class="{ 'is-spinning': visibleDetectingKeys.has(option.key) }" />
               </button>
               <button
                 class="icon-button"
@@ -347,16 +347,6 @@ h3 {
 
 .command-area {
   grid-template-columns: minmax(0, 1fr) max-content max-content;
-}
-
-.spinning {
-  animation: spin-detect 0.8s linear infinite;
-}
-
-@keyframes spin-detect {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @media (max-width: 900px) {

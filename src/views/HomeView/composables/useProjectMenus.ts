@@ -2,12 +2,15 @@ import type { UiActionMenuItem } from '~/components/ui/actionMenu'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { editorCommandOptions, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
-import { ProjectKind } from '~/constants/localProject'
 import {
   DEFAULT_EDITOR_ACTION_PREFIX,
   DEFAULT_EDITOR_AUTO_ACTION,
   OPEN_WITH_ACTION_PREFIX,
 } from '~/constants/projectActions'
+import {
+  isSourceProject,
+  projectSourceUrl,
+} from '~/utils/projectSource'
 
 /**
  * 项目菜单构建
@@ -65,14 +68,6 @@ export function useProjectMenus(deps: MenuDependencies) {
   function canDeleteProjectFiles(project: LocalProject) {
     // 远程项目没有本地文件,只能从列表移除
     return project.isTemporary && project.isExists !== false && !project.isRemote
-  }
-
-  function isSourceProject(project: LocalProject) {
-    return project.kind === ProjectKind.FORK || project.kind === ProjectKind.CLONE
-  }
-
-  function projectSourceUrl(project: LocalProject) {
-    return isSourceProject(project) ? project.fromUrl?.trim() || '' : ''
   }
 
   function projectMenuItems(project: LocalProject): UiActionMenuItem[] {

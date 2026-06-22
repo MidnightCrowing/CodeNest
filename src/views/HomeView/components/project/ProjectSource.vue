@@ -2,13 +2,15 @@
 import { useI18n } from 'vue-i18n'
 
 import type { LocalProject } from '~/constants/localProject'
-
 import {
   hasProjectSource,
   projectSourceName,
+  projectSourceUrl,
+} from '~/utils/projectSource'
+
+import {
   projectSourcePrefix,
   projectSourceTitle,
-  projectSourceUrl,
 } from '../../utils/projectSource'
 
 withDefaults(defineProps<{

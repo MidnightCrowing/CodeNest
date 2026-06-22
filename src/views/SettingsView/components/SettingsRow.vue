@@ -38,7 +38,7 @@ withDefaults(defineProps<{
       <slot />
       <p
         v-if="reserveStatus || status || $slots.status"
-        class="setting-status"
+        class="setting-status status-message"
         m-0 min-h-16px max-w-520px text-right text-12px
         lh-16px
         :class="[statusTone, { empty: !status && !$slots.status }]"
@@ -68,46 +68,6 @@ span {
 
 span.danger {
   @apply color-$red-5;
-}
-
-.setting-status {
-  overflow-wrap: anywhere;
-
-  &.empty {
-    visibility: hidden;
-  }
-
-  &.neutral {
-    @apply color-$ui-muted-foreground;
-  }
-
-  &.info {
-    @apply color-$ui-muted-foreground;
-  }
-
-  &.success {
-    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
-  }
-
-  &.warning {
-    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
-  }
-
-  &.error {
-    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
-  }
-}
-
-:global(.dark) .setting-status.success {
-  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
-}
-
-:global(.dark) .setting-status.warning {
-  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
-}
-
-:global(.dark) .setting-status.error {
-  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
 }
 
 @media (max-width: 720px) {

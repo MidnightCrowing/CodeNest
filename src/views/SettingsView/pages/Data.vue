@@ -321,7 +321,7 @@ async function pullWebDavData() {
           </button>
         </div>
         <p
-          class="webdav-status"
+          class="webdav-status status-message"
           :class="[webdavStatus?.type || 'neutral', { empty: !webdavStatus }]"
           :aria-hidden="!webdavStatus"
         >
@@ -335,42 +335,5 @@ async function pullWebDavData() {
 <style lang="scss" scoped>
 .webdav-status {
   @apply m-0 min-h-16px text-right text-12px lh-16px;
-  overflow-wrap: anywhere;
-
-  &.empty {
-    visibility: hidden;
-  }
-
-  &.neutral {
-    @apply color-$ui-muted-foreground;
-  }
-
-  &.info {
-    @apply color-$ui-muted-foreground;
-  }
-
-  &.success {
-    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
-  }
-
-  &.warning {
-    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
-  }
-
-  &.error {
-    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
-  }
-}
-
-:global(.dark) .webdav-status.success {
-  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
-}
-
-:global(.dark) .webdav-status.warning {
-  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
-}
-
-:global(.dark) .webdav-status.error {
-  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
 }
 </style>
