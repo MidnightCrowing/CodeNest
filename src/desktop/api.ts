@@ -20,6 +20,8 @@ window.api = {
     call('read_project_license', { folderPath, maxLines }),
   openProject: (editorCommand, projectPath, openInTerminal) =>
     call('open_project', { editorCommand, projectPath, openInTerminal }),
+  openRemoteProject: (host, remotePath, editorCommand, mode) =>
+    call('open_remote_project', { host, remotePath, editorCommand, mode }),
   detectEditorCommand: editor => call('detect_editor_command', { editor }),
   deleteProject: projectPath => call('delete_project', { projectPath }),
   importProject: () => call('import_projects'),

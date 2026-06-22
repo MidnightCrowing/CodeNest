@@ -1,11 +1,9 @@
 <script lang="ts" setup>
-import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n'
 
 import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { showPop as showLanguagePop } from '~/components/LanguagePop/LanguagePopProvider'
 import { setRemoveAnimationCallback, showRemoveDialog } from '~/components/RemoveProjectDialog'
-import type { UiActionMenuItem } from '~/components/ui/actionMenu'
 import { showToast } from '~/components/ui/toast'
 import UiActionMenu from '~/components/ui/UiActionMenu.vue'
 import UiScrollArea from '~/components/ui/UiScrollArea.vue'
@@ -13,7 +11,7 @@ import UiSegmentedControl from '~/components/ui/UiSegmentedControl.vue'
 import UiSelect from '~/components/ui/UiSelect.vue'
 import { SettingPageEnum, ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { codeEditors, editorCommandOptions, isCodeEditor } from '~/constants/codeEditor'
+import { codeEditors, isCodeEditor, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -22,93 +20,120 @@ import { addNewProjectsFromScanner, scannerBusy } from '~/services/projectScanne
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
+import { formatActionError } from '~/utils/error'
 import {
   initializeNewProjectState,
   initializeUpdateProjectState,
 } from '~/views/ProjectEditorView'
 import { activatedPage } from '~/views/SettingsView'
 
+import { useDisplayPathCache } from './composables/useDisplayPathCache'
+import { useProjectFilters } from './composables/useProjectFilters'
+import { useProjectMenus } from './composables/useProjectMenus'
+import { useProjectNavigation } from './composables/useProjectNavigation'
+import { useProjectOpenState } from './composables/useProjectOpenState'
+import { useProjectSearch } from './composables/useProjectSearch'
+import { useVirtualScroll } from './composables/useVirtualScroll'
+import {
+  DEFAULT_EDITOR_ACTION_PREFIX,
+  DEFAULT_EDITOR_AUTO_ACTION,
+  GITHUB_SOURCE_RE,
+  HOME_LAYOUT_STORAGE_KEY,
+  MIN_SYNC_BUSY_MS,
+  OPEN_WITH_ACTION_PREFIX,
+  PROJECT_ACTION_KEYS,
+  SCAN_RESULT_TOAST_THRESHOLD_MS,
+} from './constants'
 import LanguageFilterSelect from './LanguageFilterSelect.vue'
+import type { LayoutMode, ProjectActionKey, ScrollAreaRef } from './types'
 
 defineOptions({
   name: 'Home',
 })
 
-type KindFilter = ProjectKind | 'all'
-type StatusFilter = 'all' | 'available' | 'missing' | 'temporary' | 'archived'
-type SortKey = 'recent' | 'name' | 'language' | 'group'
-type LayoutMode = 'list' | 'grid'
-type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
-
-const MIN_SYNC_BUSY_MS = 280
-const SCAN_RESULT_TOAST_THRESHOLD_MS = 700
-const MIN_PROJECT_OPENING_VISIBLE_MS = 2200
-const MIN_TERMINAL_OPENING_VISIBLE_MS = 800
-const PROJECT_ACTION_KEYS: ProjectActionKey[] = ['open', 'explorer', 'terminal', 'copy', 'more']
-const LIST_INITIAL_RENDER_COUNT = 160
-const LIST_RENDER_BATCH = 120
-const GRID_INITIAL_RENDER_COUNT = 72
-const GRID_RENDER_BATCH = 48
-const SEARCH_DEBOUNCE_MS = 100
-const HOME_LAYOUT_STORAGE_KEY = 'codenest:home-layout'
-const OPEN_WITH_ACTION_PREFIX = 'open-with:'
-const DEFAULT_EDITOR_ACTION_PREFIX = 'default-editor:'
-const DEFAULT_EDITOR_AUTO_ACTION = `${DEFAULT_EDITOR_ACTION_PREFIX}auto`
-const GITHUB_SOURCE_RE = /github\.com[/:]([^/:\s]+\/[^/\s#.]+)/
-
-interface FilterOption<T extends string> {
-  value: T
-  label: string
-  color?: string
-  count?: number
-}
-
-interface ScrollAreaRef {
-  $el?: Element
-}
-
-interface HomeScrollSnapshot {
-  layoutMode: LayoutMode
-  scrollLeft: number
-  scrollTop: number
-}
-
 const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
 const editorLangGroupsStore = useEditorLangGroupsStore()
+
+// Composables
+const pathCache = useDisplayPathCache()
+const projectSearch = useProjectSearch(computed(() => projectsStore.allProjects))
 const activatedView = inject('activatedView') as Ref<ViewEnum>
 const { locale, t } = useI18n()
 
-const searchValue = ref('')
-const debouncedSearchValue = ref('')
-const kindFilter = ref<KindFilter>('all')
-const statusFilter = ref<StatusFilter>('all')
-const languageFilter = ref('all')
-const groupFilter = ref('all')
-const sortKey = ref<SortKey>('recent')
+const { searchValue, clearSearch } = projectSearch
+const projectFilters = useProjectFilters(projectSearch, t)
+const {
+  kindFilter,
+  statusFilter,
+  languageFilter,
+  sortKey,
+  filteredProjects,
+  activeFilterCount,
+  totalProjects,
+  kindOptions,
+  statusOptions,
+  languageOptions,
+  sortOptions,
+  clearFilters,
+} = projectFilters
+
+const openState = useProjectOpenState()
+const {
+  markProjectOpening,
+  finishProjectOpening,
+  clearProjectOpening,
+  isProjectOpening,
+  markTerminalOpening,
+  finishTerminalOpening,
+  clearTerminalOpening,
+  isTerminalOpening,
+  clearProjectFromMaps: clearOpenStateFromMaps,
+} = openState
+
 const layoutMode = ref<LayoutMode>(readStoredLayoutMode())
+
+const virtualScroll = useVirtualScroll(filteredProjects, layoutMode)
+const {
+  renderedProjects,
+  hasMoreProjects,
+  resetRenderedProjects,
+  setLoadMoreSentinelRef,
+  ensureProjectRendered,
+} = virtualScroll
+
+function editorHasLaunchCommand(editor: CodeEditorEnum) {
+  return !!settingsStore.getEditorLaunchConfig(editor).command.trim()
+}
+
+const projectMenus = useProjectMenus({ t, editorHasLaunchCommand })
+const {
+  projectMenuItems,
+  isSourceProject,
+  projectSourceUrl,
+} = projectMenus
+
 // 手动同步的本地状态(带最短可见时长防闪烁);与服务层共享的
 // scannerBusy 合成,让启动自动扫描也能点亮同步按钮的进行中状态。
 const manualSyncing = ref(false)
 const syncing = computed(() => manualSyncing.value || scannerBusy.value)
-const openingProjectIds = ref(new Set<number>())
-const openingTerminalProjectIds = ref(new Set<number>())
 const copyFeedback = ref<Record<number, 'success' | 'error'>>({})
 const copyFeedbackTimers = new Map<number, number>()
-const projectOpeningStartedAt = new Map<number, number>()
-const projectOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
-const terminalOpeningStartedAt = new Map<number, number>()
-const terminalOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
 const projectItemRefs = new Map<number, HTMLElement>()
 const projectActionRefs = new Map<number, HTMLElement>()
-const renderedProjectLimit = ref(LIST_INITIAL_RENDER_COUNT)
 const listScrollAreaRef = ref<ScrollAreaRef | null>(null)
 const cardsScrollAreaRef = ref<ScrollAreaRef | null>(null)
-const loadMoreSentinelRef = ref<HTMLElement | null>(null)
-const homeScrollSnapshot = ref<HomeScrollSnapshot | null>(null)
-const shouldRestoreHomeScroll = ref(false)
-let loadMoreObserver: IntersectionObserver | null = null
-let searchDebounceTimer: ReturnType<typeof window.setTimeout> | null = null
+
+const projectNavigation = useProjectNavigation(
+  activatedView,
+  layoutMode,
+  listScrollAreaRef,
+  cardsScrollAreaRef,
+)
+const {
+  navigateFromHome,
+  restoreHomeScrollPosition,
+} = projectNavigation
 
 function readStoredLayoutMode(): LayoutMode {
   try {
@@ -129,463 +154,10 @@ function persistLayoutMode(value: LayoutMode) {
   }
 }
 
-function clearSearchDebounceTimer() {
-  if (searchDebounceTimer === null)
-    return
-
-  window.clearTimeout(searchDebounceTimer)
-  searchDebounceTimer = null
-}
-
-const totalProjects = computed(() => projectsStore.activeProjects.length)
-const archivedProjectsCount = computed(() => projectsStore.archivedProjects.length)
-
-const projectStats = computed(() => {
-  const byKind = new Map<ProjectKind, number>()
-  const byGroup = new Map<string, number>()
-  let available = 0
-  let missing = 0
-  let temporary = 0
-  let ungrouped = 0
-
-  for (const project of projectsStore.activeProjects) {
-    byKind.set(project.kind, (byKind.get(project.kind) || 0) + 1)
-
-    if (project.isExists)
-      available += 1
-    else
-      missing += 1
-
-    if (project.isTemporary)
-      temporary += 1
-
-    if (project.group?.trim())
-      byGroup.set(project.group, (byGroup.get(project.group) || 0) + 1)
-    else
-      ungrouped += 1
-  }
-
-  return {
-    total: projectsStore.allProjects.length,
-    available,
-    missing,
-    temporary,
-    ungrouped,
-    byKind,
-    groups: Array.from(byGroup.entries())
-      .map(([group, count]) => ({ group, count }))
-      .sort((a, b) => a.group.localeCompare(b.group)),
-  }
-})
-
-const availableProjects = computed(() => projectStats.value.available)
-const missingProjects = computed(() => projectStats.value.missing)
-const temporaryProjects = computed(() => projectStats.value.temporary)
-
-const kindOptions = computed<Array<FilterOption<KindFilter>>>(() => [
-  { value: 'all', label: t('app.home.filters.all_projects'), count: totalProjects.value },
-  { value: ProjectKind.MINE, label: t('app.project_kind.mine'), count: countByKind(ProjectKind.MINE) },
-  { value: ProjectKind.FORK, label: t('app.project_kind.forks'), count: countByKind(ProjectKind.FORK) },
-  { value: ProjectKind.CLONE, label: t('app.project_kind.clones'), count: countByKind(ProjectKind.CLONE) },
-])
-
-const statusOptions = computed<Array<FilterOption<StatusFilter>>>(() => [
-  { value: 'all', label: t('app.home.filters.active'), count: totalProjects.value },
-  { value: 'available', label: t('app.home.filters.available'), count: availableProjects.value },
-  { value: 'missing', label: t('app.home.filters.missing_path'), count: missingProjects.value },
-  { value: 'temporary', label: t('app.home.filters.temporary'), count: temporaryProjects.value },
-  { value: 'archived', label: t('app.home.filters.archived'), count: archivedProjectsCount.value },
-])
-
-const sortOptions = computed<Array<FilterOption<SortKey>>>(() => [
-  { value: 'recent', label: t('app.home.sort.recent') },
-  { value: 'name', label: t('app.home.sort.name') },
-  { value: 'language', label: t('app.home.sort.language') },
-  { value: 'group', label: t('app.home.sort.group') },
-])
-
 const layoutOptions = computed<Array<{ value: LayoutMode, label: string, icon: string }>>(() => [
   { value: 'list', label: t('app.home.layout.list'), icon: 'i-lucide:list' },
   { value: 'grid', label: t('app.home.layout.grid'), icon: 'i-lucide:layout-grid' },
 ])
-
-const languages = computed(() =>
-  [...projectsStore.mainLangSummary].sort((a, b) =>
-    b.count - a.count || a.text.localeCompare(b.text),
-  ),
-)
-
-const languageOptions = computed(() => [
-  { value: 'all', label: t('app.home.filters.all_languages'), count: totalProjects.value },
-  ...languages.value.map(language => ({
-    value: language.text,
-    label: language.text === 'unknown' ? t('app.common.unknown') : language.text,
-    color: language.color,
-    count: language.count,
-  })),
-])
-
-const groupOptions = computed(() => [
-  { value: 'all', label: t('app.home.filters.all_groups'), count: totalProjects.value },
-  { value: '__ungrouped__', label: t('app.home.filters.no_group'), count: projectStats.value.ungrouped },
-  ...projectStats.value.groups.map(({ group, count }) => ({
-    value: group,
-    label: group,
-    count,
-  })),
-])
-
-// Fuse 索引仅在搜索相关字段变化时重建,避免 isExists 刷新等
-// 无关更新触发昂贵的索引重建(大列表时可达 50-200ms)。
-const projectSearchSignature = computed(() =>
-  projectsStore.allProjects
-    .map(p => `${p.appendTime}\0${p.name}\0${p.group}\0${p.path}\0${p.mainLang}\0${p.defaultOpen}`)
-    .join('\n'),
-)
-
-const projectSearchIndex = shallowRef<Fuse<LocalProject>>(new Fuse<LocalProject>([], {
-  keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
-  threshold: 0.35,
-  shouldSort: true,
-}))
-
-watch(projectSearchSignature, () => {
-  projectSearchIndex.value = new Fuse([...projectsStore.allProjects], {
-    keys: ['name', 'group', 'path', 'mainLang', 'defaultOpen'],
-    threshold: 0.35,
-    shouldSort: true,
-  })
-}, { immediate: true })
-
-const filteredProjects = computed(() => {
-  // 归档视图 vs 活跃视图的基础数据源分离
-  let result = statusFilter.value === 'archived'
-    ? projectsStore.archivedProjects
-    : projectsStore.activeProjects
-
-  if (kindFilter.value !== 'all') {
-    result = result.filter(project => project.kind === kindFilter.value)
-  }
-  // 归档视图下忽略其他 status 细分过滤
-  if (statusFilter.value !== 'archived') {
-    if (statusFilter.value === 'available') {
-      result = result.filter(project => project.isExists)
-    }
-    if (statusFilter.value === 'missing') {
-      result = result.filter(project => !project.isExists)
-    }
-    if (statusFilter.value === 'temporary') {
-      result = result.filter(project => project.isTemporary)
-    }
-  }
-  if (languageFilter.value !== 'all') {
-    result = result.filter(project => project.mainLang === languageFilter.value)
-  }
-  if (groupFilter.value === '__ungrouped__') {
-    result = result.filter(project => !project.group)
-  }
-  else if (groupFilter.value !== 'all') {
-    result = result.filter(project => project.group === groupFilter.value)
-  }
-
-  const query = debouncedSearchValue.value.trim()
-  if (query) {
-    const matchedProjectIds = new Set(
-      projectSearchIndex.value.search(query).map(match => match.item.appendTime),
-    )
-    result = result.filter(project => matchedProjectIds.has(project.appendTime))
-  }
-
-  return [...result].sort(compareProjects)
-})
-
-const initialProjectRenderCount = computed(() =>
-  layoutMode.value === 'grid' ? GRID_INITIAL_RENDER_COUNT : LIST_INITIAL_RENDER_COUNT,
-)
-
-const projectRenderBatch = computed(() =>
-  layoutMode.value === 'grid' ? GRID_RENDER_BATCH : LIST_RENDER_BATCH,
-)
-
-const renderedProjects = computed(() =>
-  filteredProjects.value.slice(0, renderedProjectLimit.value),
-)
-
-const DISPLAY_PATH_CACHE_LIMIT = 1000
-const displayPathCache = reactive(new Map<string, string>())
-const pendingDisplayPaths = new Set<string>()
-
-/** 缓存超限时清理不在当前项目列表中的条目,防止长期使用后无界增长。 */
-function pruneDisplayPathCache() {
-  if (displayPathCache.size <= DISPLAY_PATH_CACHE_LIMIT)
-    return
-
-  const livePaths = new Set(projectsStore.allProjects.map(project => project.path))
-  for (const path of displayPathCache.keys()) {
-    if (!livePaths.has(path))
-      displayPathCache.delete(path)
-  }
-}
-
-const hasMoreProjects = computed(() =>
-  renderedProjects.value.length < filteredProjects.value.length,
-)
-
-const activeFilterCount = computed(() =>
-  Number(!!searchValue.value.trim())
-  + Number(kindFilter.value !== 'all')
-  + Number(statusFilter.value !== 'all')
-  + Number(languageFilter.value !== 'all')
-  + Number(groupFilter.value !== 'all'),
-)
-
-function editorHasLaunchCommand(editor: CodeEditorEnum) {
-  return !!settingsStore.getEditorLaunchConfig(editor).command.trim()
-}
-
-function autoEditorForProject(project: LocalProject) {
-  return editorLangGroupsStore.getEditorByLanguage(project.mainLang, project.defaultOpen) ?? project.defaultOpen
-}
-
-function editorMenuIcon(option: (typeof editorCommandOptions)[number]) {
-  return option.icon
-    ? ['ide-icon', option.icon, option.monochromeIcon ? 'monochrome-editor-icon' : ''].filter(Boolean).join(' ')
-    : undefined
-}
-
-function editorMenuItems(project: LocalProject, mode: 'open-with' | 'default-editor'): UiActionMenuItem[] {
-  return editorCommandOptions.map((option, index) => {
-    const previousOption = editorCommandOptions[index - 1]
-    const isCurrentDefault = mode === 'default-editor' && option.key === project.defaultOpen
-    const hasLaunchCommand = editorHasLaunchCommand(option.key)
-
-    return {
-      id: `${mode === 'open-with' ? OPEN_WITH_ACTION_PREFIX : DEFAULT_EDITOR_ACTION_PREFIX}${option.key}`,
-      label: option.label,
-      icon: editorMenuIcon(option),
-      checked: isCurrentDefault,
-      disabled: mode === 'open-with' && (!project.isExists || !hasLaunchCommand),
-      separatorBefore: index > 0 && option.groupKey !== previousOption.groupKey,
-    }
-  })
-}
-
-function defaultEditorMenuItems(project: LocalProject): UiActionMenuItem[] {
-  return [
-    {
-      id: DEFAULT_EDITOR_AUTO_ACTION,
-      label: t('app.home.actions.auto_editor'),
-    },
-    ...editorMenuItems(project, 'default-editor').map((item, index) => ({
-      ...item,
-      separatorBefore: index === 0 || item.separatorBefore,
-    })),
-  ]
-}
-
-function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
-  const canDeleteFiles = canDeleteProjectFiles(project)
-  const sourceUrl = projectSourceUrl(project)
-
-  return [
-    {
-      id: 'open',
-      label: t('app.home.actions.open_project'),
-      shortcut: 'enter',
-      disabled: !project.isExists,
-    },
-    {
-      id: 'open-with',
-      label: t('app.home.actions.open_with'),
-      disabled: !project.isExists,
-      submenuWidth: 220,
-      children: editorMenuItems(project, 'open-with'),
-    },
-    {
-      id: 'default-editor',
-      label: t('app.home.actions.default_editor'),
-      submenuWidth: 220,
-      children: defaultEditorMenuItems(project),
-    },
-    {
-      id: 'edit',
-      label: t('app.home.actions.edit'),
-      shortcut: ['mod', 'i'],
-    },
-    {
-      id: 'pin',
-      label: pinButtonTitle(project),
-      icon: pinButtonIcon(project),
-    },
-    {
-      id: 'archive',
-      label: project.isArchived ? t('app.home.actions.unarchive') : t('app.home.actions.archive'),
-      icon: project.isArchived ? 'i-lucide:archive-restore' : 'i-lucide:archive',
-    },
-    ...(sourceUrl
-      ? [{
-          id: 'source',
-          label: t('app.home.actions.open_source'),
-          trailingIcon: 'i-lucide:external-link',
-          separatorBefore: true,
-        }]
-      : []),
-    {
-      id: 'explorer',
-      label: t('app.home.actions.open_explorer'),
-      disabled: !project.isExists,
-      separatorBefore: !sourceUrl,
-    },
-    {
-      id: 'terminal',
-      label: t('app.home.actions.open_terminal'),
-      disabled: !project.isExists,
-    },
-    {
-      id: 'copy',
-      label: t('app.home.actions.copy_path'),
-      shortcut: ['mod', 'c'],
-    },
-    {
-      id: 'remove',
-      label: canDeleteFiles ? t('app.home.actions.delete') : t('app.home.actions.remove'),
-      icon: 'i-lucide:trash-2',
-      shortcut: 'delete',
-      danger: true,
-      separatorBefore: true,
-    },
-  ]
-}
-
-function recentSortTime(project: LocalProject) {
-  return project.lastOpenedAt ?? project.appendTime
-}
-
-function compareProjects(a: LocalProject, b: LocalProject) {
-  if (!!a.isPinned !== !!b.isPinned)
-    return a.isPinned ? -1 : 1
-
-  switch (sortKey.value) {
-    case 'name':
-      return a.name.localeCompare(b.name)
-    case 'language':
-      return (a.mainLang || '').localeCompare(b.mainLang || '') || a.name.localeCompare(b.name)
-    case 'group':
-      return (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name)
-    case 'recent':
-    default:
-      return recentSortTime(b) - recentSortTime(a)
-  }
-}
-
-function resetRenderedProjects() {
-  renderedProjectLimit.value = initialProjectRenderCount.value
-  void nextTick(refreshLoadMoreObserver)
-}
-
-function showMoreProjects() {
-  if (!hasMoreProjects.value)
-    return
-
-  renderedProjectLimit.value = Math.min(
-    filteredProjects.value.length,
-    renderedProjectLimit.value + projectRenderBatch.value,
-  )
-  void nextTick(refreshLoadMoreObserver)
-}
-
-function setLoadMoreSentinelRef(element: unknown) {
-  loadMoreSentinelRef.value = element instanceof HTMLElement ? element : null
-  refreshLoadMoreObserver()
-}
-
-function refreshLoadMoreObserver() {
-  loadMoreObserver?.disconnect()
-  loadMoreObserver = null
-
-  const sentinel = loadMoreSentinelRef.value
-  if (!sentinel || !hasMoreProjects.value)
-    return
-
-  if (!('IntersectionObserver' in window)) {
-    renderedProjectLimit.value = filteredProjects.value.length
-    return
-  }
-
-  loadMoreObserver = new IntersectionObserver((entries) => {
-    if (entries.some(entry => entry.isIntersecting))
-      showMoreProjects()
-  }, {
-    root: null,
-    rootMargin: '160px',
-  })
-  loadMoreObserver.observe(sentinel)
-}
-
-function activeScrollAreaRef() {
-  return layoutMode.value === 'list' ? listScrollAreaRef.value : cardsScrollAreaRef.value
-}
-
-function activeScrollViewport() {
-  return activeScrollAreaRef()?.$el?.querySelector<HTMLElement>('.ui-scroll-viewport') ?? null
-}
-
-function rememberHomeScrollPosition() {
-  const viewport = activeScrollViewport()
-  if (!viewport)
-    return
-
-  homeScrollSnapshot.value = {
-    layoutMode: layoutMode.value,
-    scrollLeft: viewport.scrollLeft,
-    scrollTop: viewport.scrollTop,
-  }
-  shouldRestoreHomeScroll.value = true
-}
-
-function navigateFromHome(view: ViewEnum) {
-  rememberHomeScrollPosition()
-  activatedView.value = view
-}
-
-function restoreHomeScrollPosition() {
-  const snapshot = homeScrollSnapshot.value
-  if (!shouldRestoreHomeScroll.value || !snapshot || snapshot.layoutMode !== layoutMode.value)
-    return
-
-  let attempts = 0
-  const restore = () => {
-    attempts += 1
-    const viewport = activeScrollViewport()
-    if (!viewport && attempts < 4) {
-      window.requestAnimationFrame(restore)
-      return
-    }
-    if (!viewport)
-      return
-
-    viewport.scrollTo({
-      left: snapshot.scrollLeft,
-      top: snapshot.scrollTop,
-    })
-    shouldRestoreHomeScroll.value = false
-  }
-
-  void nextTick(() => window.requestAnimationFrame(restore))
-}
-
-async function ensureProjectRendered(project: LocalProject) {
-  const index = filteredProjects.value.findIndex(item => item.appendTime === project.appendTime)
-  if (index < 0 || index < renderedProjectLimit.value)
-    return
-
-  renderedProjectLimit.value = Math.min(
-    filteredProjects.value.length,
-    index + projectRenderBatch.value,
-  )
-  await nextTick()
-  refreshLoadMoreObserver()
-}
 
 function addProject() {
   initializeNewProjectState()
@@ -606,6 +178,11 @@ async function openProject(project: LocalProject) {
 
 async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEnum) {
   if (!project.isExists || isProjectOpening(project)) {
+    return
+  }
+
+  if (project.isRemote) {
+    await openRemoteProjectWithEditor(project, editor)
     return
   }
 
@@ -632,31 +209,40 @@ async function openProjectWithEditor(project: LocalProject, editor: CodeEditorEn
   }
 }
 
-function setProjectOpeningVisible(projectId: number, visible: boolean) {
-  if (openingProjectIds.value.has(projectId) === visible)
+async function openRemoteProjectWithEditor(project: LocalProject, editor: CodeEditorEnum) {
+  if (!project.remoteHost || !project.remotePath)
     return
 
-  const next = new Set(openingProjectIds.value)
-  if (visible)
-    next.add(projectId)
-  else
-    next.delete(projectId)
-  openingProjectIds.value = next
-}
-
-function clearProjectOpeningTimer(projectId: number) {
-  const timer = projectOpeningTimers.get(projectId)
-  if (timer !== undefined) {
-    window.clearTimeout(timer)
-    projectOpeningTimers.delete(projectId)
+  // 远程仅支持 VS Code 系（Remote-SSH）
+  if (!isVscodeHistoryScannerEditor(editor)) {
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.open_failed'),
+      description: t('app.home.feedback.remote_editor_unsupported'),
+    })
+    return
   }
-}
 
-function clearTerminalOpeningTimer(projectId: number) {
-  const timer = terminalOpeningTimers.get(projectId)
-  if (timer !== undefined) {
-    window.clearTimeout(timer)
-    terminalOpeningTimers.delete(projectId)
+  const launchConfig = settingsStore.getEditorLaunchConfig(editor)
+  if (!launchConfig?.command) {
+    showMissingEditorCommandToast()
+    return
+  }
+
+  markProjectOpening(project.appendTime)
+  try {
+    await window.api.openRemoteProject(project.remoteHost, project.remotePath, launchConfig.command, 'vscode')
+    void projectsStore.markProjectOpened(project.appendTime)
+    finishProjectOpening(project.appendTime)
+  }
+  catch (error: unknown) {
+    clearProjectOpening(project.appendTime)
+    console.error('Failed to open remote project:', error)
+    showToast({
+      tone: 'error',
+      title: t('app.home.feedback.open_failed'),
+      description: formatActionError(error),
+    })
   }
 }
 
@@ -670,90 +256,8 @@ function clearProjectFromMaps(projectId: number) {
     copyFeedbackTimers.delete(projectId)
   }
 
-  clearProjectOpeningTimer(projectId)
-  projectOpeningStartedAt.delete(projectId)
-  clearTerminalOpeningTimer(projectId)
-  terminalOpeningStartedAt.delete(projectId)
-}
-
-function markProjectOpening(projectId: number) {
-  clearProjectOpeningTimer(projectId)
-  projectOpeningStartedAt.set(projectId, performance.now())
-  setProjectOpeningVisible(projectId, true)
-}
-
-function finishProjectOpening(projectId: number) {
-  clearProjectOpeningTimer(projectId)
-
-  const startedAt = projectOpeningStartedAt.get(projectId) ?? performance.now()
-  const remaining = MIN_PROJECT_OPENING_VISIBLE_MS - (performance.now() - startedAt)
-  if (remaining <= 0) {
-    clearProjectOpening(projectId)
-    return
-  }
-
-  projectOpeningTimers.set(
-    projectId,
-    window.setTimeout(clearProjectOpening, remaining, projectId),
-  )
-}
-
-function clearProjectOpening(projectId: number) {
-  clearProjectOpeningTimer(projectId)
-  projectOpeningStartedAt.delete(projectId)
-  setProjectOpeningVisible(projectId, false)
-}
-
-function isProjectOpening(project: LocalProject) {
-  return openingProjectIds.value.has(project.appendTime)
-}
-
-function setTerminalOpeningVisible(projectId: number, visible: boolean) {
-  if (openingTerminalProjectIds.value.has(projectId) === visible)
-    return
-
-  const next = new Set(openingTerminalProjectIds.value)
-  if (visible)
-    next.add(projectId)
-  else
-    next.delete(projectId)
-  openingTerminalProjectIds.value = next
-}
-
-function markTerminalOpening(projectId: number) {
-  clearTerminalOpeningTimer(projectId)
-  terminalOpeningStartedAt.set(projectId, performance.now())
-  setTerminalOpeningVisible(projectId, true)
-}
-
-function finishTerminalOpening(projectId: number) {
-  clearTerminalOpeningTimer(projectId)
-
-  const startedAt = terminalOpeningStartedAt.get(projectId) ?? performance.now()
-  const remaining = MIN_TERMINAL_OPENING_VISIBLE_MS - (performance.now() - startedAt)
-  if (remaining <= 0) {
-    clearTerminalOpening(projectId)
-    return
-  }
-
-  terminalOpeningTimers.set(
-    projectId,
-    window.setTimeout(clearTerminalOpening, remaining, projectId),
-  )
-}
-
-function clearTerminalOpening(projectId: number) {
-  clearTerminalOpeningTimer(projectId)
-  terminalOpeningStartedAt.delete(projectId)
-  setTerminalOpeningVisible(projectId, false)
-}
-
-function isTerminalOpening(project: LocalProject) {
-  return openingTerminalProjectIds.value.has(project.appendTime)
-}
-
-function canDeleteProjectFiles(project: LocalProject) {
-  return project.isTemporary && project.isExists !== false
+  // 委托给 composable 清理打开状态
+  clearOpenStateFromMaps(projectId)
 }
 
 function setProjectItemRef(projectId: number, element: unknown) {
@@ -908,6 +412,9 @@ function getRenderedGridColumnCount() {
 }
 
 function isProjectActionDisabled(project: LocalProject, action: ProjectActionKey) {
+  // 远程项目没有本地文件夹,“在文件夹中显示”不可用(置灰而非隐藏,保持按钮组对齐)
+  if (project.isRemote && action === 'explorer')
+    return true
   return !project.isExists && (action === 'open' || action === 'explorer' || action === 'terminal')
 }
 
@@ -1157,11 +664,6 @@ function setCopyFeedback(projectId: number, status: 'success' | 'error') {
   copyFeedbackTimers.set(projectId, timer)
 }
 
-function formatActionError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error)
-  return message.replace(/^Error:\s*/i, '').trim() || t('app.common.unknown')
-}
-
 function scanResultDescription(result: ProjectScannerImportResult, changedStatusCount: number) {
   const parts: string[] = []
 
@@ -1251,14 +753,6 @@ function terminalButtonIcon(project: LocalProject) {
     : 'i-lucide:square-terminal'
 }
 
-function isSourceProject(project: LocalProject) {
-  return project.kind === ProjectKind.FORK || project.kind === ProjectKind.CLONE
-}
-
-function projectSourceUrl(project: LocalProject) {
-  return isSourceProject(project) ? project.fromUrl?.trim() || '' : ''
-}
-
 function projectSourceExternalUrl(project: LocalProject) {
   const sourceUrl = projectSourceUrl(project)
   if (!sourceUrl)
@@ -1322,40 +816,6 @@ function openProjectSource(project: LocalProject) {
     window.api.openExternal(sourceUrl)
 }
 
-function displayProjectPath(path: string) {
-  return displayPathCache.get(path) ?? path
-}
-
-async function cacheDisplayPath(path: string) {
-  if (!path || displayPathCache.has(path) || pendingDisplayPaths.has(path))
-    return
-
-  pendingDisplayPaths.add(path)
-  try {
-    const formattedPath = await window.api.formatPath(path)
-    displayPathCache.set(path, formattedPath || path)
-  }
-  catch (error) {
-    console.error('Failed to format project path:', error)
-    displayPathCache.set(path, path)
-  }
-  finally {
-    pendingDisplayPaths.delete(path)
-  }
-}
-
-function pinButtonTitle(project: LocalProject) {
-  return project.isPinned
-    ? t('app.home.actions.unpin')
-    : t('app.home.actions.pin')
-}
-
-function pinButtonIcon(project: LocalProject) {
-  return project.isPinned
-    ? 'i-lucide:pin-off'
-    : 'i-lucide:pin'
-}
-
 async function toggleProjectPinned(project: LocalProject) {
   await projectsStore.toggleProjectPinned(project.appendTime)
 }
@@ -1369,7 +829,8 @@ async function setProjectDefaultEditor(project: LocalProject, editor: CodeEditor
 }
 
 async function setProjectDefaultEditorAutomatically(project: LocalProject) {
-  await setProjectDefaultEditor(project, autoEditorForProject(project))
+  const editor = editorLangGroupsStore.getEditorByLanguage(project.mainLang, project.defaultOpen) ?? project.defaultOpen
+  await setProjectDefaultEditor(project, editor)
 }
 
 function handleProjectMenuSelect(project: LocalProject, action: string) {
@@ -1435,21 +896,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('project-removed', handleProjectRemoved as EventListener)
   setRemoveAnimationCallback(null)
-  clearSearchDebounceTimer()
   copyFeedbackTimers.forEach(timer => window.clearTimeout(timer))
   copyFeedbackTimers.clear()
-  projectOpeningTimers.forEach(timer => window.clearTimeout(timer))
-  projectOpeningTimers.clear()
-  projectOpeningStartedAt.clear()
-  terminalOpeningTimers.forEach(timer => window.clearTimeout(timer))
-  terminalOpeningTimers.clear()
-  terminalOpeningStartedAt.clear()
   projectItemRefs.clear()
   projectActionRefs.clear()
-  displayPathCache.clear()
-  pendingDisplayPaths.clear()
-  loadMoreObserver?.disconnect()
-  loadMoreObserver = null
 })
 
 function handleProjectRemoved(event: CustomEvent<{ projectId: number }>) {
@@ -1480,7 +930,12 @@ async function openInTerminal(project: LocalProject) {
 
   markTerminalOpening(project.appendTime)
   try {
-    await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+    if (project.isRemote && project.remoteHost && project.remotePath) {
+      await window.api.openRemoteProject(project.remoteHost, project.remotePath, '', 'terminal')
+    }
+    else {
+      await window.api.openInTerminal(project.path, settingsStore.terminalCommand)
+    }
     finishTerminalOpening(project.appendTime)
   }
   catch (error) {
@@ -1533,18 +988,6 @@ async function syncProjects() {
     showScanResultToast(scanResult, changedStatusCount, workElapsed)
 }
 
-function clearFilters() {
-  searchValue.value = ''
-  kindFilter.value = 'all'
-  statusFilter.value = 'all'
-  languageFilter.value = 'all'
-  groupFilter.value = 'all'
-}
-
-function clearSearch() {
-  searchValue.value = ''
-}
-
 function showLanguage(project: LocalProject, event: MouseEvent) {
   showLanguagePop(project, event.currentTarget as HTMLElement)
 }
@@ -1552,8 +995,13 @@ function showLanguage(project: LocalProject, event: MouseEvent) {
 watch(
   renderedProjects,
   (projects) => {
-    pruneDisplayPathCache()
-    projects.forEach(project => void cacheDisplayPath(project.path))
+    const livePaths = new Set(projectsStore.allProjects.map(project => project.path))
+    pathCache.pruneCache(livePaths)
+    projects.forEach((project) => {
+      // 远程项目的 path 是 host:remotePath 合成串,不走本地路径格式化
+      if (!project.isRemote)
+        void pathCache.cacheDisplayPath(project.path)
+    })
   },
   { immediate: true },
 )
@@ -1589,10 +1037,6 @@ function kindLabel(kind: ProjectKind) {
     default:
       return t('app.project_kind.mine')
   }
-}
-
-function countByKind(kind: ProjectKind) {
-  return projectStats.value.byKind.get(kind) || 0
 }
 
 function kindClass(kind: ProjectKind) {
@@ -1649,32 +1093,10 @@ function updateLayoutMode(value: string) {
   layoutMode.value = value as LayoutMode
 }
 
-watch([
-  layoutMode,
-  debouncedSearchValue,
-  kindFilter,
-  statusFilter,
-  languageFilter,
-  groupFilter,
-  sortKey,
-  totalProjects,
-], resetRenderedProjects, { immediate: true })
-
-watch(searchValue, (value) => {
-  clearSearchDebounceTimer()
-
-  if (!value) {
-    debouncedSearchValue.value = ''
-    return
-  }
-
-  searchDebounceTimer = window.setTimeout(() => {
-    debouncedSearchValue.value = value
-    searchDebounceTimer = null
-  }, SEARCH_DEBOUNCE_MS)
+watch(layoutMode, () => {
+  resetRenderedProjects()
+  persistLayoutMode(layoutMode.value)
 })
-
-watch(layoutMode, persistLayoutMode)
 </script>
 
 <template>
@@ -1751,15 +1173,6 @@ watch(layoutMode, persistLayoutMode)
       />
 
       <UiSelect
-        v-model="groupFilter"
-        :options="groupOptions"
-        :placeholder="t('app.home.filters.group')"
-        :aria-label="t('app.home.filters.group')"
-        min-width="128px"
-        content-width="210px"
-      />
-
-      <UiSelect
         v-model="sortKey"
         :options="sortOptions"
         :placeholder="t('app.home.filters.sort')"
@@ -1784,8 +1197,8 @@ watch(layoutMode, persistLayoutMode)
     <section class="project-table" :class="`layout-${layoutMode}`" :aria-label="t('app.home.project_list')">
       <div v-if="layoutMode === 'list'" class="project-grid table-head">
         <span>{{ t('app.home.table.project') }}</span>
-        <span>{{ t('app.home.table.kind') }}</span>
         <span>{{ t('app.home.table.language') }}</span>
+        <span>{{ t('app.home.table.editor') }}</span>
         <span>{{ t('app.home.table.license') }}</span>
         <span>{{ t('app.home.table.last_opened') }}</span>
         <span>{{ t('app.home.table.actions') }}</span>
@@ -1823,16 +1236,22 @@ watch(layoutMode, persistLayoutMode)
                   <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                   <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                 </span>
+                <span
+                  v-if="project.kind !== ProjectKind.MINE"
+                  class="kind-badge"
+                  :class="kindClass(project.kind)"
+                >
+                  {{ kindLabel(project.kind) }}
+                </span>
+                <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+                  {{ t('app.home.remote.badge') }}
+                </span>
                 <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
                   {{ t('app.home.filters.temporary') }}
                 </span>
-                <span class="editor-chip">
-                  <span :class="editorIconClasses(project.defaultOpen)" />
-                  <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
-                </span>
               </div>
               <div class="project-path" :title="project.path">
-                {{ displayProjectPath(project.path) }}
+                {{ pathCache.displayProjectPath(project.path) }}
               </div>
               <button
                 v-if="projectSourceUrl(project)"
@@ -1853,13 +1272,14 @@ watch(layoutMode, persistLayoutMode)
               </div>
             </div>
 
-            <span class="kind-pill" :class="kindClass(project.kind)">
-              {{ kindLabel(project.kind) }}
-            </span>
             <button class="inline-pill" type="button" :title="project.mainLang || t('app.common.unknown')" @click.stop="showLanguage(project, $event)">
               <span class="color-dot" :style="{ background: project.mainLangColor || '#b8b8b8' }" />
               {{ project.mainLang || t('app.common.unknown') }}
             </button>
+            <span class="editor-cell" :title="codeEditors[project.defaultOpen]?.label || t('app.common.no_editor')">
+              <span :class="editorIconClasses(project.defaultOpen)" />
+              <span class="editor-chip-label">{{ codeEditors[project.defaultOpen]?.label || t('app.common.no_editor') }}</span>
+            </span>
             <span
               v-if="project.license && project.license !== LicenseEnum.NONE"
               class="license-cell"
@@ -1897,7 +1317,7 @@ watch(layoutMode, persistLayoutMode)
                 data-project-action="explorer"
                 :title="t('app.home.actions.open_explorer')"
                 :aria-label="t('app.home.actions.open_explorer')"
-                :disabled="!project.isExists"
+                :disabled="isProjectActionDisabled(project, 'explorer')"
                 :tabindex="actionButtonTabIndex(project, 'explorer')"
                 @click.stop="openInExplorer(project)"
               >
@@ -1985,17 +1405,24 @@ watch(layoutMode, persistLayoutMode)
                     <span v-if="project.isPinned" class="pinned-marker i-lucide:pin" />
                     <span v-if="project.group" class="project-group-prefix" :title="project.group">{{ project.group }}/</span><span class="project-name" :title="project.name">{{ project.name }}</span>
                   </strong>
+                  <span
+                    v-if="project.kind !== ProjectKind.MINE"
+                    class="kind-badge"
+                    :class="kindClass(project.kind)"
+                  >
+                    {{ kindLabel(project.kind) }}
+                  </span>
+                  <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+                    {{ t('app.home.remote.badge') }}
+                  </span>
                   <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
                     {{ t('app.home.filters.temporary') }}
                   </span>
                 </div>
-                <span class="kind-pill" :class="kindClass(project.kind)">
-                  {{ kindLabel(project.kind) }}
-                </span>
               </header>
 
               <div class="card-path" :title="project.path">
-                {{ displayProjectPath(project.path) }}
+                {{ pathCache.displayProjectPath(project.path) }}
               </div>
 
               <button
@@ -2063,7 +1490,7 @@ watch(layoutMode, persistLayoutMode)
                     data-project-action="explorer"
                     :title="t('app.home.actions.open_explorer')"
                     :aria-label="t('app.home.actions.open_explorer')"
-                    :disabled="!project.isExists"
+                    :disabled="isProjectActionDisabled(project, 'explorer')"
                     :tabindex="actionButtonTabIndex(project, 'explorer')"
                     @click.stop="openInExplorer(project)"
                   >
@@ -2232,7 +1659,13 @@ watch(layoutMode, persistLayoutMode)
 
 .project-grid {
   @apply grid items-center gap-9px;
-  grid-template-columns: minmax(220px, 1.7fr) 76px 110px 104px 122px 136px;
+  grid-template-columns: minmax(220px, 1.7fr) 110px 140px 104px 122px 136px;
+}
+
+/* 加大"编辑器"(第3列)与"许可证"(第4列)之间的间距:只给许可证列加左边距,
+   表头与每一行都是 .project-grid 的直接子元素,因此自动保持对齐。 */
+.project-grid > :nth-child(4) {
+  @apply ml-8px;
 }
 
 .table-head {
@@ -2261,6 +1694,10 @@ watch(layoutMode, persistLayoutMode)
 
   &.missing {
     @apply cursor-default opacity-78;
+
+    .project-name {
+      @apply color-$gray-7;
+    }
   }
 }
 
@@ -2299,6 +1736,18 @@ watch(layoutMode, persistLayoutMode)
 .workspace-shell.theme-dark .temporary-badge {
   color: color-mix(in srgb, var(--yellow-8) 88%, var(--gray-14));
   background: color-mix(in srgb, var(--yellow-5) 16%, var(--ui-surface-background));
+}
+
+.remote-badge {
+  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply inline-flex items-center text-10px font-650 lh-12px;
+  color: color-mix(in srgb, var(--teal-2) 84%, var(--gray-1));
+  background: color-mix(in srgb, var(--teal-4) 18%, var(--ui-surface-background));
+}
+
+.workspace-shell.theme-dark .remote-badge {
+  color: color-mix(in srgb, var(--teal-8) 88%, var(--gray-14));
+  background: color-mix(in srgb, var(--teal-5) 16%, var(--ui-surface-background));
 }
 
 .pinned-marker {
@@ -2360,9 +1809,29 @@ watch(layoutMode, persistLayoutMode)
   @apply min-w-0 truncate;
 }
 
+.project-row > .editor-cell > span:first-child {
+  @apply shrink-0;
+}
+
+/* 列表视图:中性元数据格(语言/许可证/编辑器)渲染为纯文本,只有"类型"保留彩色标签。
+   作用域限定在 .project-row,卡片视图的药丸不受影响。 */
+.project-row > .inline-pill,
+.project-row > .license-cell,
+.project-row > .editor-cell {
+  @apply bg-transparent px-0;
+}
+
+.project-row > .inline-pill {
+  @apply cursor-pointer;
+
+  &:hover {
+    @apply underline;
+  }
+}
+
 .inline-pill,
-.kind-pill,
-.license-cell {
+.license-cell,
+.editor-cell {
   @apply min-w-0 max-w-full h-23px rounded-4px px-7px border-0;
   @apply inline-flex items-center gap-5px truncate text-11px;
   @apply bg-$ui-control-background color-$ui-foreground;
@@ -2400,12 +1869,14 @@ watch(layoutMode, persistLayoutMode)
   @apply [--kind-text-dark:color-mix(in_srgb,var(--yellow-5)_95%,var(--gray-1))];
 }
 
-.kind-pill {
+.kind-badge {
+  @apply h-19px shrink-0 rounded-4px px-5px;
+  @apply inline-flex items-center text-10px font-650 lh-12px;
   @apply [background:color-mix(in_srgb,var(--kind-color)_var(--kind-bg-light-strength),var(--ui-surface-background))];
   @apply [color:var(--kind-text-light)];
 }
 
-.workspace-shell.theme-dark .kind-pill {
+.workspace-shell.theme-dark .kind-badge {
   @apply [background:color-mix(in_srgb,var(--kind-bg-dark-color,var(--kind-color))_var(--kind-bg-dark-strength),var(--kind-bg-dark-base,var(--ui-surface-background)))];
   @apply [color:var(--kind-text-dark)];
 }
@@ -2506,6 +1977,10 @@ watch(layoutMode, persistLayoutMode)
     @apply cursor-default opacity-78;
     box-shadow: var(--shadow-surface);
     transform: none;
+
+    .card-title strong {
+      @apply color-$gray-7;
+    }
   }
 }
 
@@ -2572,7 +2047,7 @@ watch(layoutMode, persistLayoutMode)
 
 @media (max-width: 1020px) {
   .project-grid {
-    grid-template-columns: minmax(220px, 1fr) 76px 104px 112px 136px;
+    grid-template-columns: minmax(220px, 1fr) 104px 140px 112px 136px;
   }
 
   .project-grid > :nth-child(5) {
@@ -2606,9 +2081,10 @@ watch(layoutMode, persistLayoutMode)
   }
 
   .project-grid {
-    grid-template-columns: minmax(210px, 1fr) 76px 136px;
+    grid-template-columns: minmax(210px, 1fr) 136px;
   }
 
+  .project-grid > :nth-child(2),
   .project-grid > :nth-child(3),
   .project-grid > :nth-child(4),
   .project-grid > :nth-child(5) {
@@ -2648,7 +2124,7 @@ watch(layoutMode, persistLayoutMode)
   }
 
   .project-grid {
-    grid-template-columns: minmax(180px, 1fr) 76px 84px;
+    grid-template-columns: minmax(180px, 1fr) 84px;
   }
 
   .row-actions .icon-button:not(.primary-action):not(.copy-action):not(.more-action) {

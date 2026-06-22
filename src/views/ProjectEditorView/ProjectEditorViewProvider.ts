@@ -24,6 +24,9 @@ const defaultLocalProjectState: Readonly<NullableLocalProject> = {
   license: LicenseEnum.NONE,
   isTemporary: false,
   isExists: true,
+  isRemote: false,
+  remoteHost: null,
+  remotePath: null,
 }
 
 export const localProjectItem: Ref<NullableLocalProject> = ref({ ...defaultLocalProjectState }) // 创建副本

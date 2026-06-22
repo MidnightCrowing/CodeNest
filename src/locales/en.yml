@@ -63,11 +63,12 @@ app:
     search_placeholder: Search projects
     clear_count: Clear filters ({count})
     project_list: Project list
+    remote:
+      badge: Remote
     filters:
       kind: Kind
       status: Status
       language: Language
-      group: Group
       sort: Sort
       all_projects: All projects
       active: Active
@@ -76,8 +77,6 @@ app:
       temporary: Temporary
       archived: Archived
       all_languages: All languages
-      all_groups: All groups
-      no_group: No group
     sort:
       recent: Last opened
       name: Name
@@ -92,6 +91,7 @@ app:
       kind: Kind
       language: Language
       license: License
+      editor: Editor
       last_opened: Last opened
       never_opened: Never opened
       actions: Actions
@@ -135,6 +135,7 @@ app:
       scan_added: Added {count} projects
       scan_updated: Updated {count} project statuses
       scan_failed_items: Couldn't analyze {count} projects
+      remote_editor_unsupported: This editor doesn't support remote projects
   settings:
     title: Settings
     open_json: Open settings JSON
@@ -335,12 +336,21 @@ app:
     unnamed: Unnamed project
     no_language: No language
     no_folder: No folder selected
+    mode:
+      local: Local
+      remote: Remote
     sections:
       project: Project
       metadata: Language & Editor
     fields:
       folder: Folder
       folder_duplicate: This folder is already in the project list.
+      location: Location
+      remote_host: SSH host
+      remote_host_desc: "~/.ssh/config alias or user{'@'}host"
+      remote_host_placeholder: "e.g. my-server or user{'@'}host"
+      remote_path: Remote path
+      remote_path_placeholder: e.g. /home/user/project
       name: Name
       group: Group
       group_desc: Optional label for filtering.
