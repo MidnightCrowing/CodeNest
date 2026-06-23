@@ -1,6 +1,7 @@
 import type { ThemeEnum } from '~/constants/appEnums'
 import type { EditorCommandKey } from '~/constants/codeEditor'
 import type { LicenseEnum } from '~/constants/license'
+import type { ProjectKind } from '~/constants/localProject'
 import type { DataFileEnum } from '~/stores/helpers/persistence'
 import type { ScannerSettings, WebDavSettings } from '~/stores/settingsStore'
 import type { LinguistResult } from '~/types/linguist'
@@ -75,6 +76,7 @@ interface ScanItem {
   mainLangColor?: HexColor
   langGroup?: LangGroupItem[]
   ide?: string | null
+  detectedKind?: ProjectKind
   error?: string
   signature?: string
 }
@@ -109,6 +111,7 @@ declare global {
       checkPathExistence: (path: string) => Promise<PathExistenceResult>
 
       analyzeProject: (folderPath: string) => Promise<LinguistResult | ErrorResult>
+      getLanguageColor: (languageName: string) => Promise<HexColor | null>
       readProjectLicense: (folderPath: string, maxLines?: number) => Promise<LicenseReadResult>
       openProject: (editorCommand: string, projectPath: string, openInTerminal?: boolean) => Promise<string>
       openRemoteProject: (host: string, remotePath: string, editorCommand: string, mode: 'vscode' | 'terminal') => Promise<string>

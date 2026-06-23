@@ -3,6 +3,7 @@ mod models;
 mod paths;
 mod scan;
 
+pub(crate) use language::language_color;
 #[allow(unused_imports)]
 pub use models::{
     FilesResult, LanguageStats, LanguageType, LanguagesResult, LineCounts, LinguistResult,

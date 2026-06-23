@@ -17,6 +17,8 @@ pub(super) const HISTORY_SCANNER_EDITORS: &[&str] = &[
 pub struct ScanPayload {
     pub(super) roots_enabled: bool,
     pub(super) roots: Vec<String>,
+    #[serde(default = "default_root_scan_depth")]
+    pub(super) root_scan_depth: usize,
     pub(super) ide_enabled: bool,
     pub(super) jetbrains: JetbrainsScannerConfig,
     #[serde(default)]
@@ -28,6 +30,10 @@ pub struct ScanPayload {
     pub(super) existing_paths: Vec<String>,
     #[serde(default)]
     pub(super) cache_entries: Vec<ScanCacheEntry>,
+}
+
+fn default_root_scan_depth() -> usize {
+    1
 }
 
 #[derive(Deserialize)]
@@ -71,9 +77,19 @@ pub struct ScanItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) ide: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) detected_kind: Option<DetectedProjectKind>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) error: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) signature: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) enum DetectedProjectKind {
+    Mine,
+    Fork,
+    Clone,
 }
 
 #[derive(Clone, Deserialize)]
@@ -125,6 +141,7 @@ mod tests {
         .expect("legacy vscode payload should parse");
 
         assert!(payload.recent_editors.is_empty());
+        assert_eq!(payload.root_scan_depth, 1);
         let vscode = payload.vscode.expect("legacy vscode config should exist");
         assert!(vscode.enabled);
         assert_eq!(vscode.state_db_path, "state.vscdb");
@@ -189,5 +206,23 @@ mod tests {
             .expect("codex config should exist");
         assert!(codex.enabled);
         assert_eq!(codex.history_root_path, ".codex");
+    }
+
+    #[test]
+    fn parses_scan_depth() {
+        let payload: ScanPayload = serde_json::from_value(json!({
+            "rootsEnabled": true,
+            "roots": ["projects"],
+            "rootScanDepth": 2,
+            "ideEnabled": false,
+            "jetbrains": {
+                "enabled": false,
+                "configRootPath": ""
+            },
+            "existingPaths": []
+        }))
+        .expect("scanner payload should parse");
+
+        assert_eq!(payload.root_scan_depth, 2);
     }
 }

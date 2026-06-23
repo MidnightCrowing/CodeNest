@@ -20,6 +20,12 @@ export interface ProjectScannerImportResult {
   failed: number
 }
 
+function toProjectKind(value: unknown): ProjectKind {
+  return Object.values(ProjectKind).includes(value as ProjectKind)
+    ? value as ProjectKind
+    : ProjectKind.MINE
+}
+
 export function checkRegexComplexity(pattern: string): boolean {
   // 检测嵌套量词(ReDoS 主要来源):如 (a+)+, (a*)*
   let nesting = 0
@@ -233,7 +239,7 @@ async function runScan(): Promise<ProjectScannerImportResult> {
       path,
       name,
       group: '',
-      kind: ProjectKind.MINE,
+      kind: toProjectKind(item.detectedKind),
       mainLang,
       mainLangColor,
       langGroup,

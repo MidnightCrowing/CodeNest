@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import type { LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
+import type { languagesGroupItem, LocalProject, ProjectKind, ProjectLanguage } from '~/constants/localProject'
 import { createPersistence } from '~/stores/helpers/persistence'
 import { normalizePathKey, stripWindowsVerbatimPrefix } from '~/utils/path'
 
@@ -222,6 +222,21 @@ export const useProjectsStore = defineStore('projects', () => {
     return true
   }
 
+  async function updateProjectLanguageMetadata(
+    appendTime: LocalProject['appendTime'],
+    langGroup: languagesGroupItem[] | null,
+  ) {
+    const project = getProjectByAppendTime(appendTime)
+    if (!project)
+      return false
+
+    // mainLang/mainLangColor are user-selected fields; automatic analysis only refreshes the language mix.
+    project.langGroup = langGroup || []
+
+    await saveProjects()
+    return true
+  }
+
   function clearProjects() {
     projects.value.splice(0, projects.value.length)
   }
@@ -360,6 +375,7 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectsByKind,
     getProjectsByLang,
     updateProject,
+    updateProjectLanguageMetadata,
     removeProject,
     toggleProjectPinned,
     toggleProjectArchived,

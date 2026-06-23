@@ -7,7 +7,7 @@ import { useProjectsStore } from '~/stores/projectsStore'
 import { formatProjectLanguage } from '~/utils/projectFormatters'
 
 type KindFilter = ProjectKind | 'all'
-type StatusFilter = 'all' | 'available' | 'missing' | 'temporary' | 'archived'
+type StatusFilter = 'all' | 'missing' | 'temporary' | 'archived'
 type SortKey = 'recent' | 'name' | 'language' | 'group'
 
 interface FilterOption<T extends string> {
@@ -46,32 +46,28 @@ export function useProjectFilters(
 
   const projectStats = computed(() => {
     const byKind = new Map<ProjectKind, number>()
-    let available = 0
     let missing = 0
     let temporary = 0
 
     for (const project of projectsStore.activeProjects) {
       byKind.set(project.kind, (byKind.get(project.kind) || 0) + 1)
 
-      if (project.isExists)
-        available += 1
-      else
-        missing += 1
-
-      if (project.isTemporary)
+      if (project.isTemporary) {
         temporary += 1
+      }
+      else if (!project.isExists) {
+        missing += 1
+      }
     }
 
     return {
       total: projectsStore.allProjects.length,
-      available,
       missing,
       temporary,
       byKind,
     }
   })
 
-  const availableProjects = computed(() => projectStats.value.available)
   const missingProjects = computed(() => projectStats.value.missing)
   const temporaryProjects = computed(() => projectStats.value.temporary)
 
@@ -89,7 +85,6 @@ export function useProjectFilters(
 
   const statusOptions = computed<Array<FilterOption<StatusFilter>>>(() => [
     { value: 'all', label: t('app.home.filters.active'), count: totalProjects.value },
-    { value: 'available', label: t('app.home.filters.available'), count: availableProjects.value },
     { value: 'missing', label: t('app.home.filters.missing_path'), count: missingProjects.value },
     { value: 'temporary', label: t('app.home.filters.temporary'), count: temporaryProjects.value },
     { value: 'archived', label: t('app.home.filters.archived'), count: archivedProjectsCount.value },
@@ -160,11 +155,8 @@ export function useProjectFilters(
 
     // 归档视图下忽略其他 status 细分过滤
     if (statusFilter.value !== 'archived') {
-      if (statusFilter.value === 'available')
-        result = result.filter(project => project.isExists)
-
       if (statusFilter.value === 'missing')
-        result = result.filter(project => !project.isExists)
+        result = result.filter(project => !project.isExists && !project.isTemporary)
 
       if (statusFilter.value === 'temporary')
         result = result.filter(project => project.isTemporary)
@@ -198,7 +190,6 @@ export function useProjectFilters(
     projectStats,
     totalProjects,
     archivedProjectsCount,
-    availableProjects,
     missingProjects,
     temporaryProjects,
 

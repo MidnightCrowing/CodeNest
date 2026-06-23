@@ -72,7 +72,6 @@ app:
       sort: 排序
       all_projects: 全部项目
       active: 活跃
-      available: 可用
       missing_path: 路径缺失
       temporary: 临时
       archived: 已归档
@@ -116,6 +115,7 @@ app:
       opening_terminal: 正在打开终端
       opening_terminal_named: 正在为 {name} 打开终端
       copy_path: 复制路径
+      copy_terminal_command: 复制终端命令
       copied: 已复制
       copy_failed: 复制失败
       pin: 置顶
@@ -243,6 +243,9 @@ app:
       strategy:
         title: 默认打开方式
         desc: 分别决定目录和 IDE/CLI 导入后的默认打开工具。
+      root_scan_depth:
+        title: 根目录扫描深度
+        desc: 仅影响项目根目录扫描，0 表示只检查根目录本身。
       root_open_mode:
         title: 目录导入
         desc: 从项目根目录扫描导入。

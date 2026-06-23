@@ -52,7 +52,7 @@ function languageLabel(text: string) {
         py-10px outline-none
         color="$ui-foreground"
         backdrop-blur-8px backdrop-saturate-140
-        :class="{ 'loading': visibleAnalyzing || !hasLanguages, 'dark-language-pop': isDarkTheme }"
+        :class="{ 'loading': !hasLanguages, 'dark-language-pop': isDarkTheme }"
         :reference="anchorElement"
         side="top"
         align="start"
@@ -63,7 +63,7 @@ function languageLabel(text: string) {
         @close-auto-focus.prevent
       >
         <div
-          v-if="visibleAnalyzing"
+          v-if="visibleAnalyzing && !hasLanguages"
           class="state-panel"
           h-44px flex items-center justify-center gap-8px
           text-12px color="$ui-muted-foreground"
@@ -86,7 +86,13 @@ function languageLabel(text: string) {
         </div>
 
         <template v-else>
-          <header mb-8px flex items-center justify-end>
+          <header mb-8px flex items-center justify-end gap-6px>
+            <span
+              v-if="visibleAnalyzing"
+              class="i-lucide:refresh-cw animate-spin"
+              size-11px shrink-0 color="$ui-muted-foreground"
+              :aria-label="t('language_pop.loading')"
+            />
             <span shrink-0 text-11px color="$ui-muted-foreground">{{ t('language_pop.count', { count: languagesGroup.length }) }}</span>
           </header>
 

@@ -72,7 +72,6 @@ app:
       sort: Sort
       all_projects: All projects
       active: Active
-      available: Available
       missing_path: Missing path
       temporary: Temporary
       archived: Archived
@@ -116,6 +115,7 @@ app:
       opening_terminal: Opening Terminal
       opening_terminal_named: Opening Terminal for {name}
       copy_path: Copy path
+      copy_terminal_command: Copy terminal command
       copied: Copied
       copy_failed: Copy failed
       pin: Pin
@@ -243,6 +243,9 @@ app:
       strategy:
         title: Default opener
         desc: Choose defaults separately for folder and IDE/CLI imports.
+      root_scan_depth:
+        title: Root scan depth
+        desc: Only affects root folder scanning. 0 checks the root itself.
       root_open_mode:
         title: Folder imports
         desc: Imported from configured project root folders.

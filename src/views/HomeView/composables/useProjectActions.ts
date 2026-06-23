@@ -165,16 +165,71 @@ export function useProjectActions(options: UseProjectActionsOptions) {
 
   async function copyProjectPath(project: LocalProject) {
     try {
-      if (!navigator.clipboard?.writeText)
-        throw new Error('Clipboard API is not available')
-
-      await navigator.clipboard.writeText(project.path)
+      await copyTextToClipboard(project.path)
       setCopyFeedback(project.appendTime, 'success')
     }
     catch (error) {
       console.error('Failed to copy project path:', error)
       setCopyFeedback(project.appendTime, 'error')
     }
+  }
+
+  async function copyProjectTerminalCommand(project: LocalProject) {
+    try {
+      const command = projectTerminalCommand(project)
+      if (!command)
+        throw new Error('Terminal command is not available')
+
+      await copyTextToClipboard(command)
+      setCopyFeedback(project.appendTime, 'success')
+    }
+    catch (error) {
+      console.error('Failed to copy project terminal command:', error)
+      setCopyFeedback(project.appendTime, 'error')
+    }
+  }
+
+  async function copyTextToClipboard(text: string) {
+    if (!navigator.clipboard?.writeText)
+      throw new Error('Clipboard API is not available')
+
+    await navigator.clipboard.writeText(text)
+  }
+
+  function projectTerminalCommand(project: LocalProject) {
+    if (project.isRemote)
+      return ''
+
+    const launchConfig = settingsStore.getEditorLaunchConfig(project.defaultOpen)
+    const commandTemplate = launchConfig.command.trim()
+    if (!commandTemplate || !launchConfig.openInTerminal)
+      return ''
+
+    const windowsPath = isWindowsPath(project.path)
+    const projectArg = windowsPath
+      ? quotePowerShellString(project.path)
+      : quotePosixShell(project.path)
+    const command = commandTemplate
+      .replaceAll('{project}', projectArg)
+      .replaceAll('{cwd}', projectArg)
+
+    return windowsPath
+      ? `Set-Location -LiteralPath ${quotePowerShellString(project.path)}; ${command}`
+      : `cd ${quotePosixShell(project.path)} && ${command}`
+  }
+
+  function isWindowsPath(path: string) {
+    return /^[a-z]:[\\/]/i.test(path)
+  }
+
+  function quotePowerShellString(value: string) {
+    const escaped = value.replaceAll('\'', '\'\'')
+    return `'${escaped}'`
+  }
+
+  function quotePosixShell(value: string) {
+    const escaped = value.replaceAll('\'', '\'\\\'\'')
+    return `'${escaped}'`
   }
 
   function setCopyFeedback(projectId: number, status: 'success' | 'error') {
@@ -302,6 +357,9 @@ export function useProjectActions(options: UseProjectActionsOptions) {
       case 'copy':
       case 'copy-path':
         void copyProjectPath(project)
+        break
+      case 'copy-terminal-command':
+        void copyProjectTerminalCommand(project)
         break
       case 'edit':
         editProject(project)

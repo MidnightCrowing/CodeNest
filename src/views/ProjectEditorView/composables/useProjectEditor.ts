@@ -4,7 +4,7 @@ import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
 import { codeEditorOrder, codeEditors, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
-import type { LocalProject } from '~/constants/localProject'
+import type { languagesGroupItem, LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { LanguageAnalyzer } from '~/services/languageAnalyzer'
 import { detectLicenseBySnippet } from '~/services/licenseDetector'
@@ -24,6 +24,40 @@ import {
 export type ProjectEditorFieldKey = 'path' | 'name' | 'mainLang' | 'defaultOpen' | 'remoteHost' | 'remotePath'
 
 const PATH_SPLIT_RE = /[\\/]+/
+const languageColorCache = new Map<string, LocalProject['mainLangColor'] | null>()
+
+function findLanguageColor(
+  language: string | null | undefined,
+  langGroup: languagesGroupItem[] | null | undefined,
+) {
+  return langGroup?.find(item => item.text === language)?.color || null
+}
+
+async function resolveLanguageColor(
+  language: string | null | undefined,
+  langGroup: languagesGroupItem[] | null | undefined,
+) {
+  if (!language)
+    return null
+
+  const localColor = findLanguageColor(language, langGroup)
+  if (localColor)
+    return localColor
+
+  if (languageColorCache.has(language))
+    return languageColorCache.get(language) || null
+
+  try {
+    const color = await window.api.getLanguageColor(language)
+    languageColorCache.set(language, color)
+    return color
+  }
+  catch (error: unknown) {
+    console.warn(`Failed to resolve language color for '${language}':`, error)
+    languageColorCache.set(language, null)
+    return null
+  }
+}
 
 export function useProjectEditor() {
   const activatedView = inject('activatedView') as Ref<ViewEnum>
@@ -31,6 +65,7 @@ export function useProjectEditor() {
   const projectScannerStore = useProjectScannerStore()
   const editorLangGroupsStore = useEditorLangGroupsStore()
   const initialProjectPath = localProjectItem.value.path || ''
+  const initialProjectId = localProjectItem.value.appendTime
   const { t } = useI18n()
 
   const isRemote = computed(() => !!localProjectItem.value.isRemote)
@@ -220,7 +255,10 @@ export function useProjectEditor() {
     ])
   }
 
-  async function analyzeProject(targetPath = localProjectItem.value.path) {
+  async function analyzeProject(
+    targetPath = localProjectItem.value.path,
+    options: { persistGlobal?: boolean } = {},
+  ) {
     const path = targetPath
     if (!path)
       return
@@ -234,10 +272,19 @@ export function useProjectEditor() {
       if (localProjectItem.value.path !== path)
         return
 
-      localProjectItem.value.mainLang = analyzer.mainLang
-      localProjectItem.value.mainLangColor = analyzer.mainLangColor
       localProjectItem.value.langGroup = analyzer.langGroup
-      fillDefaultEditorFromLanguage(analyzer.mainLang)
+      if (!localProjectItem.value.mainLang)
+        localProjectItem.value.mainLang = analyzer.mainLang
+      if (!localProjectItem.value.mainLangColor) {
+        const color = await resolveLanguageColor(localProjectItem.value.mainLang, analyzer.langGroup)
+        if (localProjectItem.value.path !== path)
+          return
+        localProjectItem.value.mainLangColor = color
+      }
+      fillDefaultEditorFromLanguage(localProjectItem.value.mainLang)
+
+      if (options.persistGlobal && canPersistLanguageAnalysis(path))
+        await projectsStore.updateProjectLanguageMetadata(initialProjectId!, analyzer.langGroup)
     }
     finally {
       analyzing.value = false
@@ -245,7 +292,13 @@ export function useProjectEditor() {
   }
 
   function runAnalyzeProject() {
-    void analyzeProject()
+    void analyzeProject(localProjectItem.value.path, { persistGlobal: true })
+  }
+
+  function canPersistLanguageAnalysis(path: string) {
+    return isUpdateProject.value
+      && initialProjectId !== null
+      && path === initialProjectPath
   }
 
   async function detectLicense(targetPath = localProjectItem.value.path) {
@@ -274,10 +327,12 @@ export function useProjectEditor() {
     void detectLicense()
   }
 
-  function updateLanguage(language: string | null) {
+  async function updateLanguage(language: string | null) {
     localProjectItem.value.mainLang = language
-    const languageItem = localProjectItem.value.langGroup?.find(item => item.text === language)
-    localProjectItem.value.mainLangColor = languageItem?.color || null
+    const color = await resolveLanguageColor(language, localProjectItem.value.langGroup)
+    if (localProjectItem.value.mainLang !== language)
+      return
+    localProjectItem.value.mainLangColor = color
     fillDefaultEditorFromLanguage(language)
   }
 
@@ -295,7 +350,9 @@ export function useProjectEditor() {
 
     localProjectItem.value.langGroup = cached.langGroup
     localProjectItem.value.mainLang = localProjectItem.value.mainLang || cached.mainLang || cached.langGroup[0]?.text || null
-    localProjectItem.value.mainLangColor = localProjectItem.value.mainLangColor || cached.mainLangColor || cached.langGroup[0]?.color
+    localProjectItem.value.mainLangColor = localProjectItem.value.mainLangColor
+      || await resolveLanguageColor(localProjectItem.value.mainLang, cached.langGroup)
+      || (localProjectItem.value.mainLang === cached.mainLang ? cached.mainLangColor : undefined)
     fillDefaultEditorFromLanguage(localProjectItem.value.mainLang)
   }
 
@@ -398,7 +455,7 @@ export function useProjectEditor() {
 
   watch(
     () => localProjectItem.value.mainLang,
-    language => updateLanguage(language),
+    language => void updateLanguage(language),
   )
 
   onMounted(() => {

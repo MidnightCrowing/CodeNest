@@ -23,6 +23,7 @@ pub fn run() {
             project::commands::delete_project,
             project::editor::detect_editor_command,
             project::commands::export_projects,
+            project::commands::get_language_color,
             project::commands::import_projects,
             project::editor::open_project,
             project::editor::open_remote_project,

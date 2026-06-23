@@ -1,4 +1,5 @@
 mod detect;
+mod git;
 mod models;
 mod scan;
 

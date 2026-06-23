@@ -44,6 +44,11 @@ pub async fn analyze_project(folder_path: String) -> Result<LinguistResult, Stri
 }
 
 #[tauri::command]
+pub fn get_language_color(language_name: String) -> Option<String> {
+    analyzer::language_color(language_name.trim()).map(ToOwned::to_owned)
+}
+
+#[tauri::command]
 pub fn delete_project(project_path: String) -> ProjectMutationResult {
     let path = PathBuf::from(&project_path);
     if !path.exists() {

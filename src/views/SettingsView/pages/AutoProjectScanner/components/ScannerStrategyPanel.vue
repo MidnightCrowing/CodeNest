@@ -31,6 +31,16 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const settings = useSettingsStore()
+
+const rootScanDepth = computed({
+  get: () => settings.scanner.rootScanDepth,
+  set: (value: number | string) => {
+    const depth = Number(value)
+    settings.scanner.rootScanDepth = Number.isFinite(depth)
+      ? Math.max(0, Math.min(Math.trunc(depth), 8))
+      : 1
+  },
+})
 </script>
 
 <template>
@@ -77,6 +87,24 @@ const settings = useSettingsStore()
         min-width="160px"
         content-width="210px"
       />
+    </div>
+
+    <div min-h-42px flex items-center justify-between gap-12px>
+      <div min-w-0 flex flex-col gap-3px>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.root_scan_depth.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.root_scan_depth.desc') }}</span>
+      </div>
+      <input
+        v-model.number="rootScanDepth"
+        class="text-input"
+        w-90px
+        type="number"
+        min="0"
+        max="8"
+        step="1"
+        inputmode="numeric"
+        :aria-label="t('app.settings.scanner.root_scan_depth.title')"
+      >
     </div>
 
     <div min-h-42px flex items-center justify-between gap-12px>

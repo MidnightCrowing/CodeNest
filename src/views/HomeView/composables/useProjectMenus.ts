@@ -23,10 +23,11 @@ import {
 interface MenuDependencies {
   t: (key: string, params?: Record<string, unknown>) => string
   editorHasLaunchCommand: (editor: CodeEditorEnum) => boolean
+  editorOpensInTerminal: (editor: CodeEditorEnum) => boolean
 }
 
 export function useProjectMenus(deps: MenuDependencies) {
-  const { t, editorHasLaunchCommand } = deps
+  const { t, editorHasLaunchCommand, editorOpensInTerminal } = deps
 
   function editorMenuIcon(option: (typeof editorCommandOptions)[number]) {
     return option.icon
@@ -73,6 +74,10 @@ export function useProjectMenus(deps: MenuDependencies) {
   function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     const canDeleteFiles = canDeleteProjectFiles(project)
     const sourceUrl = projectSourceUrl(project)
+    const canCopyTerminalCommand = !project.isRemote
+      && project.isExists
+      && editorHasLaunchCommand(project.defaultOpen)
+      && editorOpensInTerminal(project.defaultOpen)
 
     return [
       {
@@ -124,6 +129,12 @@ export function useProjectMenus(deps: MenuDependencies) {
         id: 'copy-path',
         label: t('app.home.actions.copy_path'),
       },
+      ...(canCopyTerminalCommand
+        ? [{
+            id: 'copy-terminal-command',
+            label: t('app.home.actions.copy_terminal_command'),
+          }]
+        : []),
       ...(sourceUrl
         ? [{
             id: 'open-source',

@@ -18,10 +18,13 @@ import { getPreferredSystemTheme } from '~/utils/theme'
 export type ScannerRootOpenMode = 'language' | 'specified'
 export type ScannerIdeOpenMode = 'source' | 'language' | 'specified'
 
+export const DEFAULT_SCANNER_ROOT_SCAN_DEPTH = 1
+
 export interface ScannerSettings {
   // file system roots scanning
   rootsEnabled: boolean
   roots: string[]
+  rootScanDepth: number
 
   // IDE scanning toggles
   ideEnabled: boolean
@@ -108,6 +111,12 @@ function isScannerIdeOpenMode(value: unknown): value is ScannerIdeOpenMode {
   return value === 'source' || value === 'language' || value === 'specified'
 }
 
+function normalizeScannerRootScanDepth(value: unknown) {
+  if (typeof value !== 'number' || !Number.isInteger(value))
+    return DEFAULT_SCANNER_ROOT_SCAN_DEPTH
+  return Math.max(0, Math.min(value, 8))
+}
+
 function normalizeCustomThemeColor(value: unknown) {
   return typeof value === 'string' && HEX_COLOR_RE.test(value)
     ? value.toLowerCase()
@@ -164,6 +173,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const scanner = reactive<ScannerSettings>({
     rootsEnabled: false,
     roots: [],
+    rootScanDepth: DEFAULT_SCANNER_ROOT_SCAN_DEPTH,
 
     ideEnabled: false,
     jetbrains: {
@@ -198,6 +208,7 @@ export const useSettingsStore = defineStore('settings', () => {
     return {
       rootsEnabled: scanner.rootsEnabled,
       roots: [...scanner.roots],
+      rootScanDepth: scanner.rootScanDepth,
       ideEnabled: scanner.ideEnabled,
       jetbrains: {
         enabled: scanner.jetbrains.enabled,
@@ -244,6 +255,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function resetScanner() {
     scanner.rootsEnabled = false
     scanner.roots.splice(0, scanner.roots.length)
+    scanner.rootScanDepth = DEFAULT_SCANNER_ROOT_SCAN_DEPTH
     scanner.ideEnabled = false
     scanner.jetbrains.enabled = false
     scanner.jetbrains.configRootPath = ''
@@ -349,6 +361,7 @@ export const useSettingsStore = defineStore('settings', () => {
         scanner.rootsEnabled = s.rootsEnabled
       if (Array.isArray(s.roots))
         scanner.roots.splice(0, scanner.roots.length, ...s.roots)
+      scanner.rootScanDepth = normalizeScannerRootScanDepth(s.rootScanDepth)
       if (typeof s.ideEnabled === 'boolean')
         scanner.ideEnabled = s.ideEnabled
       if (isScannerRootOpenMode(s.rootOpenMode))

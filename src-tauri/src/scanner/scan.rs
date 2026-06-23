@@ -1,6 +1,5 @@
 use std::{
     collections::{HashMap, HashSet},
-    fs,
     hash::{Hash, Hasher},
     path::{Path, PathBuf},
     time::UNIX_EPOCH,
@@ -16,10 +15,12 @@ use crate::{
     },
 };
 
+use super::git;
 use super::models::{
     LangGroupItem, ScanCacheEntry, ScanItem, ScanPayload, ScanResult, HISTORY_SCANNER_EDITORS,
 };
 
+const MAX_ROOT_SCAN_DEPTH: usize = 8;
 pub(super) fn scan_projects(payload: ScanPayload) -> Result<ScanResult, String> {
     let mut candidates = Vec::new();
 
@@ -74,9 +75,10 @@ pub(super) fn scan_projects(payload: ScanPayload) -> Result<ScanResult, String> 
     }
 
     if payload.roots_enabled {
+        let depth = payload.root_scan_depth.min(MAX_ROOT_SCAN_DEPTH);
         for root in &payload.roots {
             candidates.extend(
-                list_immediate_subdirs(Path::new(root))
+                collect_root_projects(Path::new(root), depth)
                     .into_iter()
                     .map(|path| RecentProject {
                         path: analyzer::display_path(&path),
@@ -113,6 +115,10 @@ pub(super) fn scan_projects(payload: ScanPayload) -> Result<ScanResult, String> 
         }
 
         let canonical = analyzer::canonical_or_original(&path);
+        if !git::is_git_project(&canonical) {
+            continue;
+        }
+
         let key = analyzer::normalize_path_key(&canonical);
         if existing.contains(&key) || !seen.insert(key.clone()) {
             continue;
@@ -141,6 +147,7 @@ fn scan_one_project(
         .filter(|name| !name.is_empty())
         .unwrap_or_default();
     let path_string = analyzer::display_path(&path);
+    let detected_kind = git::detect_project_kind(&path);
 
     match directory_state_capped(&path, max_scan_bytes) {
         Ok(state) if cached.is_some_and(|entry| entry.signature == state.signature) => {
@@ -156,6 +163,7 @@ fn scan_one_project(
                 main_lang_color: cached.main_lang_color.clone(),
                 lang_group: cached.lang_group.clone(),
                 ide,
+                detected_kind,
                 error: cached.error.clone(),
                 signature: Some(state.signature),
             }
@@ -167,6 +175,7 @@ fn scan_one_project(
             main_lang_color: None,
             lang_group: None,
             ide,
+            detected_kind,
             error: Some(format!(
                 "Directory too large ({} MB)",
                 state.total_bytes / (1024 * 1024)
@@ -180,6 +189,7 @@ fn scan_one_project(
             main_lang_color: None,
             lang_group: None,
             ide,
+            detected_kind,
             error: Some(error),
             signature: None,
         },
@@ -198,6 +208,7 @@ fn scan_one_project(
                     main_lang_color,
                     lang_group,
                     ide,
+                    detected_kind,
                     error: None,
                     signature: Some(state.signature),
                 }
@@ -209,6 +220,7 @@ fn scan_one_project(
                 main_lang_color: None,
                 lang_group: None,
                 ide,
+                detected_kind,
                 error: Some(error),
                 signature: Some(state.signature),
             },
@@ -216,15 +228,45 @@ fn scan_one_project(
     }
 }
 
-fn list_immediate_subdirs(root: &Path) -> Vec<PathBuf> {
-    let Ok(entries) = fs::read_dir(root) else {
-        return Vec::new();
+fn collect_root_projects(root: &Path, max_depth: usize) -> Vec<PathBuf> {
+    if max_depth == 0 {
+        return git::is_git_project(root)
+            .then(|| root.to_path_buf())
+            .into_iter()
+            .collect();
+    }
+
+    let mut projects = Vec::new();
+    collect_root_projects_at(root, 0, max_depth, &mut projects);
+    projects
+}
+
+fn collect_root_projects_at(
+    dir: &Path,
+    depth: usize,
+    max_depth: usize,
+    projects: &mut Vec<PathBuf>,
+) {
+    if depth >= max_depth {
+        return;
+    }
+
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
     };
-    entries
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.is_dir())
-        .collect()
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+
+        if git::is_git_project(&path) {
+            projects.push(path);
+            continue;
+        }
+
+        collect_root_projects_at(&path, depth + 1, max_depth, projects);
+    }
 }
 
 struct DirectoryState {
@@ -335,4 +377,91 @@ fn to_lang_group(entries: &[(String, LanguageStats)]) -> Vec<LangGroupItem> {
 
 fn round2(value: f64) -> f64 {
     (value * 100.0).round() / 100.0
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        path::{Path, PathBuf},
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use super::*;
+
+    struct TempRoot {
+        path: PathBuf,
+    }
+
+    impl TempRoot {
+        fn new(name: &str) -> Self {
+            let id = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("time should be valid")
+                .as_nanos();
+            let path = std::env::temp_dir().join(format!("codenest-scan-{name}-{id}"));
+            fs::create_dir_all(&path).expect("temp root should be created");
+            Self { path }
+        }
+
+        fn dir(&self, relative: &str) -> PathBuf {
+            let path = self.path.join(relative);
+            fs::create_dir_all(&path).expect("dir should be created");
+            path
+        }
+    }
+
+    impl Drop for TempRoot {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.path);
+        }
+    }
+
+    fn init_git(path: &Path) {
+        fs::create_dir_all(path.join(".git")).expect("git dir should be created");
+    }
+
+    fn project_names(projects: Vec<PathBuf>) -> Vec<String> {
+        let mut names = projects
+            .into_iter()
+            .filter_map(|path| {
+                path.file_name()
+                    .map(|name| name.to_string_lossy().into_owned())
+            })
+            .collect::<Vec<_>>();
+        names.sort();
+        names
+    }
+
+    #[test]
+    fn depth_zero_checks_root_itself() {
+        let root = TempRoot::new("depth-zero");
+        init_git(&root.path);
+        init_git(&root.dir("child"));
+
+        let projects = collect_root_projects(&root.path, 0);
+
+        assert_eq!(projects, vec![root.path.clone()]);
+    }
+
+    #[test]
+    fn depth_one_matches_current_immediate_child_behavior() {
+        let root = TempRoot::new("depth-one");
+        init_git(&root.dir("child"));
+        init_git(&root.dir("nested/grandchild"));
+
+        let projects = collect_root_projects(&root.path, 1);
+
+        assert_eq!(project_names(projects), vec!["child"]);
+    }
+
+    #[test]
+    fn deeper_scan_finds_nested_git_projects() {
+        let root = TempRoot::new("depth-two");
+        init_git(&root.dir("nested/grandchild"));
+
+        let projects = collect_root_projects(&root.path, 2);
+
+        assert_eq!(project_names(projects), vec!["grandchild"]);
+    }
 }

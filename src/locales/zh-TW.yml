@@ -72,7 +72,6 @@ app:
       sort: 排序
       all_projects: 全部專案
       active: 活躍
-      available: 可用
       missing_path: 路徑遺失
       temporary: 臨時
       archived: 已封存
@@ -116,6 +115,7 @@ app:
       opening_terminal: 正在開啟終端機
       opening_terminal_named: 正在為 {name} 開啟終端機
       copy_path: 複製路徑
+      copy_terminal_command: 複製終端命令
       copied: 已複製
       copy_failed: 複製失敗
       pin: 置頂
@@ -243,6 +243,9 @@ app:
       strategy:
         title: 預設開啟方式
         desc: 分別決定目錄和 IDE/CLI 匯入後的預設開啟工具。
+      root_scan_depth:
+        title: 根目錄掃描深度
+        desc: 僅影響專案根目錄掃描，0 表示只檢查根目錄本身。
       root_open_mode:
         title: 目錄匯入
         desc: 從專案根目錄掃描匯入。

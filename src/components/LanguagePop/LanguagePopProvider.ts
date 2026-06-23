@@ -13,6 +13,11 @@ export const getAnalyzeError: Ref<boolean | null> = ref(null)
 export const analyzing: Ref<boolean> = ref(false)
 
 let analyzeRequestId = 0
+let saveProjectsTimer: ReturnType<typeof window.setTimeout> | null = null
+const analyzingByPath = new Map<string, Promise<LanguageAnalyzer | null>>()
+const lastAnalyzeStartedAt = new Map<string, number>()
+const ANALYZE_DEBOUNCE_MS = 1200
+const SAVE_PROJECTS_DEBOUNCE_MS = 900
 
 export function showPop(newProjectItem: LocalProject, anchor: HTMLElement) {
   // 远程项目没有本地文件可分析,不展示语言分析弹层
@@ -29,59 +34,80 @@ export function showPop(newProjectItem: LocalProject, anchor: HTMLElement) {
 
   getAnalyzeError.value = null
 
-  if (!languagesGroup.value || languagesGroup.value.length === 0) {
+  if (!languagesGroup.value || languagesGroup.value.length === 0)
     getAnalyzeError.value = false
-    void loadLanguageAnalyzer(requestId)
-  }
-  else {
-    analyzing.value = false
-  }
+
+  void loadLanguageAnalyzer(newProjectItem, requestId)
 }
 
 export function hidePop() {
   analyzeRequestId += 1
   anchorElement.value = null
   popupVisible.value = false
+  analyzing.value = false
 }
 
-async function loadLanguageAnalyzer(requestId: number) {
-  if (!project.value) {
+async function loadLanguageAnalyzer(targetProject: LocalProject, requestId: number) {
+  if (!targetProject.path) {
     console.warn('No project available to analyze.')
     return
   }
 
-  const folderPath = project.value.path
+  const folderPath = targetProject.path
+  const cachedGroup = targetProject.langGroup?.length ? targetProject.langGroup : undefined
+  const recentStartedAt = lastAnalyzeStartedAt.get(folderPath) || 0
+  const hasActiveAnalyze = analyzingByPath.has(folderPath)
+  if (!hasActiveAnalyze && performance.now() - recentStartedAt < ANALYZE_DEBOUNCE_MS) {
+    analyzing.value = false
+    return
+  }
+
   analyzing.value = true
-  const analyzer = new LanguageAnalyzer(folderPath)
 
   try {
-    const success = await analyzer.analyze()
-    if (requestId !== analyzeRequestId)
-      return
+    const analyzer = await analyzeProjectLanguage(folderPath)
 
-    if (success) {
-      // 更新 project 的 mainLangColor 和 langGroup
-      // 这里确保 `project.value` 不为 null
-      if (project.value) {
-        project.value.mainLangColor = project.value.mainLangColor ?? analyzer.mainLangColor ?? undefined
-        project.value.langGroup = project.value.langGroup ?? analyzer.langGroup
+    if (analyzer?.langGroup?.length) {
+      targetProject.langGroup = analyzer.langGroup || []
+      queueSaveProjects()
 
-        if (!project.value.langGroup?.length && analyzer.langGroup?.length) {
-          project.value.langGroup = analyzer.langGroup
-        }
-
-        mainLangColor.value = project.value.mainLangColor
-        languagesGroup.value = project.value.langGroup
-        void useProjectsStore().saveProjects()
-      }
+      if (requestId === analyzeRequestId && project.value?.path === folderPath)
+        languagesGroup.value = targetProject.langGroup?.length ? targetProject.langGroup : undefined
     }
     else {
-      getAnalyzeError.value = true
-      console.error(`Error analyzing folder for project at ${folderPath}`)
+      if (requestId === analyzeRequestId && !cachedGroup?.length)
+        getAnalyzeError.value = true
+      console.error(`Error analyzing languages for project at ${folderPath}`)
     }
   }
   finally {
     if (requestId === analyzeRequestId)
       analyzing.value = false
   }
+}
+
+function analyzeProjectLanguage(folderPath: string) {
+  const activeAnalyze = analyzingByPath.get(folderPath)
+  if (activeAnalyze)
+    return activeAnalyze
+
+  lastAnalyzeStartedAt.set(folderPath, performance.now())
+  const promise = (async () => {
+    const analyzer = new LanguageAnalyzer(folderPath)
+    return await analyzer.analyze() ? analyzer : null
+  })().finally(() => {
+    analyzingByPath.delete(folderPath)
+  })
+  analyzingByPath.set(folderPath, promise)
+  return promise
+}
+
+function queueSaveProjects() {
+  if (saveProjectsTimer)
+    window.clearTimeout(saveProjectsTimer)
+
+  saveProjectsTimer = window.setTimeout(() => {
+    saveProjectsTimer = null
+    void useProjectsStore().saveProjects()
+  }, SAVE_PROJECTS_DEBOUNCE_MS)
 }
