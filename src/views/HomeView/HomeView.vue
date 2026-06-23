@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import mainLangPop from '~/components/LanguagePop/LanguagePop.vue'
 import { setRemoveAnimationCallback } from '~/components/RemoveProjectDialog'
 import type { ViewEnum } from '~/constants/appEnums'
-import { ThemeEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -207,8 +206,6 @@ watch(layoutMode, () => {
   <main
     size-full overflow-hidden flex flex-col
     bg="$ui-page-background"
-    class="workspace-shell"
-    :class="{ 'theme-dark': settingsStore.resolvedTheme === ThemeEnum.Dark }"
   >
     <HomeHeader
       :total="totalProjects"

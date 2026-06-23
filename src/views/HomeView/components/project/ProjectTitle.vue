@@ -59,17 +59,23 @@ const { t } = useI18n()
       >{{ project.name }}</span>
     </span>
     <span
-      v-if="project.kind !== ProjectKind.MINE"
-      class="kind-badge"
-      :class="kindClass(project.kind)"
+      v-if="project.kind !== ProjectKind.MINE || project.isRemote || project.isTemporary"
+      class="project-tags"
+      :class="{ 'card-tags': card }"
     >
-      {{ kindLabel(project.kind, t) }}
-    </span>
-    <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
-      {{ t('app.home.remote.badge') }}
-    </span>
-    <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
-      {{ t('app.home.filters.temporary') }}
+      <span
+        v-if="project.kind !== ProjectKind.MINE"
+        class="kind-badge"
+        :class="kindClass(project.kind)"
+      >
+        {{ kindLabel(project.kind, t) }}
+      </span>
+      <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+        {{ t('app.home.remote.badge') }}
+      </span>
+      <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
+        {{ t('app.home.filters.temporary') }}
+      </span>
     </span>
   </div>
 </template>
@@ -79,63 +85,42 @@ const { t } = useI18n()
   @apply flex-[0_1_auto];
 }
 
+.card-title {
+  @apply w-full;
+}
+
+.project-tags {
+  @apply shrink-0 flex items-center gap-5px;
+}
+
+.card-tags {
+  @apply ml-auto justify-end;
+}
+
 .temporary-badge,
 .remote-badge,
 .kind-badge {
-  @apply h-19px shrink-0 rounded-4px border border-transparent border-solid px-5px;
+  @apply h-18px shrink-0 rounded-4px px-5px;
   @apply inline-flex items-center text-10px font-650 lh-12px;
 }
 
 .temporary-badge {
-  @apply [color:color-mix(in_srgb,var(--yellow-2)_84%,var(--gray-1))];
-  @apply [background:color-mix(in_srgb,var(--yellow-4)_18%,var(--ui-surface-background))];
-}
-
-:global(.workspace-shell.theme-dark) .temporary-badge {
-  @apply [color:var(--yellow-11)];
-  @apply [background:color-mix(in_srgb,var(--yellow-5)_30%,var(--ui-surface-background))];
-  @apply [border-color:color-mix(in_srgb,var(--yellow-8)_34%,transparent)];
+  @apply color-$project-tag-temporary-text bg-$project-tag-temporary-bg;
 }
 
 .remote-badge {
-  @apply [color:color-mix(in_srgb,var(--teal-2)_84%,var(--gray-1))];
-  @apply [background:color-mix(in_srgb,var(--teal-4)_18%,var(--ui-surface-background))];
-}
-
-:global(.workspace-shell.theme-dark) .remote-badge {
-  @apply [color:var(--teal-11)];
-  @apply [background:color-mix(in_srgb,var(--teal-5)_32%,var(--ui-surface-background))];
-  @apply [border-color:color-mix(in_srgb,var(--teal-8)_36%,transparent)];
+  @apply color-$project-tag-remote-text bg-$project-tag-remote-bg;
 }
 
 .kind-mine {
-  @apply [--kind-color:var(--blue-5)];
-  @apply [--kind-bg-light-strength:13%] [--kind-bg-dark-strength:18%];
-  @apply [--kind-text-light:var(--blue-5)] [--kind-text-dark:var(--blue-8)];
+  @apply color-$project-tag-mine-text bg-$project-tag-mine-bg;
 }
 
 .kind-fork {
-  @apply [--kind-color:var(--purple-5)];
-  @apply [--kind-bg-light-strength:14%] [--kind-bg-dark-strength:34%];
-  @apply [--kind-text-light:color-mix(in_srgb,var(--purple-5)_92%,var(--gray-1))];
-  @apply [--kind-text-dark:var(--purple-11)] [--kind-border-dark:color-mix(in_srgb,var(--purple-8)_38%,transparent)];
+  @apply color-$project-tag-fork-text bg-$project-tag-fork-bg;
 }
 
 .kind-clone {
-  @apply [--kind-color:var(--yellow-5)] [--kind-bg-dark-color:var(--yellow-4)] [--kind-bg-dark-base:var(--ui-surface-background)];
-  @apply [--kind-bg-light-strength:27%] [--kind-bg-dark-strength:38%];
-  @apply [--kind-text-light:color-mix(in_srgb,var(--yellow-2)_96%,var(--gray-1))];
-  @apply [--kind-text-dark:var(--yellow-11)] [--kind-border-dark:color-mix(in_srgb,var(--yellow-8)_38%,transparent)];
-}
-
-.kind-badge {
-  @apply [background:color-mix(in_srgb,var(--kind-color)_var(--kind-bg-light-strength),var(--ui-surface-background))];
-  @apply [color:var(--kind-text-light)];
-}
-
-:global(.workspace-shell.theme-dark) .kind-badge {
-  @apply [background:color-mix(in_srgb,var(--kind-bg-dark-color,var(--kind-color))_var(--kind-bg-dark-strength),var(--kind-bg-dark-base,var(--ui-surface-background)))];
-  @apply [color:var(--kind-text-dark)];
-  @apply [border-color:var(--kind-border-dark,color-mix(in_srgb,var(--kind-text-dark)_28%,transparent))];
+  @apply color-$project-tag-clone-text bg-$project-tag-clone-bg;
 }
 </style>

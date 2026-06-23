@@ -138,6 +138,17 @@
   --ui-primary-hover: var(--gray-3);
   --ui-primary-active: var(--gray-4);
   --ui-primary-foreground: var(--gray-14);
+
+  --project-tag-temporary-text: var(--orange-2);
+  --project-tag-temporary-bg: color-mix(in srgb, var(--orange-5) 20%, transparent);
+  --project-tag-remote-text: var(--teal-2);
+  --project-tag-remote-bg: color-mix(in srgb, var(--teal-4) 18%, transparent);
+  --project-tag-mine-text: var(--blue-3);
+  --project-tag-mine-bg: color-mix(in srgb, var(--blue-5) 16%, transparent);
+  --project-tag-fork-text: var(--purple-2);
+  --project-tag-fork-bg: color-mix(in srgb, var(--purple-5) 18%, transparent);
+  --project-tag-clone-text: var(--yellow-2);
+  --project-tag-clone-bg: color-mix(in srgb, var(--yellow-4) 22%, transparent);
 }
 
 :root.dark {
@@ -285,6 +296,17 @@
   --ui-primary-hover: var(--gray-13);
   --ui-primary-active: var(--gray-12);
   --ui-primary-foreground: var(--gray-1);
+
+  --project-tag-temporary-text: var(--orange-8);
+  --project-tag-temporary-bg: color-mix(in srgb, var(--orange-5) 24%, transparent);
+  --project-tag-remote-text: var(--teal-8);
+  --project-tag-remote-bg: color-mix(in srgb, var(--teal-5) 22%, transparent);
+  --project-tag-mine-text: var(--blue-8);
+  --project-tag-mine-bg: color-mix(in srgb, var(--blue-5) 22%, transparent);
+  --project-tag-fork-text: var(--purple-8);
+  --project-tag-fork-bg: color-mix(in srgb, var(--purple-5) 24%, transparent);
+  --project-tag-clone-text: var(--yellow-8);
+  --project-tag-clone-bg: color-mix(in srgb, var(--yellow-5) 24%, transparent);
 }
 
 :root.theme-blue {
