@@ -27,11 +27,12 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
   <button
     v-if="showLanguage"
     class="inline-pill"
-    min-w-0 max-w-full h-23px rounded-4px px-7px
-    border-0
+    min-w-0 max-w-full h-23px border-0 bg-transparent
+    px-5px
     inline-flex items-center gap-5px truncate text-11px
-    bg="$ui-control-background" color="$ui-foreground"
-    cursor-pointer hover:bg="$ui-hover-background"
+    color="$ui-foreground"
+    cursor-pointer underline decoration-transparent underline-offset-2
+    hover:decoration-current
     type="button"
     :title="languageLabel"
     @click.stop="emit('showLanguage', project, $event)"
@@ -41,19 +42,18 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
   </button>
   <span
     v-if="showLicense && project.license && project.license !== LicenseEnum.NONE"
-    min-w-0 max-w-full h-23px rounded-4px px-7px
-    border-0
+    class="license-pill"
+    min-w-0 max-w-full h-23px px-5px
     inline-flex items-center gap-5px truncate text-11px
-    bg="$ui-control-background" color="$ui-foreground"
+    color="$ui-foreground"
   >
     {{ shortLicense(project.license, t) }}
   </span>
   <span
     v-else-if="showLicense"
-    min-w-0 max-w-full h-23px rounded-4px px-7px
-    border-0
+    class="license-pill"
+    min-w-0 max-w-full h-23px px-5px
     inline-flex items-center gap-5px truncate text-11px
-    bg="$ui-control-background"
     light:color="$gray-8" dark:color="$gray-7"
   >{{ t('app.license.none') }}</span>
 </template>

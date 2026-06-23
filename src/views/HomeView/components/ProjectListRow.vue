@@ -128,23 +128,6 @@ const { t } = useI18n()
   @apply color-$ui-muted-foreground;
 }
 
-.project-row > :deep(.inline-pill),
-.project-row > :deep(.editor-cell) {
-  @apply bg-transparent px-0;
-}
-
-.project-row > :deep(.inline-pill) {
-  @apply cursor-pointer;
-
-  &:hover {
-    @apply underline;
-  }
-}
-
-.project-row > :deep(.editor-cell > span:first-child) {
-  @apply shrink-0;
-}
-
 @media (max-width: 1020px) {
   .project-grid {
     @apply grid-cols-[minmax(220px,1fr)_104px_140px_112px_136px];

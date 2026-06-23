@@ -15,10 +15,9 @@ const { t } = useI18n()
 
 <template>
   <span
-    min-w-0 max-w-full h-23px rounded-4px px-7px
-    border-0
+    min-w-0 max-w-full h-23px
     inline-flex items-center gap-5px truncate text-11px
-    bg="$ui-hover-background" color="$ui-foreground"
+    color="$ui-foreground"
     :class="listCell ? 'editor-cell' : 'editor-chip'"
     :title="editorLabel(editor, t)"
   >
@@ -29,6 +28,6 @@ const { t } = useI18n()
 
 <style lang="scss" scoped>
 .editor-chip {
-  @apply w-fit shrink max-w-180px px-5px py-2px;
+  @apply w-fit shrink max-w-180px;
 }
 </style>

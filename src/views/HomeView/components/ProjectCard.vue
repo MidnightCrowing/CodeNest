@@ -130,7 +130,7 @@ const { t } = useI18n()
   @apply grid-cols-[minmax(0,1fr)_max-content];
 
   :deep(.editor-chip) {
-    @apply w-fit max-w-180px shrink justify-self-start;
+    @apply justify-self-start;
   }
 
   :deep(.row-actions) {

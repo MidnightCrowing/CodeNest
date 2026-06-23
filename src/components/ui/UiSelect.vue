@@ -68,7 +68,7 @@ function handleBlur(event: FocusEvent) {
         <span class="ui-select-label">
           {{ selectedOption?.label || placeholder }}
         </span>
-        <span v-if="selectedOption?.count !== undefined" class="ui-select-count-badge">
+        <span v-if="selectedOption?.count !== undefined" class="ui-select-count-badge" ml-6px>
           {{ selectedOption.count }}
         </span>
       </SelectValue>
@@ -183,10 +183,7 @@ function handleBlur(event: FocusEvent) {
 }
 
 .ui-select-count-badge {
-  @apply shrink-0 size-18px rounded-full px-0;
-  @apply inline-flex items-center justify-center;
-  @apply text-11px font-650;
-  @apply bg-$ui-hover-background color-$ui-muted-foreground;
+  @apply shrink-0 text-11px font-650 color-$ui-muted-foreground;
 }
 
 @keyframes select-enter {

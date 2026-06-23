@@ -48,7 +48,6 @@ const {
   sortKey,
   filteredProjects,
   activeFilterCount,
-  totalProjects,
   kindOptions,
   statusOptions,
   languageOptions,
@@ -208,7 +207,7 @@ watch(layoutMode, () => {
     bg="$ui-page-background"
   >
     <HomeHeader
-      :total="totalProjects"
+      :total="filteredProjects.length"
       :syncing="syncing"
       :scanner-enabled="settingsStore.scannerEnabled"
       @add="addProject"
