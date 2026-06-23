@@ -38,9 +38,8 @@
       "../LICENSE.txt": "LICENSE.txt"
     },
     "windows": {
-      "nsis": {
-        "installMode": "both",
-        "installerIcon": "../src/assets/app-icon.ico"
+      "wix": {
+        "language": "en-US"
       }
     }
   }

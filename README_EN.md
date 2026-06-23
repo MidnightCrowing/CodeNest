@@ -25,7 +25,7 @@ CodeNest is a cross-platform local project manager for organizing projects scatt
 
 Download the installer for your platform from [Releases](https://github.com/MidnightCrowing/CodeNest/releases).
 
-The Windows release publishes an NSIS installer by default. macOS and Linux artifacts are built by GitHub Actions for their platforms.
+The Windows release publishes an MSI installer by default. macOS and Linux artifacts are built by GitHub Actions for their platforms.
 
 You can also download latest-code build artifacts from [Actions](https://github.com/MidnightCrowing/CodeNest/actions). Downloading Actions artifacts requires a GitHub account.
 

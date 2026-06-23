@@ -59,9 +59,9 @@ pub fn shell_quote(value: &str) -> String {
     #[cfg(not(target_os = "windows"))]
     {
         if !value.is_empty()
-            && value
-                .chars()
-                .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '/' | '\\' | ':'))
+            && value.chars().all(|ch| {
+                ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '/' | '\\' | ':')
+            })
         {
             value.to_string()
         } else {
@@ -79,9 +79,9 @@ pub fn shell_quote(value: &str) -> String {
 #[cfg(target_os = "windows")]
 fn cmd_quote(value: &str) -> String {
     if !value.is_empty()
-        && value
-            .chars()
-            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | ':' | '\\' | '/'))
+        && value.chars().all(|ch| {
+            ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | ':' | '\\' | '/')
+        })
     {
         value.to_string()
     } else {

@@ -100,7 +100,7 @@ jobs:
 
       - name: Build Windows bundle
         if: runner.os == 'Windows'
-        run: pnpm exec tauri build --ci --bundles nsis
+        run: pnpm exec tauri build --ci --bundles msi
 
       - name: Build bundle
         if: runner.os != 'Windows'
@@ -120,7 +120,6 @@ jobs:
                 -o -name '*.dmg' \
                 -o -name '*.app.tar.gz' \
                 -o -name '*.app.tar.gz.sig' \
-                -o -name '*setup.exe' \
                 -o -name '*.msi' \) \
               -print0
           )
