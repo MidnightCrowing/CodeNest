@@ -20,7 +20,7 @@ const { t } = useI18n()
 <template>
   <div
     min-w-0 flex items-center gap-7px overflow-hidden
-    :class="{ 'card-title': card }"
+    :class="card ? 'w-full' : ''"
   >
     <strong
       v-if="card"
@@ -43,7 +43,7 @@ const { t } = useI18n()
     <span
       v-else
       min-w-0 max-w-full flex items-center overflow-hidden
-      class="project-title"
+      grow-0 shrink basis-auto
       :title="project.group ? `${project.group}/${project.name}` : project.name"
     >
       <span
@@ -60,20 +60,33 @@ const { t } = useI18n()
     </span>
     <span
       v-if="project.kind !== ProjectKind.MINE || project.isRemote || project.isTemporary"
-      class="project-tags"
-      :class="{ 'card-tags': card }"
+      shrink-0 flex items-center gap-5px
+      :class="card ? 'ml-auto justify-end' : ''"
     >
       <span
         v-if="project.kind !== ProjectKind.MINE"
-        class="kind-badge"
+        h-18px shrink-0 rounded-4px px-5px
+        inline-flex items-center text-10px font-650 lh-12px
         :class="kindClass(project.kind)"
       >
         {{ kindLabel(project.kind, t) }}
       </span>
-      <span v-if="project.isRemote" class="remote-badge" :title="t('app.home.remote.badge')">
+      <span
+        v-if="project.isRemote"
+        h-18px shrink-0 rounded-4px px-5px
+        inline-flex items-center text-10px font-650 lh-12px
+        color="$project-tag-remote-text" bg="$project-tag-remote-bg"
+        :title="t('app.home.remote.badge')"
+      >
         {{ t('app.home.remote.badge') }}
       </span>
-      <span v-if="project.isTemporary" class="temporary-badge" :title="t('app.home.filters.temporary')">
+      <span
+        v-if="project.isTemporary"
+        h-18px shrink-0 rounded-4px px-5px
+        inline-flex items-center text-10px font-650 lh-12px
+        color="$project-tag-temporary-text" bg="$project-tag-temporary-bg"
+        :title="t('app.home.filters.temporary')"
+      >
         {{ t('app.home.filters.temporary') }}
       </span>
     </span>
@@ -81,41 +94,6 @@ const { t } = useI18n()
 </template>
 
 <style lang="scss" scoped>
-.project-title {
-  @apply flex-[0_1_auto];
-}
-
-.card-title {
-  @apply w-full;
-}
-
-.project-tags {
-  @apply shrink-0 flex items-center gap-5px;
-}
-
-.card-tags {
-  @apply ml-auto justify-end;
-}
-
-.temporary-badge,
-.remote-badge,
-.kind-badge {
-  @apply h-18px shrink-0 rounded-4px px-5px;
-  @apply inline-flex items-center text-10px font-650 lh-12px;
-}
-
-.temporary-badge {
-  @apply color-$project-tag-temporary-text bg-$project-tag-temporary-bg;
-}
-
-.remote-badge {
-  @apply color-$project-tag-remote-text bg-$project-tag-remote-bg;
-}
-
-.kind-mine {
-  @apply color-$project-tag-mine-text bg-$project-tag-mine-bg;
-}
-
 .kind-fork {
   @apply color-$project-tag-fork-text bg-$project-tag-fork-bg;
 }

@@ -23,13 +23,14 @@ const { t } = useI18n()
     grid-cols="[auto_minmax(0,1fr)_auto]"
   >
     <button
-      class="icon-button back-button"
+      class="icon-button"
+      light:bg-transparent dark:bg-transparent hover:bg="$ui-hover-background"
       type="button"
       :title="t('app.common.back')"
       :aria-label="t('app.common.back')"
       @click="emit('close')"
     >
-      <span class="i-lucide:chevron-left" />
+      <span class="i-lucide:chevron-left" text-16px />
     </button>
 
     <div min-w-0 flex items-center>
@@ -50,15 +51,6 @@ const { t } = useI18n()
 </template>
 
 <style lang="scss" scoped>
-.back-button {
-  @apply light:bg-transparent dark:bg-transparent;
-  @apply hover:bg-$ui-hover-background;
-
-  span {
-    @apply text-16px;
-  }
-}
-
 @media (max-width: 680px) {
   .editor-topbar {
     @apply grid-cols-[auto_minmax(0,1fr)] px-10px py-8px;

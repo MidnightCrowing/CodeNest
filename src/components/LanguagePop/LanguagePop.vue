@@ -143,12 +143,10 @@ function languageLabel(text: string) {
 
 <style lang="scss">
 .language-pop {
-  border-color: var(--ui-border);
-  background: var(--ui-popover-background);
-  box-shadow: var(--shadow-popup);
+  @apply border-$ui-border bg-$ui-popover-background shadow-$shadow-popup;
 
   &[data-state="open"] {
-    animation: language-pop-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[language-pop-enter_120ms_cubic-bezier(0.16,1,0.3,1)];
   }
 }
 
@@ -163,10 +161,8 @@ function languageLabel(text: string) {
 }
 
 .state-loader {
-  border-style: solid;
-  border-color: var(--ui-border);
-  border-top-color: var(--ui-primary);
-  animation: state-loader-spin 0.75s linear infinite;
+  @apply border-solid border-$ui-border border-t-$ui-primary;
+  @apply animate-[state-loader-spin_0.75s_linear_infinite];
 }
 
 .language-pop.dark-language-pop {
@@ -180,12 +176,12 @@ function languageLabel(text: string) {
 }
 
 .language-pop.dark-language-pop .language-bar span {
-  opacity: 0.74;
+  @apply opacity-74;
   filter: saturate(0.72) brightness(0.92);
 }
 
 .language-pop.dark-language-pop .color-dot {
-  opacity: 0.84;
+  @apply opacity-84;
   filter: saturate(0.72) brightness(0.94);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
 }
@@ -198,7 +194,7 @@ function languageLabel(text: string) {
 
 @keyframes language-pop-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateY(3px) scale(0.985);
   }
 }

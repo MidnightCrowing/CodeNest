@@ -35,7 +35,7 @@ const {
 <template>
   <div relative flex flex-col gap-10px>
     <header flex items-end justify-between gap-10px>
-      <h2 m-0 text-16px font-650>
+      <h2 m-0 text-16px font-650 break-anywhere>
         {{ t('app.settings.scanner.title') }}
       </h2>
     </header>
@@ -79,10 +79,6 @@ const {
 <style lang="scss" scoped>
 .settings-grid {
   grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
-}
-
-h2 {
-  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {

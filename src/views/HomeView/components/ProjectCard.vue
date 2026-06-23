@@ -110,11 +110,11 @@ const { t } = useI18n()
 
 <style lang="scss" scoped>
 .project-card {
-  @apply border-$ui-border shadow-[var(--shadow-surface)];
+  @apply border-$ui-border shadow-$shadow-surface;
   @apply transition duration-120 ease-out;
 
   &:hover {
-    @apply shadow-[var(--shadow-surface-hover)] -translate-y-1px;
+    @apply shadow-$shadow-surface-hover -translate-y-1px;
   }
 
   &:focus-visible {
@@ -122,7 +122,7 @@ const { t } = useI18n()
   }
 
   &.missing {
-    @apply cursor-default opacity-78 shadow-[var(--shadow-surface)] transform-none;
+    @apply cursor-default opacity-78 shadow-$shadow-surface transform-none;
   }
 }
 

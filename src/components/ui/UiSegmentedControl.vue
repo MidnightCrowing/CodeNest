@@ -76,7 +76,7 @@ function updateValue(value: unknown) {
   }
 
   &:focus-visible {
-    box-shadow: var(--shadow-focus);
+    @apply shadow-$shadow-focus;
   }
 
   &:disabled {

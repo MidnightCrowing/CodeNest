@@ -24,8 +24,8 @@ function closeWindow() {
     data-tauri-drag-region
   >
     <span
-      class="window-title"
       relative left-30px lh-20px text-13px font-500
+      font="$font-title"
       data-tauri-drag-region
     >CodeNest</span>
 
@@ -78,10 +78,6 @@ function closeWindow() {
 
 .window-controls {
   -webkit-app-region: no-drag;
-}
-
-.window-title {
-  font-family: var(--font-title);
 }
 
 .window-control {

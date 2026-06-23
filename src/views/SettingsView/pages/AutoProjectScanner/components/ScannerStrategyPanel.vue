@@ -36,14 +36,14 @@ const settings = useSettingsStore()
 <template>
   <section min-w-0 flex flex-col gap-8px>
     <header min-h-34px flex flex-col gap-3px>
-      <strong text-13px font-650>{{ t('app.settings.scanner.strategy.title') }}</strong>
-      <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.strategy.desc') }}</span>
+      <strong text-13px font-650 break-anywhere>{{ t('app.settings.scanner.strategy.title') }}</strong>
+      <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.strategy.desc') }}</span>
     </header>
 
     <div min-h-42px flex items-center justify-between gap-12px>
       <div min-w-0 flex flex-col gap-3px>
-        <strong text-13px font-620>{{ t('app.settings.scanner.root_open_mode.title') }}</strong>
-        <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.root_open_mode.desc') }}</span>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.root_open_mode.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.root_open_mode.desc') }}</span>
       </div>
       <UiSegmentedControl
         v-model="settings.scanner.rootOpenMode"
@@ -54,8 +54,8 @@ const settings = useSettingsStore()
 
     <div min-h-42px flex items-center justify-between gap-12px>
       <div min-w-0 flex flex-col gap-3px>
-        <strong text-13px font-620>{{ t('app.settings.scanner.ide_open_mode.title') }}</strong>
-        <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.ide_open_mode.desc') }}</span>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.ide_open_mode.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.ide_open_mode.desc') }}</span>
       </div>
       <UiSegmentedControl
         v-model="settings.scanner.ideOpenMode"
@@ -66,8 +66,8 @@ const settings = useSettingsStore()
 
     <div min-h-42px flex items-center justify-between gap-12px>
       <div min-w-0 flex flex-col gap-3px>
-        <strong text-13px font-620>{{ t('app.settings.scanner.specified_editor.title') }}</strong>
-        <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.specified_editor.desc') }}</span>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.specified_editor.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.specified_editor.desc') }}</span>
       </div>
       <UiSelect
         v-model="settings.scanner.editor"
@@ -81,8 +81,8 @@ const settings = useSettingsStore()
 
     <div min-h-42px flex items-center justify-between gap-12px>
       <div min-w-0 flex flex-col gap-3px>
-        <strong text-13px font-620>{{ t('app.settings.scanner.name_pattern.title') }}</strong>
-        <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.name_pattern.desc') }}</span>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.name_pattern.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.name_pattern.desc') }}</span>
       </div>
       <input
         v-model="settings.scanner.namePattern"
@@ -98,8 +98,8 @@ const settings = useSettingsStore()
       gap-12px
     >
       <div min-w-0 flex-1 flex flex-col gap-3px>
-        <strong text-13px font-620>{{ t('app.settings.scanner.history.title') }}</strong>
-        <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.history.desc') }}</span>
+        <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.history.title') }}</strong>
+        <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.history.desc') }}</span>
       </div>
       <button class="danger-button" ml-auto type="button" @click="emit('update:showClearConfirm', true)">
         {{ t('app.settings.scanner.history.clear') }}
@@ -107,10 +107,3 @@ const settings = useSettingsStore()
     </div>
   </section>
 </template>
-
-<style lang="scss" scoped>
-strong,
-span {
-  overflow-wrap: anywhere;
-}
-</style>

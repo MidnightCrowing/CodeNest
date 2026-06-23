@@ -238,7 +238,7 @@ watch(layoutMode, () => {
       min-h-0 mx-14px mb-14px flex-1 overflow-hidden
       rounded-6px flex flex-col
       bg="$ui-surface-background"
-      shadow="[var(--shadow-surface)]"
+      shadow="$shadow-surface"
       class="project-table"
       :aria-label="t('app.home.project_list')"
     >

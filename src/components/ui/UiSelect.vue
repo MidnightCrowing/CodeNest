@@ -115,11 +115,8 @@ function handleBlur(event: FocusEvent) {
   @apply h-30px rounded-md border px-9px;
   @apply inline-flex items-center justify-between gap-7px;
   @apply text-12px cursor-pointer outline-none;
-  @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
-  @apply transition duration-120 ease-out;
-  appearance: none;
-  border-style: solid;
-  box-shadow: var(--shadow-control);
+  @apply appearance-none border-solid border-$ui-input bg-$ui-control-background color-$ui-foreground;
+  @apply shadow-$shadow-control transition duration-120 ease-out;
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
@@ -127,8 +124,7 @@ function handleBlur(event: FocusEvent) {
 
   &[data-state="open"],
   &:focus-visible {
-    border-color: var(--ui-ring);
-    box-shadow: var(--shadow-focus);
+    @apply border-$ui-ring shadow-$shadow-focus;
   }
 
   &[data-disabled] {
@@ -142,18 +138,16 @@ function handleBlur(event: FocusEvent) {
 
 .ui-select-icon {
   @apply shrink-0 flex items-center text-12px opacity-65;
-  color: var(--ui-muted-foreground);
+  @apply color-$ui-muted-foreground;
 }
 
 .ui-select-content {
   @apply z-50 rounded-md border p-1 outline-none;
-  @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
-  @apply backdrop-blur-8px backdrop-saturate-140;
-  border-style: solid;
-  box-shadow: var(--shadow-popup);
+  @apply border-solid border-$ui-border bg-$ui-popover-background color-$ui-foreground;
+  @apply shadow-$shadow-popup backdrop-blur-8px backdrop-saturate-140;
 
   &[data-state="open"] {
-    animation: select-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[select-enter_120ms_cubic-bezier(0.16,1,0.3,1)];
   }
 }
 
@@ -167,8 +161,7 @@ function handleBlur(event: FocusEvent) {
   @apply flex items-center cursor-pointer select-none text-12px;
 
   &[data-highlighted] {
-    @apply color-$ui-accent-foreground;
-    background-color: var(--ui-option-hover-background);
+    @apply bg-$ui-option-hover-background color-$ui-accent-foreground;
   }
 
   &[data-disabled] {
@@ -198,7 +191,7 @@ function handleBlur(event: FocusEvent) {
 
 @keyframes select-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateY(-3px) scale(0.985);
   }
 }

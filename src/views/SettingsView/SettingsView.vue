@@ -234,8 +234,15 @@ onUnmounted(() => {
       shrink-0 px-14px py-10px
       grid items-center gap-10px
     >
-      <button class="icon-button back-button" type="button" :title="t('app.common.back')" :aria-label="t('app.common.back')" @click="changeHomeView">
-        <span class="i-lucide:chevron-left" />
+      <button
+        class="icon-button"
+        light:bg-transparent dark:bg-transparent hover:bg="$ui-hover-background"
+        type="button"
+        :title="t('app.common.back')"
+        :aria-label="t('app.common.back')"
+        @click="changeHomeView"
+      >
+        <span class="i-lucide:chevron-left" text-16px />
       </button>
 
       <div min-w-0 flex items-center>
@@ -346,7 +353,7 @@ onUnmounted(() => {
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
-    display: none;
+    @apply hidden;
   }
 }
 
@@ -369,16 +376,7 @@ onUnmounted(() => {
   }
 
   &:focus-visible {
-    box-shadow: var(--shadow-focus);
-  }
-}
-
-.back-button {
-  @apply light:bg-transparent dark:bg-transparent;
-  @apply hover:bg-$ui-hover-background;
-
-  span {
-    @apply text-16px;
+    @apply shadow-$shadow-focus;
   }
 }
 

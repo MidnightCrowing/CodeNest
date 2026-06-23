@@ -146,11 +146,11 @@ const { t } = useI18n()
 
 <style lang="scss" scoped>
 .search-box {
-  @apply border-$ui-input border-solid shadow-[var(--shadow-control)];
+  @apply border-$ui-input border-solid shadow-$shadow-control;
   @apply transition duration-120 ease-out;
 
   &:focus-within {
-    @apply border-$ui-ring shadow-[var(--shadow-focus)];
+    @apply border-$ui-ring shadow-$shadow-focus;
   }
 }
 

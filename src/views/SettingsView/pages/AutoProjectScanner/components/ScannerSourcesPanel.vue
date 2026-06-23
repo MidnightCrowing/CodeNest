@@ -30,15 +30,15 @@ const settings = useSettingsStore()
 <template>
   <section min-w-0 flex flex-col gap-8px>
     <header min-h-34px flex flex-col gap-3px>
-      <strong text-13px font-650>{{ t('app.settings.scanner.sources.title') }}</strong>
-      <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.sources.desc') }}</span>
+      <strong text-13px font-650 break-anywhere>{{ t('app.settings.scanner.sources.title') }}</strong>
+      <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.sources.desc') }}</span>
     </header>
 
     <div min-h-42px flex items-center justify-start gap-12px>
       <UiCheckbox v-model="settings.scanner.rootsEnabled">
         <div min-w-0 flex flex-col gap-3px>
-          <strong text-13px font-620>{{ t('app.settings.scanner.roots.title') }}</strong>
-          <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.roots.desc') }}</span>
+          <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.roots.title') }}</strong>
+          <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.roots.desc') }}</span>
         </div>
       </UiCheckbox>
     </div>
@@ -54,7 +54,7 @@ const settings = useSettingsStore()
           <span class="i-lucide:plus" />
           {{ t('app.settings.scanner.roots.add') }}
         </button>
-        <span class="subtle-count" text-12px light:color="$gray-6" dark:color="$gray-8">
+        <span class="subtle-count" text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">
           {{ t('app.settings.scanner.roots.count', { count: settings.scanner.roots.length }) }}
         </span>
       </div>
@@ -108,8 +108,8 @@ const settings = useSettingsStore()
     <div min-h-42px flex items-center justify-start gap-12px>
       <UiCheckbox v-model="settings.scanner.ideEnabled">
         <div min-w-0 flex flex-col gap-3px>
-          <strong text-13px font-620>{{ t('app.settings.scanner.ide.title') }}</strong>
-          <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.ide.desc') }}</span>
+          <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.ide.title') }}</strong>
+          <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.ide.desc') }}</span>
         </div>
       </UiCheckbox>
     </div>
@@ -207,11 +207,6 @@ const settings = useSettingsStore()
 </template>
 
 <style lang="scss" scoped>
-strong,
-span {
-  overflow-wrap: anywhere;
-}
-
 .source-child-group {
   &.disabled {
     @apply opacity-55;
@@ -251,7 +246,7 @@ span {
   grid-template-columns: max-content minmax(160px, 1fr) 28px 28px;
 
   .source-row {
-    display: contents;
+    @apply contents;
   }
 }
 

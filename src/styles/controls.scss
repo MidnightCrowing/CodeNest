@@ -1,3 +1,4 @@
+/* Temporary shared control classes used across settings and editor forms. */
 button,
 [role="button"] {
   @apply select-none;
@@ -10,8 +11,7 @@ button:not(:disabled),
 
 button:focus-visible,
 [role="button"]:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus);
+  @apply outline-none shadow-$shadow-focus;
 }
 
 button:disabled,
@@ -80,17 +80,14 @@ textarea:not(:disabled) {
 .path-input,
 .text-input {
   @apply h-30px min-w-0 rounded-md border px-9px outline-none;
-  @apply bg-$ui-control-background color-$ui-foreground;
+  @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
+  @apply appearance-none border-solid shadow-$shadow-control;
   @apply transition duration-120 ease-out;
-  appearance: none;
-  border-color: var(--ui-input);
-  border-style: solid;
-  box-shadow: var(--shadow-control);
 }
 
 .path-input::placeholder,
 .text-input::placeholder {
-  color: var(--ui-muted-foreground);
+  @apply color-$ui-muted-foreground;
 }
 
 .path-input:hover,
@@ -100,8 +97,7 @@ textarea:not(:disabled) {
 
 .path-input:focus,
 .text-input:focus {
-  border-color: var(--ui-ring);
-  box-shadow: var(--shadow-focus);
+  @apply border-$ui-ring shadow-$shadow-focus;
 }
 
 .path-input:disabled,
@@ -127,10 +123,10 @@ textarea:not(:disabled) {
 }
 
 .status-message {
-  overflow-wrap: anywhere;
+  @apply break-anywhere;
 
   &.empty {
-    visibility: hidden;
+    @apply invisible;
   }
 
   &.neutral,
@@ -164,7 +160,7 @@ textarea:not(:disabled) {
 }
 
 .is-spinning {
-  animation: spin-detect 0.8s linear infinite;
+  @apply animate-[spin-detect_0.8s_linear_infinite];
 }
 
 @keyframes spin-detect {

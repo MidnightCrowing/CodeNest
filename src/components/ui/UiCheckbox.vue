@@ -51,7 +51,7 @@ function toggleFromField() {
         <span class="i-lucide:check" />
       </CheckboxIndicator>
     </CheckboxRoot>
-    <span class="ui-checkbox-label" min-w-0 text-12px @click="toggleFromField">
+    <span class="ui-checkbox-label" min-w-0 text-12px break-anywhere @click="toggleFromField">
       <slot />
     </span>
   </div>
@@ -65,25 +65,18 @@ function toggleFromField() {
 }
 
 .ui-checkbox-root {
-  appearance: none;
-  border-color: var(--ui-input);
-  border-style: solid;
-  box-shadow: var(--shadow-control);
+  @apply appearance-none border-solid border-$ui-input shadow-$shadow-control;
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 20%);
   }
 
   &:focus-visible {
-    box-shadow: var(--shadow-focus);
+    @apply shadow-$shadow-focus;
   }
 
   &[data-state="checked"] {
     @apply border-$ui-primary bg-$ui-primary;
   }
-}
-
-.ui-checkbox-label {
-  overflow-wrap: anywhere;
 }
 </style>

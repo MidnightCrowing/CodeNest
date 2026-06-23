@@ -53,8 +53,7 @@ const contentStyle = computed(() => ({
       >
         <DialogTitle
           v-if="title || $slots.title"
-          m-0 text-15px font-650 lh-20px
-          class="ui-dialog-title"
+          m-0 text-15px font-650 lh-20px break-anywhere
         >
           <slot name="title">
             {{ title }}
@@ -63,9 +62,8 @@ const contentStyle = computed(() => ({
 
         <DialogDescription
           v-if="description || $slots.description"
-          mt-8px mb-0 text-13px lh-18px
+          mt-8px mb-0 text-13px lh-18px break-anywhere
           light:color="$gray-5" dark:color="$gray-9"
-          class="ui-dialog-description"
         >
           <slot name="description">
             {{ description }}
@@ -93,26 +91,16 @@ const contentStyle = computed(() => ({
 }
 
 .ui-dialog-content {
-  border-color: var(--ui-border);
-  border-style: solid;
-  box-shadow: var(--shadow-dialog);
+  @apply border-solid border-$ui-border shadow-$shadow-dialog;
   top: calc(var(--window-titlebar-height, 40px) + 50%);
 
   &[data-state="open"] {
-    animation: dialog-enter 140ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[dialog-enter_140ms_cubic-bezier(0.16,1,0.3,1)];
   }
 
   &[data-state="closed"] {
-    animation: dialog-exit 100ms ease-in;
+    @apply animate-[dialog-exit_100ms_ease-in];
   }
-}
-
-.ui-dialog-title {
-  overflow-wrap: anywhere;
-}
-
-.ui-dialog-description {
-  overflow-wrap: anywhere;
 }
 
 .ui-dialog-actions {
@@ -127,14 +115,14 @@ const contentStyle = computed(() => ({
 
 @keyframes dialog-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
   }
 }
 
 @keyframes dialog-exit {
   to {
-    opacity: 0;
+    @apply opacity-0;
     transform: translate(-50%, calc(-50% + 4px)) scale(0.985);
   }
 }

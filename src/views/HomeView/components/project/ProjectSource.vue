@@ -35,7 +35,7 @@ const { t } = useI18n()
     inline-flex items-center gap-4px text-left
     light:color="$gray-7" dark:color="$gray-8"
     class="project-source source-link"
-    :class="{ 'card-source': card }"
+    :class="card ? '-mt-4px mb-9px' : ''"
     type="button"
     :title="projectSourceTitle(project, t)"
     :aria-label="`${t('app.home.actions.open_source')}: ${projectSourceName(project)}`"
@@ -53,7 +53,7 @@ const { t } = useI18n()
     inline-flex items-center gap-4px text-left
     light:color="$gray-7" dark:color="$gray-8"
     class="project-source"
-    :class="{ 'card-source': card }"
+    :class="card ? '-mt-4px mb-9px' : ''"
     :title="projectSourceTitle(project, t)"
   >
     <span shrink-0>{{ projectSourcePrefix(project, t) }}</span>
@@ -66,7 +66,7 @@ const { t } = useI18n()
   @apply cursor-pointer hover:color-$ui-foreground focus-visible:outline-none;
 
   &:focus-visible {
-    @apply shadow-[var(--shadow-focus)];
+    @apply shadow-$shadow-focus;
   }
 }
 
@@ -77,9 +77,5 @@ const { t } = useI18n()
 .source-link:hover .source-link-icon,
 .source-link:focus-visible .source-link-icon {
   @apply opacity-100;
-}
-
-.card-source {
-  @apply -mt-4px mb-9px;
 }
 </style>

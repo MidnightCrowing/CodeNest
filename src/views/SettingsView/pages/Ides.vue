@@ -185,14 +185,14 @@ function quoteCommand(command: string) {
 <template>
   <div class="settings-page" flex flex-col gap-12px>
     <header class="page-header" flex items-end justify-between gap-10px>
-      <h2 m-0 text-16px font-650>
+      <h2 m-0 text-16px font-650 break-anywhere>
         {{ t('app.settings.editors.title') }}
       </h2>
     </header>
 
     <div flex flex-col gap-22px>
       <section min-w-0 flex flex-col gap-8px>
-        <h3 m-0 text-13px font-650>
+        <h3 m-0 text-13px font-650 break-anywhere>
           {{ t('app.settings.editors.terminal_launcher') }}
         </h3>
 
@@ -239,7 +239,7 @@ function quoteCommand(command: string) {
         :key="group.label"
         min-w-0 flex flex-col gap-8px
       >
-        <h3 m-0 text-13px font-650>
+        <h3 m-0 text-13px font-650 break-anywhere>
           {{ group.label }}
         </h3>
 
@@ -335,11 +335,6 @@ function quoteCommand(command: string) {
 </template>
 
 <style lang="scss" scoped>
-h2,
-h3 {
-  overflow-wrap: anywhere;
-}
-
 .editor-row,
 .terminal-row {
   grid-template-columns: minmax(180px, 250px) minmax(0, 1fr);

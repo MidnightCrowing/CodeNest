@@ -78,7 +78,7 @@ function resetLanguageMixBodyHeight() {
 
 <template>
   <aside class="summary-panel" min-w-0 flex flex-col gap-12px>
-    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="[var(--shadow-surface)]">
+    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="$shadow-surface">
       <header
         min-h-42px px-14px py-8px border-b
         flex items-center justify-between gap-12px
@@ -115,7 +115,7 @@ function resetLanguageMixBodyHeight() {
       </div>
     </section>
 
-    <section v-if="!isRemote" rounded-6px overflow-hidden bg="$ui-surface-background" shadow="[var(--shadow-surface)]">
+    <section v-if="!isRemote" rounded-6px overflow-hidden bg="$ui-surface-background" shadow="$shadow-surface">
       <header
         min-h-42px px-14px py-8px border-b
         flex items-center justify-between gap-12px

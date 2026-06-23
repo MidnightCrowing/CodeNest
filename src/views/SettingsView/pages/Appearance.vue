@@ -175,8 +175,7 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
   @apply relative size-24px rounded-full border p-0 cursor-pointer outline-none;
   @apply inline-flex items-center justify-center;
   @apply transition duration-120 ease-out;
-  border-color: var(--ui-input);
-  @apply bg-$ui-control-background;
+  @apply border-$ui-input bg-$ui-control-background;
 
   .theme-color-swatch {
     @apply size-14px rounded-full;

@@ -50,7 +50,7 @@ const { t } = useI18n()
 
 <template>
   <div min-w-0 flex flex-col gap-12px>
-    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="[var(--shadow-surface)]">
+    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="$shadow-surface">
       <header
         min-h-42px px-14px py-8px border-b
         flex items-center justify-between gap-12px
@@ -283,7 +283,7 @@ const { t } = useI18n()
       </div>
     </section>
 
-    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="[var(--shadow-surface)]">
+    <section rounded-6px overflow-hidden bg="$ui-surface-background" shadow="$shadow-surface">
       <header
         min-h-42px px-14px py-8px border-b
         flex items-center justify-between gap-12px

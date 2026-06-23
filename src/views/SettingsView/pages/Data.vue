@@ -321,7 +321,8 @@ async function pullWebDavData() {
           </button>
         </div>
         <p
-          class="webdav-status status-message"
+          class="status-message"
+          m-0 min-h-16px text-right text-12px lh-16px
           :class="[webdavStatus?.type || 'neutral', { empty: !webdavStatus }]"
           :aria-hidden="!webdavStatus"
         >
@@ -331,9 +332,3 @@ async function pullWebDavData() {
     </SettingsRow>
   </SettingsPage>
 </template>
-
-<style lang="scss" scoped>
-.webdav-status {
-  @apply m-0 min-h-16px text-right text-12px lh-16px;
-}
-</style>

@@ -498,22 +498,19 @@ function handleMenuKeydown(event: KeyboardEvent) {
 <style lang="scss">
 .ui-action-menu-content {
   @apply z-80 rounded-md border p-1 outline-none;
-  @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
-  @apply backdrop-blur-8px backdrop-saturate-140;
+  @apply border-solid border-$ui-border bg-$ui-popover-background color-$ui-foreground;
+  @apply shadow-$shadow-popup backdrop-blur-8px backdrop-saturate-140;
+  @apply overflow-x-hidden overflow-y-auto;
   max-height: clamp(180px, 72vh, 420px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  border-style: solid;
-  box-shadow: var(--shadow-popup);
 
   &[data-state="open"] {
-    animation: menu-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[menu-enter_120ms_cubic-bezier(0.16,1,0.3,1)];
   }
 }
 
 .ui-action-submenu-content {
   &[data-state="open"] {
-    animation: submenu-enter-from-right 100ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[submenu-enter-from-right_100ms_cubic-bezier(0.16,1,0.3,1)];
   }
 
   &[data-state="open"][data-side="left"] {
@@ -530,7 +527,7 @@ function handleMenuKeydown(event: KeyboardEvent) {
   .ui-action-menu-state,
   .ui-action-menu-icon {
     @apply size-14px shrink-0 inline-flex items-center justify-center;
-    cursor: inherit;
+    @apply cursor-inherit;
   }
 
   .ui-action-menu-icon {
@@ -539,7 +536,7 @@ function handleMenuKeydown(event: KeyboardEvent) {
 
   .ui-action-menu-label {
     @apply min-w-0 truncate;
-    cursor: inherit;
+    @apply cursor-inherit;
   }
 
   .ui-action-menu-check {
@@ -548,19 +545,17 @@ function handleMenuKeydown(event: KeyboardEvent) {
 
   .ui-action-menu-trailing {
     @apply size-14px shrink-0 justify-self-end inline-flex items-center justify-center color-$ui-muted-foreground;
-    cursor: inherit;
+    @apply cursor-inherit;
   }
 
   .ui-action-menu-shortcut {
-    @apply shrink-0 justify-self-end whitespace-nowrap text-11px lh-14px color-$ui-muted-foreground;
-    font-family: var(--font-title);
-    letter-spacing: 0;
-    cursor: inherit;
+    @apply shrink-0 justify-self-end whitespace-nowrap text-11px lh-14px tracking-0 color-$ui-muted-foreground;
+    @apply font-$font-title;
+    @apply cursor-inherit;
   }
 
   &[data-highlighted] {
-    @apply color-$ui-accent-foreground;
-    background-color: var(--ui-option-hover-background);
+    @apply bg-$ui-option-hover-background color-$ui-accent-foreground;
 
     .ui-action-menu-trailing,
     .ui-action-menu-shortcut {
@@ -584,12 +579,11 @@ function handleMenuKeydown(event: KeyboardEvent) {
     }
 
     &[data-highlighted] {
-      color: var(--gray-14);
-      background-color: var(--red-5);
+      @apply bg-$red-5 color-$gray-14;
 
       .ui-action-menu-icon,
       .ui-action-menu-shortcut {
-        color: var(--gray-14);
+        @apply color-$gray-14;
       }
     }
   }
@@ -601,12 +595,12 @@ function handleMenuKeydown(event: KeyboardEvent) {
 
 .ui-action-menu-item:not([data-disabled]),
 .ui-action-menu-item:not([data-disabled]) * {
-  cursor: pointer;
+  @apply cursor-pointer;
 }
 
 .ui-action-menu-item[data-disabled],
 .ui-action-menu-item[data-disabled] * {
-  cursor: not-allowed;
+  @apply cursor-not-allowed;
 }
 
 .ui-action-menu-sub-trigger {
@@ -631,39 +625,39 @@ function handleMenuKeydown(event: KeyboardEvent) {
   }
 
   &[data-highlighted] {
-    color: var(--gray-14);
+    @apply color-$gray-14;
     background-color: color-mix(in srgb, var(--red-5) 82%, var(--red-6));
 
     .ui-action-menu-icon,
     .ui-action-menu-shortcut {
-      color: var(--gray-14);
+      @apply color-$gray-14;
     }
   }
 }
 
 .ui-action-menu-separator {
   @apply h-1px;
-  margin: 4px 8px;
+  @apply mx-8px my-4px;
   background: color-mix(in srgb, var(--ui-border), var(--ui-foreground) 3%);
 }
 
 @keyframes menu-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateY(-2px) scale(0.99);
   }
 }
 
 @keyframes submenu-enter-from-right {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateX(-2px) scale(0.99);
   }
 }
 
 @keyframes submenu-enter-from-left {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateX(2px) scale(0.99);
   }
 }

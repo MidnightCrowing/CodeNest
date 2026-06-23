@@ -11,7 +11,7 @@ export function kindClass(kind: ProjectKind) {
       return 'kind-clone'
     case ProjectKind.MINE:
     default:
-      return 'kind-mine'
+      return ''
   }
 }
 

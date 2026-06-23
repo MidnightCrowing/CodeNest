@@ -114,22 +114,19 @@ function handleBlur(event: FocusEvent) {
 .ui-combobox-anchor {
   @apply h-30px rounded-md border px-9px;
   @apply inline-flex items-center justify-between gap-7px;
-  @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
-  @apply transition duration-120 ease-out;
-  border-style: solid;
-  box-shadow: var(--shadow-control);
+  @apply border-solid border-$ui-input bg-$ui-control-background color-$ui-foreground;
+  @apply shadow-$shadow-control transition duration-120 ease-out;
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
   }
 
   &:focus-within {
-    border-color: var(--ui-ring);
-    box-shadow: var(--shadow-focus);
+    @apply border-$ui-ring shadow-$shadow-focus;
   }
 
   &.invalid {
-    border-color: var(--red-5);
+    @apply border-$red-5;
   }
 }
 
@@ -138,7 +135,7 @@ function handleBlur(event: FocusEvent) {
   @apply text-11px color-$ui-foreground;
 
   &::placeholder {
-    color: var(--ui-muted-foreground);
+    @apply color-$ui-muted-foreground;
   }
 
   &:disabled {
@@ -149,7 +146,7 @@ function handleBlur(event: FocusEvent) {
 .ui-combobox-trigger {
   @apply h-full w-16px shrink-0 border-0 bg-transparent p-0;
   @apply inline-flex items-center justify-center cursor-pointer text-12px opacity-65;
-  color: var(--ui-muted-foreground);
+  @apply color-$ui-muted-foreground;
 
   &:disabled {
     @apply cursor-not-allowed;
@@ -158,13 +155,11 @@ function handleBlur(event: FocusEvent) {
 
 .ui-combobox-content {
   @apply z-50 rounded-md border p-1 outline-none;
-  @apply border-$ui-border bg-$ui-popover-background color-$ui-foreground;
-  @apply backdrop-blur-8px backdrop-saturate-140;
-  border-style: solid;
-  box-shadow: var(--shadow-popup);
+  @apply border-solid border-$ui-border bg-$ui-popover-background color-$ui-foreground;
+  @apply shadow-$shadow-popup backdrop-blur-8px backdrop-saturate-140;
 
   &[data-state="open"] {
-    animation: combobox-enter 120ms cubic-bezier(0.16, 1, 0.3, 1);
+    @apply animate-[combobox-enter_120ms_cubic-bezier(0.16,1,0.3,1)];
   }
 }
 
@@ -178,8 +173,7 @@ function handleBlur(event: FocusEvent) {
   @apply flex items-center cursor-pointer select-none text-12px;
 
   &[data-highlighted] {
-    @apply color-$ui-accent-foreground;
-    background-color: var(--ui-option-hover-background);
+    @apply bg-$ui-option-hover-background color-$ui-accent-foreground;
   }
 
   &[data-disabled] {
@@ -198,7 +192,7 @@ function handleBlur(event: FocusEvent) {
 
 @keyframes combobox-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateY(-3px) scale(0.985);
   }
 }
