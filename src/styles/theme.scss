@@ -1,126 +1,20 @@
+/* Semantic UI tokens mapped from the palette. Components should prefer these variables. */
 :root {
   color-scheme: light;
 
-  --gray-primary: var(--gray-1);
-  --gray-1: rgb(0 0 0);
-  --gray-2: rgb(39 40 46);
-  --gray-3: rgb(56 58 66);
-  --gray-4: rgb(73 75 87);
-  --gray-5: rgb(90 93 107);
-  --gray-6: rgb(108 112 126);
-  --gray-7: rgb(129 133 148);
-  --gray-8: rgb(168 173 189);
-  --gray-9: rgb(201 204 214);
-  --gray-10: rgb(211 213 219);
-  --gray-11: rgb(223 225 229);
-  --gray-12: rgb(235 236 240);
-  --gray-13: rgb(247 248 250);
-  --gray-14: rgb(255 255 255);
-
-  --blue-primary: var(--blue-4);
-  --blue-1: rgb(46 85 163);
-  --blue-2: rgb(49 95 189);
-  --blue-3: rgb(51 105 214);
-  --blue-4: rgb(53 116 240);
-  --blue-5: rgb(70 130 250);
-  --blue-6: rgb(88 140 243);
-  --blue-7: rgb(112 156 245);
-  --blue-8: rgb(136 173 247);
-  --blue-9: rgb(160 189 248);
-  --blue-10: rgb(194 214 252);
-  --blue-11: rgb(212 226 255);
-  --blue-12: rgb(237 243 255);
-  --blue-13: rgb(245 248 254);
-
-  --green-primary: var(--green-4);
-  --green-1: rgb(30 107 51);
-  --green-2: rgb(31 117 54);
-  --green-3: rgb(31 128 57);
-  --green-4: rgb(32 138 60);
-  --green-5: rgb(54 150 80);
-  --green-6: rgb(85 167 106);
-  --green-7: rgb(137 195 152);
-  --green-8: rgb(175 219 184);
-  --green-9: rgb(197 229 204);
-  --green-10: rgb(230 247 233);
-  --green-11: rgb(242 252 243);
-
-  --red-primary: var(--red-4);
-  --red-1: rgb(173 43 56);
-  --red-2: rgb(188 48 62);
-  --red-3: rgb(204 54 69);
-  --red-4: rgb(219 59 75);
-  --red-5: rgb(229 87 101);
-  --red-6: rgb(228 106 118);
-  --red-7: rgb(237 153 161);
-  --red-8: rgb(242 182 187);
-  --red-9: rgb(250 212 216);
-  --red-10: rgb(255 242 243);
-  --red-11: rgb(255 247 247);
-
-  --yellow-primary: var(--yellow-4);
-  --yellow-1: rgb(164 103 4);
-  --yellow-2: rgb(194 125 4);
-  --yellow-3: rgb(223 147 3);
-  --yellow-4: rgb(255 175 15);
-  --yellow-5: rgb(253 189 61);
-  --yellow-6: rgb(254 210 119);
-  --yellow-7: rgb(254 230 177);
-  --yellow-8: rgb(255 241 209);
-  --yellow-9: rgb(255 246 222);
-  --yellow-10: rgb(255 250 235);
-
-  --orange-primary: var(--orange-4);
-  --orange-1: rgb(161 73 22);
-  --orange-2: rgb(184 85 22);
-  --orange-3: rgb(206 97 23);
-  --orange-4: rgb(229 109 23);
-  --orange-5: rgb(236 143 76);
-  --orange-6: rgb(242 177 129);
-  --orange-7: rgb(249 210 182);
-  --orange-8: rgb(252 230 214);
-  --orange-9: rgb(255 244 235);
-
-  --purple-primary: var(--purple-4);
-  --purple-1: rgb(85 51 156);
-  --purple-2: rgb(100 60 184);
-  --purple-3: rgb(116 68 212);
-  --purple-4: rgb(131 77 240);
-  --purple-5: rgb(161 119 244);
-  --purple-6: rgb(191 161 248);
-  --purple-7: rgb(220 203 251);
-  --purple-8: rgb(239 229 255);
-  --purple-9: rgb(250 245 255);
-
-  --teal-primary: var(--teal-4);
-  --teal-1: rgb(9 106 110);
-  --teal-2: rgb(7 122 127);
-  --teal-3: rgb(5 139 144);
-  --teal-4: rgb(3 155 161);
-  --teal-5: rgb(63 179 184);
-  --teal-6: rgb(123 204 207);
-  --teal-7: rgb(182 228 229);
-  --teal-8: rgb(218 244 245);
-  --teal-9: rgb(242 252 252);
-
-  --toolbar-hover: rgb(0 0 0 / 10%);
-  --toolbar-active: rgb(0 0 0 / 5%);
   --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
   --shadow-control: 0 1px 2px rgb(0 0 0 / 4%), 0 1px 1px rgb(0 0 0 / 3%);
   --shadow-surface: 0 1px 2px rgb(0 0 0 / 5%), 0 6px 16px rgb(31 35 40 / 5%);
   --shadow-surface-hover: 0 2px 4px rgb(0 0 0 / 6%), 0 10px 24px rgb(31 35 40 / 8%);
   --shadow-popup: 0 18px 44px rgb(31 35 40 / 16%), 0 6px 18px rgb(31 35 40 / 10%), 0 1px 2px rgb(0 0 0 / 6%);
   --shadow-dialog: 0 30px 72px rgb(31 35 40 / 22%), 0 12px 28px rgb(31 35 40 / 14%), 0 2px 6px rgb(0 0 0 / 8%);
-  --shadow-editor-tooltip: 0 10px 28px rgb(31 35 40 / 14%), 0 2px 8px rgb(0 0 0 / 8%);
   --ui-page-background: var(--gray-13);
   --ui-surface-background: var(--gray-14);
   --ui-surface-muted-background: var(--gray-13);
-  --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-1);
   --theme-text-caret: var(--gray-1);
   --system-theme-color: var(--blue-5);
   --system-theme-foreground: rgb(255 255 255);
-  --ui-background: var(--ui-surface-background);
   --ui-control-background: color-mix(in srgb, var(--ui-surface-background) 72%, var(--ui-page-background));
   --ui-popover-background: color-mix(in srgb, var(--ui-surface-background) 88%, var(--blue-12));
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background) 52%, var(--ui-page-background));
@@ -138,136 +32,36 @@
   --ui-primary-hover: var(--gray-3);
   --ui-primary-active: var(--gray-4);
   --ui-primary-foreground: var(--gray-14);
+
+  /* Feature tokens: project source badges. */
+  --project-tag-temporary-text: var(--orange-2);
+  --project-tag-temporary-bg: color-mix(in srgb, var(--orange-5) 20%, transparent);
+  --project-tag-remote-text: var(--teal-2);
+  --project-tag-remote-bg: color-mix(in srgb, var(--teal-4) 18%, transparent);
+  --project-tag-mine-text: var(--blue-3);
+  --project-tag-mine-bg: color-mix(in srgb, var(--blue-5) 16%, transparent);
+  --project-tag-fork-text: var(--purple-2);
+  --project-tag-fork-bg: color-mix(in srgb, var(--purple-5) 18%, transparent);
+  --project-tag-clone-text: var(--yellow-2);
+  --project-tag-clone-bg: color-mix(in srgb, var(--yellow-4) 22%, transparent);
 }
 
 :root.dark {
   color-scheme: dark;
 
-  --gray-primary: var(--gray-1);
-  --gray-1: rgb(30 31 34);
-  --gray-2: rgb(43 45 48);
-  --gray-3: rgb(57 59 64);
-  --gray-4: rgb(67 69 74);
-  --gray-5: rgb(78 81 87);
-  --gray-6: rgb(90 93 99);
-  --gray-7: rgb(111 115 122);
-  --gray-8: rgb(134 138 145);
-  --gray-9: rgb(157 160 168);
-  --gray-10: rgb(180 184 191);
-  --gray-11: rgb(206 208 214);
-  --gray-12: rgb(223 225 229);
-  --gray-13: rgb(240 241 242);
-  --gray-14: rgb(255 255 255);
-
-  --blue-primary: var(--blue-6);
-  --blue-1: rgb(37 50 77);
-  --blue-2: rgb(46 67 110);
-  --blue-3: rgb(53 83 143);
-  --blue-4: rgb(55 95 173);
-  --blue-5: rgb(54 106 207);
-  --blue-6: rgb(53 116 240);
-  --blue-7: rgb(70 127 242);
-  --blue-8: rgb(84 138 247);
-  --blue-9: rgb(107 155 250);
-  --blue-10: rgb(131 172 252);
-  --blue-11: rgb(153 187 255);
-
-  --green-primary: var(--green-6);
-  --green-1: rgb(37 54 39);
-  --green-2: rgb(55 82 57);
-  --green-3: rgb(67 105 70);
-  --green-4: rgb(78 128 82);
-  --green-5: rgb(87 150 92);
-  --green-6: rgb(95 173 101);
-  --green-7: rgb(115 189 121);
-  --green-8: rgb(137 204 142);
-  --green-9: rgb(160 219 165);
-  --green-10: rgb(185 235 189);
-  --green-11: rgb(212 250 215);
-
-  --red-primary: var(--red-6);
-  --red-1: rgb(64 41 41);
-  --red-2: rgb(94 56 56);
-  --red-3: rgb(122 67 67);
-  --red-4: rgb(156 78 78);
-  --red-5: rgb(189 87 87);
-  --red-6: rgb(219 92 92);
-  --red-7: rgb(227 119 116);
-  --red-8: rgb(235 147 141);
-  --red-9: rgb(242 177 170);
-  --red-10: rgb(247 204 198);
-  --red-11: rgb(250 227 222);
-
-  --yellow-primary: var(--yellow-7);
-  --yellow-1: rgb(61 50 35);
-  --yellow-2: rgb(94 77 51);
-  --yellow-3: rgb(130 106 65);
-  --yellow-4: rgb(158 129 74);
-  --yellow-5: rgb(186 151 82);
-  --yellow-6: rgb(214 174 88);
-  --yellow-7: rgb(242 197 92);
-  --yellow-8: rgb(245 210 115);
-  --yellow-9: rgb(247 222 139);
-  --yellow-10: rgb(252 235 164);
-  --yellow-11: rgb(255 246 189);
-
-  --orange-primary: var(--orange-6);
-  --orange-1: rgb(69 50 43);
-  --orange-2: rgb(97 68 56);
-  --orange-3: rgb(130 88 69);
-  --orange-4: rgb(163 107 78);
-  --orange-5: rgb(199 125 85);
-  --orange-6: rgb(224 136 85);
-  --orange-7: rgb(229 152 108);
-  --orange-8: rgb(240 172 129);
-  --orange-9: rgb(245 189 152);
-  --orange-10: rgb(250 206 175);
-  --orange-11: rgb(255 223 199);
-
-  --purple-primary: var(--purple-6);
-  --purple-1: rgb(47 41 54);
-  --purple-2: rgb(67 51 88);
-  --purple-3: rgb(88 61 122);
-  --purple-4: rgb(108 70 156);
-  --purple-5: rgb(129 80 190);
-  --purple-6: rgb(149 90 224);
-  --purple-7: rgb(165 113 230);
-  --purple-8: rgb(181 137 236);
-  --purple-9: rgb(196 160 243);
-  --purple-10: rgb(212 184 249);
-  --purple-11: rgb(228 206 255);
-
-  --teal-primary: var(--teal-6);
-  --teal-1: rgb(29 56 56);
-  --teal-2: rgb(30 77 74);
-  --teal-3: rgb(32 99 93);
-  --teal-4: rgb(33 120 111);
-  --teal-5: rgb(35 142 130);
-  --teal-6: rgb(36 163 148);
-  --teal-7: rgb(66 177 164);
-  --teal-8: rgb(96 192 181);
-  --teal-9: rgb(125 206 197);
-  --teal-10: rgb(155 221 214);
-  --teal-11: rgb(185 235 230);
-
-  --toolbar-hover: rgb(255 255 255 / 10%);
-  --toolbar-active: rgb(255 255 255 / 5%);
   --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--ui-ring), transparent 78%);
   --shadow-control: 0 1px 2px rgb(0 0 0 / 34%), inset 0 1px 0 rgb(255 255 255 / 4%);
   --shadow-surface: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 20px rgb(0 0 0 / 18%), inset 0 1px 0 rgb(255 255 255 / 3%);
   --shadow-surface-hover: 0 2px 4px rgb(0 0 0 / 34%), 0 14px 28px rgb(0 0 0 / 24%), inset 0 1px 0 rgb(255 255 255 / 4%);
   --shadow-popup: 0 22px 56px rgb(0 0 0 / 58%), 0 8px 22px rgb(0 0 0 / 42%), inset 0 1px 0 rgb(255 255 255 / 6%);
   --shadow-dialog: 0 34px 84px rgb(0 0 0 / 66%), 0 12px 32px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 6%);
-  --shadow-editor-tooltip: 0 14px 34px rgb(0 0 0 / 50%), 0 3px 12px rgb(0 0 0 / 34%);
   --ui-page-background: var(--gray-1);
   --ui-surface-background: var(--gray-2);
   --ui-surface-muted-background: var(--gray-3);
-  --app-background: var(--ui-page-background);
   --app-foreground: var(--gray-12);
   --theme-text-caret: var(--gray-14);
   --system-theme-color: var(--blue-8);
   --system-theme-foreground: rgb(255 255 255);
-  --ui-background: var(--ui-surface-background);
   --ui-control-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 7%);
   --ui-popover-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 10%);
   --ui-checkbox-background: color-mix(in srgb, var(--ui-surface-background), var(--gray-14) 4%);
@@ -285,8 +79,21 @@
   --ui-primary-hover: var(--gray-13);
   --ui-primary-active: var(--gray-12);
   --ui-primary-foreground: var(--gray-1);
+
+  /* Feature tokens: project source badges. */
+  --project-tag-temporary-text: var(--orange-8);
+  --project-tag-temporary-bg: color-mix(in srgb, var(--orange-5) 24%, transparent);
+  --project-tag-remote-text: var(--teal-8);
+  --project-tag-remote-bg: color-mix(in srgb, var(--teal-5) 22%, transparent);
+  --project-tag-mine-text: var(--blue-8);
+  --project-tag-mine-bg: color-mix(in srgb, var(--blue-5) 22%, transparent);
+  --project-tag-fork-text: var(--purple-8);
+  --project-tag-fork-bg: color-mix(in srgb, var(--purple-5) 24%, transparent);
+  --project-tag-clone-text: var(--yellow-8);
+  --project-tag-clone-bg: color-mix(in srgb, var(--yellow-5) 24%, transparent);
 }
 
+/* Theme color variants override the semantic primary tokens. */
 :root.theme-blue {
   --theme-text-caret: var(--blue-5);
   --ui-ring: var(--blue-5);

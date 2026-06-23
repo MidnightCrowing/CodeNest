@@ -1,3 +1,4 @@
+/* Document base and native element defaults shared by the whole app. */
 body,
 html,
 #app {
@@ -7,6 +8,7 @@ html,
 }
 
 body {
+  /* Title font is reused by shell UI that needs platform-native text metrics. */
   --font-title:
     "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans GB",
     "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
@@ -14,22 +16,19 @@ body {
   font-family:
     "JetBrains Sans", "JetBrains Mono", "JetBrains Mono NL", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
     "PingFang TC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
-  background: var(--ui-page-background);
-  color: var(--app-foreground);
+  @apply bg-$ui-page-background color-$app-foreground;
 }
 
 h1,
 h2 {
-  font-family: var(--font-title);
+  @apply font-$font-title;
 }
 
 button,
 input,
 select,
 textarea {
-  box-sizing: border-box;
-  border-style: solid;
-  appearance: none;
+  @apply box-border border-solid appearance-none;
   font: inherit;
 }
 
@@ -48,6 +47,7 @@ textarea::placeholder {
   @apply light:bg-$gray-11 dark:bg-$gray-5;
 }
 
+/* Keep motion accessible without removing transition definitions from components. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -63,11 +63,12 @@ textarea::placeholder {
   color: inherit;
 }
 
+/* Some custom editor icons are monochrome masks and need an explicit foreground. */
 .ide-icon.monochrome-editor-icon,
 .ide-icon.i-custom\:cursor,
 .ide-icon.i-custom\:windsurf,
 .ide-icon.i-custom\:zed-industries,
 .ide-icon.i-custom\:sublime-text,
 .ide-icon.i-custom\:neovim {
-  color: var(--ui-foreground);
+  @apply color-$ui-foreground;
 }

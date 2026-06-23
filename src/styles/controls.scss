@@ -1,3 +1,4 @@
+/* Temporary shared control classes used across settings and editor forms. */
 button,
 [role="button"] {
   @apply select-none;
@@ -10,8 +11,7 @@ button:not(:disabled),
 
 button:focus-visible,
 [role="button"]:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus);
+  @apply outline-none shadow-$shadow-focus;
 }
 
 button:disabled,
@@ -80,17 +80,14 @@ textarea:not(:disabled) {
 .path-input,
 .text-input {
   @apply h-30px min-w-0 rounded-md border px-9px outline-none;
-  @apply bg-$ui-control-background color-$ui-foreground;
+  @apply border-$ui-input bg-$ui-control-background color-$ui-foreground;
+  @apply appearance-none border-solid shadow-$shadow-control;
   @apply transition duration-120 ease-out;
-  appearance: none;
-  border-color: var(--ui-input);
-  border-style: solid;
-  box-shadow: var(--shadow-control);
 }
 
 .path-input::placeholder,
 .text-input::placeholder {
-  color: var(--ui-muted-foreground);
+  @apply color-$ui-muted-foreground;
 }
 
 .path-input:hover,
@@ -100,8 +97,7 @@ textarea:not(:disabled) {
 
 .path-input:focus,
 .text-input:focus {
-  border-color: var(--ui-ring);
-  box-shadow: var(--shadow-focus);
+  @apply border-$ui-ring shadow-$shadow-focus;
 }
 
 .path-input:disabled,
@@ -124,4 +120,51 @@ textarea:not(:disabled) {
   @apply inline-flex items-center justify-center text-11px;
   @apply bg-$ui-hover-background color-$ui-muted-foreground;
   @apply hover:color-$ui-foreground;
+}
+
+.status-message {
+  @apply break-anywhere;
+
+  &.empty {
+    @apply invisible;
+  }
+
+  &.neutral,
+  &.info {
+    @apply color-$ui-muted-foreground;
+  }
+
+  &.success {
+    color: color-mix(in srgb, var(--green-5) 90%, var(--ui-foreground));
+  }
+
+  &.warning {
+    color: color-mix(in srgb, var(--yellow-4) 90%, var(--ui-foreground));
+  }
+
+  &.error {
+    color: color-mix(in srgb, var(--red-5) 92%, var(--ui-foreground));
+  }
+}
+
+.dark .status-message.success {
+  color: color-mix(in srgb, var(--green-7) 86%, var(--gray-14));
+}
+
+.dark .status-message.warning {
+  color: color-mix(in srgb, var(--yellow-7) 86%, var(--gray-14));
+}
+
+.dark .status-message.error {
+  color: color-mix(in srgb, var(--red-7) 86%, var(--gray-14));
+}
+
+.is-spinning {
+  @apply animate-[spin-detect_0.8s_linear_infinite];
+}
+
+@keyframes spin-detect {
+  to {
+    transform: rotate(360deg);
+  }
 }

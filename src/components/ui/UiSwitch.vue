@@ -171,19 +171,15 @@ function handleClickCapture(event: MouseEvent) {
 .ui-switch {
   @apply h-20px w-36px shrink-0 rounded-full border p-2px outline-none;
   @apply inline-flex items-center cursor-pointer;
-  @apply border-$ui-input;
+  @apply appearance-none border-solid border-$ui-input bg-$ui-switch-background shadow-$shadow-control;
   @apply transition duration-120 ease-out;
-  appearance: none;
-  background-color: var(--ui-switch-background);
-  border-style: solid;
-  box-shadow: var(--shadow-control);
 
   &:hover {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 20%);
   }
 
   &:focus-visible {
-    box-shadow: var(--shadow-focus);
+    @apply shadow-$shadow-focus;
   }
 
   &[data-state="checked"] {
@@ -196,13 +192,12 @@ function handleClickCapture(event: MouseEvent) {
 }
 
 .ui-switch-thumb {
-  @apply size-14px rounded-full bg-white;
+  @apply size-14px translate-x-0 rounded-full bg-white;
   touch-action: pan-y;
   border: 1px solid color-mix(in srgb, var(--ui-border), transparent 35%);
   box-shadow:
     0 1px 2px rgb(0 0 0 / 22%),
     0 1px 1px rgb(0 0 0 / 14%);
-  transform: translateX(0);
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
@@ -210,16 +205,14 @@ function handleClickCapture(event: MouseEvent) {
 }
 
 .ui-switch.dragging .ui-switch-thumb {
-  cursor: grabbing;
+  @apply cursor-grabbing;
   transition:
     background-color 120ms ease,
     border-color 120ms ease;
 }
 
 .ui-switch[data-state="checked"] .ui-switch-thumb {
-  @apply bg-$ui-primary-foreground;
-  border-color: transparent;
-  transform: translateX(16px);
+  @apply translate-x-16px border-transparent bg-$ui-primary-foreground;
 }
 
 .ui-switch.drag-preview-checked {
@@ -227,13 +220,12 @@ function handleClickCapture(event: MouseEvent) {
 }
 
 .ui-switch.drag-preview-checked .ui-switch-thumb {
-  @apply bg-$ui-primary-foreground;
-  border-color: transparent;
+  @apply border-transparent bg-$ui-primary-foreground;
 }
 
 .ui-switch.drag-preview-unchecked {
   @apply border-$ui-input;
-  background-color: var(--ui-switch-background);
+  @apply bg-$ui-switch-background;
 }
 
 .ui-switch.drag-preview-unchecked .ui-switch-thumb {
@@ -242,6 +234,6 @@ function handleClickCapture(event: MouseEvent) {
 }
 
 .ui-switch:disabled .ui-switch-thumb {
-  cursor: not-allowed;
+  @apply cursor-not-allowed;
 }
 </style>

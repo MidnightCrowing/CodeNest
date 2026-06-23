@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import type { LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
 import { useProjectsStore } from '~/stores/projectsStore'
+import { formatProjectLanguage } from '~/utils/projectFormatters'
 
 type KindFilter = ProjectKind | 'all'
 type StatusFilter = 'all' | 'available' | 'missing' | 'temporary' | 'archived'
@@ -111,7 +112,7 @@ export function useProjectFilters(
     { value: 'all', label: t('app.home.filters.all_languages'), count: totalProjects.value },
     ...languages.value.map(language => ({
       value: language.text,
-      label: language.text === 'unknown' ? t('app.common.unknown') : language.text,
+      label: formatProjectLanguage(language.text, t),
       color: language.color,
       count: language.count,
     })),

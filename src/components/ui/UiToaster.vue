@@ -108,24 +108,21 @@ function toastIcon(tone: UiToastTone) {
 
 <style lang="scss">
 .ui-toast-layer {
-  @apply fixed w-360px max-w-[calc(100vw-32px)];
+  @apply fixed z-1000 w-360px max-w-[calc(100vw-32px)];
   right: calc(env(safe-area-inset-right, 0px) + 16px);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-  z-index: 1000;
-  pointer-events: none;
+  @apply pointer-events-none;
 }
 
 .ui-toast-viewport {
   @apply m-0 flex w-full list-none flex-col-reverse gap-8px p-0 outline-none;
-  pointer-events: auto;
+  @apply pointer-events-auto;
 }
 
 .ui-toast {
   @apply relative grid min-h-54px grid-cols-[22px_minmax(0,1fr)_22px] items-start gap-10px rounded-8px border px-13px py-12px;
-  @apply color-$ui-foreground;
-  overflow: hidden;
+  @apply overflow-hidden border-solid color-$ui-foreground;
   border-color: color-mix(in srgb, var(--ui-border) 82%, transparent);
-  border-style: solid;
   background:
     linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 46%),
     color-mix(in srgb, var(--ui-surface-background) 94%, var(--blue-12));
@@ -143,11 +140,11 @@ function toastIcon(tone: UiToastTone) {
   }
 
   &[data-state="open"] {
-    animation: toast-enter 210ms cubic-bezier(0.18, 0.92, 0.22, 1);
+    @apply animate-[toast-enter_210ms_cubic-bezier(0.18,0.92,0.22,1)];
   }
 
   &[data-state="closed"] {
-    animation: toast-exit 140ms cubic-bezier(0.4, 0, 1, 1);
+    @apply animate-[toast-exit_140ms_cubic-bezier(0.4,0,1,1)];
   }
 
   &[data-swipe="move"] {
@@ -155,28 +152,28 @@ function toastIcon(tone: UiToastTone) {
   }
 
   &[data-swipe="cancel"] {
-    transform: translateX(0);
-    transition: transform 120ms ease-out;
+    @apply translate-x-0;
+    @apply transition-transform duration-120 ease-out;
   }
 
   &[data-swipe="end"] {
-    animation: toast-swipe-out 120ms ease-out;
+    @apply animate-[toast-swipe-out_120ms_ease-out];
   }
 
   &.success {
-    @apply [--toast-tone:var(--green-4)] [--toast-tone-soft:color-mix(in_srgb,var(--green-5)_20%,transparent)];
+    @apply [--toast-tone:var(--green-4)];
   }
 
   &.warning {
-    @apply [--toast-tone:color-mix(in_srgb,var(--yellow-2)_72%,var(--orange-3))] [--toast-tone-soft:color-mix(in_srgb,var(--yellow-4)_22%,transparent)];
+    @apply [--toast-tone:color-mix(in_srgb,var(--yellow-2)_72%,var(--orange-3))];
   }
 
   &.error {
-    @apply [--toast-tone:var(--red-4)] [--toast-tone-soft:color-mix(in_srgb,var(--red-5)_20%,transparent)];
+    @apply [--toast-tone:var(--red-4)];
   }
 
   &.info {
-    @apply [--toast-tone:var(--ui-primary)] [--toast-tone-soft:color-mix(in_srgb,var(--ui-primary)_16%,transparent)];
+    @apply [--toast-tone:var(--ui-primary)];
   }
 }
 
@@ -194,19 +191,19 @@ function toastIcon(tone: UiToastTone) {
 }
 
 :root.dark .ui-toast.success {
-  @apply [--toast-tone:var(--green-10)] [--toast-tone-soft:color-mix(in_srgb,var(--green-8)_24%,transparent)];
+  @apply [--toast-tone:var(--green-10)];
 }
 
 :root.dark .ui-toast.warning {
-  @apply [--toast-tone:var(--yellow-10)] [--toast-tone-soft:color-mix(in_srgb,var(--yellow-8)_24%,transparent)];
+  @apply [--toast-tone:var(--yellow-10)];
 }
 
 :root.dark .ui-toast.error {
-  @apply [--toast-tone:var(--red-10)] [--toast-tone-soft:color-mix(in_srgb,var(--red-8)_24%,transparent)];
+  @apply [--toast-tone:var(--red-10)];
 }
 
 :root.dark .ui-toast.info {
-  @apply [--toast-tone:var(--ui-primary)] [--toast-tone-soft:color-mix(in_srgb,var(--ui-primary)_20%,transparent)];
+  @apply [--toast-tone:var(--ui-primary)];
 }
 
 .ui-toast-icon {
@@ -228,7 +225,7 @@ function toastIcon(tone: UiToastTone) {
 
 .ui-toast-title {
   @apply flex min-w-0 items-center gap-6px text-13px font-650 lh-18px tracking-0;
-  overflow-wrap: anywhere;
+  @apply break-anywhere;
 }
 
 .ui-toast-title-text {
@@ -243,7 +240,7 @@ function toastIcon(tone: UiToastTone) {
 
 .ui-toast-description {
   @apply text-12px lh-17px tracking-0 color-$ui-muted-foreground;
-  overflow-wrap: anywhere;
+  @apply break-anywhere;
 }
 
 .ui-toast-action {
@@ -261,21 +258,21 @@ function toastIcon(tone: UiToastTone) {
 
 @keyframes toast-enter {
   from {
-    opacity: 0;
+    @apply opacity-0;
     transform: translate(16px, 10px) scale(0.985);
   }
 }
 
 @keyframes toast-exit {
   to {
-    opacity: 0;
+    @apply opacity-0;
     transform: translate(14px, 8px) scale(0.985);
   }
 }
 
 @keyframes toast-swipe-out {
   to {
-    opacity: 0;
+    @apply opacity-0;
     transform: translateX(calc(var(--reka-toast-swipe-end-x) + 24px));
   }
 }

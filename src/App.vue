@@ -83,7 +83,7 @@ provide('activatedView', activatedView)
 
 <template>
   <main
-    class="app-shell"
+    size-full flex flex-col select-none
     :style="{ '--window-titlebar-height': useNativeTitleBar ? '0px' : '40px' }"
   >
     <WindowHeader v-if="!useNativeTitleBar" shrink-0 />
@@ -98,8 +98,7 @@ provide('activatedView', activatedView)
 </template>
 
 <style lang="scss" scoped>
-.app-shell {
-  @apply size-full flex flex-col select-none;
+main {
   caret-color: var(--theme-text-caret);
 }
 </style>

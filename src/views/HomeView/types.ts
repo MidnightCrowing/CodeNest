@@ -8,4 +8,4 @@ export interface ScrollAreaRef {
 
 export type LayoutMode = 'list' | 'grid'
 
-export type ProjectActionKey = 'open' | 'explorer' | 'terminal' | 'copy' | 'more'
+export type { ProjectActionKey } from '~/constants/projectActions'

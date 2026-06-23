@@ -183,30 +183,38 @@ function quoteCommand(command: string) {
 </script>
 
 <template>
-  <div class="settings-page">
-    <header class="page-header">
-      <h2>{{ t('app.settings.editors.title') }}</h2>
+  <div class="settings-page" flex flex-col gap-12px>
+    <header class="page-header" flex items-end justify-between gap-10px>
+      <h2 m-0 text-16px font-650 break-anywhere>
+        {{ t('app.settings.editors.title') }}
+      </h2>
     </header>
 
-    <div class="editor-groups">
-      <section class="editor-group">
-        <h3>{{ t('app.settings.editors.terminal_launcher') }}</h3>
+    <div flex flex-col gap-22px>
+      <section min-w-0 flex flex-col gap-8px>
+        <h3 m-0 text-13px font-650 break-anywhere>
+          {{ t('app.settings.editors.terminal_launcher') }}
+        </h3>
 
-        <div class="terminal-row">
-          <div class="editor-name">
-            <span class="i-lucide:square-terminal" />
-            <div>
-              <strong>{{ t('app.settings.editors.terminal_command') }}</strong>
-              <span :title="terminalCommandHint">
+        <div
+          class="terminal-row"
+          min-w-0 grid items-center gap-12px pl-18px
+        >
+          <div min-w-0 flex items-center gap-9px>
+            <span class="i-lucide:square-terminal" shrink-0 text-18px />
+            <div min-w-0 flex flex-col gap-2px>
+              <strong truncate text-13px font-620>{{ t('app.settings.editors.terminal_command') }}</strong>
+              <span truncate text-11px color="$ui-muted-foreground" :title="terminalCommandHint">
                 {{ terminalCommandHint }}
               </span>
             </div>
           </div>
 
-          <div class="command-input-wrap">
+          <div relative min-w-0>
             <input
               v-model="settings.terminalCommand"
               class="path-input"
+              w-full pr-30px
               spellcheck="false"
               :aria-label="t('app.settings.editors.terminal_command')"
               :placeholder="t('app.settings.editors.terminal_command_placeholder')"
@@ -229,30 +237,34 @@ function quoteCommand(command: string) {
       <section
         v-for="group in commandGroups"
         :key="group.label"
-        class="editor-group"
+        min-w-0 flex flex-col gap-8px
       >
-        <h3>{{ group.label }}</h3>
+        <h3 m-0 text-13px font-650 break-anywhere>
+          {{ group.label }}
+        </h3>
 
         <div
           v-for="option in group.options"
           :key="option.key"
           :ref="el => setEditorRowRef(option.key, el)"
           class="editor-row"
+          min-w-0 grid items-center gap-12px pl-18px
           @keydown="handleEditorRowKeydown(option, $event)"
         >
-          <div class="editor-name">
-            <span class="ide-icon" :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
-            <div>
-              <strong :title="option.label">{{ option.label }}</strong>
-              <span :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
+          <div min-w-0 flex items-center gap-9px>
+            <span class="ide-icon" shrink-0 text-18px :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
+            <div min-w-0 flex flex-col gap-2px>
+              <strong truncate text-13px font-620 :title="option.label">{{ option.label }}</strong>
+              <span truncate text-11px color="$ui-muted-foreground" :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
             </div>
           </div>
 
-          <div class="command-area">
-            <div class="command-input-wrap">
+          <div class="command-area" min-w-0 grid items-center gap-7px>
+            <div relative min-w-0>
               <input
                 v-model="settings.codeEditorsPath[option.key]"
                 class="path-input"
+                w-full pr-30px
                 data-editor-control="command"
                 spellcheck="false"
                 :aria-label="t('app.settings.editors.command_label', { editor: option.label })"
@@ -273,9 +285,11 @@ function quoteCommand(command: string) {
 
             <label
               class="terminal-toggle"
+              min-w-0 flex items-center gap-7px text-12px
+              color="$ui-muted-foreground" cursor-pointer
               :title="t('app.settings.editors.terminal_desc')"
             >
-              <span>{{ t('app.settings.editors.terminal') }}</span>
+              <span whitespace-nowrap>{{ t('app.settings.editors.terminal') }}</span>
               <UiSwitch
                 v-model="settings.codeEditorsOpenInTerminal[option.key]"
                 data-editor-control="terminal"
@@ -285,6 +299,7 @@ function quoteCommand(command: string) {
 
             <div
               class="command-actions"
+              flex items-center gap-5px
               role="toolbar"
               aria-orientation="horizontal"
               :aria-label="option.label"
@@ -299,7 +314,7 @@ function quoteCommand(command: string) {
                 :disabled="detectingKeys.has(option.key)"
                 @click="detectEditor(option)"
               >
-                <span class="i-lucide:wand-sparkles" :class="{ spinning: visibleDetectingKeys.has(option.key) }" />
+                <span class="i-lucide:wand-sparkles" :class="{ 'is-spinning': visibleDetectingKeys.has(option.key) }" />
               </button>
               <button
                 class="icon-button"
@@ -320,91 +335,13 @@ function quoteCommand(command: string) {
 </template>
 
 <style lang="scss" scoped>
-.settings-page {
-  @apply flex flex-col gap-12px;
-}
-
-.page-header {
-  @apply flex items-end justify-between gap-10px;
-
-  h2 {
-    @apply m-0 text-16px font-650;
-    overflow-wrap: anywhere;
-  }
-}
-
-.editor-groups {
-  @apply flex flex-col gap-22px;
-}
-
-.editor-group {
-  @apply min-w-0 flex flex-col gap-8px;
-
-  h3 {
-    @apply m-0 text-13px font-650;
-    overflow-wrap: anywhere;
-  }
-}
-
 .editor-row,
 .terminal-row {
-  @apply min-w-0 grid items-center gap-12px pl-18px;
   grid-template-columns: minmax(180px, 250px) minmax(0, 1fr);
 }
 
-.editor-name {
-  @apply min-w-0 flex items-center gap-9px;
-
-  > span {
-    @apply shrink-0 text-18px;
-  }
-
-  div {
-    @apply min-w-0 flex flex-col gap-2px;
-  }
-
-  strong {
-    @apply truncate text-13px font-620;
-  }
-
-  div span {
-    @apply truncate text-11px color-$ui-muted-foreground;
-  }
-}
-
 .command-area {
-  @apply min-w-0 grid items-center gap-7px;
   grid-template-columns: minmax(0, 1fr) max-content max-content;
-}
-
-.command-input-wrap {
-  @apply relative min-w-0;
-}
-
-.path-input {
-  @apply w-full pr-30px;
-}
-
-.terminal-toggle {
-  @apply min-w-0 flex items-center gap-7px text-12px color-$ui-muted-foreground cursor-pointer;
-
-  span {
-    @apply whitespace-nowrap;
-  }
-}
-
-.command-actions {
-  @apply flex items-center gap-5px;
-}
-
-.spinning {
-  animation: spin-detect 0.8s linear infinite;
-}
-
-@keyframes spin-detect {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @media (max-width: 900px) {
