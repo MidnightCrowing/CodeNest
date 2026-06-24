@@ -25,8 +25,6 @@ pub struct ScanPayload {
     pub(super) recent_editors: HashMap<String, VscodeScannerConfig>,
     #[serde(default)]
     pub(super) cli_editors: HashMap<String, CliScannerConfig>,
-    #[serde(default)]
-    pub(super) vscode: Option<VscodeScannerConfig>,
     pub(super) existing_paths: Vec<String>,
     #[serde(default)]
     pub(super) cache_entries: Vec<ScanCacheEntry>,
@@ -123,31 +121,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_legacy_vscode_scan_payload() {
-        let payload: ScanPayload = serde_json::from_value(json!({
-            "rootsEnabled": false,
-            "roots": [],
-            "ideEnabled": true,
-            "jetbrains": {
-                "enabled": false,
-                "configRootPath": ""
-            },
-            "vscode": {
-                "enabled": true,
-                "stateDbPath": "state.vscdb"
-            },
-            "existingPaths": []
-        }))
-        .expect("legacy vscode payload should parse");
-
-        assert!(payload.recent_editors.is_empty());
-        assert_eq!(payload.root_scan_depth, 1);
-        let vscode = payload.vscode.expect("legacy vscode config should exist");
-        assert!(vscode.enabled);
-        assert_eq!(vscode.state_db_path, "state.vscdb");
-    }
-
-    #[test]
     fn parses_recent_editor_scan_payload() {
         let payload: ScanPayload = serde_json::from_value(json!({
             "rootsEnabled": false,
@@ -171,7 +144,6 @@ mod tests {
         }))
         .expect("recent editor payload should parse");
 
-        assert!(payload.vscode.is_none());
         let cursor = payload
             .recent_editors
             .get("cursor")

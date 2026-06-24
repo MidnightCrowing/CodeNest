@@ -31,7 +31,6 @@ pub fn run() {
             scanner::detect_cli_history_root_path,
             scanner::detect_jetbrains_config_root_path,
             scanner::detect_recent_editor_state_db_path,
-            scanner::detect_vscode_state_db_path,
             scanner::scan_projects,
             secret::delete_webdav_password,
             secret::load_webdav_password,

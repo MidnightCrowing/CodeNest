@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 
 import { showToast } from '~/components/ui/toast'
+import type { ProjectMutationResult } from '~/desktop/types'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
 
@@ -11,8 +12,6 @@ import SettingsRow from '../components/SettingsRow.vue'
 const projectsStore = useProjectsStore()
 const settings = useSettingsStore()
 const { t } = useI18n()
-
-type ProjectMutationResult = Awaited<ReturnType<typeof window.api.importProject>>
 
 const webdavBusy = ref<'test' | 'upload' | 'pull' | null>(null)
 const webdavStatus = ref<{ type: 'neutral' | 'info' | 'success' | 'warning' | 'error', text: string } | null>(null)

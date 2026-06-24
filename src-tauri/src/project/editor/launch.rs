@@ -147,8 +147,8 @@ fn spawn_terminal_raw(shell_command: &str, cwd: Option<&Path>) -> Result<(), Str
         if let Some(dir) = cwd {
             command.current_dir(dir);
         }
-        command
-            .args(["/C", "start", "", "cmd", "/K", shell_command])
+        command.args(["/C", "start", "", "cmd", "/K", shell_command]);
+        suppress_launcher_window(&mut command)
             .spawn()
             .map(|_| ())
             .map_err(|error| error.to_string())
@@ -199,7 +199,8 @@ fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
         // 用 raw_arg 精确拼出命令行:Rust 默认的 MSVCRT 转义(\")与 cmd 的解析规则冲突,
         // 会把 host 连同引号一起塞给 ssh,导致 “hostname contains invalid characters”。
         // host 不含空格,直接传;远端命令整体用双引号包成 ssh 的单个参数。
-        return Command::new("cmd")
+        let mut command = Command::new("cmd");
+        command
             .raw_arg("/C")
             .raw_arg("start")
             .raw_arg("\"\"")
@@ -208,7 +209,8 @@ fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
             .raw_arg("ssh")
             .raw_arg("-t")
             .raw_arg(host)
-            .raw_arg(format!("\"{inner}\""))
+            .raw_arg(format!("\"{inner}\""));
+        return suppress_launcher_window(&mut command)
             .spawn()
             .map(|_| ())
             .map_err(|error| error.to_string());
@@ -220,4 +222,17 @@ fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
         let shell_command = shell_join(&args);
         spawn_terminal_raw(&shell_command, None)
     }
+}
+
+#[cfg(windows)]
+fn suppress_launcher_window(command: &mut Command) -> &mut Command {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+    command.creation_flags(CREATE_NO_WINDOW)
+}
+
+#[cfg(not(windows))]
+fn suppress_launcher_window(command: &mut Command) -> &mut Command {
+    command
 }

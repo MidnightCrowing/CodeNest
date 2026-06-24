@@ -23,21 +23,17 @@ fn path_to_string(path: std::path::PathBuf) -> String {
 }
 
 #[tauri::command]
-pub fn open_folder_dialog(options: Option<DialogOpenOptions>) -> Vec<String> {
+pub fn open_folder_dialog(options: Option<DialogOpenOptions>) -> Option<String> {
     let mut dialog = rfd::FileDialog::new();
     if let Some(title) = options.and_then(|o| o.title) {
         dialog = dialog.set_title(title);
     }
 
-    dialog
-        .pick_folder()
-        .map(path_to_string)
-        .into_iter()
-        .collect()
+    dialog.pick_folder().map(path_to_string)
 }
 
 #[tauri::command]
-pub fn open_file_dialog(options: Option<FileDialogOptions>) -> Vec<String> {
+pub fn open_file_dialog(options: Option<FileDialogOptions>) -> Option<String> {
     let mut dialog = rfd::FileDialog::new();
 
     if let Some(options) = options {
@@ -58,5 +54,5 @@ pub fn open_file_dialog(options: Option<FileDialogOptions>) -> Vec<String> {
         }
     }
 
-    dialog.pick_file().map(path_to_string).into_iter().collect()
+    dialog.pick_file().map(path_to_string)
 }

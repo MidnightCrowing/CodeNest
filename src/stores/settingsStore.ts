@@ -11,6 +11,7 @@ import {
   vscodeHistoryScannerEditors,
 } from '~/constants/codeEditor'
 import { createPersistence } from '~/stores/helpers/persistence'
+import type { WebDavSettings } from '~/types/webdav'
 import type { ResolvedTheme } from '~/utils/theme'
 import { getPreferredSystemTheme } from '~/utils/theme'
 
@@ -50,13 +51,6 @@ export interface RecentEditorScannerConfig {
 export interface CliEditorScannerConfig {
   enabled: boolean
   historyRootPath: string
-}
-
-export interface WebDavSettings {
-  endpoint: string
-  username: string
-  password: string
-  remotePath: string
 }
 
 type StoredWebDavSettings = Partial<Omit<WebDavSettings, 'password'>> & {

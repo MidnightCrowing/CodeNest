@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 
+import type { DesktopApi } from './types'
+
 function call<T>(command: string, args?: Record<string, unknown>) {
   return invoke<T>(command, args)
 }
@@ -44,7 +46,6 @@ window.api = {
   detectJetBrainsConfigRootPath: () => call('detect_jetbrains_config_root_path'),
   detectRecentEditorStateDbPath: editor => call('detect_recent_editor_state_db_path', { editor }),
   detectCliHistoryRootPath: editor => call('detect_cli_history_root_path', { editor }),
-  detectVscodeStateDbPath: () => call('detect_vscode_state_db_path'),
   loadWebDavPassword: () => call('load_webdav_password'),
   saveWebDavPassword: password => call('save_webdav_password', { password }),
   deleteWebDavPassword: () => call('delete_webdav_password'),
@@ -56,4 +57,4 @@ window.api = {
   minimizeWindow: () => call('minimize_window'),
   toggleMaximizeWindow: () => call('toggle_maximize_window'),
   closeWindow: () => call('close_window'),
-} satisfies Window['api']
+} satisfies DesktopApi

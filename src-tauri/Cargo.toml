@@ -22,20 +22,15 @@ crate-type = [
 ]
 
 [build-dependencies]
-tauri-build = { version = "2.6.2", features = [ ] }
+tauri-build = { version = "2.6.3", features = [ ] }
 
 [dependencies]
 dirs = "6.0.0"
 ignore = "0.4.26"
-keyring = { version = "3.6.3", default-features = false, features = [
-  "apple-native",
-  "crypto-rust",
-  "linux-native-sync-persistent",
-  "windows-native",
-] }
+keyring = { version = "4.1.2", default-features = false, features = [ "v1" ] }
 open = "5.3.5"
 percent-encoding = "2.3.2"
-regex = "1.11.1"
+regex = "1.12.4"
 reqwest = { version = "0.13.4", default-features = false, features = [
   "json",
   "rustls",
@@ -45,9 +40,9 @@ roxmltree = "0.21.1"
 rusqlite = { version = "0.40.1", features = [ "bundled" ] }
 serde = { version = "1.0.228", features = [ "derive" ] }
 serde_json = "1.0.150"
-tauri = { version = "2.11.2", features = [ ] }
+tauri = { version = "2.11.3", features = [ ] }
 trash = "5.2.6"
 url = "2.5.8"
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.55.0"
+winreg = "0.56.0"

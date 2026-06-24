@@ -28,14 +28,11 @@ pub(super) fn scan_projects(payload: ScanPayload) -> Result<ScanResult, String> 
         for editor in HISTORY_SCANNER_EDITORS {
             match *editor {
                 "cursor" | "trae" | "windsurf" | "visual-studio-code" => {
-                    let config = payload.recent_editors.get(*editor).or_else(|| {
-                        if *editor == "visual-studio-code" {
-                            payload.vscode.as_ref()
-                        } else {
-                            None
-                        }
-                    });
-                    let Some(config) = config.filter(|config| config.enabled) else {
+                    let Some(config) = payload
+                        .recent_editors
+                        .get(*editor)
+                        .filter(|config| config.enabled)
+                    else {
                         continue;
                     };
 

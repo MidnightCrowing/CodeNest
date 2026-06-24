@@ -44,16 +44,16 @@ function editorNames(option: EditorCommandOption) {
 }
 
 async function browseEditor(option: EditorCommandOption) {
-  const selectedPaths = await window.api.openFileDialog({
+  const selectedPath = await window.api.openFileDialog({
     fileTypes: [
       { name: t('app.dialog.file_types.executable'), extensions: ['exe', 'bat', 'cmd'] },
       { name: t('app.dialog.file_types.all'), extensions: ['*'] },
     ],
   })
-  if (selectedPaths[0]) {
+  if (selectedPath) {
     settings.codeEditorsPath[option.key] = option.openInTerminal
-      ? quoteCommand(selectedPaths[0])
-      : `${quoteCommand(selectedPaths[0])} {project}`
+      ? quoteCommand(selectedPath)
+      : `${quoteCommand(selectedPath)} {project}`
   }
 }
 

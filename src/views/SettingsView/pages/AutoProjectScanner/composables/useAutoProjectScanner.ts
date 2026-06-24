@@ -116,11 +116,11 @@ export function useAutoProjectScanner() {
     if (!settings.scanner.rootsEnabled)
       return
 
-    const selectedPaths = await window.api.openFolderDialog()
-    if (!selectedPaths.length)
+    const selectedPath = await window.api.openFolderDialog()
+    if (!selectedPath)
       return
 
-    const roots = Array.from(new Set([...settings.scanner.roots, ...selectedPaths])).sort()
+    const roots = Array.from(new Set([...settings.scanner.roots, selectedPath])).sort()
     settings.scanner.roots.splice(0, settings.scanner.roots.length, ...roots)
     settings.scanner.rootsEnabled = true
   }
@@ -222,9 +222,9 @@ export function useAutoProjectScanner() {
     if (!settings.scanner.ideEnabled || !settings.scanner.jetbrains.enabled)
       return
 
-    const selectedPaths = await window.api.openFolderDialog()
-    if (selectedPaths[0])
-      settings.scanner.jetbrains.configRootPath = selectedPaths[0]
+    const selectedPath = await window.api.openFolderDialog()
+    if (selectedPath)
+      settings.scanner.jetbrains.configRootPath = selectedPath
   }
 
   function getScannerSourcePath(row: ScannerSourceRow) {
@@ -257,14 +257,14 @@ export function useAutoProjectScanner() {
     if (!settings.scanner.ideEnabled || !row.config.enabled)
       return
 
-    const selectedPaths = row.kind === 'vscode-history'
+    const selectedPath = row.kind === 'vscode-history'
       ? await window.api.openFileDialog({
           fileTypes: [{ name: t('app.dialog.file_types.editor_history_database'), extensions: ['vscdb'] }],
         })
       : await window.api.openFolderDialog()
 
-    if (selectedPaths[0])
-      setScannerSourcePath(row, selectedPaths[0])
+    if (selectedPath)
+      setScannerSourcePath(row, selectedPath)
   }
 
   async function detectJetbrainsRoot() {

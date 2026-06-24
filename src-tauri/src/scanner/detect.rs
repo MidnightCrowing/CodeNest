@@ -36,10 +36,6 @@ pub(super) fn detect_jetbrains_config_root_path(app: tauri::AppHandle) -> Option
         .map(|path| path.to_string_lossy().into_owned())
 }
 
-pub(super) fn detect_vscode_state_db_path() -> Option<String> {
-    detect_recent_editor_state_db_path("visual-studio-code")
-}
-
 pub(super) fn detect_recent_editor_state_db_path(editor: &str) -> Option<String> {
     vscode_history_state_db_candidates(editor)
         .into_iter()

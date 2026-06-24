@@ -187,11 +187,11 @@ export function useProjectEditor() {
   ])
 
   async function browseProjectPath() {
-    const selectedPaths = await window.api.openFolderDialog()
-    if (!selectedPaths[0])
+    const selectedPath = await window.api.openFolderDialog()
+    if (!selectedPath)
       return
 
-    localProjectItem.value.path = selectedPaths[0]
+    localProjectItem.value.path = selectedPath
     touchedFields.path = true
     await refreshDetectedProjectMetadata()
   }

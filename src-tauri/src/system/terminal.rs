@@ -64,7 +64,9 @@ fn spawn_terminal_program(program: &Path, args: &[String], cwd: &Path) -> Result
             command.current_dir(cwd);
             command.args(["/C", "start", "", &program.to_string_lossy()]);
             command.args(args);
-            command.spawn().map_err(|error| error.to_string())?;
+            suppress_launcher_window(&mut command)
+                .spawn()
+                .map_err(|error| error.to_string())?;
             return Ok(());
         }
     }
@@ -110,7 +112,7 @@ fn spawn_windows_shell_terminal(shell: &str, args: &[String], cwd: &Path) -> Res
         command.args(args);
     }
 
-    command
+    suppress_launcher_window(&mut command)
         .spawn()
         .map(|_| ())
         .map_err(|error| error.to_string())
@@ -167,17 +169,29 @@ fn spawn_default_windows_terminal(cwd: &Path) -> Result<(), String> {
         Err(error) => errors.push(format!("powershell: {error}")),
     }
 
-    match Command::new("cmd")
-        .current_dir(cwd)
-        .args(["/C", "start", "", "cmd", "/K"])
-        .spawn()
-    {
+    let mut command = Command::new("cmd");
+    command.current_dir(cwd);
+    command.args(["/C", "start", "", "cmd", "/K"]);
+    match suppress_launcher_window(&mut command).spawn() {
         Ok(_) => Ok(()),
         Err(error) => {
             errors.push(format!("cmd: {error}"));
             Err(format!("Failed to open terminal: {}", errors.join("; ")))
         }
     }
+}
+
+#[cfg(windows)]
+fn suppress_launcher_window(command: &mut Command) -> &mut Command {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+    command.creation_flags(CREATE_NO_WINDOW)
+}
+
+#[cfg(not(windows))]
+fn suppress_launcher_window(command: &mut Command) -> &mut Command {
+    command
 }
 
 #[cfg(test)]

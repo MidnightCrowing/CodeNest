@@ -18,11 +18,6 @@ pub fn detect_jetbrains_config_root_path(app: tauri::AppHandle) -> Option<String
 }
 
 #[tauri::command]
-pub fn detect_vscode_state_db_path() -> Option<String> {
-    detect::detect_vscode_state_db_path()
-}
-
-#[tauri::command]
 pub fn detect_recent_editor_state_db_path(editor: String) -> Option<String> {
     detect::detect_recent_editor_state_db_path(&editor)
 }
