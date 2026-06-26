@@ -1,6 +1,6 @@
 [package]
 name = "codenest"
-version = "1.0.0"
+version = "1.0.1"
 description = "Cross-platform local project manager"
 authors = [ "MidnightCrowing" ]
 license = "MIT"

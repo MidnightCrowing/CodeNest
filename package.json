@@ -1,7 +1,7 @@
 {
   "name": "codenest",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "packageManager": "pnpm@11.5.2",
   "description": "A modern cross-platform desktop app to manage all your dev projects in one place. Built with Tauri + Vue 3.",
