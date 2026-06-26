@@ -45,6 +45,7 @@ pub(super) fn open_remote_project(
     if host.is_empty() || remote_path.is_empty() {
         return Err("Remote host and path cannot be empty".to_string());
     }
+    validate_remote_host(host)?;
 
     match mode {
         "terminal" => spawn_remote_terminal(host, remote_path),
@@ -63,6 +64,16 @@ pub(super) fn open_remote_project(
             spawn_editor(&program, &remote_args)
         }
         other => Err(format!("Unknown remote open mode: {other}")),
+    }
+}
+
+fn validate_remote_host(host: &str) -> Result<(), String> {
+    if host.chars().all(|ch| {
+        ch.is_ascii_alphanumeric() || matches!(ch, '@' | '.' | '_' | '-' | ':' | '[' | ']')
+    }) {
+        Ok(())
+    } else {
+        Err("Remote host contains unsupported characters".to_string())
     }
 }
 
@@ -235,4 +246,33 @@ fn suppress_launcher_window(command: &mut Command) -> &mut Command {
 #[cfg(not(windows))]
 fn suppress_launcher_window(command: &mut Command) -> &mut Command {
     command
+}
+
+#[cfg(test)]
+mod tests {
+    use super::validate_remote_host;
+
+    #[test]
+    fn validate_remote_host_accepts_common_ssh_targets() {
+        for host in [
+            "dev-box",
+            "user@example.com",
+            "user@example.com:2222",
+            "[::1]:22",
+        ] {
+            assert!(validate_remote_host(host).is_ok(), "{host}");
+        }
+    }
+
+    #[test]
+    fn validate_remote_host_rejects_shell_metacharacters() {
+        for host in [
+            "example.com & calc",
+            "bad\"host",
+            "bad%USERPROFILE%",
+            "bad|host",
+        ] {
+            assert!(validate_remote_host(host).is_err(), "{host}");
+        }
+    }
 }

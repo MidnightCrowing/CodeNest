@@ -60,6 +60,7 @@ type StoredWebDavSettings = Partial<Omit<WebDavSettings, 'password'>> & {
 interface StoredSettings {
   theme?: ThemeEnum
   themeColor?: ThemeColorEnum
+  themeColorDefaultVersion?: number
   customThemeColor?: string
   terminalCommand?: string
   language?: LanguageEnum
@@ -83,7 +84,13 @@ const settingsPersistence = createPersistence<StoredSettings>({
 
 const DEFAULT_CUSTOM_THEME_COLOR = '#4682fa'
 const EDITOR_INITIAL_COMMANDS_VERSION = 1
+const THEME_COLOR_DEFAULT_VERSION = 1
 const HEX_COLOR_RE = /^#[\da-f]{6}$/i
+
+interface AppliedSettingsResult {
+  legacyWebDavPassword: string | null
+  shouldSaveThemeColorDefaultVersion: boolean
+}
 
 function isTheme(value: unknown): value is ThemeEnum {
   return Object.values(ThemeEnum).includes(value as ThemeEnum)
@@ -296,13 +303,15 @@ export const useSettingsStore = defineStore('settings', () => {
     resetScanner()
   }
 
-  function applyStoredSettings(loadedData: StoredSettings) {
+  function applyStoredSettings(loadedData: StoredSettings): AppliedSettingsResult {
     let legacyWebDavPassword: string | null = null
+    const shouldMigrateLegacyBlueDefault = loadedData.themeColorDefaultVersion !== THEME_COLOR_DEFAULT_VERSION
+      && loadedData.themeColor === ThemeColorEnum.Blue
 
     if (isTheme(loadedData.theme))
       theme.value = loadedData.theme
     if (isThemeColor(loadedData.themeColor))
-      themeColor.value = loadedData.themeColor
+      themeColor.value = shouldMigrateLegacyBlueDefault ? ThemeColorEnum.Contrast : loadedData.themeColor
     customThemeColor.value = normalizeCustomThemeColor(loadedData.customThemeColor)
     if (typeof loadedData.terminalCommand === 'string')
       terminalCommand.value = loadedData.terminalCommand
@@ -406,7 +415,10 @@ export const useSettingsStore = defineStore('settings', () => {
       }
     }
 
-    return legacyWebDavPassword
+    return {
+      legacyWebDavPassword,
+      shouldSaveThemeColorDefaultVersion: loadedData.themeColorDefaultVersion !== THEME_COLOR_DEFAULT_VERSION,
+    }
   }
 
   function applyInitialEditorCommandsMigration() {
@@ -507,9 +519,12 @@ export const useSettingsStore = defineStore('settings', () => {
       const isFirstRun = !loadedData
       let legacyWebDavPassword: string | null = null
       let shouldSaveInitialEditorCommands = false
+      let shouldSaveThemeColorDefaultVersion = false
       if (loadedData) {
         resetSettingsState()
-        legacyWebDavPassword = applyStoredSettings(loadedData)
+        const appliedSettings = applyStoredSettings(loadedData)
+        legacyWebDavPassword = appliedSettings.legacyWebDavPassword
+        shouldSaveThemeColorDefaultVersion = appliedSettings.shouldSaveThemeColorDefaultVersion
         shouldSaveInitialEditorCommands = applyInitialEditorCommandsMigration()
       }
       else {
@@ -517,7 +532,7 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       const shouldSanitizeLegacyWebDavPassword = await loadWebDavPassword(legacyWebDavPassword)
       loaded.value = true
-      if (shouldSanitizeLegacyWebDavPassword || cachedHadLegacyWebDavPassword || shouldSaveInitialEditorCommands)
+      if (shouldSanitizeLegacyWebDavPassword || cachedHadLegacyWebDavPassword || shouldSaveInitialEditorCommands || shouldSaveThemeColorDefaultVersion)
         await saveSettings()
       if (!isFirstRun && !autoDetectedEditorCommands.value) {
         autoDetectedEditorCommands.value = true
@@ -548,6 +563,7 @@ export const useSettingsStore = defineStore('settings', () => {
       await settingsPersistence.save({
         theme: theme.value,
         themeColor: themeColor.value,
+        themeColorDefaultVersion: THEME_COLOR_DEFAULT_VERSION,
         customThemeColor: customThemeColor.value,
         terminalCommand: terminalCommand.value,
         language: language.value,

@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - LICENSE.txt
       - README.md
-      - README_EN.md
+      - README_CN.md
       - docs/**
 
   pull_request:
@@ -18,7 +18,7 @@ on:
     paths-ignore:
       - LICENSE.txt
       - README.md
-      - README_EN.md
+      - README_CN.md
       - docs/**
 
   workflow_dispatch:

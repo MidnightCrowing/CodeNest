@@ -31,7 +31,8 @@
 
         const preferredTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         const theme = settings.theme === 'light' || settings.theme === 'dark' ? settings.theme : preferredTheme
-        const themeColor = themeColors.includes(settings.themeColor) ? settings.themeColor : 'contrast'
+        const legacyBlueDefault = settings.themeColorDefaultVersion !== 1 && settings.themeColor === 'blue'
+        const themeColor = themeColors.includes(settings.themeColor) && !legacyBlueDefault ? settings.themeColor : 'contrast'
         const customThemeColor = hexColorPattern.test(settings.customThemeColor || '') ? settings.customThemeColor : '#4682fa'
         const systemThemeColor = theme === 'dark' ? '#548af7' : '#4682fa'
 

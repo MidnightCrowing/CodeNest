@@ -2,74 +2,42 @@
 
 # CodeNest
 
-用于管理本地和远程开发项目的桌面应用
+A desktop application for managing local and remote development projects
 
 [![License](https://img.shields.io/github/license/MidnightCrowing/CodeNest?style=flat-square)](LICENSE.txt)
 [![Release](https://img.shields.io/github/v/release/MidnightCrowing/CodeNest?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
 [![Downloads](https://img.shields.io/github/downloads/MidnightCrowing/CodeNest/total?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
 
-<a href="README_EN.md">English</a> · 简体中文
+English · <a href="README_CN.md">简体中文</a>
 
-<table>
-<tr>
-<th>语言</th>
-<th>浅色</th>
-<th>暗色</th>
-</tr>
-<tr>
-<td>简体中文</td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_ZH_CN_Light.png" alt="CodeNest 简体中文浅色界面" width="390" /></td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_ZH_CN_Dark.png" alt="CodeNest 简体中文暗色界面" width="390" /></td>
-</tr>
-<tr>
-<td>繁體中文</td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_ZH_TW_Light.png" alt="CodeNest 繁體中文淺色介面" width="390" /></td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_ZH_TW_Dark.png" alt="CodeNest 繁體中文暗色介面" width="390" /></td>
-</tr>
-<tr>
-<td>English</td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_EN_Light.png" alt="CodeNest English light interface" width="390" /></td>
-<td><img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_EN_Dark.png" alt="CodeNest English dark interface" width="390" /></td>
-</tr>
-</table>
+<img src="docs/source/Interface_EN_Light.png" alt="CodeNest English light interface" width="800" />
 
 </div>
 
-CodeNest 用于集中记录分散在磁盘、远程 SSH 主机或不同工作区中的开发项目。你可以为项目维护分组、类型、来源仓库、默认编辑器、语言和许可证信息，并从首页打开项目或定位到项目路径。
+CodeNest records development projects stored on local disks, remote SSH hosts, or separate workspaces. It stores project groups, project types, source repositories, default editors, language metadata, and license metadata, then lets you open projects or locate their paths from the home view.
 
-界面支持简体中文、繁體中文和 English，支持浅色和暗色主题。
+## Features
 
-## 功能
+- Record local projects and remote SSH projects with groups, project types, source repositories, default editors, license information, and language information.
+- Configure project roots or import projects from recent-project records of supported editors and CLI tools.
+- Analyze project language composition, read license snippets, and show the results in the project list and editor view.
+- Use launch configurations for multiple editors and CLI tools, with custom command templates.
+- Open a project from the project list, reveal it in the file manager, open it in a terminal, copy its path, or open its source repository link.
+- Manually upload or download project data through WebDAV. Downloads create a local backup first.
 
-### 项目管理
-记录本地项目和远程 SSH 项目，支持项目分组、项目类型、来源仓库、默认编辑器、许可证和语言信息。
+## Installation
 
-### 项目扫描
-可配置项目根目录，也可从部分编辑器和 CLI 工具的最近项目记录中导入项目。
+Download the installer for your system from the [Releases](https://github.com/MidnightCrowing/CodeNest/releases) page.
 
-### 语言和许可证
-可分析项目语言组成，读取项目许可证片段，并在项目列表和编辑页中展示相关信息。
-
-### 编辑器集成
-提供多款编辑器和 CLI 工具的启动配置，支持自定义打开命令。
-
-### 项目操作
-可从项目列表打开项目、在文件管理器中显示、在终端中打开、复制项目路径，或打开来源仓库链接。
-
-### WebDAV 同步
-可手动上传或下载项目数据到 WebDAV 服务器；下载前会创建本地备份。
-
-## 安装
-
-从 [Releases](https://github.com/MidnightCrowing/CodeNest/releases) 页面下载适合你系统的安装包。
+<sub>⚠️ On macOS, if the app says it is damaged and cannot be opened, move it to Applications and run: `sudo xattr -rd com.apple.quarantine /Applications/CodeNest.app`.</sub>
 
 <table>
 <thead>
 <tr>
-<th>操作系统</th>
-<th>最低版本</th>
-<th>架构</th>
-<th>安装包格式</th>
+<th>Operating System</th>
+<th>Minimum Version</th>
+<th>Architecture</th>
+<th>Package Format</th>
 </tr>
 </thead>
 <tbody>
@@ -94,82 +62,82 @@ CodeNest 用于集中记录分散在磁盘、远程 SSH 主机或不同工作区
 </tbody>
 </table>
 
-## 快速开始
+## Quick Start
 
-### 添加项目
-点击"添加项目"按钮，选择项目目录。添加后可以分析语言并读取许可证片段，也可以手动设置项目类型、来源仓库和默认编辑器。
+### Add a Project
+Click the "Add project" button and select a project directory. After adding it, you can analyze languages and read license snippets, or manually set the project type, source repository, and default editor.
 
-### 批量导入
-进入"设置 > 扫描器"，配置要扫描的目录或启用 IDE 历史导入，返回主页点击扫描按钮即可批量添加项目。
+### Batch Import
+Navigate to "Settings > Scanner", configure directories to scan or enable IDE history import, then return to home and click the scan button to batch add projects.
 
-### 打开项目
-点击项目条目，或使用操作栏中的按钮：
-- 在指定 IDE 中打开
-- 在文件管理器中显示
-- 在终端中打开
-- 复制项目路径
+### Open Project
+Click a project item or use the action bar buttons:
+- Open in specified IDE
+- Show in file manager
+- Open in terminal
+- Copy project path
 
-### 数据同步
-在"设置 > 数据"中配置 WebDAV 服务器信息，可手动上传或下载项目列表和配置。
+### Data Sync
+Configure WebDAV server information in "Settings > Data" to manually upload or download project lists and settings.
 
-## 开发
+## Development
 
-### 环境要求
+### Requirements
 - Node.js 20+
 - Rust stable
 - pnpm 11+
 
-### 快速开始
+### Getting Started
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start dev server
 pnpm dev
 
-# 运行所有检查
+# Run all checks
 pnpm check
 
-# 构建应用
-pnpm build:exe    # 仅可执行文件
-pnpm build        # 包含安装包
+# Build application
+pnpm build:exe    # Executable only
+pnpm build        # With installer
 ```
 
-### 项目结构
+### Project Structure
 
 ```
 codenest/
-├── src/              # Vue 前端
-│   ├── views/        # 页面组件
-│   ├── stores/       # Pinia 状态
-│   ├── components/   # 可复用组件
-│   └── services/     # 业务逻辑
-├── src-tauri/        # Rust 后端
-│   └── src/          # Tauri 命令
-└── tests/            # 测试文件
+├── src/              # Vue frontend
+│   ├── views/        # Page components
+│   ├── stores/       # Pinia state
+│   ├── components/   # Reusable components
+│   └── services/     # Business logic
+├── src-tauri/        # Rust backend
+│   └── src/          # Tauri commands
+└── tests/            # Test files
 ```
 
-更多开发指南请参考 [CLAUDE.md](CLAUDE.md) 和 [CONTRIBUTING.md](docs/CONTRIBUTING_CN.md)。
+For more development guidance, see [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](docs/CONTRIBUTING_EN.md).
 
-## 反馈与贡献
+## Feedback & Contributing
 
-欢迎通过 [GitHub Issues](https://github.com/MidnightCrowing/CodeNest/issues) 报告问题或提出建议。
+Report issues or suggest features via [GitHub Issues](https://github.com/MidnightCrowing/CodeNest/issues).
 
-如果你想贡献代码，请先阅读 [贡献指南](docs/CONTRIBUTING_CN.md)。
+If you'd like to contribute code, please read the [Contributing Guide](docs/CONTRIBUTING_EN.md) first.
 
-## 许可证
+## License
 
 [MIT License](LICENSE.txt) © 2024 MidnightCrowing
 
-## 致谢
+## Acknowledgments
 
-本项目使用了以下优秀的开源项目：
+This project uses the following excellent open source projects:
 
-- [Tauri](https://tauri.app/) - 跨平台桌面应用框架
-- [Vue](https://vuejs.org/) - 渐进式 JavaScript 框架
-- [Reka UI](https://reka-ui.com/) - 无样式组件库
-- [UnoCSS](https://unocss.dev/) - 即时按需原子化 CSS 引擎
-- [Lucide](https://lucide.dev/) - 精美的开源图标库
+- [Tauri](https://tauri.app/) - Cross-platform desktop app framework
+- [Vue](https://vuejs.org/) - Progressive JavaScript framework
+- [Reka UI](https://reka-ui.com/) - Unstyled component library
+- [UnoCSS](https://unocss.dev/) - Instant on-demand atomic CSS engine
+- [Lucide](https://lucide.dev/) - Open source icon library
 
-以及 JetBrains、Microsoft、Anthropic 等公司提供的编辑器图标资源。
+And editor icon resources provided by JetBrains, Microsoft, Anthropic and others.
