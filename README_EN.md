@@ -22,6 +22,8 @@ CodeNest helps developers centralize and manage projects scattered across their 
 
 Built on Tauri 2.0 and Vue 3, delivering native performance with a modern user experience.
 
+The interface supports English, Simplified Chinese, and Traditional Chinese.
+
 ## Key Features
 
 ### Smart Project Scanner
@@ -127,9 +129,9 @@ Configure WebDAV server information in "Settings > Data" to sync project lists a
 ## Development
 
 ### Requirements
-- Node.js 18+
-- Rust 1.70+
-- pnpm 8+
+- Node.js 20+
+- Rust stable
+- pnpm 11+
 
 ### Getting Started
 

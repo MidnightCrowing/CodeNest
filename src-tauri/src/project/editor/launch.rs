@@ -105,12 +105,12 @@ fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
                 .map_err(|error| format!("Failed to launch {}: {error}", program.display()));
         }
 
-        return Command::new(program)
+        Command::new(program)
             .args(args)
             .creation_flags(CREATE_NO_WINDOW)
             .spawn()
             .map(|_| ())
-            .map_err(|error| format!("Failed to launch {}: {error}", program.display()));
+            .map_err(|error| format!("Failed to launch {}: {error}", program.display()))
     }
 
     #[cfg(not(windows))]
@@ -210,10 +210,10 @@ fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
             .raw_arg("-t")
             .raw_arg(host)
             .raw_arg(format!("\"{inner}\""));
-        return suppress_launcher_window(&mut command)
+        suppress_launcher_window(&mut command)
             .spawn()
             .map(|_| ())
-            .map_err(|error| error.to_string());
+            .map_err(|error| error.to_string())
     }
 
     #[cfg(not(windows))]

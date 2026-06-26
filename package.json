@@ -19,8 +19,7 @@
     "ide-integration",
     "cross-platform",
     "language-analysis",
-    "project-scanner",
-    "developer-tools"
+    "project-scanner"
   ],
   "release": "https://github.com/MidnightCrowing/CodeNest/releases",
   "readme": "https://github.com/MidnightCrowing/CodeNest/blob/main/README.md",
