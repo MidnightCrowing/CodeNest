@@ -114,6 +114,34 @@ WebDAV passwords stored separately in OS secure storage (keyring) when available
 - **Single File Components** with `<script lang="ts" setup>` (Composition API)
 - **Auto-imports**: Vue APIs, Pinia stores via `unplugin-auto-import`
 - **Path alias**: `~/` resolves to `src/`
+- **Component size limit**: Files over ~200 lines should be refactored into smaller modules
+- **Component organization**: Views use a `components/` subdirectory for view-specific components, with a `shared/` folder for reusable sub-components
+
+### Component Refactoring Pattern
+When refactoring large view components (like HomeView, ProjectEditorView):
+1. **Extract shared components first** (bottom-up): Create small, reusable components in `shared/` folder
+2. **Then extract view-specific components**: List items, cards, sections that use the shared components
+3. **Finally extract container components**: View containers that compose the smaller components
+4. **Main view becomes orchestrator**: Keep only composables integration, global state, lifecycle hooks, and layout
+
+Example structure (HomeView refactored from 2,142 → 1,045 lines):
+```
+views/HomeView/
+├── HomeView.vue              (main container ~1000 lines)
+├── components/               (view-specific components)
+│   ├── HomeHeader.vue
+│   ├── HomeFilterBar.vue
+│   ├── ProjectListView.vue
+│   ├── ProjectListItem.vue
+│   ├── ProjectGridView.vue
+│   ├── ProjectCard.vue
+│   └── shared/              (reusable sub-components)
+│       ├── ProjectActions.vue
+│       ├── ProjectHeader.vue
+│       ├── ProjectMeta.vue
+│       └── ProjectEditorChip.vue
+└── composables/             (logic, keep unchanged during refactor)
+```
 
 ### State Management
 - **Pinia stores** follow pattern: reactive state + computed + async load/save
@@ -123,9 +151,38 @@ WebDAV passwords stored separately in OS secure storage (keyring) when available
 
 ### Styling
 - **UnoCSS** with custom shortcuts and presets (Wind3, attributify, icons, typography)
+- **Attributify mode preferred**: Use `flex="~ items-center gap-3"` instead of `class="flex items-center gap-3"`
+- **Minimize CSS classes**: Only use class names for component-specific identifiers
+- **SCSS usage**: Reserve for complex scenarios only (animations, transitions, pseudo-elements, media queries, deep selectors)
 - **Custom icons** via `presetIcons` and `src/assets/icons.json`
 - **Theme system**: Light/dark/system with custom accent colors
 - **Shortcuts defined** in `unocss.config.ts`
+
+**Styling example**:
+```vue
+<template>
+  <!-- Good: UnoCSS attributify -->
+  <div
+    flex="~ col gap-3"
+    p="x-4 y-3"
+    bg="white dark:gray-9"
+    border="1 solid gray-3 rounded-2"
+    class="project-card"
+  />
+</template>
+
+<style lang="scss" scoped>
+// Only for complex logic
+.project-card {
+  transition: all 180ms ease;
+
+  &:hover {
+    @apply shadow-$shadow-surface-hover;
+    transform: translateY(-1px);
+  }
+}
+</style>
+```
 
 ### i18n
 - **vue-i18n** with Simplified Chinese (zh-CN) and English (en)
@@ -181,3 +238,6 @@ WebDAV passwords stored separately in OS secure storage (keyring) when available
 - **Build optimization**: Release builds use `opt-level = "z"`, LTO, strip for smaller binaries
 - **i18n maintenance**: Do NOT use i18n Ally extension, manually maintain translation files
 - **WebDAV password**: Stored in OS keyring when available, falls back to settings.json for unsupported systems
+- **Code size limit**: Files over a few hundred lines must be refactored into smaller modules (see Component Refactoring Pattern)
+- **Component architecture**: Props down, events up; use shared components for reusability
+- **Performance priority**: Lower memory is wanted, but never at the cost of runtime performance

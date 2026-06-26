@@ -132,18 +132,23 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
           <RadioGroupItem
             v-for="option in themeColorOptions"
             :key="option.value"
-            class="theme-color-button"
-            :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
-            :style="themeColorButtonStyle(option.value)"
+            as-child
             :value="option.value"
-            :title="option.label"
-            :aria-label="option.label"
           >
-            <span class="theme-color-swatch" />
-            <span
-              v-if="option.value === ThemeColorEnum.Custom"
-              class="theme-color-icon i-lucide:pipette"
-            />
+            <button
+              type="button"
+              class="theme-color-button"
+              :class="[`theme-color-${option.value}`, { active: appThemeColor === option.value }]"
+              :style="themeColorButtonStyle(option.value)"
+              :title="option.label"
+              :aria-label="option.label"
+            >
+              <span class="theme-color-swatch" />
+              <span
+                v-if="option.value === ThemeColorEnum.Custom"
+                class="theme-color-icon i-lucide:pipette"
+              />
+            </button>
           </RadioGroupItem>
           <input
             ref="customColorInputRef"
@@ -172,14 +177,13 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
 
 <style lang="scss" scoped>
 .theme-color-button {
-  @apply relative size-24px rounded-full border p-0 cursor-pointer outline-none;
+  @apply relative size-24px shrink-0 flex-none aspect-square rounded-full border p-0 cursor-pointer outline-none;
   @apply inline-flex items-center justify-center;
   @apply transition duration-120 ease-out;
   @apply border-$ui-input bg-$ui-control-background;
 
   .theme-color-swatch {
-    @apply size-14px rounded-full;
-    background: var(--swatch-color);
+    @apply size-14px aspect-square rounded-full bg-$swatch-color;
   }
 
   &:hover {
@@ -187,12 +191,12 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
   }
 
   &:focus-visible {
-    border-color: var(--swatch-color);
+    @apply b-$swatch-color;
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--swatch-color), transparent 78%);
   }
 
   &.active {
-    border-color: var(--swatch-color);
+    @apply b-$swatch-color;
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--swatch-color), transparent 76%);
   }
 }
@@ -234,7 +238,6 @@ function themeColorButtonStyle(themeColor: ThemeColorEnum) {
 }
 
 .theme-color-icon {
-  @apply absolute text-10px;
-  color: var(--custom-theme-foreground);
+  @apply absolute text-10px color-$custom-theme-foreground;
 }
 </style>

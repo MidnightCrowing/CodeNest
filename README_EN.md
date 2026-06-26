@@ -1,94 +1,231 @@
+<div align="center">
+
 # CodeNest
 
-[简体中文](README.md) | English
+A modern desktop application for managing development projects
 
-<p align="center" style="margin-bottom: 0 !important;">
-<img width="600" alt="CodeNest interface screenshot" src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_EN.png"><br/>
-</p>
+[![License](https://img.shields.io/github/license/MidnightCrowing/CodeNest?style=flat-square)](LICENSE.txt)
+[![Release](https://img.shields.io/github/v/release/MidnightCrowing/CodeNest?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
+[![Downloads](https://img.shields.io/github/downloads/MidnightCrowing/CodeNest/total?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
 
-## Introduction
+English · <a href="README.md">简体中文</a>
 
-CodeNest is a cross-platform local project manager for organizing projects scattered across your disk. It supports project categories, language statistics, IDE/CLI launch commands, scanner imports, manual WebDAV sync, pinned projects, and daily project maintenance workflows.
+<img src="https://raw.githubusercontent.com/MidnightCrowing/CodeNest/main/docs/source/Interface_EN.png" alt="CodeNest Interface" width="800" />
 
-## Features
+</div>
 
-- List and card views with search, kind, status, language, group, and sort filters.
-- Project kinds: Mine, Fork, Clone, and Temporary.
-- Language mix analysis and main language filtering.
-- Configurable IDE/CLI launch commands for JetBrains IDEs, Visual Studio Code, Cursor, Windsurf, Trae, Zed, Codex CLI, Claude Code, Gemini CLI, and more.
-- Scanner imports from project roots, JetBrains configuration, and VS Code history.
-- Manual WebDAV upload/download for settings and project list data. Pulling from WebDAV creates a local backup first.
-- Pinned projects, context menus, keyboard navigation, and safer data persistence with backups.
-- Light/dark themes, system/custom accent colors, and English/Simplified Chinese UI.
+---
+
+## Overview
+
+CodeNest helps developers centralize and manage projects scattered across their disk. Whether personal projects, open source contributions, or temporary experiments, organize and access them all from a unified interface.
+
+Built on Tauri 2.0 and Vue 3, delivering native performance with a modern user experience.
+
+## Key Features
+
+### Smart Project Scanner
+Automatically import projects from VS Code, JetBrains IDEs, Claude Code and other tools' history, or scan specified directories to detect project structures.
+
+### Language Analysis
+Powered by Linguist's language detection engine, automatically analyze project language composition with support for filtering and grouping by language.
+
+### Multi-IDE Integration
+Pre-configured for 20+ mainstream editors and CLI tools with customizable command templates, open projects in your preferred tool with one click.
+
+### Flexible Views
+List view provides compact information density, card view shows more project details. Virtual scrolling ensures smooth performance with large project collections.
+
+### WebDAV Sync
+Manually upload or download project data to WebDAV servers, with automatic local backup before downloads to ensure data safety.
+
+### Keyboard-First
+Full keyboard navigation support, complete all operations without touching the mouse.
 
 ## Installation
 
-Download the installer for your platform from [Releases](https://github.com/MidnightCrowing/CodeNest/releases).
+Download the installer for your system from the [Releases](https://github.com/MidnightCrowing/CodeNest/releases) page.
 
-The Windows release publishes an MSI installer by default. macOS and Linux artifacts are built by GitHub Actions for their platforms.
+<table>
+<thead>
+<tr>
+<th>Operating System</th>
+<th>Minimum Version</th>
+<th>Architecture</th>
+<th>Package Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td>Windows 10</td>
+<td>x64</td>
+<td>MSI</td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td>macOS 11 (Big Sur)</td>
+<td>Intel / Apple Silicon</td>
+<td>DMG</td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td>Ubuntu 20.04 / Fedora 36</td>
+<td>x64</td>
+<td>AppImage / deb / rpm</td>
+</tr>
+</tbody>
+</table>
 
-You can also download latest-code build artifacts from [Actions](https://github.com/MidnightCrowing/CodeNest/actions). Downloading Actions artifacts requires a GitHub account.
-
-## Usage
+## Quick Start
 
 ### Add a Project
+Click "Add project" button and select a project directory. The app automatically detects language and license. You can manually set project type, source repository and default editor.
 
-Click “Add project”, choose a project folder, then fill in its name, kind, source, main language, and launch editor.
+### Batch Import
+Navigate to "Settings > Scanner", configure directories to scan or enable IDE history import, then return to home and click the scan button to batch add projects.
 
-### Open a Project
+### Open Project
+Click project cards directly or use action bar buttons:
+- Open in specified IDE
+- Show in file manager
+- Open in terminal
+- Copy project path
 
-Click the open button in the list or card view. Before first use, check editor commands in “Settings > IDEs”.
+### Data Sync
+Configure WebDAV server information in "Settings > Data" to sync project lists and configurations across devices.
 
-### Scan Projects
+## Tech Stack
 
-Enable root scanning or IDE history imports in “Settings > Scanner”, then use the scan button on the home page. The scan button is hidden when the scanner is disabled.
+<table>
+<tr>
+<td valign="top" width="50%">
 
-### Sync Data
+### Frontend
+- **Vue 3** - Composition API
+- **Pinia** - State management
+- **Reka UI** - Unstyled component library
+- **UnoCSS** - Atomic CSS
+- **Vite** - Build tool
+- **vue-i18n** - Internationalization
 
-In “Settings > Data”, enter the WebDAV server, directory, account, and password. You can test the connection, upload to cloud, or download from cloud manually. Downloads create a local backup first.
+</td>
+<td valign="top" width="50%">
 
-### Keyboard
+### Backend
+- **Tauri 2.0** - App framework
+- **Rust** - Systems programming language
+- Native system integration
+- Secure file operations
+- WebDAV client
+- Password encryption
 
-- `Tab` / `Shift+Tab`: move focus between primary controls.
-- Arrow keys: move focus in project lists, cards, and action toolbars.
-- `Enter` / `Space`: open the focused project or activate the focused button.
-- `Shift+F10` / Menu key: open the project more menu.
+</td>
+</tr>
+</table>
 
 ## Development
 
+### Requirements
+- Node.js 18+
+- Rust 1.70+
+- pnpm 8+
+
+### Getting Started
+
 ```bash
+# Install dependencies
 pnpm install
+
+# Start dev server
 pnpm dev
-```
 
-Common checks and builds:
-
-```bash
+# Run all checks
 pnpm check
-pnpm build:exe
-pnpm build
+
+# Build application
+pnpm build:exe    # Executable only
+pnpm build        # With installer
 ```
 
-`pnpm build:exe` builds the Tauri executable without installers. `pnpm build` creates platform bundles/installers.
+### Project Structure
 
-## Contributing and Building
+```
+codenest/
+├── src/              # Vue frontend
+│   ├── views/        # Page components
+│   ├── stores/       # Pinia state
+│   ├── components/   # Reusable components
+│   └── services/     # Business logic
+├── src-tauri/        # Rust backend
+│   └── src/          # Tauri commands
+└── tests/            # Test files
+```
 
-See [CONTRIBUTING.md](docs/CONTRIBUTING_EN.md).
+For more development guidance, see [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](docs/CONTRIBUTING_EN.md).
 
-## Feedback
+## Keyboard Shortcuts
 
-For questions or suggestions, open an issue in [GitHub Issues](https://github.com/MidnightCrowing/CodeNest/issues).
+<table>
+<thead>
+<tr>
+<th width="30%">Action</th>
+<th width="35%">Shortcut</th>
+<th width="35%">Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open project</td>
+<td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+<td>Project focus</td>
+</tr>
+<tr>
+<td>Edit project</td>
+<td><kbd>Ctrl</kbd>+<kbd>I</kbd> / <kbd>⌘</kbd>+<kbd>I</kbd></td>
+<td>Project focus</td>
+</tr>
+<tr>
+<td>Copy path</td>
+<td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>⌘</kbd>+<kbd>C</kbd></td>
+<td>Project focus</td>
+</tr>
+<tr>
+<td>Delete project</td>
+<td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+<td>Project focus</td>
+</tr>
+<tr>
+<td>More menu</td>
+<td><kbd>Shift</kbd>+<kbd>F10</kbd></td>
+<td>Project focus</td>
+</tr>
+<tr>
+<td>Navigation</td>
+<td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td>
+<td>List/Card/Actions</td>
+</tr>
+</tbody>
+</table>
+
+## Feedback & Contributing
+
+Report issues or suggest features via [GitHub Issues](https://github.com/MidnightCrowing/CodeNest/issues).
+
+If you'd like to contribute code, please read the [Contributing Guide](docs/CONTRIBUTING_EN.md) first.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE.txt).
+[MIT License](LICENSE.txt) © 2024 MidnightCrowing
 
 ## Acknowledgments
 
-- [Tauri](https://tauri.app/)
-- [Vue](https://vuejs.org/)
-- [Reka UI](https://reka-ui.com/)
-- [UnoCSS](https://unocss.dev/)
-- [Lucide](https://lucide.dev/)
-- [Iconify](https://iconify.design/)
-- Brand icons from JetBrains, Visual Studio Code, Cursor, Windsurf, Trae, Zed, Codex, Claude, Gemini, and other editor/tool projects
+This project uses the following excellent open source projects:
+
+- [Tauri](https://tauri.app/) - Cross-platform desktop app framework
+- [Vue](https://vuejs.org/) - Progressive JavaScript framework
+- [Reka UI](https://reka-ui.com/) - Unstyled component library
+- [UnoCSS](https://unocss.dev/) - Instant on-demand atomic CSS engine
+- [Lucide](https://lucide.dev/) - Beautiful open source icon library
+
+And editor icon resources provided by JetBrains, Microsoft, Anthropic and others.

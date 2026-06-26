@@ -99,6 +99,6 @@ provide('activatedView', activatedView)
 
 <style lang="scss" scoped>
 main {
-  caret-color: var(--theme-text-caret);
+  @apply caret-$theme-text-caret;
 }
 </style>

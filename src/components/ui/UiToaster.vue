@@ -161,19 +161,19 @@ function toastIcon(tone: UiToastTone) {
   }
 
   &.success {
-    @apply [--toast-tone:var(--green-4)];
+    --toast-tone: var(--green-4);
   }
 
   &.warning {
-    @apply [--toast-tone:color-mix(in_srgb,var(--yellow-2)_72%,var(--orange-3))];
+    --toast-tone: color-mix(in srgb, var(--yellow-2) 72%, var(--orange-3));
   }
 
   &.error {
-    @apply [--toast-tone:var(--red-4)];
+    --toast-tone: var(--red-4);
   }
 
   &.info {
-    @apply [--toast-tone:var(--ui-primary)];
+    --toast-tone: var(--ui-primary);
   }
 }
 
@@ -191,31 +191,28 @@ function toastIcon(tone: UiToastTone) {
 }
 
 :root.dark .ui-toast.success {
-  @apply [--toast-tone:var(--green-10)];
+  --toast-tone: var(--green-10);
 }
 
 :root.dark .ui-toast.warning {
-  @apply [--toast-tone:var(--yellow-10)];
+  --toast-tone: var(--yellow-10);
 }
 
 :root.dark .ui-toast.error {
-  @apply [--toast-tone:var(--red-10)];
+  --toast-tone: var(--red-10);
 }
 
 :root.dark .ui-toast.info {
-  @apply [--toast-tone:var(--ui-primary)];
+  --toast-tone: var(--ui-primary);
 }
 
 .ui-toast-icon {
-  @apply mt-1px size-22px;
-  @apply inline-flex items-center justify-center;
-  color: var(--toast-tone);
+  @apply mt-1px size-22px inline-flex items-center justify-center color-$toast-tone;
   filter: saturate(1.12);
 }
 
 .ui-toast-icon .ui-toast-symbol {
-  @apply block size-16px;
-  color: var(--toast-tone);
+  @apply block size-16px color-$toast-tone;
   background-color: currentColor;
 }
 
@@ -234,7 +231,7 @@ function toastIcon(tone: UiToastTone) {
 
 .ui-toast-count {
   @apply inline-flex shrink-0 items-center rounded-full px-5px py-1px text-10px font-700 lh-12px;
-  color: var(--toast-tone);
+  @apply color-$toast-tone;
   background: color-mix(in srgb, var(--toast-tone) 14%, transparent);
 }
 

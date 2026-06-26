@@ -107,7 +107,7 @@ textarea:not(:disabled) {
 
 .path-input.invalid,
 .text-input.invalid {
-  border-color: var(--red-5);
+  @apply border-$red-5;
 }
 
 .path-input.compact,
