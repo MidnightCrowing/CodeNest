@@ -18,6 +18,7 @@ window.api = {
   checkPathExistence: path => call('check_path_existence', { path }),
 
   analyzeProject: folderPath => call('analyze_project', { folderPath }),
+  detectProjectGitMetadata: folderPath => call('detect_project_git_metadata', { folderPath }),
   getLanguageColor: languageName => call('get_language_color', { languageName }),
   readProjectLicense: (folderPath, maxLines = 20) =>
     call('read_project_license', { folderPath, maxLines }),

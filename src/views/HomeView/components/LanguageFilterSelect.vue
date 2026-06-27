@@ -74,7 +74,7 @@ function colorDotStyle(color?: string) {
         </span>
         <span
           v-if="selectedOption?.count !== undefined"
-          ml-6px shrink-0 text-11px font-650 color="$ui-muted-foreground"
+          ml-6px shrink-0 text-11px font-600 color="$ui-muted-foreground"
         >
           {{ selectedOption.count }}
         </span>
@@ -114,7 +114,7 @@ function colorDotStyle(color?: string) {
               </span>
               <span
                 v-if="option.count !== undefined"
-                shrink-0 text-11px font-650 color="$ui-muted-foreground"
+                shrink-0 text-11px font-600 color="$ui-muted-foreground"
               >
                 {{ option.count }}
               </span>

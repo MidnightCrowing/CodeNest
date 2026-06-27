@@ -2,6 +2,10 @@ import { ThemeColorEnum, ThemeEnum } from '~/constants/appEnums'
 
 export type ResolvedTheme = ThemeEnum.Light | ThemeEnum.Dark
 
+interface ApplyThemeOptions {
+  refreshSystemThemeColor?: boolean
+}
+
 const DEFAULT_CUSTOM_THEME_COLOR = '#4682fa'
 const DEFAULT_SYSTEM_THEME_COLOR = '#4682fa'
 const DEFAULT_DARK_SYSTEM_THEME_COLOR = '#548af7'
@@ -98,7 +102,12 @@ async function getSystemThemeColor(theme: ResolvedTheme) {
   return systemThemeColor
 }
 
-export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum, customThemeColor?: string) {
+export async function applyTheme(
+  theme?: ThemeEnum,
+  themeColor?: ThemeColorEnum,
+  customThemeColor?: string,
+  options: ApplyThemeOptions = {},
+) {
   const rootElement = document.documentElement
   if (!rootElement) {
     console.warn('Root element not found. Theme application aborted.')
@@ -108,6 +117,9 @@ export async function applyTheme(theme?: ThemeEnum, themeColor?: ThemeColorEnum,
   const newTheme = resolveTheme(theme)
   const newThemeColor = themeColor ?? ThemeColorEnum.Contrast
   const normalizedCustomThemeColor = normalizeCustomThemeColor(customThemeColor)
+  if (options.refreshSystemThemeColor)
+    delete cachedSystemThemeColors[newTheme]
+
   const initialSystemThemeColor = cachedSystemThemeColors[newTheme] ?? defaultSystemThemeColor(newTheme)
   rootElement.classList.toggle(ThemeEnum.Light, newTheme === ThemeEnum.Light)
   rootElement.classList.toggle(ThemeEnum.Dark, newTheme === ThemeEnum.Dark)

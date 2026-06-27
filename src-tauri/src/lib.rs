@@ -21,6 +21,7 @@ pub fn run() {
             dialog::open_folder_dialog,
             project::commands::analyze_project,
             project::commands::delete_project,
+            project::commands::detect_project_git_metadata,
             project::editor::detect_editor_command,
             project::commands::export_projects,
             project::commands::get_language_color,

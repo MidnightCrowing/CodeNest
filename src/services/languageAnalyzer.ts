@@ -1,5 +1,5 @@
 import type { languagesGroupItem } from '~/constants/localProject'
-import type { LinguistLanguageResult } from '~/types/linguist'
+import type { LinguistLanguageResult, LinguistResult } from '~/types/linguist'
 
 /**
  * 用于分析项目语言的工具类
@@ -25,10 +25,19 @@ export class LanguageAnalyzer {
   async analyze(): Promise<boolean> {
     try {
       // 获取语言分析结果
-      const results = await this.getLanguagesResult()
+      const analysis = await this.getAnalysisResult()
+      const results = analysis?.languages.results || {}
+      const mainLanguageOverride = analysis?.mainLanguageOverride?.trim()
 
       // 如果结果为空，返回 false
       if (!results || Object.keys(results).length === 0) {
+        if (mainLanguageOverride) {
+          this.mainLang = mainLanguageOverride
+          this.mainLangColor = null
+          this.langGroup = null
+          return true
+        }
+
         this.reset()
         return false
       }
@@ -54,13 +63,13 @@ export class LanguageAnalyzer {
 
   /**
    * 获取项目中的语言分析结果
-   * @returns {Promise<Record<string, LinguistLanguageResult>>} - 语言分析结果
+   * @returns {Promise<LinguistResult | null>} - 语言分析结果
    */
-  private async getLanguagesResult(): Promise<Record<string, LinguistLanguageResult>> {
+  private async getAnalysisResult(): Promise<LinguistResult | null> {
     const res = await window.api.analyzeProject(this.folderPath)
     if (!res || 'error' in res || !res.languages)
-      return {}
-    return res.languages.results
+      return null
+    return res
   }
 
   /**

@@ -258,6 +258,9 @@ app:
       name_pattern:
         title: Temporary name pattern
         desc: Regex used to mark demo/test projects automatically.
+      focus_scan:
+        title: Scan when window returns
+        desc: Scan for new projects when CodeNest returns to the foreground, at most once every 15 minutes.
       open_mode:
         source: Source
         language: Language

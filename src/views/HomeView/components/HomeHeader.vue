@@ -26,13 +26,13 @@ const { t } = useI18n()
       <div min-w-0 flex items-center gap-6px>
         <h1
           m-0 inline-flex items-center gap-7px text-17px
-          font-650 lh-21px
+          font-600 lh-21px
         >
           {{ t('app.home.title') }}
           <span
             shrink-0 size-18px rounded-full px-0
             inline-flex items-center justify-center
-            text-11px font-650 bg="$ui-hover-background" color="$ui-muted-foreground"
+            text-11px font-600 bg="$ui-hover-background" color="$ui-muted-foreground"
           >{{ total }}</span>
         </h1>
         <button
@@ -56,7 +56,7 @@ const { t } = useI18n()
         h-28px shrink-0 max-w-full rounded-5px border-0
         px-9px
         inline-flex items-center justify-center gap-5px whitespace-nowrap
-        text-12px font-560
+        text-12px font-500
         bg="$ui-surface-background" color="$ui-foreground"
         hover:bg="$ui-hover-background" disabled:opacity-55 disabled:hover:bg="$ui-surface-background"
         transition duration-120 ease-out
@@ -72,7 +72,7 @@ const { t } = useI18n()
         h-28px shrink-0 max-w-full rounded-5px border-0
         px-9px
         inline-flex items-center justify-center gap-5px whitespace-nowrap
-        text-12px font-560
+        text-12px font-500
         bg="$ui-primary" color="$ui-primary-foreground"
         hover:bg="$ui-primary-hover" active:bg="$ui-primary-active" disabled:opacity-55
         transition duration-120 ease-out

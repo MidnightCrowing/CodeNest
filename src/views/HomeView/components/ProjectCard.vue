@@ -122,7 +122,9 @@ const { t } = useI18n()
   }
 
   &.missing {
-    @apply cursor-default opacity-78 shadow-$shadow-surface transform-none;
+    @apply cursor-default shadow-$shadow-surface transform-none;
+    @apply light:bg-$gray-13 dark:bg-$gray-3;
+    @apply light:border-$gray-11 dark:border-$gray-4;
   }
 }
 

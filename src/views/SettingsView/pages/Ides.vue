@@ -185,14 +185,14 @@ function quoteCommand(command: string) {
 <template>
   <div class="settings-page" flex flex-col gap-12px>
     <header class="page-header" flex items-end justify-between gap-10px>
-      <h2 m-0 text-16px font-650 break-anywhere>
+      <h2 m-0 text-16px font-600 break-anywhere>
         {{ t('app.settings.editors.title') }}
       </h2>
     </header>
 
     <div flex flex-col gap-22px>
       <section min-w-0 flex flex-col gap-8px>
-        <h3 m-0 text-13px font-650 break-anywhere>
+        <h3 m-0 text-13px font-600 break-anywhere>
           {{ t('app.settings.editors.terminal_launcher') }}
         </h3>
 
@@ -203,7 +203,7 @@ function quoteCommand(command: string) {
           <div min-w-0 flex items-center gap-9px>
             <span class="i-lucide:square-terminal" shrink-0 text-18px />
             <div min-w-0 flex flex-col gap-2px>
-              <strong truncate text-13px font-620>{{ t('app.settings.editors.terminal_command') }}</strong>
+              <strong truncate text-13px font-600>{{ t('app.settings.editors.terminal_command') }}</strong>
               <span truncate text-11px color="$ui-muted-foreground" :title="terminalCommandHint">
                 {{ terminalCommandHint }}
               </span>
@@ -239,7 +239,7 @@ function quoteCommand(command: string) {
         :key="group.label"
         min-w-0 flex flex-col gap-8px
       >
-        <h3 m-0 text-13px font-650 break-anywhere>
+        <h3 m-0 text-13px font-600 break-anywhere>
           {{ group.label }}
         </h3>
 
@@ -254,7 +254,7 @@ function quoteCommand(command: string) {
           <div min-w-0 flex items-center gap-9px>
             <span class="ide-icon" shrink-0 text-18px :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
             <div min-w-0 flex flex-col gap-2px>
-              <strong truncate text-13px font-620 :title="option.label">{{ option.label }}</strong>
+              <strong truncate text-13px font-600 :title="option.label">{{ option.label }}</strong>
               <span truncate text-11px color="$ui-muted-foreground" :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
             </div>
           </div>

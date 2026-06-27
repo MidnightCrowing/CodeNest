@@ -124,7 +124,7 @@ const { t } = useI18n()
       v-if="activeFilterCount"
       h-30px border-0 rounded-5px px-9px
       inline-flex items-center gap-6px whitespace-nowrap
-      text-12px font-560 cursor-pointer
+      text-12px font-500 cursor-pointer
       bg="$ui-control-background" color="$ui-muted-foreground"
       hover:bg="$ui-hover-background" hover:color="$ui-foreground"
       class="clear-button"

@@ -120,7 +120,8 @@ const { t } = useI18n()
 
 .project-row {
   &.missing {
-    @apply cursor-default opacity-78;
+    @apply cursor-default;
+    @apply light:bg-$gray-13/70 dark:bg-$gray-3/45;
   }
 }
 

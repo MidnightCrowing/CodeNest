@@ -53,7 +53,7 @@ const contentStyle = computed(() => ({
       >
         <DialogTitle
           v-if="title || $slots.title"
-          m-0 text-15px font-650 lh-20px break-anywhere
+          m-0 text-15px font-600 lh-20px break-anywhere
         >
           <slot name="title">
             {{ title }}

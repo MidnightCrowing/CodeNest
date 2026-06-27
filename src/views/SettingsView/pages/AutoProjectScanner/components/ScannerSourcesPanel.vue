@@ -30,14 +30,14 @@ const settings = useSettingsStore()
 <template>
   <section min-w-0 flex flex-col gap-8px>
     <header min-h-34px flex flex-col gap-3px>
-      <strong text-13px font-650 break-anywhere>{{ t('app.settings.scanner.sources.title') }}</strong>
+      <strong text-13px font-600 break-anywhere>{{ t('app.settings.scanner.sources.title') }}</strong>
       <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.sources.desc') }}</span>
     </header>
 
     <div min-h-42px flex items-center justify-start gap-12px>
       <UiCheckbox v-model="settings.scanner.rootsEnabled">
         <div min-w-0 flex flex-col gap-3px>
-          <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.roots.title') }}</strong>
+          <strong text-13px font-600 break-anywhere>{{ t('app.settings.scanner.roots.title') }}</strong>
           <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.roots.desc') }}</span>
         </div>
       </UiCheckbox>
@@ -108,7 +108,7 @@ const settings = useSettingsStore()
     <div min-h-42px flex items-center justify-start gap-12px>
       <UiCheckbox v-model="settings.scanner.ideEnabled">
         <div min-w-0 flex flex-col gap-3px>
-          <strong text-13px font-620 break-anywhere>{{ t('app.settings.scanner.ide.title') }}</strong>
+          <strong text-13px font-600 break-anywhere>{{ t('app.settings.scanner.ide.title') }}</strong>
           <span text-12px break-anywhere light:color="$gray-6" dark:color="$gray-8">{{ t('app.settings.scanner.ide.desc') }}</span>
         </div>
       </UiCheckbox>

@@ -21,7 +21,15 @@ import {
   localProjectItem,
 } from '../ProjectEditorViewProvider'
 
-export type ProjectEditorFieldKey = 'path' | 'name' | 'mainLang' | 'defaultOpen' | 'remoteHost' | 'remotePath'
+export type ProjectEditorFieldKey
+  = | 'path'
+    | 'name'
+    | 'mainLang'
+    | 'defaultOpen'
+    | 'fromUrl'
+    | 'fromName'
+    | 'remoteHost'
+    | 'remotePath'
 
 const PATH_SPLIT_RE = /[\\/]+/
 const languageColorCache = new Map<string, LocalProject['mainLangColor'] | null>()
@@ -78,6 +86,8 @@ export function useProjectEditor() {
     name: false,
     mainLang: false,
     defaultOpen: false,
+    fromUrl: false,
+    fromName: false,
     remoteHost: false,
     remotePath: false,
   })
@@ -209,8 +219,10 @@ export function useProjectEditor() {
   }
 
   function fillSourceName() {
-    if (sourceSuggestion.value)
+    if (sourceSuggestion.value) {
       localProjectItem.value.fromName = sourceSuggestion.value
+      touchedFields.fromName = true
+    }
   }
 
   function markTouched(field: ProjectEditorFieldKey) {
@@ -251,8 +263,38 @@ export function useProjectEditor() {
 
     await Promise.all([
       analyzeProject(path),
+      detectProjectGitMetadata(path),
       detectLicense(path),
     ])
+  }
+
+  async function detectProjectGitMetadata(targetPath = localProjectItem.value.path) {
+    const path = targetPath?.trim()
+    if (!path)
+      return
+
+    try {
+      const metadata = await window.api.detectProjectGitMetadata(path)
+      if (localProjectItem.value.path?.trim() !== path)
+        return
+
+      localProjectItem.value.kind = metadata?.kind || ProjectKind.MINE
+      if (localProjectItem.value.kind === ProjectKind.MINE) {
+        if (!touchedFields.fromUrl)
+          localProjectItem.value.fromUrl = null
+        if (!touchedFields.fromName)
+          localProjectItem.value.fromName = null
+        return
+      }
+
+      if (!touchedFields.fromUrl)
+        localProjectItem.value.fromUrl = metadata?.fromUrl || null
+      if (!touchedFields.fromName)
+        localProjectItem.value.fromName = metadata?.fromName || null
+    }
+    catch (error: unknown) {
+      console.warn(`Failed to detect Git metadata for '${path}':`, error)
+    }
   }
 
   async function analyzeProject(
@@ -374,6 +416,9 @@ export function useProjectEditor() {
     const remote = isRemote.value
     const remoteHost = localProjectItem.value.remoteHost?.trim() || undefined
     const remotePath = localProjectItem.value.remotePath?.trim() || undefined
+    const isSourceProject = localProjectItem.value.kind !== ProjectKind.MINE
+    const fromUrl = isSourceProject ? localProjectItem.value.fromUrl?.trim() || undefined : undefined
+    const fromName = isSourceProject ? localProjectItem.value.fromName?.trim() || undefined : undefined
     return {
       appendTime: localProjectItem.value.appendTime || Date.now(),
       lastOpenedAt: localProjectItem.value.lastOpenedAt ?? undefined,
@@ -381,8 +426,8 @@ export function useProjectEditor() {
       name: localProjectItem.value.name!,
       group: localProjectItem.value.group || '',
       kind: localProjectItem.value.kind,
-      fromUrl: localProjectItem.value.fromUrl || undefined,
-      fromName: localProjectItem.value.fromName || undefined,
+      fromUrl,
+      fromName,
       mainLang: remote ? (localProjectItem.value.mainLang || '') : localProjectItem.value.mainLang!,
       mainLangColor: localProjectItem.value.mainLangColor || undefined,
       langGroup: localProjectItem.value.langGroup || [],
@@ -448,6 +493,8 @@ export function useProjectEditor() {
         return
       if (!path)
         lastAnalyzedPath.value = ''
+      touchedFields.fromUrl = false
+      touchedFields.fromName = false
       resetDetectedProjectMetadata()
     },
     { flush: 'sync' },

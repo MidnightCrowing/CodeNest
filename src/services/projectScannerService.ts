@@ -234,12 +234,18 @@ async function runScan(): Promise<ProjectScannerImportResult> {
         : languageEditor
     }
 
+    const kind = toProjectKind(item.detectedKind)
+    const sourceUrl = kind !== ProjectKind.MINE ? item.fromUrl?.trim() || undefined : undefined
+    const sourceName = kind !== ProjectKind.MINE ? item.fromName?.trim() || undefined : undefined
+
     const newProject: LocalProject = {
       appendTime: Date.now(),
       path,
       name,
       group: '',
-      kind: toProjectKind(item.detectedKind),
+      kind,
+      fromUrl: sourceUrl,
+      fromName: sourceName,
       mainLang,
       mainLangColor,
       langGroup,

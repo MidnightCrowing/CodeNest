@@ -144,11 +144,27 @@ fn scan_one_project(
         .filter(|name| !name.is_empty())
         .unwrap_or_default();
     let path_string = analyzer::display_path(&path);
-    let detected_kind = git::detect_project_kind(&path);
+    let git_metadata = git::detect_project_git_metadata(&path);
+    let detected_kind = git_metadata.as_ref().map(|metadata| metadata.kind);
+    let from_url = git_metadata
+        .as_ref()
+        .and_then(|metadata| metadata.from_url.clone());
+    let from_name = git_metadata
+        .as_ref()
+        .and_then(|metadata| metadata.from_name.clone());
+    let language_override = analyzer::detect_linguist_language_override(&path);
 
     match directory_state_capped(&path, max_scan_bytes) {
         Ok(state) if cached.is_some_and(|entry| entry.signature == state.signature) => {
             let cached = cached.expect("cache entry checked above");
+            let main_lang = cached
+                .main_lang
+                .clone()
+                .or_else(|| language_override.clone());
+            let main_lang_color = cached
+                .main_lang_color
+                .clone()
+                .or_else(|| color_for_language(main_lang.as_deref()));
             ScanItem {
                 path: path_string,
                 name: if cached.name.is_empty() {
@@ -156,46 +172,66 @@ fn scan_one_project(
                 } else {
                     cached.name.clone()
                 },
-                main_lang: cached.main_lang.clone(),
-                main_lang_color: cached.main_lang_color.clone(),
+                main_lang,
+                main_lang_color,
                 lang_group: cached.lang_group.clone(),
                 ide,
                 detected_kind,
+                from_url,
+                from_name,
                 error: cached.error.clone(),
                 signature: Some(state.signature),
             }
         }
-        Ok(state) if state.total_bytes > max_scan_bytes => ScanItem {
-            path: path_string,
-            name,
-            main_lang: None,
-            main_lang_color: None,
-            lang_group: None,
-            ide,
-            detected_kind,
-            error: Some(format!(
-                "Directory too large ({} MB)",
-                state.total_bytes / (1024 * 1024)
-            )),
-            signature: Some(state.signature),
-        },
-        Err(error) => ScanItem {
-            path: path_string,
-            name,
-            main_lang: None,
-            main_lang_color: None,
-            lang_group: None,
-            ide,
-            detected_kind,
-            error: Some(error),
-            signature: None,
-        },
+        Ok(state) if state.total_bytes > max_scan_bytes => {
+            let main_lang = language_override.clone();
+            let main_lang_color = color_for_language(main_lang.as_deref());
+            ScanItem {
+                path: path_string,
+                name,
+                main_lang,
+                main_lang_color,
+                lang_group: None,
+                ide,
+                detected_kind,
+                from_url,
+                from_name,
+                error: Some(format!(
+                    "Directory too large ({} MB)",
+                    state.total_bytes / (1024 * 1024)
+                )),
+                signature: Some(state.signature),
+            }
+        }
+        Err(error) => {
+            let main_lang = language_override.clone();
+            let main_lang_color = color_for_language(main_lang.as_deref());
+            ScanItem {
+                path: path_string,
+                name,
+                main_lang,
+                main_lang_color,
+                lang_group: None,
+                ide,
+                detected_kind,
+                from_url,
+                from_name,
+                error: Some(error),
+                signature: None,
+            }
+        }
         Ok(state) => match analyzer::analyze_folder(&path) {
             Ok(analysis) => {
                 let mut entries = analysis.languages.results.into_iter().collect::<Vec<_>>();
                 sort_languages(&mut entries);
-                let main_lang = entries.first().map(|(name, _)| name.clone());
-                let main_lang_color = entries.first().and_then(|(_, stats)| stats.color.clone());
+                let main_lang = entries
+                    .first()
+                    .map(|(name, _)| name.clone())
+                    .or(analysis.main_language_override);
+                let main_lang_color = entries
+                    .first()
+                    .and_then(|(_, stats)| stats.color.clone())
+                    .or_else(|| color_for_language(main_lang.as_deref()));
                 let lang_group = (!entries.is_empty()).then(|| to_lang_group(&entries));
 
                 ScanItem {
@@ -206,21 +242,29 @@ fn scan_one_project(
                     lang_group,
                     ide,
                     detected_kind,
+                    from_url,
+                    from_name,
                     error: None,
                     signature: Some(state.signature),
                 }
             }
-            Err(error) => ScanItem {
-                path: path_string,
-                name,
-                main_lang: None,
-                main_lang_color: None,
-                lang_group: None,
-                ide,
-                detected_kind,
-                error: Some(error),
-                signature: Some(state.signature),
-            },
+            Err(error) => {
+                let main_lang = language_override;
+                let main_lang_color = color_for_language(main_lang.as_deref());
+                ScanItem {
+                    path: path_string,
+                    name,
+                    main_lang,
+                    main_lang_color,
+                    lang_group: None,
+                    ide,
+                    detected_kind,
+                    from_url,
+                    from_name,
+                    error: Some(error),
+                    signature: Some(state.signature),
+                }
+            }
         },
     }
 }
@@ -374,6 +418,12 @@ fn to_lang_group(entries: &[(String, LanguageStats)]) -> Vec<LangGroupItem> {
 
 fn round2(value: f64) -> f64 {
     (value * 100.0).round() / 100.0
+}
+
+fn color_for_language(language: Option<&str>) -> Option<String> {
+    language
+        .and_then(analyzer::language_color)
+        .map(ToOwned::to_owned)
 }
 
 #[cfg(test)]

@@ -9,6 +9,7 @@ use tauri::AppHandle;
 use crate::{
     analyzer::{self, LinguistResult},
     data,
+    scanner::git::{detect_project_git_metadata as detect_git_metadata, ProjectGitMetadata},
 };
 
 use super::path_safety::is_protected_system_path;
@@ -46,6 +47,11 @@ pub async fn analyze_project(folder_path: String) -> Result<LinguistResult, Stri
 #[tauri::command]
 pub fn get_language_color(language_name: String) -> Option<String> {
     analyzer::language_color(language_name.trim()).map(ToOwned::to_owned)
+}
+
+#[tauri::command]
+pub fn detect_project_git_metadata(folder_path: String) -> Option<ProjectGitMetadata> {
+    detect_git_metadata(Path::new(&folder_path))
 }
 
 #[tauri::command]

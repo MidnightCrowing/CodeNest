@@ -14,8 +14,10 @@ body {
     "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
 
   font-family:
-    "JetBrains Sans", "JetBrains Mono", "JetBrains Mono NL", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
-    "PingFang TC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
+    "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans GB",
+    "Noto Sans CJK SC", "Noto Sans SC", "JetBrains Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: optimizeLegibility;
   @apply bg-$ui-page-background color-$app-foreground;
 }
 

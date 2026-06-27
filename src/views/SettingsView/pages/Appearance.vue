@@ -47,7 +47,9 @@ const appTheme = computed({
   get: () => settings.theme,
   set: (theme: ThemeEnum) => {
     settings.theme = theme
-    void applyTheme(theme, settings.themeColor, settings.customThemeColor)
+    void applyTheme(theme, settings.themeColor, settings.customThemeColor, {
+      refreshSystemThemeColor: settings.themeColor === ThemeColorEnum.System,
+    })
   },
 })
 
@@ -55,7 +57,9 @@ const appThemeColor = computed({
   get: () => settings.themeColor,
   set: (themeColor: ThemeColorEnum) => {
     settings.themeColor = themeColor
-    void applyTheme(settings.theme, themeColor, settings.customThemeColor)
+    void applyTheme(settings.theme, themeColor, settings.customThemeColor, {
+      refreshSystemThemeColor: themeColor === ThemeColorEnum.System,
+    })
   },
 })
 

@@ -258,6 +258,9 @@ app:
       name_pattern:
         title: 臨時專案名稱規則
         desc: 用於自動標記 demo/test 專案的正則。
+      focus_scan:
+        title: 視窗恢復時掃描
+        desc: CodeNest 回到前景時自動掃描新專案，最多每 15 分鐘觸發一次。
       open_mode:
         source: 來源工具
         language: 按語言

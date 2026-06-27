@@ -221,7 +221,7 @@ function toastIcon(tone: UiToastTone) {
 }
 
 .ui-toast-title {
-  @apply flex min-w-0 items-center gap-6px text-13px font-650 lh-18px tracking-0;
+  @apply flex min-w-0 items-center gap-6px text-13px font-600 lh-18px tracking-0;
   @apply break-anywhere;
 }
 
@@ -242,7 +242,7 @@ function toastIcon(tone: UiToastTone) {
 
 .ui-toast-action {
   @apply mt-5px w-fit rounded-5px border-0 bg-transparent px-0 py-1px;
-  @apply cursor-pointer text-12px font-650 color-$ui-primary;
+  @apply cursor-pointer text-12px font-600 color-$ui-primary;
   @apply hover:color-$ui-primary-hover;
 }
 

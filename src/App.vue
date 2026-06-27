@@ -7,8 +7,8 @@ import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectD
 import UiToaster from '~/components/ui/UiToaster.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
-import { ThemeEnum, ViewEnum } from '~/constants/appEnums'
-import { addNewProjectsFromScanner } from '~/services/projectScannerService'
+import { ThemeColorEnum, ThemeEnum, ViewEnum } from '~/constants/appEnums'
+import { addNewProjectsFromScanner, scannerBusy } from '~/services/projectScannerService'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -31,14 +31,20 @@ const viewComponents: Record<ViewEnum, Component> = {
     () => import('~/views/SettingsView/SettingsView.vue'),
   ),
 }
+const WINDOW_ACTIVATION_DEBOUNCE_MS = 1000
+const FOCUS_AUTO_SCAN_INTERVAL_MS = 15 * 60 * 1000
 let stopWatchingSystemTheme: (() => void) | null = null
+let lastWindowActivationAt = 0
+let lastFocusAutoScanAt = 0
 
 async function applyLanguage(lang: LanguageEnum) {
   locale.value = lang
 }
 
-function applyCurrentTheme() {
-  return applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor)
+function applyCurrentTheme(refreshSystemThemeColor = false) {
+  return applyTheme(settingsStore.theme, settingsStore.themeColor, settingsStore.customThemeColor, {
+    refreshSystemThemeColor,
+  })
 }
 
 function runDeferred(task: () => void) {
@@ -47,6 +53,45 @@ function runDeferred(task: () => void) {
     return
   }
   globalThis.setTimeout(task, 900)
+}
+
+function refreshSystemThemeColorOnActivation() {
+  if (settingsStore.themeColor !== ThemeColorEnum.System)
+    return
+
+  void applyCurrentTheme(true)
+}
+
+function maybeRunFocusAutoScan() {
+  if (!settingsStore.scanner.scanOnWindowFocus || !settingsStore.scannerEnabled || scannerBusy.value)
+    return
+
+  const now = Date.now()
+  if (now - lastFocusAutoScanAt < FOCUS_AUTO_SCAN_INTERVAL_MS)
+    return
+
+  lastFocusAutoScanAt = now
+  void addNewProjectsFromScanner().catch((error) => {
+    console.error('Project scanner failed:', error)
+  })
+}
+
+function handleWindowActivation() {
+  if (document.visibilityState === 'hidden')
+    return
+
+  const now = Date.now()
+  if (now - lastWindowActivationAt < WINDOW_ACTIVATION_DEBOUNCE_MS)
+    return
+
+  lastWindowActivationAt = now
+  refreshSystemThemeColorOnActivation()
+  maybeRunFocusAutoScan()
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible')
+    handleWindowActivation()
 }
 
 if (settingsStore.hydrateCachedSettings()) {
@@ -66,16 +111,29 @@ onMounted(async () => {
   stopWatchingSystemTheme = watchSystemTheme((systemTheme) => {
     settingsStore.setSystemTheme(systemTheme)
     if (settingsStore.theme === ThemeEnum.System)
-      void applyCurrentTheme()
+      void applyCurrentTheme(settingsStore.themeColor === ThemeColorEnum.System)
   })
 
+  window.addEventListener('focus', handleWindowActivation)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+
   runDeferred(() => {
-    void editorLangGroupsStore.loadEditorLangGroupsData().then(() => addNewProjectsFromScanner())
+    void editorLangGroupsStore.loadEditorLangGroupsData()
+      .then(() => addNewProjectsFromScanner())
+      .then(() => {
+        if (settingsStore.scannerEnabled)
+          lastFocusAutoScanAt = Date.now()
+      })
+      .catch((error) => {
+        console.error('Project scanner failed:', error)
+      })
   })
 })
 
 onBeforeUnmount(() => {
   stopWatchingSystemTheme?.()
+  window.removeEventListener('focus', handleWindowActivation)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 provide('activatedView', activatedView)

@@ -82,8 +82,16 @@ export interface ScanItem {
   langGroup?: LangGroupItem[]
   ide?: string | null
   detectedKind?: ProjectKind
+  fromUrl?: string
+  fromName?: string
   error?: string
   signature?: string
+}
+
+export interface ProjectGitMetadata {
+  kind: ProjectKind
+  fromUrl?: string
+  fromName?: string
 }
 
 export interface ScanCacheEntry extends ScanItem {
@@ -132,6 +140,7 @@ export interface DesktopApi {
   checkPathExistence: (path: string) => Promise<PathExistenceResult>
 
   analyzeProject: (folderPath: string) => Promise<LinguistResult | ErrorResult>
+  detectProjectGitMetadata: (folderPath: string) => Promise<ProjectGitMetadata | null>
   getLanguageColor: (languageName: string) => Promise<HexColor | null>
   readProjectLicense: (folderPath: string, maxLines?: number) => Promise<LicenseReadResult>
   openProject: (editorCommand: string, projectPath: string, openInTerminal?: boolean) => Promise<string>

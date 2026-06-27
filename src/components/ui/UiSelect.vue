@@ -183,7 +183,7 @@ function handleBlur(event: FocusEvent) {
 }
 
 .ui-select-count-badge {
-  @apply shrink-0 text-11px font-650 color-$ui-muted-foreground;
+  @apply shrink-0 text-11px font-600 color-$ui-muted-foreground;
 }
 
 @keyframes select-enter {

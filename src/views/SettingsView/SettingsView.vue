@@ -246,7 +246,7 @@ onUnmounted(() => {
       </button>
 
       <div min-w-0 flex items-center>
-        <h1 m-0 text-17px lh-21px font-650>
+        <h1 m-0 text-17px lh-21px font-600>
           {{ t('app.settings.title') }}
         </h1>
       </div>
@@ -364,7 +364,7 @@ onUnmounted(() => {
   @apply transition duration-120 ease-out;
 
   strong {
-    @apply text-12px font-620;
+    @apply text-12px font-600;
   }
 
   span {

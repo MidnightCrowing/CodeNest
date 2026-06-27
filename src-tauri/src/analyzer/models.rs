@@ -65,8 +65,11 @@ pub struct UnknownResult {
 }
 
 #[derive(Default, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LinguistResult {
     pub files: FilesResult,
     pub languages: LanguagesResult,
     pub unknown: UnknownResult,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub main_language_override: Option<String>,
 }

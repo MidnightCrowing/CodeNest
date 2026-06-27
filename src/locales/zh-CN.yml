@@ -258,6 +258,9 @@ app:
       name_pattern:
         title: 临时项目名称规则
         desc: 用于自动标记 demo/test 项目的正则。
+      focus_scan:
+        title: 窗口恢复时扫描
+        desc: CodeNest 回到前台时自动扫描新项目，最多每 15 分钟触发一次。
       open_mode:
         source: 来源工具
         language: 按语言

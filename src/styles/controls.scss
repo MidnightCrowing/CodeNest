@@ -29,7 +29,7 @@ textarea:not(:disabled) {
 .danger-button {
   @apply h-28px shrink-0 max-w-full border-0 rounded-5px px-9px;
   @apply inline-flex items-center justify-center gap-5px whitespace-nowrap;
-  @apply text-12px font-560;
+  @apply text-12px font-500;
   @apply transition duration-120 ease-out;
 }
 

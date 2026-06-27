@@ -1,5 +1,5 @@
 mod detect;
-mod git;
+pub(crate) mod git;
 mod models;
 mod scan;
 

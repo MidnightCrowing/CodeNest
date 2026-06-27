@@ -34,7 +34,7 @@ const { t } = useI18n()
     </button>
 
     <div min-w-0 flex items-center>
-      <h1 m-0 text-17px lh-21px font-650>
+      <h1 m-0 text-17px lh-21px font-600>
         {{ isUpdate ? t('app.project_editor.title.edit') : t('app.project_editor.title.add') }}
       </h1>
     </div>

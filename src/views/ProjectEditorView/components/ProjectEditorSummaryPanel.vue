@@ -85,7 +85,7 @@ function resetLanguageMixBodyHeight() {
         light:border="$gray-13" dark:border="$gray-3"
       >
         <strong
-          min-w-0 truncate text-13px font-650
+          min-w-0 truncate text-13px font-600
           :title="localProjectItem.name || t('app.project_editor.unnamed')"
         >
           {{ localProjectItem.name || t('app.project_editor.unnamed') }}
@@ -110,7 +110,7 @@ function resetLanguageMixBodyHeight() {
           gap-10px
         >
           <span text-12px light:color="$gray-6" dark:color="$gray-8">{{ item.label }}</span>
-          <strong min-w-0 truncate text-12px font-620 :title="item.value">{{ item.value }}</strong>
+          <strong min-w-0 truncate text-12px font-600 :title="item.value">{{ item.value }}</strong>
         </div>
       </div>
     </section>
@@ -122,7 +122,7 @@ function resetLanguageMixBodyHeight() {
         light:border="$gray-13" dark:border="$gray-3"
       >
         <div min-w-0 flex flex-col gap-2px>
-          <strong min-w-0 truncate text-13px font-650>{{ t('app.project_editor.language_mix.title') }}</strong>
+          <strong min-w-0 truncate text-13px font-600>{{ t('app.project_editor.language_mix.title') }}</strong>
           <span min-w-0 truncate text-12px light:color="$gray-6" dark:color="$gray-8">
             {{ t('app.project_editor.language_mix.entries', { count: localProjectItem.langGroup?.length || 0 }) }}
           </span>
@@ -158,7 +158,7 @@ function resetLanguageMixBodyHeight() {
             <div v-for="language in localProjectItem.langGroup" :key="language.text" flex flex-col gap-5px>
               <div min-w-0 flex items-center gap-6px>
                 <span size-8px rounded-full shrink-0 :style="{ background: language.color || '#b8b8b8' }" />
-                <strong min-w-0 flex-1 truncate text-12px font-620>{{ displayLanguage(language.text) }}</strong>
+                <strong min-w-0 flex-1 truncate text-12px font-600>{{ displayLanguage(language.text) }}</strong>
                 <span text-11px light:color="$gray-6" dark:color="$gray-8">{{ language.percentage }}%</span>
               </div>
               <div class="language-bar">

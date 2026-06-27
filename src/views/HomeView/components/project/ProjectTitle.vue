@@ -25,7 +25,7 @@ const { t } = useI18n()
     <strong
       v-if="card"
       min-w-0 flex-1 inline-flex items-center truncate
-      text-13px font-650 light:color="$gray-1" dark:color="$gray-13"
+      text-13px font-600 light:color="$gray-1" dark:color="$gray-13"
       :title="project.group ? `${project.group}/${project.name}` : project.name"
     >
       <span
@@ -36,7 +36,7 @@ const { t } = useI18n()
         v-if="project.group" min-w-0 max-w="[45%]" truncate text-12px
         font-600 light:color="$gray-7" dark:color="$gray-8" :title="project.group"
       >{{ project.group }}/</span><span
-        min-w-0 flex-1 truncate text-13px font-620
+        min-w-0 flex-1 truncate text-13px font-600
         light:color="$gray-1" dark:color="$gray-13" :title="project.name"
       >{{ project.name }}</span>
     </strong>
@@ -54,7 +54,7 @@ const { t } = useI18n()
         v-if="project.group" min-w-0 max-w="[45%]" truncate text-12px
         font-600 light:color="$gray-7" dark:color="$gray-8" :title="project.group"
       >{{ project.group }}/</span><span
-        min-w-0 flex-1 truncate text-13px font-620
+        min-w-0 flex-1 truncate text-13px font-600
         light:color="$gray-1" dark:color="$gray-13" :title="project.name"
       >{{ project.name }}</span>
     </span>
@@ -66,7 +66,7 @@ const { t } = useI18n()
       <span
         v-if="project.kind !== ProjectKind.MINE"
         h-18px shrink-0 rounded-4px px-5px
-        inline-flex items-center text-10px font-650 lh-12px
+        inline-flex items-center text-10px font-600 lh-12px
         :class="kindClass(project.kind)"
       >
         {{ kindLabel(project.kind, t) }}
@@ -74,7 +74,7 @@ const { t } = useI18n()
       <span
         v-if="project.isRemote"
         h-18px shrink-0 rounded-4px px-5px
-        inline-flex items-center text-10px font-650 lh-12px
+        inline-flex items-center text-10px font-600 lh-12px
         color="$project-tag-remote-text" bg="$project-tag-remote-bg"
         :title="t('app.home.remote.badge')"
       >
@@ -83,7 +83,7 @@ const { t } = useI18n()
       <span
         v-if="project.isTemporary"
         h-18px shrink-0 rounded-4px px-5px
-        inline-flex items-center text-10px font-650 lh-12px
+        inline-flex items-center text-10px font-600 lh-12px
         color="$project-tag-temporary-text" bg="$project-tag-temporary-bg"
         :title="t('app.home.filters.temporary')"
       >

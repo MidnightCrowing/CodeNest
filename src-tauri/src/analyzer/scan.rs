@@ -5,6 +5,7 @@ use ignore::{DirEntry, WalkBuilder};
 use super::{
     language::language_for_path,
     models::{LanguageStats, LanguageType, LineCounts, LinguistResult},
+    overrides::detect_linguist_language_override,
 };
 
 const MAX_LINE_COUNT_BYTES: u64 = 1_500_000;
@@ -27,7 +28,10 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
     }
 
     let byte_budget = max_scan_bytes();
-    let mut result = LinguistResult::default();
+    let mut result = LinguistResult {
+        main_language_override: detect_linguist_language_override(folder_path),
+        ..LinguistResult::default()
+    };
     let walker = WalkBuilder::new(folder_path)
         .hidden(true)
         .ignore(true)
@@ -310,6 +314,7 @@ fn relative_path(root: &Path, path: &Path) -> String {
 mod tests {
     use std::{fs, sync::Mutex};
 
+    use super::super::language::language_color;
     use super::analyze_folder;
 
     /// 串行化涉及 `CODENEST_MAX_SCAN_BYTES` 环境变量的测试,避免并行干扰。
@@ -348,5 +353,23 @@ mod tests {
         let _ = fs::remove_dir_all(&dir);
         let result = result.expect("small directory should analyze fine");
         assert!(result.languages.results.contains_key("Rust"));
+    }
+
+    #[test]
+    fn analyze_folder_reports_linguist_language_override() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = std::env::temp_dir().join("codenest-analyzer-linguist-override-test");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("source.foo"), "custom language\n").unwrap();
+        fs::write(dir.join(".gitattributes"), "*.foo linguist-language=Rust\n").unwrap();
+
+        let result = analyze_folder(&dir);
+
+        let _ = fs::remove_dir_all(&dir);
+        let result = result.expect("directory should analyze fine");
+        assert!(result.languages.results.is_empty());
+        assert_eq!(result.main_language_override.as_deref(), Some("Rust"));
+        assert_eq!(language_color("Rust"), Some("#dea584"));
     }
 }

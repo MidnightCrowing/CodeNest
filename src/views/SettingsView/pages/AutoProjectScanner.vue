@@ -35,7 +35,7 @@ const {
 <template>
   <div relative flex flex-col gap-10px>
     <header flex items-end justify-between gap-10px>
-      <h2 m-0 text-16px font-650 break-anywhere>
+      <h2 m-0 text-16px font-600 break-anywhere>
         {{ t('app.settings.scanner.title') }}
       </h2>
     </header>

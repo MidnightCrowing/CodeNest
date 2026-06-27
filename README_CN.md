@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/MidnightCrowing/CodeNest?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
 [![Downloads](https://img.shields.io/github/downloads/MidnightCrowing/CodeNest/total?style=flat-square)](https://github.com/MidnightCrowing/CodeNest/releases)
 
-<a href="README.md">English</a> · 简体中文
+<a href="README.md">English</a> · 简体中文 · <a href="README_TW.md">繁體中文</a>
 
 <img src="docs/source/Interface_ZH_CN_Light.png" alt="CodeNest 简体中文浅色界面" width="800" />
 

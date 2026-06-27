@@ -41,6 +41,7 @@ export interface ScannerSettings {
   ideOpenMode: ScannerIdeOpenMode
   editor: CodeEditorEnum
   namePattern: string
+  scanOnWindowFocus: boolean
 }
 
 export interface RecentEditorScannerConfig {
@@ -188,6 +189,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ideOpenMode: 'source',
     editor: CodeEditorEnum.VisualStudioCode,
     namePattern: '(demo|test)',
+    scanOnWindowFocus: false,
   })
   const scannerEnabled = computed(() =>
     (scanner.rootsEnabled && scanner.roots.length > 0)
@@ -237,6 +239,7 @@ export const useSettingsStore = defineStore('settings', () => {
       ideOpenMode: scanner.ideOpenMode,
       editor: scanner.editor,
       namePattern: scanner.namePattern,
+      scanOnWindowFocus: scanner.scanOnWindowFocus,
     }
   }
 
@@ -272,6 +275,7 @@ export const useSettingsStore = defineStore('settings', () => {
     scanner.ideOpenMode = 'source'
     scanner.editor = CodeEditorEnum.VisualStudioCode
     scanner.namePattern = '(demo|test)'
+    scanner.scanOnWindowFocus = false
   }
 
   function cancelQueuedSave() {
@@ -377,6 +381,8 @@ export const useSettingsStore = defineStore('settings', () => {
         scanner.editor = s.editor
       if (typeof s.namePattern === 'string')
         scanner.namePattern = s.namePattern
+      if (typeof s.scanOnWindowFocus === 'boolean')
+        scanner.scanOnWindowFocus = s.scanOnWindowFocus
 
       // nested
       if (s.jetbrains) {

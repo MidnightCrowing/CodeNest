@@ -77,6 +77,10 @@ pub struct ScanItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) detected_kind: Option<DetectedProjectKind>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) from_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) from_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) error: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) signature: Option<String>,
@@ -84,7 +88,7 @@ pub struct ScanItem {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) enum DetectedProjectKind {
+pub enum DetectedProjectKind {
     Mine,
     Fork,
     Clone,

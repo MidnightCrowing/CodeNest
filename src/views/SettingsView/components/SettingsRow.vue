@@ -25,7 +25,7 @@ withDefaults(defineProps<{
     :class="{ 'align-start': align === 'start' }"
   >
     <div min-w-0 flex-1 flex flex-col gap-3px>
-      <strong text-13px font-620 break-anywhere>{{ title }}</strong>
+      <strong text-13px font-600 break-anywhere>{{ title }}</strong>
       <span
         v-if="description" text-12px break-anywhere
         light:color="$gray-6" dark:color="$gray-8"

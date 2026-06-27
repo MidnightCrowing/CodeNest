@@ -56,7 +56,7 @@ const { t } = useI18n()
         flex items-center justify-between gap-12px
         light:border="$gray-13" dark:border="$gray-3"
       >
-        <strong min-w-0 truncate text-13px font-650>{{ t('app.project_editor.sections.project') }}</strong>
+        <strong min-w-0 truncate text-13px font-600>{{ t('app.project_editor.sections.project') }}</strong>
       </header>
 
       <div v-if="!isUpdate" class="setting-row">
@@ -219,6 +219,7 @@ const { t } = useI18n()
                 spellcheck="false"
                 :aria-label="t('app.project_editor.fields.source_url')"
                 :title="localProjectItem.fromUrl || ''"
+                @blur="markTouched('fromUrl')"
               >
             </label>
             <label
@@ -234,6 +235,7 @@ const { t } = useI18n()
                   spellcheck="false"
                   :aria-label="t('app.project_editor.fields.source_name')"
                   :title="localProjectItem.fromName || ''"
+                  @blur="markTouched('fromName')"
                 >
                 <button
                   v-if="sourceSuggestion && localProjectItem.fromName !== sourceSuggestion"
@@ -289,7 +291,7 @@ const { t } = useI18n()
         flex items-center justify-between gap-12px
         light:border="$gray-13" dark:border="$gray-3"
       >
-        <strong min-w-0 truncate text-13px font-650>{{ t('app.project_editor.sections.metadata') }}</strong>
+        <strong min-w-0 truncate text-13px font-600>{{ t('app.project_editor.sections.metadata') }}</strong>
       </header>
 
       <div v-if="!isRemote" class="setting-row">
@@ -383,7 +385,7 @@ const { t } = useI18n()
   @apply min-w-0 flex flex-col gap-3px;
 
   strong {
-    @apply text-13px font-620 break-anywhere;
+    @apply text-13px font-600 break-anywhere;
   }
 
   span {

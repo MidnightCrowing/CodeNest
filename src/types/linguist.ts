@@ -37,4 +37,5 @@ export interface LinguistResult {
   files: LinguistFiles
   languages: LinguistLanguages
   unknown: LinguistUnknown
+  mainLanguageOverride?: string
 }
