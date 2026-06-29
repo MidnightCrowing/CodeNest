@@ -24,6 +24,12 @@ textarea:not(:disabled) {
   @apply cursor-text;
 }
 
+input:disabled,
+textarea:disabled,
+select:disabled {
+  @apply cursor-not-allowed;
+}
+
 .primary-button,
 .ghost-button,
 .danger-button {
@@ -90,8 +96,8 @@ textarea:not(:disabled) {
   @apply color-$ui-muted-foreground;
 }
 
-.path-input:hover,
-.text-input:hover {
+.path-input:hover:not(:disabled),
+.text-input:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
 }
 
@@ -102,7 +108,7 @@ textarea:not(:disabled) {
 
 .path-input:disabled,
 .text-input:disabled {
-  @apply opacity-55;
+  @apply opacity-55 cursor-not-allowed;
 }
 
 .path-input.invalid,
@@ -120,6 +126,10 @@ textarea:not(:disabled) {
   @apply inline-flex items-center justify-center text-11px;
   @apply bg-$ui-hover-background color-$ui-muted-foreground;
   @apply hover:color-$ui-foreground;
+}
+
+.clear-path-button:disabled {
+  @apply opacity-45 hover:color-$ui-muted-foreground;
 }
 
 .status-message {

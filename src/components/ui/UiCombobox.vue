@@ -67,7 +67,7 @@ function handleBlur(event: FocusEvent) {
   >
     <ComboboxAnchor
       class="ui-combobox-anchor"
-      :class="{ invalid }"
+      :class="{ disabled, invalid }"
       :style="{ minWidth }"
     >
       <ComboboxInput
@@ -117,12 +117,16 @@ function handleBlur(event: FocusEvent) {
   @apply border-solid border-$ui-input bg-$ui-control-background color-$ui-foreground;
   @apply shadow-$shadow-control transition duration-120 ease-out;
 
-  &:hover {
+  &:hover:not(.disabled) {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
   }
 
-  &:focus-within {
+  &:focus-within:not(.disabled) {
     @apply border-$ui-ring shadow-$shadow-focus;
+  }
+
+  &.disabled {
+    @apply cursor-not-allowed;
   }
 
   &.invalid {

@@ -6,7 +6,7 @@ import { showRemoveDialog } from '~/components/RemoveProjectDialog'
 import { showToast } from '~/components/ui/toast'
 import { SettingPageEnum, ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { isCodeEditor, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
+import { canOpenRemoteProject, isCodeEditor } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
 import {
   DEFAULT_EDITOR_ACTION_PREFIX,
@@ -125,7 +125,7 @@ export function useProjectActions(options: UseProjectActionsOptions) {
     if (!project.remoteHost || !project.remotePath)
       return
 
-    if (!isVscodeHistoryScannerEditor(editor)) {
+    if (!canOpenRemoteProject(editor)) {
       showToast({
         tone: 'error',
         title: t('app.home.feedback.open_failed'),
@@ -309,15 +309,27 @@ export function useProjectActions(options: UseProjectActionsOptions) {
     await projectsStore.setProjectDefaultOpen(project.appendTime, editor)
   }
 
+  function editorSelectableForProject(project: LocalProject, editor: CodeEditorEnum) {
+    return settingsStore.isEditorVisible(editor) && (!project.isRemote || canOpenRemoteProject(editor))
+  }
+
   async function setProjectDefaultEditorAutomatically(project: LocalProject) {
-    const editor = editorLangGroupsStore.getEditorByLanguage(project.mainLang, project.defaultOpen) ?? project.defaultOpen
+    const languageEditor = editorLangGroupsStore.getEditorByLanguage(project.mainLang)
+    const editor = settingsStore.resolveVisibleEditor(
+      languageEditor,
+      project.defaultOpen,
+      candidate => editorSelectableForProject(project, candidate),
+    )
+    if (!editor)
+      return
+
     await setProjectDefaultEditor(project, editor)
   }
 
   function handleProjectMenuSelect(project: LocalProject, action: string) {
     if (action.startsWith(OPEN_WITH_ACTION_PREFIX)) {
       const editor = action.slice(OPEN_WITH_ACTION_PREFIX.length)
-      if (isCodeEditor(editor))
+      if (isCodeEditor(editor) && editorSelectableForProject(project, editor))
         void openProjectWithEditor(project, editor)
       return
     }
@@ -329,7 +341,7 @@ export function useProjectActions(options: UseProjectActionsOptions) {
 
     if (action.startsWith(DEFAULT_EDITOR_ACTION_PREFIX)) {
       const editor = action.slice(DEFAULT_EDITOR_ACTION_PREFIX.length)
-      if (isCodeEditor(editor))
+      if (isCodeEditor(editor) && editorSelectableForProject(project, editor))
         void setProjectDefaultEditor(project, editor)
       return
     }

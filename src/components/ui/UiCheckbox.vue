@@ -6,8 +6,12 @@ import {
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
+  ariaLabel?: string
+  dimDisabled?: boolean
   disabled?: boolean
 }>(), {
+  ariaLabel: '',
+  dimDisabled: true,
   disabled: false,
 })
 
@@ -30,10 +34,11 @@ function toggleFromField() {
   <div
     class="ui-checkbox-field"
     min-w-0 inline-flex items-start gap-8px cursor-pointer
-    :class="{ disabled }"
+    :class="{ disabled, 'dim-disabled': disabled && dimDisabled }"
   >
     <CheckboxRoot
       class="ui-checkbox-root"
+      :class="{ 'dim-disabled': disabled && !dimDisabled }"
       mt-1px size-16px shrink-0 rounded-4px border
       outline-none
       inline-flex items-center justify-center
@@ -41,6 +46,7 @@ function toggleFromField() {
       transition duration-120 ease-out
       data-disabled:cursor-not-allowed
       :model-value="modelValue"
+      :aria-label="ariaLabel || undefined"
       :disabled="disabled"
       @update:model-value="updateChecked"
     >
@@ -51,16 +57,23 @@ function toggleFromField() {
         <span class="i-lucide:check" />
       </CheckboxIndicator>
     </CheckboxRoot>
-    <span class="ui-checkbox-label" min-w-0 text-12px break-anywhere @click="toggleFromField">
+    <div
+      v-if="$slots.default" class="ui-checkbox-label" min-w-0 text-12px break-anywhere
+      @click="toggleFromField"
+    >
       <slot />
-    </span>
+    </div>
   </div>
 </template>
 
 <style lang="scss">
 .ui-checkbox-field {
   &.disabled {
-    @apply opacity-55 cursor-not-allowed;
+    @apply cursor-not-allowed;
+  }
+
+  &.dim-disabled {
+    @apply opacity-55;
   }
 }
 
@@ -77,6 +90,10 @@ function toggleFromField() {
 
   &[data-state="checked"] {
     @apply border-$ui-primary bg-$ui-primary;
+  }
+
+  &.dim-disabled {
+    @apply opacity-55;
   }
 }
 </style>

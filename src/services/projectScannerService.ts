@@ -216,21 +216,28 @@ async function runScan(): Promise<ProjectScannerImportResult> {
       }
     }
 
-    const sourceEditor = isCodeEditor(item.ide) ? item.ide : null
-    const languageEditor = editorLangGroupsStore.getEditorByLanguage(mainLang, settingsStore.scanner.editor) ?? settingsStore.scanner.editor
+    const configuredEditor = settingsStore.resolveVisibleEditor(settingsStore.scanner.editor) ?? settingsStore.scanner.editor
+    const languageEditor = settingsStore.resolveVisibleEditor(
+      editorLangGroupsStore.getEditorByLanguage(mainLang),
+      configuredEditor,
+    ) ?? configuredEditor
+    const hasSourceEditor = isCodeEditor(item.ide)
+    const sourceEditor = hasSourceEditor
+      ? settingsStore.resolveVisibleEditor(item.ide as CodeEditorEnum, languageEditor) ?? languageEditor
+      : null
 
     let defaultOpen: CodeEditorEnum
-    if (sourceEditor) {
+    if (hasSourceEditor) {
       if (settingsStore.scanner.ideOpenMode === 'source')
-        defaultOpen = sourceEditor
+        defaultOpen = sourceEditor ?? languageEditor
       else if (settingsStore.scanner.ideOpenMode === 'specified')
-        defaultOpen = settingsStore.scanner.editor
+        defaultOpen = configuredEditor
       else
         defaultOpen = languageEditor
     }
     else {
       defaultOpen = settingsStore.scanner.rootOpenMode === 'specified'
-        ? settingsStore.scanner.editor
+        ? configuredEditor
         : languageEditor
     }
 

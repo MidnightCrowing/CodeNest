@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
+import UiCheckbox from '~/components/ui/UiCheckbox.vue'
 import UiSwitch from '~/components/ui/UiSwitch.vue'
 import type { EditorCommandKey, EditorCommandOption } from '~/constants/codeEditor'
 import { codeEditors, editorCommandOptions } from '~/constants/codeEditor'
@@ -43,7 +44,24 @@ function editorNames(option: EditorCommandOption) {
   return option.editors.map(editor => codeEditors[editor].label).join(', ')
 }
 
+function editorVisibilityTitle(option: EditorCommandOption) {
+  return isEditorVisibilityLocked(option)
+    ? t('app.settings.editors.visibility_required')
+    : t('app.settings.editors.visibility_label', { editor: option.label })
+}
+
+function isEditorEnabled(option: EditorCommandOption) {
+  return settings.isEditorVisible(option.key)
+}
+
+function isEditorVisibilityLocked(option: EditorCommandOption) {
+  return isEditorEnabled(option) && !settings.canHideEditor(option.key)
+}
+
 async function browseEditor(option: EditorCommandOption) {
+  if (!isEditorEnabled(option))
+    return
+
   const selectedPath = await window.api.openFileDialog({
     fileTypes: [
       { name: t('app.dialog.file_types.executable'), extensions: ['exe', 'bat', 'cmd'] },
@@ -58,7 +76,7 @@ async function browseEditor(option: EditorCommandOption) {
 }
 
 async function detectEditor(option: EditorCommandOption) {
-  if (detectingKeys.value.has(option.key))
+  if (!isEditorEnabled(option) || detectingKeys.value.has(option.key))
     return
 
   detectingKeys.value = new Set([...detectingKeys.value, option.key])
@@ -75,6 +93,9 @@ async function detectEditor(option: EditorCommandOption) {
 }
 
 function clearEditor(option: EditorCommandOption) {
+  if (!isEditorEnabled(option))
+    return
+
   settings.codeEditorsPath[option.key] = ''
 }
 
@@ -248,15 +269,28 @@ function quoteCommand(command: string) {
           :key="option.key"
           :ref="el => setEditorRowRef(option.key, el)"
           class="editor-row"
+          :class="{ 'is-hidden': !isEditorEnabled(option) }"
           min-w-0 grid items-center gap-12px pl-18px
           @keydown="handleEditorRowKeydown(option, $event)"
         >
-          <div min-w-0 flex items-center gap-9px>
-            <span class="ide-icon" shrink-0 text-18px :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
-            <div min-w-0 flex flex-col gap-2px>
-              <strong truncate text-13px font-600 :title="option.label">{{ option.label }}</strong>
-              <span truncate text-11px color="$ui-muted-foreground" :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
-            </div>
+          <div min-w-0 flex items-center>
+            <UiCheckbox
+              class="editor-visibility-toggle"
+              :model-value="settings.isEditorVisible(option.key)"
+              :disabled="isEditorVisibilityLocked(option)"
+              :dim-disabled="false"
+              :aria-label="t('app.settings.editors.visibility_label', { editor: option.label })"
+              :title="editorVisibilityTitle(option)"
+              @update:model-value="settings.setEditorVisible(option.key, $event)"
+            >
+              <div class="editor-summary" min-w-0 flex items-center gap-9px>
+                <span class="ide-icon" shrink-0 text-18px :class="[option.icon, { 'monochrome-editor-icon': option.monochromeIcon }]" />
+                <div min-w-0 flex flex-col gap-2px>
+                  <strong truncate text-13px font-600 :title="option.label">{{ option.label }}</strong>
+                  <span truncate text-11px color="$ui-muted-foreground" :title="editorDescription(option) || editorNames(option)">{{ editorDescription(option) || editorNames(option) }}</span>
+                </div>
+              </div>
+            </UiCheckbox>
           </div>
 
           <div class="command-area" min-w-0 grid items-center gap-7px>
@@ -270,6 +304,7 @@ function quoteCommand(command: string) {
                 :aria-label="t('app.settings.editors.command_label', { editor: option.label })"
                 :placeholder="t('app.settings.editors.command_placeholder')"
                 :title="settings.codeEditorsPath[option.key] || t('app.settings.editors.command_placeholder')"
+                :disabled="!isEditorEnabled(option)"
               >
               <button
                 v-if="settings.codeEditorsPath[option.key]"
@@ -277,6 +312,7 @@ function quoteCommand(command: string) {
                 type="button"
                 :title="t('app.settings.editors.clear_command')"
                 :aria-label="t('app.settings.editors.clear_command')"
+                :disabled="!isEditorEnabled(option)"
                 @click="clearEditor(option)"
               >
                 <span class="i-lucide:x" />
@@ -287,6 +323,7 @@ function quoteCommand(command: string) {
               class="terminal-toggle"
               min-w-0 flex items-center gap-7px text-12px
               color="$ui-muted-foreground" cursor-pointer
+              :class="{ 'is-disabled': !isEditorEnabled(option) }"
               :title="t('app.settings.editors.terminal_desc')"
             >
               <span whitespace-nowrap>{{ t('app.settings.editors.terminal') }}</span>
@@ -294,6 +331,7 @@ function quoteCommand(command: string) {
                 v-model="settings.codeEditorsOpenInTerminal[option.key]"
                 data-editor-control="terminal"
                 :aria-label="t('app.settings.editors.terminal_desc')"
+                :disabled="!isEditorEnabled(option)"
               />
             </label>
 
@@ -311,7 +349,7 @@ function quoteCommand(command: string) {
                 data-editor-control="detect"
                 :title="t('app.settings.editors.auto_detect')"
                 :aria-label="t('app.settings.editors.auto_detect')"
-                :disabled="detectingKeys.has(option.key)"
+                :disabled="!isEditorEnabled(option) || detectingKeys.has(option.key)"
                 @click="detectEditor(option)"
               >
                 <span class="i-lucide:wand-sparkles" :class="{ 'is-spinning': visibleDetectingKeys.has(option.key) }" />
@@ -322,6 +360,7 @@ function quoteCommand(command: string) {
                 data-editor-control="browse"
                 :title="t('app.settings.editors.browse_executable')"
                 :aria-label="t('app.settings.editors.browse_executable')"
+                :disabled="!isEditorEnabled(option)"
                 @click="browseEditor(option)"
               >
                 <span class="i-lucide:folder-open" />
@@ -342,6 +381,28 @@ function quoteCommand(command: string) {
 
 .command-area {
   grid-template-columns: minmax(0, 1fr) max-content max-content;
+}
+
+.editor-visibility-toggle {
+  @apply w-full items-center;
+
+  :deep(.ui-checkbox-label) {
+    @apply min-w-0 flex-1;
+  }
+}
+
+.editor-row.is-hidden {
+  .editor-summary {
+    @apply opacity-55;
+  }
+}
+
+.terminal-toggle.is-disabled {
+  @apply cursor-not-allowed;
+
+  > span {
+    @apply opacity-65;
+  }
 }
 
 @media (max-width: 900px) {

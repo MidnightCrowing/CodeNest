@@ -192,6 +192,8 @@ app:
       terminal_command: Open folders
       terminal_command_placeholder: System default
       terminal_command_hint: Leave empty for system default, supports {cwd}
+      visibility_label: Show {editor} in menus
+      visibility_required: Keep at least one editor visible.
       groups:
         jetbrains: JetBrains
         microsoft: Microsoft

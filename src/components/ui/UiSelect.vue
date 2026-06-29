@@ -118,7 +118,7 @@ function handleBlur(event: FocusEvent) {
   @apply appearance-none border-solid border-$ui-input bg-$ui-control-background color-$ui-foreground;
   @apply shadow-$shadow-control transition duration-120 ease-out;
 
-  &:hover {
+  &:hover:not([data-disabled]) {
     border-color: color-mix(in srgb, var(--ui-input), var(--ui-foreground) 18%);
   }
 

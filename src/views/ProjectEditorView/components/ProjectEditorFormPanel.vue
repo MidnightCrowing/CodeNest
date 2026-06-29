@@ -13,6 +13,7 @@ import { localProjectItem } from '../ProjectEditorViewProvider'
 interface SelectOption {
   value: string
   label: string
+  disabled?: boolean
 }
 
 defineProps<{
@@ -334,6 +335,7 @@ const projectGroup = computed({
           :options="editorOptions"
           :aria-label="t('app.project_editor.fields.open_with')"
           :class="{ invalid: fieldInvalid('defaultOpen') }"
+          :disabled="editorOptions.length === 0"
           min-width="220px"
           content-width="260px"
           @blur="markTouched('defaultOpen')"

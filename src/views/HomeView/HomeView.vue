@@ -80,7 +80,12 @@ function editorOpensInTerminal(editor: CodeEditorEnum) {
   return settingsStore.getEditorLaunchConfig(editor).openInTerminal
 }
 
-const projectMenus = useProjectMenus({ t, editorHasLaunchCommand, editorOpensInTerminal })
+const projectMenus = useProjectMenus({
+  t,
+  editorCommandOptions: () => settingsStore.visibleEditorCommandOptions,
+  editorHasLaunchCommand,
+  editorOpensInTerminal,
+})
 const {
   projectMenuItems,
 } = projectMenus

@@ -5,6 +5,7 @@ import type { CliHistoryScannerEditor, EditorCommandKey, VscodeHistoryScannerEdi
 import {
   cliHistoryScannerEditors,
   CodeEditorEnum,
+  codeEditorOrder,
   editorCommandKeys,
   editorCommandOptions,
   isCodeEditor,
@@ -68,6 +69,7 @@ interface StoredSettings {
   editorInitialCommandsVersion?: number
   codeEditorsPath?: Partial<Record<EditorCommandKey | 'jetbrains', string>>
   codeEditorsOpenInTerminal?: Partial<Record<EditorCommandKey, boolean>>
+  visibleEditors?: Partial<Record<EditorCommandKey, boolean>>
   autoDetectedEditorCommands?: boolean
   webdav?: StoredWebDavSettings
   scanner?: Partial<Omit<ScannerSettings, 'jetbrains' | 'recentEditors' | 'cliEditors'>> & {
@@ -143,6 +145,12 @@ function createInitialEditorCommands(): Record<EditorCommandKey, string> {
   ) as Record<EditorCommandKey, string>
 }
 
+function createDefaultVisibleEditors(): Record<EditorCommandKey, boolean> {
+  return Object.fromEntries(
+    editorCommandKeys.map(key => [key, true]),
+  ) as Record<EditorCommandKey, boolean>
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   // --- 基础配置项 ---
   const theme = ref<ThemeEnum>(ThemeEnum.System)
@@ -161,6 +169,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const codeEditorsOpenInTerminal = reactive<Record<EditorCommandKey, boolean>>(
     Object.fromEntries(editorCommandOptions.map(option => [option.key, option.openInTerminal])) as Record<EditorCommandKey, boolean>,
   )
+  const visibleEditors = reactive<Record<EditorCommandKey, boolean>>(createDefaultVisibleEditors())
+  const visibleCodeEditorOrder = computed(() => codeEditorOrder.filter(editor => isEditorVisible(editor)))
+  const visibleEditorCommandOptions = computed(() => editorCommandOptions.filter(option => isEditorVisible(option.key)))
   const autoDetectedEditorCommands = ref(false)
   let savedWebDavPassword = ''
   let webDavPasswordStorageAvailable = true
@@ -278,6 +289,63 @@ export const useSettingsStore = defineStore('settings', () => {
     scanner.scanOnWindowFocus = false
   }
 
+  function applyVisibleEditors(source: Partial<Record<EditorCommandKey, boolean>> = {}) {
+    let hasVisibleEditor = false
+    for (const key of editorCommandKeys) {
+      const visible = source[key] !== false
+      visibleEditors[key] = visible
+      hasVisibleEditor ||= visible
+    }
+
+    if (!hasVisibleEditor)
+      visibleEditors[CodeEditorEnum.VisualStudioCode] = true
+  }
+
+  function isEditorVisible(editor: EditorCommandKey) {
+    return visibleEditors[editor] !== false
+  }
+
+  function visibleEditorCount() {
+    return editorCommandKeys.filter(key => isEditorVisible(key)).length
+  }
+
+  function canHideEditor(editor: EditorCommandKey) {
+    return !isEditorVisible(editor) || visibleEditorCount() > 1
+  }
+
+  function firstVisibleEditor(predicate: (editor: CodeEditorEnum) => boolean = () => true) {
+    return codeEditorOrder.find(editor => isEditorVisible(editor) && predicate(editor)) || null
+  }
+
+  function resolveVisibleEditor(
+    editor: CodeEditorEnum | null | undefined,
+    fallback: CodeEditorEnum | null = null,
+    predicate: (editor: CodeEditorEnum) => boolean = () => true,
+  ) {
+    if (editor && isEditorVisible(editor) && predicate(editor))
+      return editor
+    if (fallback && isEditorVisible(fallback) && predicate(fallback))
+      return fallback
+    return firstVisibleEditor(predicate)
+  }
+
+  function setEditorVisible(editor: EditorCommandKey, visible: boolean) {
+    if (visible) {
+      visibleEditors[editor] = true
+      return
+    }
+
+    if (!canHideEditor(editor))
+      return
+
+    visibleEditors[editor] = false
+    if (!isEditorVisible(scanner.editor)) {
+      const fallback = firstVisibleEditor()
+      if (fallback)
+        scanner.editor = fallback
+    }
+  }
+
   function cancelQueuedSave() {
     if (saveTimer !== null) {
       window.clearTimeout(saveTimer)
@@ -300,6 +368,7 @@ export const useSettingsStore = defineStore('settings', () => {
       codeEditorsPath[option.key] = option.initialCommand || ''
       codeEditorsOpenInTerminal[option.key] = option.openInTerminal
     }
+    applyVisibleEditors()
     webdav.endpoint = ''
     webdav.username = ''
     webdav.password = ''
@@ -346,6 +415,8 @@ export const useSettingsStore = defineStore('settings', () => {
           codeEditorsOpenInTerminal[option.key] = openInTerminal
       }
     }
+    if (loadedData.visibleEditors)
+      applyVisibleEditors(loadedData.visibleEditors)
     if (typeof loadedData.autoDetectedEditorCommands === 'boolean')
       autoDetectedEditorCommands.value = loadedData.autoDetectedEditorCommands
 
@@ -419,6 +490,12 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof s.vscode.stateDbPath === 'string')
           scanner.recentEditors[CodeEditorEnum.VisualStudioCode].stateDbPath = s.vscode.stateDbPath
       }
+    }
+
+    if (!isEditorVisible(scanner.editor)) {
+      const fallback = firstVisibleEditor()
+      if (fallback)
+        scanner.editor = fallback
     }
 
     return {
@@ -576,6 +653,7 @@ export const useSettingsStore = defineStore('settings', () => {
         editorInitialCommandsVersion: editorInitialCommandsVersion.value,
         codeEditorsPath: { ...codeEditorsPath },
         codeEditorsOpenInTerminal: { ...codeEditorsOpenInTerminal },
+        visibleEditors: { ...visibleEditors },
         autoDetectedEditorCommands: autoDetectedEditorCommands.value,
         webdav: snapshotWebDav(),
         scanner: snapshotScanner(),
@@ -598,7 +676,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   watch(
-    [theme, themeColor, customThemeColor, terminalCommand, language, editorInitialCommandsVersion, codeEditorsPath, codeEditorsOpenInTerminal, autoDetectedEditorCommands, webdav, scanner],
+    [theme, themeColor, customThemeColor, terminalCommand, language, editorInitialCommandsVersion, codeEditorsPath, codeEditorsOpenInTerminal, visibleEditors, autoDetectedEditorCommands, webdav, scanner],
     queueSaveSettings,
     { deep: true },
   )
@@ -644,16 +722,23 @@ export const useSettingsStore = defineStore('settings', () => {
     language,
     codeEditorsPath,
     codeEditorsOpenInTerminal,
+    visibleEditors,
+    visibleCodeEditorOrder,
+    visibleEditorCommandOptions,
     autoDetectedEditorCommands,
     webdav,
     scanner,
     scannerEnabled,
     detectEditorCommand,
     detectMissingEditorCommands,
+    canHideEditor,
     getEditorLaunchConfig,
     hydrateCachedSettings,
+    isEditorVisible,
     loadSettings,
+    resolveVisibleEditor,
     saveSettings,
+    setEditorVisible,
     setSystemTheme,
   }
 })

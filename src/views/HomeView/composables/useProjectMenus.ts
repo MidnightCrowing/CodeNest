@@ -1,6 +1,6 @@
 import type { UiActionMenuItem } from '~/components/ui/actionMenu'
-import type { CodeEditorEnum } from '~/constants/codeEditor'
-import { editorCommandOptions, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
+import type { CodeEditorEnum, EditorCommandOption } from '~/constants/codeEditor'
+import { canOpenRemoteProject } from '~/constants/codeEditor'
 import type { LocalProject } from '~/constants/localProject'
 import {
   DEFAULT_EDITOR_ACTION_PREFIX,
@@ -22,22 +22,28 @@ import {
 
 interface MenuDependencies {
   t: (key: string, params?: Record<string, unknown>) => string
+  editorCommandOptions: () => EditorCommandOption[]
   editorHasLaunchCommand: (editor: CodeEditorEnum) => boolean
   editorOpensInTerminal: (editor: CodeEditorEnum) => boolean
 }
 
 export function useProjectMenus(deps: MenuDependencies) {
-  const { t, editorHasLaunchCommand, editorOpensInTerminal } = deps
+  const { t, editorCommandOptions, editorHasLaunchCommand, editorOpensInTerminal } = deps
 
-  function editorMenuIcon(option: (typeof editorCommandOptions)[number]) {
+  function editorMenuIcon(option: EditorCommandOption) {
     return option.icon
       ? ['ide-icon', option.icon, option.monochromeIcon ? 'monochrome-editor-icon' : ''].filter(Boolean).join(' ')
       : undefined
   }
 
+  function editorSelectableForProject(project: LocalProject, editor: CodeEditorEnum) {
+    return !project.isRemote || canOpenRemoteProject(editor)
+  }
+
   function editorMenuItems(project: LocalProject, mode: 'open-with' | 'default-editor'): UiActionMenuItem[] {
-    return editorCommandOptions.map((option, index) => {
-      const previousOption = editorCommandOptions[index - 1]
+    const options = editorCommandOptions()
+    return options.map((option, index) => {
+      const previousOption = options[index - 1]
       const isCurrentDefault = mode === 'default-editor' && option.key === project.defaultOpen
       const hasLaunchCommand = editorHasLaunchCommand(option.key)
 
@@ -47,17 +53,22 @@ export function useProjectMenus(deps: MenuDependencies) {
         icon: editorMenuIcon(option),
         checked: isCurrentDefault,
         disabled: (mode === 'open-with' && (!project.isExists || !hasLaunchCommand))
-          || (project.isRemote && !isVscodeHistoryScannerEditor(option.key)),
+          || !editorSelectableForProject(project, option.key),
         separatorBefore: index > 0 && option.groupKey !== previousOption.groupKey,
       }
     })
   }
 
   function defaultEditorMenuItems(project: LocalProject): UiActionMenuItem[] {
+    const canAutoSelectEditor = editorCommandOptions().some(option =>
+      editorSelectableForProject(project, option.key),
+    )
+
     return [
       {
         id: DEFAULT_EDITOR_AUTO_ACTION,
         label: t('app.home.actions.auto_editor'),
+        disabled: !canAutoSelectEditor,
       },
       ...editorMenuItems(project, 'default-editor').map((item, index) => ({
         ...item,
@@ -74,8 +85,10 @@ export function useProjectMenus(deps: MenuDependencies) {
   function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
     const canDeleteFiles = canDeleteProjectFiles(project)
     const sourceUrl = projectSourceUrl(project)
+    const defaultEditorVisible = editorCommandOptions().some(option => option.key === project.defaultOpen)
     const canCopyTerminalCommand = !project.isRemote
       && project.isExists
+      && defaultEditorVisible
       && editorHasLaunchCommand(project.defaultOpen)
       && editorOpensInTerminal(project.defaultOpen)
 

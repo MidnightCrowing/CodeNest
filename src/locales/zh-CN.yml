@@ -192,6 +192,8 @@ app:
       terminal_command: 打开目录
       terminal_command_placeholder: 系统默认
       terminal_command_hint: 留空使用系统默认，支持 {cwd}
+      visibility_label: 在菜单中显示 {editor}
+      visibility_required: 至少保留一个可见编辑器。
       groups:
         jetbrains: JetBrains
         microsoft: Microsoft

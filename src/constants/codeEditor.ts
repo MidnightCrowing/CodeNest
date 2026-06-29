@@ -262,6 +262,10 @@ export function isVscodeHistoryScannerEditor(editor: CodeEditorEnum): editor is 
   return vscodeHistoryScannerEditorSet.has(editor)
 }
 
+export function canOpenRemoteProject(editor: CodeEditorEnum): editor is VscodeHistoryScannerEditor {
+  return isVscodeHistoryScannerEditor(editor)
+}
+
 export function isCliHistoryScannerEditor(editor: CodeEditorEnum): editor is CliHistoryScannerEditor {
   return cliHistoryScannerEditorSet.has(editor)
 }

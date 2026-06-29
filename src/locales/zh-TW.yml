@@ -192,6 +192,8 @@ app:
       terminal_command: 開啟目錄
       terminal_command_placeholder: 系統預設
       terminal_command_hint: 留空使用系統預設，支援 {cwd}
+      visibility_label: 在選單中顯示 {editor}
+      visibility_required: 至少保留一個可見編輯器。
       groups:
         jetbrains: JetBrains
         microsoft: Microsoft

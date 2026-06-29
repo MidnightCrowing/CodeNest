@@ -2,7 +2,7 @@ import { useI18n } from 'vue-i18n'
 
 import { ViewEnum } from '~/constants/appEnums'
 import type { CodeEditorEnum, CodeEditorOption } from '~/constants/codeEditor'
-import { codeEditorOrder, codeEditors, isVscodeHistoryScannerEditor } from '~/constants/codeEditor'
+import { canOpenRemoteProject, codeEditors } from '~/constants/codeEditor'
 import { LicenseEnum } from '~/constants/license'
 import type { languagesGroupItem, LocalProject } from '~/constants/localProject'
 import { ProjectKind } from '~/constants/localProject'
@@ -11,6 +11,7 @@ import { detectLicenseBySnippet } from '~/services/licenseDetector'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectScannerStore } from '~/stores/projectScannerStore'
 import { useProjectsStore } from '~/stores/projectsStore'
+import { useSettingsStore } from '~/stores/settingsStore'
 import { kindLabel, shortLicense } from '~/utils/projectFormatters'
 import { extractGithubRepositoryName } from '~/utils/projectSource'
 import { useDelayedBusy } from '~/utils/useDelayedBusy'
@@ -70,6 +71,7 @@ async function resolveLanguageColor(
 export function useProjectEditor() {
   const activatedView = inject('activatedView') as Ref<ViewEnum>
   const projectsStore = useProjectsStore()
+  const settingsStore = useSettingsStore()
   const projectScannerStore = useProjectScannerStore()
   const editorLangGroupsStore = useEditorLangGroupsStore()
   const initialProjectPath = localProjectItem.value.path || ''
@@ -92,8 +94,17 @@ export function useProjectEditor() {
     remotePath: false,
   })
 
+  function editorSelectableForProject(editor: CodeEditorEnum) {
+    return !isRemote.value || canOpenRemoteProject(editor)
+  }
+
   const editorRows = computed<Array<[CodeEditorEnum, CodeEditorOption]>>(() =>
-    codeEditorOrder.map(editor => [editor, codeEditors[editor]]),
+    [
+      ...new Set([
+        localProjectItem.value.defaultOpen,
+        ...settingsStore.visibleCodeEditorOrder,
+      ].filter((editor): editor is CodeEditorEnum => !!editor)),
+    ].map(editor => [editor, codeEditors[editor]]),
   )
 
   function editorGroupLabel(option: CodeEditorOption) {
@@ -102,10 +113,11 @@ export function useProjectEditor() {
 
   const editorOptions = computed(() =>
     editorRows.value
-      .filter(([editor]) => !isRemote.value || isVscodeHistoryScannerEditor(editor))
+      .filter(([editor]) => editorSelectableForProject(editor))
       .map(([editor, option]) => ({
         value: editor,
         label: `${editorGroupLabel(option)} / ${option.label}`,
+        disabled: editor === localProjectItem.value.defaultOpen && !settingsStore.isEditorVisible(editor),
       })),
   )
 
@@ -237,7 +249,12 @@ export function useProjectEditor() {
     if (!language || localProjectItem.value.defaultOpen)
       return
 
-    localProjectItem.value.defaultOpen = editorLangGroupsStore.getEditorByLanguage(language)
+    const languageEditor = editorLangGroupsStore.getEditorByLanguage(language)
+    localProjectItem.value.defaultOpen = settingsStore.resolveVisibleEditor(
+      languageEditor,
+      null,
+      editorSelectableForProject,
+    )
   }
 
   function resetDetectedProjectMetadata() {
@@ -473,7 +490,7 @@ export function useProjectEditor() {
     localProjectItem.value.isRemote = remote
     if (remote) {
       localProjectItem.value.path = null
-      if (localProjectItem.value.defaultOpen && !isVscodeHistoryScannerEditor(localProjectItem.value.defaultOpen))
+      if (localProjectItem.value.defaultOpen && !canOpenRemoteProject(localProjectItem.value.defaultOpen))
         localProjectItem.value.defaultOpen = null
     }
     else {

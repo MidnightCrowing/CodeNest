@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ThemeColorEnum } from '~/constants/appEnums'
+import { CodeEditorEnum, editorCommandKeys } from '~/constants/codeEditor'
 import { useSettingsStore } from '~/stores/settingsStore'
 
 function createMemoryStorage() {
@@ -72,5 +73,38 @@ describe('settingsStore', () => {
 
     expect(settingsStore.themeColor).toBe(ThemeColorEnum.Blue)
     expect(window.api.saveData).not.toHaveBeenCalled()
+  })
+
+  it('keeps at least one editor visible', () => {
+    const settingsStore = useSettingsStore()
+
+    for (const editor of editorCommandKeys) {
+      if (editor !== CodeEditorEnum.VisualStudioCode)
+        settingsStore.setEditorVisible(editor, false)
+    }
+    settingsStore.setEditorVisible(CodeEditorEnum.VisualStudioCode, false)
+
+    expect(settingsStore.isEditorVisible(CodeEditorEnum.VisualStudioCode)).toBe(true)
+    expect(settingsStore.visibleCodeEditorOrder).toEqual([CodeEditorEnum.VisualStudioCode])
+  })
+
+  it('falls back scanner specified editor when the selected editor is hidden', () => {
+    const settingsStore = useSettingsStore()
+    settingsStore.scanner.editor = CodeEditorEnum.Cursor
+
+    settingsStore.setEditorVisible(CodeEditorEnum.Cursor, false)
+
+    expect(settingsStore.scanner.editor).toBe(CodeEditorEnum.Trae)
+  })
+
+  it('resolves automatic editor choices to visible editors only', () => {
+    const settingsStore = useSettingsStore()
+    settingsStore.setEditorVisible(CodeEditorEnum.Cursor, false)
+
+    expect(settingsStore.resolveVisibleEditor(
+      CodeEditorEnum.Cursor,
+      CodeEditorEnum.VisualStudioCode,
+    )).toBe(CodeEditorEnum.VisualStudioCode)
+    expect(settingsStore.visibleEditorCommandOptions.some(option => option.key === CodeEditorEnum.Cursor)).toBe(false)
   })
 })

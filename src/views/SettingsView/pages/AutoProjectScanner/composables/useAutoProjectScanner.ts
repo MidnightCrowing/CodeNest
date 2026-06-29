@@ -2,7 +2,6 @@ import { useI18n } from 'vue-i18n'
 
 import type { CliHistoryScannerEditor, CodeEditorEnum, VscodeHistoryScannerEditor } from '~/constants/codeEditor'
 import {
-  codeEditorOrder,
   codeEditors,
   isCliHistoryScannerEditor,
   isVscodeHistoryScannerEditor,
@@ -46,7 +45,7 @@ export function useAutoProjectScanner() {
   } = useDelayedBusyKeys<ScannerDetectKey>({ delay: 220, minDuration: 320 })
 
   const editorOptions = computed<Array<{ value: CodeEditorEnum, label: string }>>(() =>
-    codeEditorOrder.map(editor => ({
+    settings.visibleCodeEditorOrder.map(editor => ({
       value: editor,
       label: codeEditors[editor].label,
     })),
