@@ -141,3 +141,7 @@ This project uses the following excellent open source projects:
 - [Lucide](https://lucide.dev/) - Open source icon library
 
 And editor icon resources provided by JetBrains, Microsoft, Anthropic and others.
+
+## Friends
+
+- [LINUX DO](https://linux.do/)

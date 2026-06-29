@@ -141,3 +141,7 @@ codenest/
 - [Lucide](https://lucide.dev/) - 開源圖示庫
 
 以及 JetBrains、Microsoft、Anthropic 等公司提供的編輯器圖示資源。
+
+## 友情連結
+
+- [LINUX DO](https://linux.do/)
