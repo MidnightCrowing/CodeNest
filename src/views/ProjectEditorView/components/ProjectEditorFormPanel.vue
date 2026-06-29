@@ -46,6 +46,13 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
+
+const projectGroup = computed({
+  get: () => localProjectItem.value.group || null,
+  set: (value: string | null) => {
+    localProjectItem.value.group = value || ''
+  },
+})
 </script>
 
 <template>
@@ -254,23 +261,15 @@ const { t } = useI18n()
       <div class="setting-row">
         <label class="setting-copy" for="project-group">
           <strong>{{ t('app.project_editor.fields.group') }}</strong>
-          <span>{{ t('app.project_editor.fields.group_desc') }}</span>
         </label>
-        <div class="inline-field">
-          <input
-            id="project-group"
-            v-model="localProjectItem.group"
-            class="text-input compact"
-            list="project-groups"
-            spellcheck="false"
-            :aria-label="t('app.project_editor.fields.group')"
-            :placeholder="t('app.project_editor.no_group')"
-            :title="localProjectItem.group || ''"
-          >
-          <datalist id="project-groups">
-            <option v-for="group in groupOptions" :key="group" :value="group" />
-          </datalist>
-        </div>
+        <UiCombobox
+          v-model="projectGroup"
+          :options="groupOptions"
+          :placeholder="t('app.project_editor.no_group')"
+          :aria-label="t('app.project_editor.fields.group')"
+          min-width="220px"
+          content-width="240px"
+        />
       </div>
 
       <div class="setting-row">

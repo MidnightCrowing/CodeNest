@@ -359,7 +359,6 @@ app:
       remote_path_placeholder: 例如 /home/user/project
       name: 名稱
       group: 分組
-      group_desc: 用於篩選的選填標籤。
       type: 類型
       source_url: 來源 URL
       source_name: 來源名稱

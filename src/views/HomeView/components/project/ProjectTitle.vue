@@ -20,12 +20,13 @@ const { t } = useI18n()
 <template>
   <div
     min-w-0 flex items-center gap-7px overflow-hidden
+    class="[container-type:inline-size]"
     :class="card ? 'w-full' : ''"
   >
     <strong
-      v-if="card"
-      min-w-0 flex-1 inline-flex items-center truncate
+      min-w-0 inline-flex items-center overflow-hidden
       text-13px font-600 light:color="$gray-1" dark:color="$gray-13"
+      :class="card ? 'flex-1' : 'max-w-full grow-0 shrink basis-auto'"
       :title="project.group ? `${project.group}/${project.name}` : project.name"
     >
       <span
@@ -33,31 +34,16 @@ const { t } = useI18n()
         class="i-lucide:pin"
       />
       <span
-        v-if="project.group" min-w-0 max-w="[45%]" truncate text-12px
+        v-if="project.group" min-w-0 max-w="[45cqw]" truncate text-12px
         font-600 light:color="$gray-7" dark:color="$gray-8" :title="project.group"
-      >{{ project.group }}/</span><span
+      >{{ project.group }}</span><span
+        v-if="project.group" shrink-0 text-12px font-600
+        light:color="$gray-7" dark:color="$gray-8"
+      >/</span><span
         min-w-0 flex-1 truncate text-13px font-600
         light:color="$gray-1" dark:color="$gray-13" :title="project.name"
       >{{ project.name }}</span>
     </strong>
-    <span
-      v-else
-      min-w-0 max-w-full flex items-center overflow-hidden
-      grow-0 shrink basis-auto
-      :title="project.group ? `${project.group}/${project.name}` : project.name"
-    >
-      <span
-        v-if="project.isPinned" mr-4px shrink-0 text-11px color="$ui-primary"
-        class="i-lucide:pin"
-      />
-      <span
-        v-if="project.group" min-w-0 max-w="[45%]" truncate text-12px
-        font-600 light:color="$gray-7" dark:color="$gray-8" :title="project.group"
-      >{{ project.group }}/</span><span
-        min-w-0 flex-1 truncate text-13px font-600
-        light:color="$gray-1" dark:color="$gray-13" :title="project.name"
-      >{{ project.name }}</span>
-    </span>
     <span
       v-if="project.kind !== ProjectKind.MINE || project.isRemote || project.isTemporary"
       shrink-0 flex items-center gap-5px

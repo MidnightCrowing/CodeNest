@@ -359,7 +359,6 @@ app:
       remote_path_placeholder: e.g. /home/user/project
       name: Name
       group: Group
-      group_desc: Optional label for filtering.
       type: Type
       source_url: Source URL
       source_name: Source name

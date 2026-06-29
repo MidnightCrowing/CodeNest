@@ -12,6 +12,9 @@ body {
   --font-title:
     "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans GB",
     "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
+  --font-code:
+    "JetBrains Mono", "Cascadia Code", "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Monaco,
+    "Noto Sans Mono CJK SC", "Noto Sans Mono", monospace;
 
   font-family:
     "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans GB",
@@ -36,6 +39,7 @@ textarea {
 
 input,
 textarea {
+  font-family: var(--font-code);
   font-size: 11px;
 }
 
