@@ -10,6 +10,7 @@ export default mergeConfig(
     test: {
       environment: 'node',
       exclude: [...configDefaults.exclude, 'e2e/**'],
+      include: ['src/**/*.test.ts'],
       root: fileURLToPath(new URL('./', import.meta.url)),
     },
   }),

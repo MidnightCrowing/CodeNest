@@ -52,7 +52,7 @@ export default defineConfig({
     VueI18nPlugin({
       runtimeOnly: true, // 只使用运行时版本
       compositionOnly: true, // 只支持组合式 API
-      include: [r('./src/locales/**')],
+      include: [r('./src/locales/**/*.{json,json5,yaml,yml}')],
     }),
 
     UnoCSS(),

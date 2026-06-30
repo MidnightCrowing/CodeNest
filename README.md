@@ -112,10 +112,10 @@ codenest/
 │   ├── views/        # Page components
 │   ├── stores/       # Pinia state
 │   ├── components/   # Reusable components
-│   └── services/     # Business logic
+│   ├── services/     # Business logic
+│   └── **/*.test.ts  # Frontend unit tests colocated with source
 ├── src-tauri/        # Rust backend
 │   └── src/          # Tauri commands
-└── tests/            # Test files
 ```
 
 For more development guidance, see [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](docs/CONTRIBUTING_EN.md).

@@ -24,9 +24,8 @@ CodeNest
   ├── docs        # Documentation and screenshots
   ├── icons       # Icon source files
   ├── scripts     # Automation scripts
-  ├── src         # Vue app source code
+  ├── src         # Vue app source code and colocated frontend unit tests
   ├── src-tauri   # Tauri desktop shell and native commands
-  ├── tests       # Frontend unit tests
 ```
 
 ## Building the Project

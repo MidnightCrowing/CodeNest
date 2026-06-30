@@ -56,7 +56,7 @@ pnpm build:vue     # Build Vue frontend only
   - `src/*.rs` — Command modules (project, scanner, data, webdav, system, etc.)
   - `tauri.conf.json` — Tauri app configuration
   - `Cargo.toml` — Rust dependencies
-- `tests/` — Frontend unit tests (Vitest)
+- Frontend unit tests are colocated with source modules as `src/**/*.test.ts`
 
 ### Data Flow
 1. **Frontend state** (Pinia stores) loads from localStorage cache immediately for fast startup
@@ -216,9 +216,9 @@ views/HomeView/
 
 ### Frontend Tests
 - **Framework**: Vitest
-- **Test files**: `tests/*.test.ts`
+- **Test files**: `src/**/*.test.ts`
 - **Run**: `pnpm test`
-- **Coverage**: License detection, store persistence, locale key validation
+- **Coverage**: License detection, store persistence, project menus, locale key validation
 
 ### Rust Tests
 - **Framework**: Standard Rust `#[test]` + `#[cfg(test)]`

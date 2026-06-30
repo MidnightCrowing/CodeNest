@@ -112,10 +112,10 @@ codenest/
 │   ├── views/        # 页面组件
 │   ├── stores/       # Pinia 状态
 │   ├── components/   # 可复用组件
-│   └── services/     # 业务逻辑
+│   ├── services/     # 业务逻辑
+│   └── **/*.test.ts  # 与源码共置的前端单元测试
 ├── src-tauri/        # Rust 后端
 │   └── src/          # Tauri 命令
-└── tests/            # 测试文件
 ```
 
 更多开发指南请参考 [CLAUDE.md](CLAUDE.md) 和 [CONTRIBUTING.md](docs/CONTRIBUTING_CN.md)。

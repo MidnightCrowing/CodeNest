@@ -24,9 +24,8 @@ CodeNest
   ├── docs        # 文档和界面截图
   ├── icons       # 图标源文件
   ├── scripts     # 自动化脚本
-  ├── src         # Vue 应用源代码
+  ├── src         # Vue 应用源代码和共置的前端单元测试
   ├── src-tauri   # Tauri 桌面壳和本地命令
-  ├── tests       # 前端单元测试
 ```
 
 ## 构建
