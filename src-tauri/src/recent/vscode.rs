@@ -97,7 +97,10 @@ struct VscodeRecentEntry {
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum VscodeWorkspace {
-    Object { config_path: String },
+    Object {
+        #[serde(rename = "configPath")]
+        config_path: String,
+    },
     String(String),
 }
 
@@ -107,5 +110,145 @@ impl VscodeWorkspace {
             VscodeWorkspace::Object { config_path } => Some(config_path),
             VscodeWorkspace::String(value) => Some(value),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        path::{Path, PathBuf},
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use rusqlite::Connection;
+    use serde_json::json;
+
+    use crate::analyzer::normalize_path_key;
+
+    use super::collect_from_vscode;
+
+    fn unique_temp_dir(label: &str) -> PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be valid")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "codenest-vscode-{label}-{}-{unique}",
+            std::process::id()
+        ))
+    }
+
+    fn path_to_file_uri(path: &Path) -> String {
+        let url = url::Url::from_file_path(path).expect("path should convert to file uri");
+        url.into()
+    }
+
+    fn write_vscdb(db_path: &Path, history_json: &str) {
+        if let Some(parent) = db_path.parent() {
+            fs::create_dir_all(parent).expect("db parent should be created");
+        }
+        let connection = Connection::open(db_path).expect("sqlite db should open");
+        connection
+            .execute(
+                "CREATE TABLE ItemTable (key TEXT PRIMARY KEY, value TEXT)",
+                [],
+            )
+            .expect("ItemTable should be created");
+        connection
+            .execute(
+                "INSERT INTO ItemTable (key, value) VALUES (?1, ?2)",
+                ("history.recentlyOpenedPathsList", history_json),
+            )
+            .expect("history row should be inserted");
+    }
+
+    #[test]
+    fn collect_from_vscode_returns_empty_for_missing_db() {
+        assert!(collect_from_vscode(None).is_empty());
+        assert!(collect_from_vscode(Some("")).is_empty());
+        assert!(collect_from_vscode(Some(r"E:\missing-state.vscdb")).is_empty());
+    }
+
+    #[test]
+    fn collect_from_vscode_reads_folder_file_and_workspace_entries() {
+        let root = unique_temp_dir("entries");
+        let project = root.join("project");
+        let file_project = root.join("file-project");
+        let workspace_project = root.join("workspace-project");
+        fs::create_dir_all(&project).expect("project dir should be created");
+        fs::create_dir_all(&file_project).expect("file project dir should be created");
+        fs::create_dir_all(&workspace_project).expect("workspace project dir should be created");
+
+        let file_uri = path_to_file_uri(&file_project.join("main.ts"));
+        let workspace_uri = path_to_file_uri(&workspace_project.join("demo.code-workspace"));
+        let history = json!({
+            "entries": [
+                { "folderUri": path_to_file_uri(&project) },
+                { "fileUri": file_uri },
+                { "workspace": { "configPath": workspace_uri } },
+                {
+                    "folderUri": path_to_file_uri(&root.join("remote-only")),
+                    "remoteAuthority": "ssh-remote+devbox"
+                }
+            ]
+        })
+        .to_string();
+
+        let db_path = root.join("state.vscdb");
+        write_vscdb(&db_path, &history);
+
+        let mut items = collect_from_vscode(Some(&db_path.to_string_lossy()));
+        items.sort_by(|a, b| a.path.cmp(&b.path));
+
+        let paths: Vec<_> = items
+            .iter()
+            .map(|item| normalize_path_key(Path::new(&item.path)))
+            .collect();
+
+        assert!(paths.contains(&normalize_path_key(&project)));
+        assert!(paths.contains(&normalize_path_key(&file_project)));
+        assert!(paths.contains(&normalize_path_key(&workspace_project)));
+        assert_eq!(items.len(), 3);
+        assert!(items.iter().all(|item| item.ide.is_none()));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn collect_from_vscode_accepts_string_workspace_entries() {
+        let root = unique_temp_dir("workspace-string");
+        let workspace_project = root.join("ws");
+        fs::create_dir_all(&workspace_project).expect("workspace dir should be created");
+        let workspace_uri = path_to_file_uri(&workspace_project.join("app.code-workspace"));
+        let history = json!({
+            "entries": [
+                { "workspace": workspace_uri }
+            ]
+        })
+        .to_string();
+
+        let db_path = root.join("state.vscdb");
+        write_vscdb(&db_path, &history);
+
+        let items = collect_from_vscode(Some(&db_path.to_string_lossy()));
+        assert_eq!(items.len(), 1);
+        assert_eq!(
+            normalize_path_key(Path::new(&items[0].path)),
+            normalize_path_key(&workspace_project)
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn collect_from_vscode_returns_empty_for_invalid_history_json() {
+        let root = unique_temp_dir("invalid-json");
+        let db_path = root.join("state.vscdb");
+        write_vscdb(&db_path, "{not-json");
+
+        assert!(collect_from_vscode(Some(&db_path.to_string_lossy())).is_empty());
+
+        let _ = fs::remove_dir_all(root);
     }
 }

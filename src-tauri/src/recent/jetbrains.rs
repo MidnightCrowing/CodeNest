@@ -49,13 +49,15 @@ pub fn collect_from_jetbrains(config_root: Option<&str>) -> Vec<RecentProject> {
                 let Some(raw_path) = project_entry.attribute("key") else {
                     continue;
                 };
-                if raw_path.contains('$')
-                    || raw_path.contains("light-edit")
-                    || raw_path.contains("scratches")
-                {
+                // light-edit / scratches are transient JetBrains workspaces.
+                // Expand $USER_HOME$ first, then drop any still-unresolved macros.
+                if raw_path.contains("light-edit") || raw_path.contains("scratches") {
                     continue;
                 }
                 let normalized = normalize_jetbrains_path(raw_path, &home);
+                if normalized.contains('$') {
+                    continue;
+                }
                 candidates.push(RecentProject {
                     path: normalized,
                     ide: ide.clone(),
@@ -91,4 +93,143 @@ fn map_jetbrains_ide(raw_name: &str) -> Option<String> {
         _ => return None,
     };
     Some(value.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        path::Path,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use crate::analyzer::normalize_path_key;
+
+    use super::{collect_from_jetbrains, map_jetbrains_ide, normalize_jetbrains_path};
+
+    fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be valid")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "codenest-jetbrains-{label}-{}-{unique}",
+            std::process::id()
+        ))
+    }
+
+    fn write_recent_projects_xml(product_dir: &Path, entries: &[&str]) {
+        let options_dir = product_dir.join("options");
+        fs::create_dir_all(&options_dir).expect("options dir should be created");
+        let mut body = String::from(
+            r#"<application><component name="RecentProjectsManager"><option name="additionalInfo"><map>"#,
+        );
+        for entry in entries {
+            body.push_str(&format!(r#"<entry key="{entry}"/>"#));
+        }
+        body.push_str("</map></option></component></application>");
+        fs::write(options_dir.join("recentProjects.xml"), body)
+            .expect("recentProjects.xml should be written");
+    }
+
+    #[test]
+    fn collect_from_jetbrains_returns_empty_for_missing_root() {
+        assert!(collect_from_jetbrains(None).is_empty());
+        assert!(collect_from_jetbrains(Some("")).is_empty());
+        assert!(collect_from_jetbrains(Some(
+            r"E:\definitely-missing-jetbrains-config-root"
+        ))
+        .is_empty());
+    }
+
+    #[test]
+    fn map_jetbrains_ide_recognizes_common_products() {
+        assert_eq!(
+            map_jetbrains_ide("IntelliJIdea").as_deref(),
+            Some("intellij-idea")
+        );
+        assert_eq!(map_jetbrains_ide("WebStorm").as_deref(), Some("webstorm"));
+        assert_eq!(map_jetbrains_ide("GoLand").as_deref(), Some("goLand"));
+        assert_eq!(map_jetbrains_ide("UnknownIde"), None);
+    }
+
+    #[test]
+    fn normalize_jetbrains_path_expands_user_home() {
+        let home = Path::new(r"C:\Users\example");
+        let normalized = normalize_jetbrains_path("$USER_HOME$/Projects/CodeNest", home);
+        #[cfg(windows)]
+        assert_eq!(normalized, r"C:\Users\example\Projects\CodeNest");
+        #[cfg(not(windows))]
+        assert_eq!(normalized, "C:\\Users\\example/Projects/CodeNest");
+    }
+
+    #[test]
+    fn collect_from_jetbrains_reads_existing_projects_and_skips_transients() {
+        let root = unique_temp_dir("collect");
+        let config_root = root.join("config");
+        let project = root.join("project_a");
+        fs::create_dir_all(&project).expect("project dir should be created");
+        fs::create_dir_all(&config_root).expect("config root should be created");
+
+        let product_dir = config_root.join("WebStorm2024.1");
+        let project_key = project.to_string_lossy().replace('\\', "/");
+        write_recent_projects_xml(
+            &product_dir,
+            &[
+                project_key.as_str(),
+                "$USER_HOME$/light-edit",
+                "/tmp/scratches/demo",
+                "$APPLICATION_CONFIG_DIR$/system",
+            ],
+        );
+
+        let items = collect_from_jetbrains(Some(&config_root.to_string_lossy()));
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].ide.as_deref(), Some("webstorm"));
+        assert_eq!(
+            normalize_path_key(Path::new(&items[0].path)),
+            normalize_path_key(&project)
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn collect_from_jetbrains_expands_user_home_macro() {
+        let home = dirs::home_dir().expect("home dir should exist for jetbrains macro test");
+        let project = home.join(format!(
+            "codenest-jetbrains-home-project-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system time should be valid")
+                .as_nanos()
+        ));
+        fs::create_dir_all(&project).expect("home project dir should be created");
+
+        let root = unique_temp_dir("home-macro");
+        let config_root = root.join("config");
+        fs::create_dir_all(&config_root).expect("config root should be created");
+        let product_dir = config_root.join("IntelliJIdea2023.3");
+        let relative = project
+            .strip_prefix(&home)
+            .expect("project should be under home")
+            .to_string_lossy()
+            .replace('\\', "/");
+        write_recent_projects_xml(
+            &product_dir,
+            &[&format!("$USER_HOME$/{relative}")],
+        );
+
+        let items = collect_from_jetbrains(Some(&config_root.to_string_lossy()));
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].ide.as_deref(), Some("intellij-idea"));
+        assert_eq!(
+            normalize_path_key(Path::new(&items[0].path)),
+            normalize_path_key(&project)
+        );
+
+        let _ = fs::remove_dir_all(project);
+        let _ = fs::remove_dir_all(root);
+    }
 }

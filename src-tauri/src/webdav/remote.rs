@@ -121,12 +121,14 @@ fn remote_url(
     remote_path: Option<&str>,
     file_name: Option<&str>,
 ) -> Result<Url, String> {
-    let endpoint = ensure_trailing_slash(config.endpoint.trim());
-    let mut url = Url::parse(&endpoint).map_err(|error| error.to_string())?;
+    // Keep the endpoint path, but drop a trailing empty segment so later pushes
+    // do not produce `//folder/file` in the final URL.
+    let mut url = Url::parse(config.endpoint.trim()).map_err(|error| error.to_string())?;
     {
         let mut segments = url
             .path_segments_mut()
             .map_err(|_| "Invalid WebDAV URL".to_string())?;
+        segments.pop_if_empty();
         if let Some(remote_path) = remote_path {
             for segment in remote_path.split('/').filter(|segment| !segment.is_empty()) {
                 segments.push(segment);
@@ -140,15 +142,16 @@ fn remote_url(
 }
 
 fn remote_collection_url(config: &WebDavConfig, remote_path: &str) -> Result<Url, String> {
-    let endpoint = ensure_trailing_slash(config.endpoint.trim());
-    let mut url = Url::parse(&endpoint).map_err(|error| error.to_string())?;
+    let mut url = Url::parse(config.endpoint.trim()).map_err(|error| error.to_string())?;
     {
         let mut segments = url
             .path_segments_mut()
             .map_err(|_| "Invalid WebDAV URL".to_string())?;
+        segments.pop_if_empty();
         for segment in remote_path.split('/').filter(|segment| !segment.is_empty()) {
             segments.push(segment);
         }
+        // Trailing empty segment keeps PROPFIND/MKCOL collection URLs slash-terminated.
         segments.push("");
     }
     Ok(url)
@@ -164,14 +167,6 @@ fn normalized_remote_path(config: &WebDavConfig) -> String {
         .to_string()
 }
 
-fn ensure_trailing_slash(value: &str) -> String {
-    if value.ends_with('/') {
-        value.to_string()
-    } else {
-        format!("{value}/")
-    }
-}
-
 pub(super) fn with_auth(
     request: reqwest::RequestBuilder,
     config: &WebDavConfig,
@@ -181,4 +176,85 @@ pub(super) fn with_auth(
         return request;
     }
     request.basic_auth(username, config.password.clone())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        normalized_remote_path, remote_collection_url, remote_file_url, validate_config,
+    };
+    use crate::webdav::models::WebDavConfig;
+
+    fn config(endpoint: &str, remote_path: Option<&str>) -> WebDavConfig {
+        WebDavConfig {
+            endpoint: endpoint.to_string(),
+            username: Some("user".to_string()),
+            password: Some("secret".to_string()),
+            remote_path: remote_path.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn validate_config_requires_endpoint() {
+        let error = validate_config(&config("   ", None)).expect_err("empty endpoint should fail");
+        assert_eq!(error, "WebDAV URL is required");
+    }
+
+    #[test]
+    fn validate_config_rejects_invalid_urls() {
+        let error =
+            validate_config(&config("not a url", None)).expect_err("invalid url should fail");
+        assert!(!error.is_empty());
+    }
+
+    #[test]
+    fn remote_file_url_uses_default_codenest_folder() {
+        let url = remote_file_url(
+            &config("https://dav.example.com/remote.php/dav/files/user", None),
+            "settings.json",
+        )
+        .expect("url should build");
+
+        assert_eq!(
+            url.as_str(),
+            "https://dav.example.com/remote.php/dav/files/user/CodeNest/settings.json"
+        );
+    }
+
+    #[test]
+    fn remote_file_url_normalizes_custom_remote_path() {
+        let url = remote_file_url(
+            &config(
+                "https://dav.example.com/base/",
+                Some("/backup/codenest/"),
+            ),
+            "projects.json",
+        )
+        .expect("url should build");
+
+        assert_eq!(
+            url.as_str(),
+            "https://dav.example.com/base/backup/codenest/projects.json"
+        );
+    }
+
+    #[test]
+    fn remote_collection_url_ends_with_trailing_slash_segment() {
+        let url = remote_collection_url(
+            &config("https://dav.example.com/base", Some("CodeNest")),
+            "CodeNest",
+        )
+        .expect("collection url should build");
+
+        assert!(url.as_str().ends_with("/CodeNest/"));
+    }
+
+    #[test]
+    fn normalized_remote_path_defaults_and_trims_slashes() {
+        assert_eq!(normalized_remote_path(&config("https://x", None)), "CodeNest");
+        assert_eq!(
+            normalized_remote_path(&config("https://x", Some(" /Apps/CodeNest/ "))),
+            "Apps/CodeNest"
+        );
+    }
 }

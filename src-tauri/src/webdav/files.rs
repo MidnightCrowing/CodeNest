@@ -109,3 +109,80 @@ fn parse_json(raw: &str) -> Result<Value, String> {
 fn to_pretty_json(value: &Value) -> Result<String, String> {
     serde_json::to_string_pretty(value).map_err(|error| error.to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use crate::data::DataFileKind;
+
+    use super::{prepare_upload_content, read_or_default, SYNC_FILES};
+
+    fn unique_temp_path(label: &str) -> std::path::PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be valid")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "codenest-webdav-files-{label}-{}-{unique}",
+            std::process::id()
+        ))
+    }
+
+    #[test]
+    fn sync_files_cover_settings_and_projects() {
+        assert_eq!(SYNC_FILES.len(), 2);
+        assert!(SYNC_FILES.iter().any(|file| file.name == "settings.json"));
+        assert!(SYNC_FILES.iter().any(|file| file.name == "projects.json"));
+    }
+
+    #[test]
+    fn prepare_upload_content_strips_webdav_from_settings() {
+        let raw = r#"{"theme":"dark","webdav":{"endpoint":"https://dav.example.com","password":"secret"}}"#;
+        let prepared =
+            prepare_upload_content(DataFileKind::Settings, raw).expect("settings should prepare");
+        let value: serde_json::Value =
+            serde_json::from_str(&prepared).expect("prepared settings should be json");
+
+        assert_eq!(value.get("theme").and_then(|v| v.as_str()), Some("dark"));
+        assert!(value.get("webdav").is_none());
+    }
+
+    #[test]
+    fn prepare_upload_content_preserves_projects_payload() {
+        let raw = r#"[{"name":"CodeNest","path":"E:/Projects/CodeNest"}]"#;
+        let prepared =
+            prepare_upload_content(DataFileKind::Projects, raw).expect("projects should prepare");
+        let value: serde_json::Value =
+            serde_json::from_str(&prepared).expect("prepared projects should be json");
+
+        assert!(value.is_array());
+        assert_eq!(value.as_array().map(|items| items.len()), Some(1));
+    }
+
+    #[test]
+    fn prepare_upload_content_rejects_invalid_json() {
+        let error = prepare_upload_content(DataFileKind::Settings, "{not-json")
+            .expect_err("invalid json should fail");
+        assert!(!error.is_empty());
+    }
+
+    #[test]
+    fn read_or_default_returns_fallback_for_missing_files() {
+        let path = unique_temp_path("missing");
+        let content = read_or_default(path, "[]").expect("missing file should use fallback");
+        assert_eq!(content, "[]");
+    }
+
+    #[test]
+    fn read_or_default_returns_file_contents_when_present() {
+        let path = unique_temp_path("present");
+        fs::write(&path, "{\"ok\":true}").expect("temp file should be written");
+        let content = read_or_default(path.clone(), "{}").expect("existing file should be read");
+        assert_eq!(content, "{\"ok\":true}");
+        let _ = fs::remove_file(path);
+    }
+}
