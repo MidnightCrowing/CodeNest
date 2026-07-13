@@ -85,3 +85,26 @@ pub(super) fn get_system_accent_color(current_theme: Option<String>) -> Option<S
     #[cfg(not(target_os = "windows"))]
     None
 }
+
+#[cfg(test)]
+mod tests {
+    #[cfg(target_os = "windows")]
+    use super::{abgr_to_hex, argb_to_hex, rgb_to_hex};
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_color_helpers_convert_to_hex() {
+        assert_eq!(rgb_to_hex(0x12, 0x34, 0x56), "#123456");
+        assert_eq!(abgr_to_hex(0x00563412), "#123456");
+        assert_eq!(argb_to_hex(0xff123456), "#123456");
+    }
+
+    #[test]
+    #[cfg(not(target_os = "windows"))]
+    fn non_windows_accent_color_is_unavailable() {
+        assert_eq!(
+            super::get_system_accent_color(Some("dark".to_string())),
+            None
+        );
+    }
+}

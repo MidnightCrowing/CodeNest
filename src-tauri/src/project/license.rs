@@ -194,3 +194,72 @@ fn license_rank(file_name: &str) -> u8 {
 
     base_score * 10 + extension_score
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use super::{license_rank, read_project_license};
+
+    fn temp_project_dir() -> PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be after epoch")
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("codenest-license-test-{unique}"));
+        fs::create_dir(&dir).expect("temp project directory should be created");
+        dir
+    }
+
+    #[test]
+    fn license_files_rank_before_alternative_names() {
+        assert!(license_rank("LICENSE") < license_rank("LICENCE"));
+        assert!(license_rank("LICENCE") < license_rank("COPYING"));
+        assert!(license_rank("COPYING") < license_rank("UNLICENSE"));
+    }
+
+    #[test]
+    fn extensionless_license_files_rank_before_markdown_and_text() {
+        assert!(license_rank("LICENSE") < license_rank("LICENSE.md"));
+        assert!(license_rank("LICENSE.md") < license_rank("LICENSE.txt"));
+        assert!(license_rank("LICENSE.txt") < license_rank("LICENSE.rst"));
+    }
+
+    #[test]
+    fn ranking_is_case_insensitive() {
+        assert_eq!(license_rank("license.md"), license_rank("LICENSE.md"));
+    }
+
+    #[test]
+    fn read_project_license_selects_best_candidate_and_limits_lines() {
+        let dir = temp_project_dir();
+        fs::write(dir.join("COPYING"), "copying").expect("copying file should be written");
+        fs::write(dir.join("LICENSE.md"), "line1\nline2\nline3")
+            .expect("license file should be written");
+
+        let result = read_project_license(dir.to_string_lossy().into_owned(), Some(2));
+
+        assert!(result.success);
+        assert_eq!(result.filename.as_deref(), Some("LICENSE.md"));
+        assert_eq!(result.snippet.as_deref(), Some("line1\nline2"));
+        assert_eq!(result.lines, Some(2));
+
+        fs::remove_dir_all(dir).expect("temp project directory should be removed");
+    }
+
+    #[test]
+    fn read_project_license_reports_missing_license_files() {
+        let dir = temp_project_dir();
+
+        let result = read_project_license(dir.to_string_lossy().into_owned(), None);
+
+        assert!(!result.success);
+        assert_eq!(result.message.as_deref(), Some("License file not found"));
+
+        fs::remove_dir_all(dir).expect("temp project directory should be removed");
+    }
+}

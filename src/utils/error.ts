@@ -9,5 +9,5 @@
  */
 export function formatActionError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
-  return message.replace(/^Error:\s*/i, '').trim() || 'Unknown error'
+  return message.trim().replace(/^Error:\s*/i, '').trim() || 'Unknown error'
 }

@@ -130,3 +130,54 @@ fn lang(name: &'static str, language_type: LanguageType) -> LanguageDef {
         color: language_color(name),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::{language_color, language_for_path};
+    use crate::analyzer::models::LanguageType;
+
+    #[test]
+    fn detects_special_filenames_before_extensions() {
+        let dockerfile =
+            language_for_path(Path::new("Dockerfile")).expect("Dockerfile should be detected");
+        assert_eq!(dockerfile.name, "Dockerfile");
+        assert!(matches!(
+            dockerfile.language_type,
+            LanguageType::Programming
+        ));
+
+        let cargo_lock =
+            language_for_path(Path::new("Cargo.lock")).expect("Cargo.lock should be detected");
+        assert_eq!(cargo_lock.name, "TOML");
+        assert!(matches!(cargo_lock.language_type, LanguageType::Data));
+    }
+
+    #[test]
+    fn detects_common_programming_and_markup_extensions() {
+        let rust = language_for_path(Path::new("src/main.rs")).expect("Rust should be detected");
+        assert_eq!(rust.name, "Rust");
+        assert!(matches!(rust.language_type, LanguageType::Programming));
+
+        let vue = language_for_path(Path::new("src/App.vue")).expect("Vue should be detected");
+        assert_eq!(vue.name, "Vue");
+        assert!(matches!(vue.language_type, LanguageType::Programming));
+
+        let markdown =
+            language_for_path(Path::new("README.md")).expect("Markdown should be detected");
+        assert_eq!(markdown.name, "Markdown");
+        assert!(matches!(markdown.language_type, LanguageType::Prose));
+    }
+
+    #[test]
+    fn returns_none_for_unknown_extensions() {
+        assert!(language_for_path(Path::new("archive.unknownext")).is_none());
+    }
+
+    #[test]
+    fn returns_known_language_colors() {
+        assert_eq!(language_color("TypeScript"), Some("#3178c6"));
+        assert_eq!(language_color("Unknown"), None);
+    }
+}

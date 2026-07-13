@@ -60,3 +60,32 @@ pub(super) fn file_uri_to_path(uri: &str) -> Option<String> {
         Some(format!("/{decoded}"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::file_uri_to_path;
+
+    #[test]
+    fn file_uri_to_path_rejects_non_file_uris() {
+        assert_eq!(file_uri_to_path("https://example.com/project"), None);
+        assert_eq!(file_uri_to_path("C:/Users/example/project"), None);
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn file_uri_to_path_parses_windows_file_uris() {
+        assert_eq!(
+            file_uri_to_path("file:///C:/Users/example/My%20Project"),
+            Some(r"C:\Users\example\My Project".to_string())
+        );
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn file_uri_to_path_parses_unix_file_uris() {
+        assert_eq!(
+            file_uri_to_path("file:///home/example/My%20Project"),
+            Some("/home/example/My Project".to_string())
+        );
+    }
+}

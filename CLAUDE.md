@@ -218,7 +218,7 @@ views/HomeView/
 - **Framework**: Vitest
 - **Test files**: `src/**/*.test.ts`
 - **Run**: `pnpm test`
-- **Coverage**: License detection, store persistence, project menus, locale key validation
+- **Coverage**: Utility formatting/path rules, store persistence and scanner cache, home composables, project menus/actions, license detection, locale key validation
 
 ### Rust Tests
 - **Framework**: Standard Rust `#[test]` + `#[cfg(test)]`

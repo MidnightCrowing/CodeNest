@@ -54,3 +54,53 @@ pub(super) fn check_path_existence(path: String) -> PathExistenceResult {
         },
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        env,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use super::{check_path_existence, normalize_path_for_home_compare};
+
+    #[test]
+    #[cfg(windows)]
+    fn normalize_path_for_home_compare_handles_windows_case_and_slashes() {
+        assert_eq!(
+            normalize_path_for_home_compare(r"C:\Users\Example\"),
+            "c:/users/example"
+        );
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn normalize_path_for_home_compare_preserves_unix_case() {
+        assert_eq!(
+            normalize_path_for_home_compare("/Users/Example/"),
+            "/Users/Example"
+        );
+    }
+
+    #[test]
+    fn check_path_existence_reports_existing_paths() {
+        let current_dir = env::current_dir().expect("current directory should be available");
+        let result = check_path_existence(current_dir.to_string_lossy().into_owned());
+
+        assert!(result.exists);
+        assert!(result.error.is_none());
+    }
+
+    #[test]
+    fn check_path_existence_reports_missing_paths_without_error() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be after epoch")
+            .as_nanos();
+        let missing_path = env::temp_dir().join(format!("codenest-missing-{unique}"));
+        let result = check_path_existence(missing_path.to_string_lossy().into_owned());
+
+        assert!(!result.exists);
+        assert!(result.error.is_none());
+    }
+}

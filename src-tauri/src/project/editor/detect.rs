@@ -272,3 +272,59 @@ fn format_detected_command(path: &Path, editor: &str, terminal_default: bool) ->
         format!("{command} {{project}}")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::{editor_detection_candidates, format_detected_command, jetbrains_editor_profile};
+
+    #[test]
+    fn editor_detection_candidates_include_terminal_defaults() {
+        let (neovim_commands, _, neovim_terminal) =
+            editor_detection_candidates("neovim").expect("neovim should be supported");
+        assert_eq!(neovim_commands, &["nvim"]);
+        assert!(neovim_terminal);
+
+        let (vscode_commands, _, vscode_terminal) =
+            editor_detection_candidates("visual-studio-code").expect("VS Code should be supported");
+        assert_eq!(vscode_commands, &["code"]);
+        assert!(!vscode_terminal);
+    }
+
+    #[test]
+    fn editor_detection_candidates_reject_unknown_editors() {
+        assert!(editor_detection_candidates("unknown-editor").is_none());
+    }
+
+    #[test]
+    fn jetbrains_profiles_include_commands_and_toolbox_scripts() {
+        let (commands, executable_names, toolbox_script) =
+            jetbrains_editor_profile("webstorm").expect("WebStorm should have a profile");
+
+        assert_eq!(commands, &["webstorm"]);
+        assert_eq!(executable_names, &["webstorm64.exe", "webstorm.exe"]);
+        assert_eq!(toolbox_script, "webstorm");
+    }
+
+    #[test]
+    fn format_detected_command_adds_project_placeholder_for_gui_editors() {
+        let command = format_detected_command(
+            Path::new(r"C:\Program Files\Code\Code.exe"),
+            "visual-studio-code",
+            false,
+        );
+
+        assert!(command.ends_with(" {project}"));
+        assert!(command.contains("Code.exe"));
+    }
+
+    #[test]
+    fn format_detected_command_uses_terminal_defaults_for_terminal_editors() {
+        let neovim = format_detected_command(Path::new("nvim"), "neovim", true);
+        let codex = format_detected_command(Path::new("codex"), "codex-cli", true);
+
+        assert_eq!(neovim, "nvim .");
+        assert_eq!(codex, "codex");
+    }
+}

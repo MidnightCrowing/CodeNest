@@ -130,8 +130,10 @@ export function useProjectOpenState() {
   function clearProjectFromMaps(projectId: number) {
     clearProjectOpeningTimer(projectId)
     projectOpeningStartedAt.delete(projectId)
+    setProjectOpeningVisible(projectId, false)
     clearTerminalOpeningTimer(projectId)
     terminalOpeningStartedAt.delete(projectId)
+    setTerminalOpeningVisible(projectId, false)
   }
 
   // 组件卸载时清理所有定时器

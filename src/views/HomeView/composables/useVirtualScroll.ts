@@ -19,7 +19,9 @@ export function useVirtualScroll(
   filteredProjects: Ref<LocalProject[]>,
   layoutMode: Ref<'list' | 'grid'>,
 ) {
-  const renderedProjectLimit = ref(LIST_INITIAL_RENDER_COUNT)
+  const renderedProjectLimit = ref(
+    layoutMode.value === 'grid' ? GRID_INITIAL_RENDER_COUNT : LIST_INITIAL_RENDER_COUNT,
+  )
   const loadMoreSentinelRef = ref<HTMLElement | null>(null)
   let loadMoreObserver: IntersectionObserver | null = null
 

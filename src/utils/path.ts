@@ -39,6 +39,6 @@ export function stripWindowsVerbatimPrefix(path: string) {
  * 去尾部斜杠,Windows 下转小写。
  */
 export function normalizePathKey(path: string) {
-  const normalized = stripWindowsVerbatimPrefix(path).trim().replaceAll('\\', '/').replace(TRAILING_SLASH_RE, '')
+  const normalized = stripWindowsVerbatimPrefix(path.trim()).replaceAll('\\', '/').replace(TRAILING_SLASH_RE, '')
   return isWindowsPlatform() ? normalized.toLowerCase() : normalized
 }
