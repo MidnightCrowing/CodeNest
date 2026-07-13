@@ -21,6 +21,8 @@ class FakeHTMLElement {
   focus = vi.fn()
   scrollIntoView = vi.fn()
   dispatchEvent = vi.fn()
+  addEventListener = vi.fn()
+  removeEventListener = vi.fn()
 
   getBoundingClientRect() {
     return this.rect
@@ -61,7 +63,14 @@ function project(appendTime: number, overrides: Partial<LocalProject> = {}): Loc
 
 function keyEvent(
   key: string,
-  overrides: Partial<KeyboardEvent> & Record<string, unknown> = {},
+  overrides: {
+    target?: EventTarget | FakeHTMLElement | null
+    currentTarget?: EventTarget | FakeHTMLElement | null
+    metaKey?: boolean
+    ctrlKey?: boolean
+    altKey?: boolean
+    shiftKey?: boolean
+  } = {},
 ) {
   return {
     key,
