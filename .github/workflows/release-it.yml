@@ -16,6 +16,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write
     outputs:
       tag: ${{ steps.get-tag.outputs.tag }}
 
@@ -70,6 +72,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - uses: actions/checkout@v6
@@ -105,6 +111,41 @@ jobs:
       - name: Build bundle
         if: runner.os != 'Windows'
         run: pnpm build
+
+      - name: Collect release artifacts
+        id: artifacts
+        shell: bash
+        run: |
+          files=()
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(
+            find src-tauri/target/release/bundle -type f \
+              \( -name '*.AppImage' \
+                -o -name '*.deb' \
+                -o -name '*.rpm' \
+                -o -name '*.dmg' \
+                -o -name '*.app.tar.gz' \
+                -o -name '*.msi' \) \
+              -print0
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No release artifacts found."
+            find src-tauri/target/release/bundle -type f || true
+            exit 1
+          fi
+
+          {
+            echo 'paths<<EOF'
+            printf '%s\n' "${files[@]}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ steps.artifacts.outputs.paths }}
 
       - name: Upload bundles
         shell: bash
