@@ -3,6 +3,7 @@ import fs from 'node:fs'
 const packageJsonPath = new URL('../package.json', import.meta.url)
 const tauriConfigPath = new URL('../src-tauri/tauri.conf.json', import.meta.url)
 const cargoTomlPath = new URL('../src-tauri/Cargo.toml', import.meta.url)
+const cargoLockPath = new URL('../src-tauri/Cargo.lock', import.meta.url)
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'))
@@ -30,3 +31,13 @@ if (!cargoVersionRe.test(cargoToml)) {
 
 const nextCargoToml = cargoToml.replace(cargoVersionRe, `version = "${version}"`)
 fs.writeFileSync(cargoTomlPath, nextCargoToml)
+
+const cargoLock = fs.readFileSync(cargoLockPath, 'utf8')
+const cargoLockPackageRe = /(\[\[package\]\]\r?\nname\s*=\s*"codenest"\r?\nversion\s*=\s*")[^"]+("\r?\n)/
+
+if (!cargoLockPackageRe.test(cargoLock)) {
+  throw new Error('Could not find the codenest package version in src-tauri/Cargo.lock')
+}
+
+const nextCargoLock = cargoLock.replace(cargoLockPackageRe, `$1${version}$2`)
+fs.writeFileSync(cargoLockPath, nextCargoLock)
