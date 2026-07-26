@@ -7,7 +7,7 @@ import type { LocalProject } from '~/constants/localProject'
 
 import type { ProjectActionKey } from '../types'
 import ProjectActions from './project/ProjectActions.vue'
-import ProjectEditorChip from './project/ProjectEditorChip.vue'
+import ProjectEditorMenu from './project/ProjectEditorMenu.vue'
 import ProjectMeta from './project/ProjectMeta.vue'
 import ProjectSource from './project/ProjectSource.vue'
 import ProjectTitle from './project/ProjectTitle.vue'
@@ -86,7 +86,11 @@ const { t } = useI18n()
         min-w-0 items-center gap-9px mt-12px grid
         class="card-footer"
       >
-        <ProjectEditorChip :editor="project.defaultOpen" />
+        <ProjectEditorMenu
+          :editor="project.defaultOpen"
+          :menu-items="menuItems"
+          @select="action => emit('menuSelect', project, action)"
+        />
         <ProjectActions
           :project="project"
           :menu-items="menuItems"
@@ -130,10 +134,6 @@ const { t } = useI18n()
 
 .card-footer {
   @apply grid-cols-[minmax(0,1fr)_max-content];
-
-  :deep(.editor-chip) {
-    @apply justify-self-start;
-  }
 
   :deep(.row-actions) {
     @apply opacity-0 pointer-events-none;

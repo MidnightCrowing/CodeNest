@@ -27,6 +27,8 @@ interface MenuDependencies {
   editorOpensInTerminal: (editor: CodeEditorEnum) => boolean
 }
 
+export const PROJECT_OPEN_WITH_MENU_ID = 'open-with'
+
 export function useProjectMenus(deps: MenuDependencies) {
   const { t, editorCommandOptions, editorHasLaunchCommand, editorOpensInTerminal } = deps
 
@@ -100,7 +102,7 @@ export function useProjectMenus(deps: MenuDependencies) {
         shortcut: ['return'],
       },
       {
-        id: 'open-with',
+        id: PROJECT_OPEN_WITH_MENU_ID,
         label: t('app.home.actions.open_with'),
         disabled: !project.isExists,
         submenuWidth: 220,

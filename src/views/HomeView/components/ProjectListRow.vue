@@ -8,7 +8,7 @@ import type { LocalProject } from '~/constants/localProject'
 import type { ProjectActionKey } from '../types'
 import { formatLastOpened } from '../utils/projectFormatters'
 import ProjectActions from './project/ProjectActions.vue'
-import ProjectEditorChip from './project/ProjectEditorChip.vue'
+import ProjectEditorMenu from './project/ProjectEditorMenu.vue'
 import ProjectMeta from './project/ProjectMeta.vue'
 import ProjectSource from './project/ProjectSource.vue'
 import ProjectTitle from './project/ProjectTitle.vue'
@@ -80,7 +80,12 @@ const { t } = useI18n()
         variant="language"
         @show-language="(p, event) => emit('showLanguage', p, event)"
       />
-      <ProjectEditorChip :editor="project.defaultOpen" list-cell />
+      <ProjectEditorMenu
+        :editor="project.defaultOpen"
+        :menu-items="menuItems"
+        variant="list"
+        @select="action => emit('menuSelect', project, action)"
+      />
       <ProjectMeta :project="project" variant="license" />
       <span
         truncate text-11px light:color="$gray-7" dark:color="$gray-8"

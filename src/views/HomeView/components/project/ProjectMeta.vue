@@ -47,7 +47,7 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
     inline-flex items-center gap-5px truncate text-11px
     color="$ui-foreground"
   >
-    {{ shortLicense(project.license, t) }}
+    <span min-w-0 overflow-hidden text-ellipsis whitespace-nowrap>{{ shortLicense(project.license, t) }}</span>
   </span>
   <span
     v-else-if="showLicense"
@@ -55,5 +55,5 @@ const languageLabel = computed(() => formatProjectLanguage(props.project.mainLan
     min-w-0 max-w-full h-23px px-5px
     inline-flex items-center gap-5px truncate text-11px
     light:color="$gray-8" dark:color="$gray-7"
-  >{{ t('app.license.none') }}</span>
+  ><span min-w-0 overflow-hidden text-ellipsis whitespace-nowrap>{{ t('app.license.none') }}</span></span>
 </template>

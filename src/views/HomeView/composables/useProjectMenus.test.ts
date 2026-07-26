@@ -9,7 +9,10 @@ import {
   DEFAULT_EDITOR_AUTO_ACTION,
   OPEN_WITH_ACTION_PREFIX,
 } from '~/constants/projectActions'
-import { useProjectMenus } from '~/views/HomeView/composables/useProjectMenus'
+import {
+  PROJECT_OPEN_WITH_MENU_ID,
+  useProjectMenus,
+} from '~/views/HomeView/composables/useProjectMenus'
 
 function editorOption(editor: CodeEditorEnum, groupKey = 'group', openInTerminal = false): EditorCommandOption {
   return {
@@ -53,6 +56,30 @@ function createMenus(
 }
 
 describe('useProjectMenus', () => {
+  it('builds the shared Open With submenu and disables it for missing projects', () => {
+    const menus = createMenus([
+      editorOption(CodeEditorEnum.VisualStudioCode),
+    ])
+    const items = menus.projectMenuItems(project())
+    const openWithMenu = items.find(item => item.id === PROJECT_OPEN_WITH_MENU_ID)
+
+    expect(openWithMenu).toMatchObject({
+      id: PROJECT_OPEN_WITH_MENU_ID,
+      disabled: false,
+      submenuWidth: 220,
+      children: [{
+        id: `${OPEN_WITH_ACTION_PREFIX}${CodeEditorEnum.VisualStudioCode}`,
+        disabled: false,
+      }],
+    })
+
+    const missingProjectItems = menus.projectMenuItems(project({ isExists: false }))
+    expect(missingProjectItems.find(item => item.id === PROJECT_OPEN_WITH_MENU_ID)).toMatchObject({
+      disabled: true,
+      children: [{ disabled: true }],
+    })
+  })
+
   it('builds editor menus from visible editor options only', () => {
     const menus = createMenus([
       editorOption(CodeEditorEnum.VisualStudioCode),
