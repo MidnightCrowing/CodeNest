@@ -183,6 +183,6 @@ jobs:
 
     steps:
       - name: Publish release
-        run: gh release edit "${{ needs.release.outputs.tag }}" --draft=false --latest
+        run: gh release edit "${{ needs.release.outputs.tag }}" --draft=false --latest --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ github.token }}
