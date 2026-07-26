@@ -174,3 +174,15 @@ jobs:
           gh release upload "${{ needs.release.outputs.tag }}" "${files[@]}" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
+
+  publish-release:
+    needs: [release, build-and-upload]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Publish release
+        run: gh release edit "${{ needs.release.outputs.tag }}" --draft=false --latest
+        env:
+          GH_TOKEN: ${{ github.token }}

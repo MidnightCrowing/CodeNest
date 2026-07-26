@@ -4,7 +4,8 @@
     "publish": false
   },
   "github": {
-    "release": true
+    "release": true,
+    "draft": true
   },
   "git": {
     "commitArgs": [
