@@ -5,7 +5,6 @@ import { CodeEditorEnum } from '~/constants/codeEditor'
 import { ProjectKind } from '~/constants/localProject'
 import {
   addNewProjectsFromScanner,
-  checkRegexComplexity,
   scannerBusy,
   toRegExp,
 } from '~/services/projectScannerService'
@@ -22,42 +21,6 @@ function createMemoryStorage() {
     clear: () => data.clear(),
   } as unknown as Storage
 }
-
-describe('checkRegexComplexity', () => {
-  it('accepts simple patterns', () => {
-    expect(checkRegexComplexity('(demo|test)')).toBe(true)
-    expect(checkRegexComplexity('^my-project$')).toBe(true)
-    expect(checkRegexComplexity('foo.*bar')).toBe(true)
-    expect(checkRegexComplexity('[a-z]+\\d{2,4}')).toBe(true)
-  })
-
-  it('rejects nested quantifiers (classic ReDoS)', () => {
-    expect(checkRegexComplexity('(a+)+')).toBe(false)
-    expect(checkRegexComplexity('(a*)*')).toBe(false)
-    expect(checkRegexComplexity('(a+)*')).toBe(false)
-  })
-
-  it('rejects consecutive quantifiers', () => {
-    expect(checkRegexComplexity('a*+')).toBe(false)
-    expect(checkRegexComplexity('a++')).toBe(false)
-  })
-
-  it('rejects unbalanced parentheses', () => {
-    expect(checkRegexComplexity('(abc')).toBe(false)
-    expect(checkRegexComplexity('abc)')).toBe(false)
-    expect(checkRegexComplexity('))((')).toBe(false)
-  })
-
-  it('rejects excessive nesting depth', () => {
-    expect(checkRegexComplexity('((((a))))')).toBe(false)
-    expect(checkRegexComplexity('(((a)))')).toBe(true)
-  })
-
-  it('handles escaped characters without treating them as syntax', () => {
-    expect(checkRegexComplexity('\\(a\\+\\)\\+')).toBe(true)
-    expect(checkRegexComplexity('foo\\\\bar')).toBe(true)
-  })
-})
 
 describe('toRegExp', () => {
   it('parses plain patterns', () => {
@@ -81,12 +44,15 @@ describe('toRegExp', () => {
     expect(toRegExp('a'.repeat(201))).toBeNull()
   })
 
-  it('returns null for ReDoS-prone patterns', () => {
-    expect(toRegExp('(a+)+b')).toBeNull()
-  })
-
   it('returns null for syntactically invalid patterns', () => {
     expect(toRegExp('[unclosed')).toBeNull()
+  })
+
+  it('accepts group-then-quantifier patterns that were previously rejected', () => {
+    expect(toRegExp('(a)+')).toBeInstanceOf(RegExp)
+    expect(toRegExp('(ab)+')).toBeInstanceOf(RegExp)
+    expect(toRegExp('(foo|bar)*')).toBeInstanceOf(RegExp)
+    expect(toRegExp('^v[0-9]+(\\.[0-9]+)*$')).toBeInstanceOf(RegExp)
   })
 })
 

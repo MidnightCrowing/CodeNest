@@ -50,7 +50,6 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
     if (!entry)
       return undefined
 
-    // 检查缓存是否过期
     const cachedAt = entry.cachedAt ?? 0
     if (Date.now() - cachedAt > CACHE_EXPIRY_MS) {
       scanCache.value.delete(normalizePathKey(path))
@@ -73,7 +72,7 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
 
     scanCache.value.set(normalizePathKey(path), entryWithTimestamp)
 
-    // LRU: 如果缓存超过限制,删除最旧的条目
+    // 超限时删最旧条目（近似 LRU）
     if (scanCache.value.size > MAX_CACHE_SIZE) {
       let oldestKey: string | null = null
       let oldestTime = Number.POSITIVE_INFINITY
@@ -99,16 +98,13 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
     }
     if (data && Array.isArray(data.scanCache)) {
       const now = Date.now()
-      let expiredCount = 0
       scanCache.value = new Map(
         data.scanCache
           .filter(entry => entry.path && entry.signature)
           .map((entry) => {
             const typedEntry = entry as ProjectScannerCacheEntryWithTimestamp
             const cachedAt = typedEntry.cachedAt ?? 0
-            // 过滤过期的缓存条目
             if (now - cachedAt > CACHE_EXPIRY_MS) {
-              expiredCount++
               return null
             }
             return [normalizePathKey(entry.path), {
@@ -119,12 +115,6 @@ export const useProjectScannerStore = defineStore('projectScanner', () => {
           })
           .filter(Boolean) as Array<[string, ProjectScannerCacheEntryWithTimestamp]>,
       )
-
-      // 如果有过期条目,持久化清理后的缓存
-      if (expiredCount > 0) {
-        console.warn(`Cleaned ${expiredCount} expired cache entries`)
-        void saveProjectScannerData()
-      }
     }
   }
 

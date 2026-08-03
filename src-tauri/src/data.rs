@@ -72,8 +72,13 @@ fn backup_file_path(path: &Path) -> PathBuf {
     sibling_path_with_suffix(path, ".bak")
 }
 
-fn temp_file_path(path: &Path) -> PathBuf {
-    sibling_path_with_suffix(path, ".tmp")
+/// 生成带随机后缀的临时文件路径,避免并发写入共享同一 .tmp。
+fn unique_temp_file_path(path: &Path) -> PathBuf {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    sibling_path_with_suffix(path, &format!(".tmp.{nanos}"))
 }
 
 fn read_json_file_content(path: &Path) -> Result<String, String> {
@@ -128,7 +133,7 @@ pub fn write_data_file_safely(path: &Path, content: &str) -> Result<(), String> 
         fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     }
 
-    let temp_path = temp_file_path(path);
+    let temp_path = unique_temp_file_path(path);
     fs::write(&temp_path, content).map_err(|error| error.to_string())?;
     read_json_file_content(&temp_path)?;
     backup_existing_json_file(path)?;
@@ -268,10 +273,14 @@ pub fn delete_data(app: AppHandle, file_type: DataFileKind) -> BasicResult {
         };
     }
 
-    match fs::remove_file(file_path) {
-        Ok(_) => BasicResult {
-            success: true,
-            error: None,
+    match fs::remove_file(&file_path) {
+        Ok(_) => {
+            // 同步删除备份,否则下次 load_data 会把它当主文件损坏而复活
+            let _ = fs::remove_file(backup_file_path(&file_path));
+            BasicResult {
+                success: true,
+                error: None,
+            }
         },
         Err(error) => BasicResult {
             success: false,

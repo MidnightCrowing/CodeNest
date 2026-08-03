@@ -23,12 +23,6 @@ interface ProjectSearchComposable {
   filterBySearch: (projects: LocalProject[]) => LocalProject[]
 }
 
-/**
- * 项目过滤、排序和统计
- *
- * 集成搜索、类型、状态、语言过滤器，以及排序和统计功能。
- * 统一管理过滤条件的交互和计数显示。
- */
 export function useProjectFilters(
   projectSearch: ProjectSearchComposable,
   t: (key: string, params?: Record<string, unknown>) => string,
@@ -40,7 +34,6 @@ export function useProjectFilters(
   const languageFilter = ref('all')
   const sortKey = ref<SortKey>('recent')
 
-  // 统计数据
   const totalProjects = computed(() => projectsStore.activeProjects.length)
   const archivedProjectsCount = computed(() => projectsStore.archivedProjects.length)
 
@@ -75,7 +68,6 @@ export function useProjectFilters(
     return projectStats.value.byKind.get(kind) || 0
   }
 
-  // 过滤器选项
   const kindOptions = computed<Array<FilterOption<KindFilter>>>(() => [
     { value: 'all', label: t('app.home.filters.all_projects'), count: totalProjects.value },
     { value: ProjectKind.MINE, label: t('app.project_kind.mine'), count: countByKind(ProjectKind.MINE) },
@@ -113,7 +105,6 @@ export function useProjectFilters(
     })),
   ])
 
-  // 激活的过滤器数量
   const activeFilterCount = computed(() =>
     Number(!!projectSearch.searchValue.value.trim())
     + Number(kindFilter.value !== 'all')
@@ -121,7 +112,6 @@ export function useProjectFilters(
     + Number(languageFilter.value !== 'all'),
   )
 
-  // 排序辅助函数
   function recentSortTime(project: LocalProject) {
     return project.lastOpenedAt ?? project.appendTime
   }
@@ -143,9 +133,7 @@ export function useProjectFilters(
     }
   }
 
-  // 过滤和排序后的项目列表
   const filteredProjects = computed(() => {
-    // 归档视图 vs 活跃视图的基础数据源分离
     let result = statusFilter.value === 'archived'
       ? projectsStore.archivedProjects
       : projectsStore.activeProjects
@@ -153,7 +141,6 @@ export function useProjectFilters(
     if (kindFilter.value !== 'all')
       result = result.filter(project => project.kind === kindFilter.value)
 
-    // 归档视图下忽略其他 status 细分过滤
     if (statusFilter.value !== 'archived') {
       if (statusFilter.value === 'missing')
         result = result.filter(project => !project.isExists && !project.isTemporary)
@@ -163,15 +150,13 @@ export function useProjectFilters(
     }
 
     if (languageFilter.value !== 'all')
-      result = result.filter(project => project.mainLang === languageFilter.value)
+      result = result.filter(project => (project.mainLang || 'unknown') === languageFilter.value)
 
-    // 搜索过滤
     result = projectSearch.filterBySearch(result)
 
     return [...result].sort(compareProjects)
   })
 
-  // 清除所有过滤器
   function clearFilters() {
     projectSearch.searchValue.value = ''
     kindFilter.value = 'all'
@@ -180,30 +165,25 @@ export function useProjectFilters(
   }
 
   return {
-    // 过滤器状态
     kindFilter,
     statusFilter,
     languageFilter,
     sortKey,
 
-    // 统计数据
     projectStats,
     totalProjects,
     archivedProjectsCount,
     missingProjects,
     temporaryProjects,
 
-    // 选项列表
     kindOptions,
     statusOptions,
     languageOptions,
     sortOptions,
 
-    // 计算结果
     filteredProjects,
     activeFilterCount,
 
-    // 方法
     clearFilters,
     countByKind,
   }

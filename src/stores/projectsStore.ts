@@ -48,12 +48,11 @@ async function runWithConcurrency<T>(
 
 function normalizeProject(project: LocalProject): LocalProject {
   const lastOpenedAt = Number.isFinite(project.lastOpenedAt) ? project.lastOpenedAt : undefined
-  // 远程项目的 path 是合成串(host:remotePath),不做本地 verbatim 处理,且恒为存在
+  // 远程 path 是 host:remotePath 合成串：不做本地 verbatim 处理，且恒为存在
   const isRemote = !!project.isRemote
   const path = isRemote ? (project.path || '') : stripWindowsVerbatimPrefix(project.path || '')
   const isExists = isRemote ? true : (project.isExists ?? true)
 
-  // 快速检查:如果所有关键字段都已正确,直接返回
   if (
     project.path === path
     && project.lastOpenedAt === lastOpenedAt
@@ -110,6 +109,17 @@ export const useProjectsStore = defineStore('projects', () => {
       color,
       count,
     }))
+  })
+
+  const groupSummary = computed(() => {
+    const groupMap = new Map<string, number>()
+    for (const project of projects.value) {
+      const group = project.group?.trim()
+      if (group) {
+        groupMap.set(group, (groupMap.get(group) || 0) + 1)
+      }
+    }
+    return groupMap
   })
 
   const allGroups = computed(() => {
@@ -178,7 +188,6 @@ export const useProjectsStore = defineStore('projects', () => {
     projects.value.splice(index, 1)
     await saveProjects()
 
-    // 通知视图清理相关的 Map 条目
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('project-removed', { detail: { projectId } }))
     }
@@ -230,7 +239,7 @@ export const useProjectsStore = defineStore('projects', () => {
     if (!project)
       return false
 
-    // mainLang/mainLangColor are user-selected fields; automatic analysis only refreshes the language mix.
+    // mainLang/mainLangColor 是用户选择；自动分析只刷新语言占比
     project.langGroup = langGroup || []
 
     await saveProjects()
@@ -328,12 +337,11 @@ export const useProjectsStore = defineStore('projects', () => {
       }
     })
 
-    // 按 appendTime 回写,仅更新快照中存在的项目
+    // 按 appendTime 回写快照中已有项目
     let changedCount = 0
     const snapshotIds = new Set(snapshot.map(p => p.appendTime))
     const nextProjects = projects.value.map((project) => {
       if (!snapshotIds.has(project.appendTime)) {
-        // 快照后新增的项目,保持原状
         return project
       }
 
@@ -370,6 +378,7 @@ export const useProjectsStore = defineStore('projects', () => {
     tempProjects,
     mainLangSummary,
     allGroups,
+    groupSummary,
     addProject,
     getProjectByAppendTime,
     getProjectsByKind,

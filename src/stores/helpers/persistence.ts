@@ -1,6 +1,3 @@
-/**
- * 数据文件类型
- */
 export type DataFileEnum = 'editorLangGroups' | 'projects' | 'projectScanner' | 'settings'
 
 export interface PersistenceOptions<T> {
@@ -83,20 +80,10 @@ export function createPersistence<T>(options: PersistenceOptions<T>) {
 
   async function save(data: T): Promise<void> {
     const raw = serialize(data)
-    try {
-      const result = await window.api.saveData(options.key, raw)
-      if (!result.success) {
-        // 磁盘保存失败时仍写入缓存:load() 在磁盘读取失败时会回退到
-        // 缓存,这让用户数据在磁盘故障(如磁盘满)时仍有恢复机会。
-        saveSerializedCache(raw)
-        throw new Error(result.error || `Failed to save '${options.key}' data`)
-      }
-      saveSerializedCache(raw)
-    }
-    catch (e: unknown) {
-      saveSerializedCache(raw)
-      throw e
-    }
+    const result = await window.api.saveData(options.key, raw)
+    if (!result.success)
+      throw new Error(result.error || `Failed to save '${options.key}' data`)
+    saveSerializedCache(raw)
   }
 
   return { clearCache, load, loadCached, save, saveCache }

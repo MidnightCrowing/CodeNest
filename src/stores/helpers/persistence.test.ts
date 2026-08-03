@@ -35,7 +35,8 @@ describe('createPersistence', () => {
     await expect(persistence.load()).resolves.toEqual({ theme: 'dark' })
   })
 
-  it('keeps the latest serialized data in cache when disk saving fails', async () => {
+  it('does not update the cache when disk saving fails', async () => {
+    window.localStorage.setItem('codenest:data:settings', JSON.stringify({ theme: 'dark' }))
     vi.mocked(window.api.saveData).mockResolvedValue({
       success: false,
       error: 'disk full',
@@ -44,6 +45,7 @@ describe('createPersistence', () => {
     const persistence = createPersistence<{ theme: string }>({ key: 'settings' })
 
     await expect(persistence.save({ theme: 'light' })).rejects.toThrow('disk full')
-    expect(window.localStorage.getItem('codenest:data:settings')).toBe(JSON.stringify({ theme: 'light' }))
+    // 磁盘保存失败时缓存保持旧值,避免下次启动被旧磁盘数据覆盖造成静默丢失
+    expect(window.localStorage.getItem('codenest:data:settings')).toBe(JSON.stringify({ theme: 'dark' }))
   })
 })
