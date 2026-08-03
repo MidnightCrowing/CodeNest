@@ -2,13 +2,6 @@ import { computed, onScopeDispose, ref } from 'vue'
 
 import type { LocalProject } from '~/constants/localProject'
 
-/**
- * 项目打开状态管理
- *
- * 管理项目和终端的打开状态，带最短可见时长防闪烁逻辑。
- * 确保 loading 图标至少显示指定时长，避免快速闪烁影响用户体验。
- */
-
 const MIN_PROJECT_OPENING_VISIBLE_MS = 2200
 const MIN_TERMINAL_OPENING_VISIBLE_MS = 800
 
@@ -20,7 +13,6 @@ export function useProjectOpenState() {
   const projectOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
   const terminalOpeningTimers = new Map<number, ReturnType<typeof window.setTimeout>>()
 
-  // 项目打开状态管理
   function setProjectOpeningVisible(projectId: number, visible: boolean) {
     if (openingProjectIds.value.has(projectId) === visible)
       return
@@ -73,7 +65,6 @@ export function useProjectOpenState() {
     return openingProjectIds.value.has(project.appendTime)
   }
 
-  // 终端打开状态管理
   function setTerminalOpeningVisible(projectId: number, visible: boolean) {
     if (openingTerminalProjectIds.value.has(projectId) === visible)
       return
@@ -126,7 +117,6 @@ export function useProjectOpenState() {
     return openingTerminalProjectIds.value.has(project.appendTime)
   }
 
-  // 清理特定项目的所有状态
   function clearProjectFromMaps(projectId: number) {
     clearProjectOpeningTimer(projectId)
     projectOpeningStartedAt.delete(projectId)
@@ -136,7 +126,6 @@ export function useProjectOpenState() {
     setTerminalOpeningVisible(projectId, false)
   }
 
-  // 组件卸载时清理所有定时器
   onScopeDispose(() => {
     projectOpeningTimers.forEach(timer => window.clearTimeout(timer))
     projectOpeningTimers.clear()
@@ -147,23 +136,19 @@ export function useProjectOpenState() {
   })
 
   return {
-    // 只读状态
     openingProjectIds: computed(() => openingProjectIds.value),
     openingTerminalProjectIds: computed(() => openingTerminalProjectIds.value),
 
-    // 项目打开
     markProjectOpening,
     finishProjectOpening,
     clearProjectOpening,
     isProjectOpening,
 
-    // 终端打开
     markTerminalOpening,
     finishTerminalOpening,
     clearTerminalOpening,
     isTerminalOpening,
 
-    // 清理
     clearProjectFromMaps,
   }
 }

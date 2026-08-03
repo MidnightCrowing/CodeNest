@@ -5,13 +5,6 @@ import type { ViewEnum } from '~/constants/appEnums'
 
 import type { LayoutMode, ScrollAreaRef } from '../types'
 
-/**
- * 项目导航和滚动位置管理
- *
- * 负责管理 Home 视图的滚动位置记忆和恢复，确保从其他视图返回时能恢复到之前的滚动位置。
- * 支持列表和卡片两种布局模式的独立滚动状态。
- */
-
 interface HomeScrollSnapshot {
   layoutMode: LayoutMode
   scrollLeft: number

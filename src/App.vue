@@ -149,7 +149,6 @@ provide('activatedView', activatedView)
       <Component :is="viewComponents[activatedView]" grow />
     </KeepAlive>
 
-    <!-- Dialog -->
     <RemoveProjectDialog />
     <UiToaster />
   </main>

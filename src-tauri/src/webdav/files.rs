@@ -82,8 +82,7 @@ pub(super) fn prepare_pull_content(
                     }
                 }
                 Err(error) => {
-                    // 本地 settings 损坏时跳过 webdav 合并(凭据可能丢失,
-                    // 用户需重新配置),但记录原因便于排查。
+                    // settings 损坏时跳过 webdav 合并（凭据可能丢失），仍记录原因
                     eprintln!(
                         "[webdav] Local settings.json is corrupted, skipping webdav config merge: {error}"
                     );

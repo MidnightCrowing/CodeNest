@@ -4,7 +4,7 @@ use std::{
     sync::LazyLock,
 };
 
-/// 受保护的系统目录根(缓存)
+/// 受保护的系统目录根（缓存）
 static PROTECTED_SYSTEM_ROOTS: LazyLock<Vec<String>> = LazyLock::new(|| {
     let mut roots = Vec::new();
     if cfg!(windows) {
@@ -71,7 +71,6 @@ pub(super) fn is_protected_system_path(canonical: &Path) -> bool {
     let roots = &*PROTECTED_SYSTEM_ROOTS;
 
     for root in roots {
-        // 精确匹配根目录或其子路径
         if normalized == *root || normalized.starts_with(&format!("{root}/")) {
             return true;
         }

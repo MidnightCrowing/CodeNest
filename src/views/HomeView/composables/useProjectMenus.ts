@@ -12,14 +12,6 @@ import {
   projectSourceUrl,
 } from '~/utils/projectSource'
 
-/**
- * 项目菜单构建
- *
- * 负责构建项目右键菜单和操作菜单，包括：
- * - 编辑器选择菜单（打开方式、默认编辑器）
- * - 项目操作菜单（编辑、置顶、归档、删除等）
- */
-
 interface MenuDependencies {
   t: (key: string, params?: Record<string, unknown>) => string
   editorCommandOptions: () => EditorCommandOption[]
@@ -80,7 +72,7 @@ export function useProjectMenus(deps: MenuDependencies) {
   }
 
   function canDeleteProjectFiles(project: LocalProject) {
-    // 远程项目没有本地文件,只能从列表移除
+    // 远程项目没有本地文件可删
     return project.isTemporary && project.isExists !== false && !project.isRemote
   }
 

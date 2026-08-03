@@ -39,8 +39,7 @@ fn configured_terminal_args(command_template: &str, cwd: &Path) -> Result<Vec<St
 
     let cwd_text = cwd.to_string_lossy().into_owned();
     for arg in &mut args {
-        // 占位符替换发生在 parse_command_line 之后,替换结果作为单个
-        // 参数直接传给 Command::args,不经过 shell 解析,无需再转义。
+        // 占位符在 parse 后替换，结果直接作为 Command::args，不经 shell
         *arg = arg
             .replace("{cwd}", &cwd_text)
             .replace("{project}", &cwd_text);

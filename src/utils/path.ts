@@ -8,8 +8,7 @@ const TRAILING_SLASH_RE = /\/+$/
  * navigator,模块级常量会在 stub 生效前被锁死为宿主平台的值。
  */
 export function isWindowsPlatform(): boolean {
-  // 优先使用 platform/userAgent(Tauri WebView 下可靠)。
-  // 用 ^win 锚定避免 'Darwin' 误匹配。
+  // 优先 platform/userAgent（Tauri WebView 可靠）；^win 避免 Darwin 误匹配
   if (typeof navigator !== 'undefined') {
     if (navigator.platform && /^win/i.test(navigator.platform))
       return true
@@ -17,7 +16,7 @@ export function isWindowsPlatform(): boolean {
       return true
   }
 
-  // 回退到路径特征检测(import.meta.url 在打包环境可能是自定义协议)
+  // 回退路径特征（import.meta.url 在打包环境可能是自定义协议）
   try {
     const testPath = new URL('.', import.meta.url).pathname
     return testPath.includes('\\') || /^\/[A-Z]:/i.test(testPath)

@@ -23,12 +23,10 @@ export type ScannerIdeOpenMode = 'source' | 'language' | 'specified'
 export const DEFAULT_SCANNER_ROOT_SCAN_DEPTH = 1
 
 export interface ScannerSettings {
-  // file system roots scanning
   rootsEnabled: boolean
   roots: string[]
   rootScanDepth: number
 
-  // IDE scanning toggles
   ideEnabled: boolean
   jetbrains: {
     enabled: boolean
@@ -37,7 +35,6 @@ export interface ScannerSettings {
   recentEditors: Record<VscodeHistoryScannerEditor, RecentEditorScannerConfig>
   cliEditors: Record<CliHistoryScannerEditor, CliEditorScannerConfig>
 
-  // import strategies
   rootOpenMode: ScannerRootOpenMode
   ideOpenMode: ScannerIdeOpenMode
   editor: CodeEditorEnum
@@ -152,7 +149,6 @@ function createDefaultVisibleEditors(): Record<EditorCommandKey, boolean> {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  // --- 基础配置项 ---
   const theme = ref<ThemeEnum>(ThemeEnum.System)
   const systemTheme = ref<ResolvedTheme>(getPreferredSystemTheme())
   const resolvedTheme = computed<ResolvedTheme>(() =>
@@ -182,7 +178,6 @@ export const useSettingsStore = defineStore('settings', () => {
     remotePath: 'CodeNest',
   })
 
-  // --- 扫描器配置 ---
   const scanner = reactive<ScannerSettings>({
     rootsEnabled: false,
     roots: [],
@@ -354,7 +349,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function resetSettingsState() {
-    // 取消 pending 的保存,避免定时器触发时保存已被重置的状态
+    // 取消 pending 保存，避免定时器把已重置状态再写回磁盘
     cancelQueuedSave()
     theme.value = ThemeEnum.System
     themeColor.value = ThemeColorEnum.Contrast
@@ -394,7 +389,6 @@ export const useSettingsStore = defineStore('settings', () => {
       ? loadedData.editorInitialCommandsVersion
       : 0
 
-    // editor launch commands
     if (loadedData.codeEditorsPath) {
       for (const option of editorCommandOptions) {
         const command = loadedData.codeEditorsPath[option.key]
@@ -431,10 +425,8 @@ export const useSettingsStore = defineStore('settings', () => {
         webdav.remotePath = loadedData.webdav.remotePath
     }
 
-    // scanner
     if (loadedData.scanner) {
       const s = loadedData.scanner
-      // primitives
       if (typeof s.rootsEnabled === 'boolean')
         scanner.rootsEnabled = s.rootsEnabled
       if (Array.isArray(s.roots))
@@ -455,7 +447,6 @@ export const useSettingsStore = defineStore('settings', () => {
       if (typeof s.scanOnWindowFocus === 'boolean')
         scanner.scanOnWindowFocus = s.scanOnWindowFocus
 
-      // nested
       if (s.jetbrains) {
         if (typeof s.jetbrains.enabled === 'boolean')
           scanner.jetbrains.enabled = s.jetbrains.enabled
@@ -587,7 +578,6 @@ export const useSettingsStore = defineStore('settings', () => {
     return false
   }
 
-  // --- 加载配置 ---
   async function loadSettings(): Promise<void> {
     try {
       loaded.value = false
@@ -633,7 +623,6 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  // --- 保存配置 ---
   async function saveSettings(): Promise<void> {
     try {
       try {

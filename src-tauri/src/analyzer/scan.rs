@@ -64,8 +64,7 @@ pub fn analyze_folder(folder_path: &Path) -> Result<LinguistResult, String> {
         };
         let bytes = metadata.len();
 
-        // 累计体积熔断:超出预算时终止分析,避免对超大目录
-        // (如误选磁盘根目录)做无界的 IO 和行数统计。
+        // 体积熔断：避免误选磁盘根等超大目录时无界 IO
         if result.files.bytes.saturating_add(bytes) > byte_budget {
             return Err(format!(
                 "Directory too large to analyze (over {} MB)",
@@ -328,7 +327,7 @@ mod tests {
         fs::create_dir_all(&dir).unwrap();
         fs::write(dir.join("main.rs"), "fn main() {}\n".repeat(10)).unwrap();
 
-        // 预算缩到 1 字节,任何文件都会触发熔断
+        // 预算 1 字节，任意文件都会触发熔断
         std::env::set_var("CODENEST_MAX_SCAN_BYTES", "1");
         let result = analyze_folder(&dir);
         std::env::remove_var("CODENEST_MAX_SCAN_BYTES");

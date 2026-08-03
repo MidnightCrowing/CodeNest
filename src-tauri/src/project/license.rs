@@ -116,7 +116,7 @@ pub fn read_project_license(folder_path: String, max_lines: Option<usize>) -> Li
         };
     }
 
-    // 检查文件大小,限制最大 1MB
+    // 限制最大 1MB，避免读入异常大的 license 文件
     const MAX_LICENSE_SIZE: u64 = 1024 * 1024;
     match fs::metadata(&path) {
         Ok(metadata) if metadata.len() > MAX_LICENSE_SIZE => {

@@ -15,8 +15,7 @@ pub(super) fn open_project(
 
     let project_text = project.to_string_lossy().into_owned();
     for arg in &mut args {
-        // 占位符替换发生在 parse_command_line 之后:GUI 路径下参数直接传给
-        // Command::args 不经过 shell;终端路径下由 shell_join/shell_quote 统一转义。
+        // 占位符在 parse 后替换：GUI 走 Command::args（不经 shell），终端由 shell_join/shell_quote 转义
         *arg = arg
             .replace("{project}", &project_text)
             .replace("{cwd}", &project_text);
@@ -53,7 +52,7 @@ pub(super) fn open_remote_project(
             if editor_command.trim().is_empty() {
                 return Err("Editor command cannot be empty".to_string());
             }
-            // 取已配置命令的程序名 token(如 "code"),其余 {project} 之类占位符丢弃
+            // 只取程序名 token（如 code），丢弃 {project} 等占位符
             let args = parse_command_line(editor_command)?;
             let program = PathBuf::from(&args[0]);
             let remote_args = vec![
@@ -81,8 +80,7 @@ fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
-        // CREATE_NO_WINDOW 抑制控制台窗口:编辑器启动器常是 code.cmd 之类的批处理,
-        // 默认会让 Windows 给它分配一个控制台窗口(表现为弹出终端)。
+        // CREATE_NO_WINDOW：code.cmd 等批处理默认会弹出控制台窗口
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
         let extension = program
@@ -91,21 +89,18 @@ fn spawn_editor(program: &Path, args: &[String]) -> Result<(), String> {
             .map(str::to_ascii_lowercase);
 
         if matches!(extension.as_deref(), Some("bat" | "cmd")) {
-            // .cmd/.bat 不是 PE 可执行文件,必须经 cmd 运行(直接 CreateProcess 会报
-            // “不是有效的 Win32 应用程序”)。cmd /C 会去除整条命令行的首尾引号,因此把
-            // “程序 + 参数”整体再包一层引号;参数(路径 / --remote / ssh-remote+host)
-            // 不含双引号,逐个加引号即可安全。
+            // .cmd/.bat 需经 cmd 运行；cmd /C 会剥首尾引号，故整条命令再包一层引号
             let mut line = String::new();
-            line.push('"'); // 外层起始引号
+            line.push('"');
             line.push('"');
             line.push_str(&program.to_string_lossy());
-            line.push('"'); // 程序路径引号
+            line.push('"');
             for arg in args {
                 line.push_str(" \"");
                 line.push_str(arg);
                 line.push('"');
             }
-            line.push('"'); // 外层结束引号
+            line.push('"');
 
             return Command::new("cmd")
                 .raw_arg("/C")
@@ -138,8 +133,7 @@ fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String>
     let shell_command = shell_join(args);
 
     if cfg!(target_os = "macos") {
-        // macOS 的 Terminal.app 通过 osascript 启动,不继承 current_dir,
-        // 因此把 cd 前缀嵌入命令字符串。
+        // macOS Terminal.app 经 osascript 启动，不继承 current_dir，需把 cd 嵌进命令
         let project_str = project.to_string_lossy();
         let full_command = format!("cd {} ; {}", shell_quote(&project_str), shell_command);
         spawn_terminal_raw(&full_command, None)
@@ -148,10 +142,9 @@ fn spawn_terminal_command(args: &[String], project: &Path) -> Result<(), String>
     }
 }
 
-/// 在系统终端窗口中运行一条 shell 命令。
+/// 在系统终端窗口中运行 shell 命令。
 ///
-/// `cwd` 仅用于 Windows/Linux 的 `current_dir`;macOS 不继承 current_dir,
-/// 调用方需把 `cd` 嵌入命令字符串(远程场景由 ssh 自身 cd,无需本地 cwd)。
+/// `cwd` 只用于 Windows/Linux 的 `current_dir`；macOS 不继承，需自行把 `cd` 嵌进命令。
 fn spawn_terminal_raw(shell_command: &str, cwd: Option<&Path>) -> Result<(), String> {
     if cfg!(windows) {
         let mut command = Command::new("cmd");
@@ -164,7 +157,7 @@ fn spawn_terminal_raw(shell_command: &str, cwd: Option<&Path>) -> Result<(), Str
             .map(|_| ())
             .map_err(|error| error.to_string())
     } else if cfg!(target_os = "macos") {
-        // AppleScript 字符串需要转义反斜杠和双引号
+        // AppleScript 字符串转义 \ 和 "
         let escaped = shell_command.replace('\\', "\\\\").replace('"', "\\\"");
         let script = format!("tell application \"Terminal\" to do script \"{}\"", escaped);
 
@@ -193,23 +186,21 @@ fn spawn_terminal_raw(shell_command: &str, cwd: Option<&Path>) -> Result<(), Str
     }
 }
 
-/// 以 POSIX 单引号包裹远程路径(始终面向远程的 POSIX shell,
-/// 不能用本地平台相关的 shell_quote)。
+/// 用 POSIX 单引号包裹远程路径（面向远程 shell，不能用本地 shell_quote）。
 fn posix_single_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "'\\''"))
 }
 
 /// 打开终端并通过 ssh 进入远程目录。
 fn spawn_remote_terminal(host: &str, remote_path: &str) -> Result<(), String> {
-    // 远端命令:cd <path> 后保留交互 shell。$SHELL 由远端展开,故路径用 POSIX 单引号保护。
+    // cd 后保留交互 shell；$SHELL 远端展开，路径用 POSIX 单引号保护
     let inner = format!("cd {} ; exec $SHELL -l", posix_single_quote(remote_path));
 
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
-        // 用 raw_arg 精确拼出命令行:Rust 默认的 MSVCRT 转义(\")与 cmd 的解析规则冲突,
-        // 会把 host 连同引号一起塞给 ssh,导致 “hostname contains invalid characters”。
-        // host 不含空格,直接传;远端命令整体用双引号包成 ssh 的单个参数。
+        // raw_arg 精确拼命令行：MSVCRT 的 \" 转义与 cmd 冲突，会把引号带进 host
+        // host 无空格可直接传；远端命令整体用双引号包成 ssh 单参数
         let mut command = Command::new("cmd");
         command
             .raw_arg("/C")

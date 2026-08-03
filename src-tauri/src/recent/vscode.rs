@@ -21,9 +21,8 @@ pub fn collect_from_vscode(db_path: Option<&str>) -> Vec<RecentProject> {
         Err(_) => return Vec::new(),
     };
 
-    // 设置忙等待超时和查询超时,避免数据库锁定或慢查询阻塞
+    // 忙等待/查询超时，避免 DB 锁或慢查询阻塞
     let _ = connection.busy_timeout(std::time::Duration::from_millis(500));
-    // pragma_update 返回 Result<T, Error>,需要处理
     let _ = connection.pragma_update(None, "query_only", true);
 
     let value: Option<String> = connection

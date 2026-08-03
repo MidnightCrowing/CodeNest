@@ -33,7 +33,6 @@ defineOptions({
 const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
 
-// Composables
 const pathCache = useDisplayPathCache()
 const projectSearch = useProjectSearch(computed(() => projectsStore.allProjects))
 const activatedView = inject('activatedView') as Ref<ViewEnum>
