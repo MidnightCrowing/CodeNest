@@ -15,6 +15,7 @@
       {
         "label": "main",
         "title": "CodeNest",
+        "visible": false,
         "width": 1200,
         "height": 650,
         "minWidth": 800,
@@ -24,6 +25,14 @@
     ],
     "security": {
       "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFERUM4M0I4NjYwMkYxNApSV1FVTDJDR084amVDcUg4bG5nR2FwQ0MvQ21sdTgwbTlQOWR5RDZEcnVtdXNBbVhTcUpERUEyQQo=",
+      "endpoints": [
+        "https://github.com/MidnightCrowing/CodeNest/releases/latest/download/latest.json"
+      ]
     }
   },
   "bundle": {

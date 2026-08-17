@@ -323,9 +323,12 @@ app:
         latest: CodeNest is up to date.
         checking: Checking
         check: Check for Updates
-        open_release: Open release
-        request_failed: 'Update check failed: {detail}'
-        failed_detail: 'Update check failed: {detail}'
+        open_about: Open Settings > About to install it.
+        install: Install and Restart
+        downloading: Downloading
+        downloading_progress: 'Downloading: {progress}%'
+        installing: Installing
+        failed_detail: 'Update failed: {detail}'
       repository:
         title: GitHub
   project_editor:

@@ -10,8 +10,29 @@ mod system;
 mod updater;
 mod webdav;
 
+use tauri::Manager;
+use tauri_plugin_log::RotationStrategy;
+
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
+        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .max_file_size(1_000_000)
+                .rotation_strategy(RotationStrategy::KeepSome(5))
+                .build(),
+        )
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updater::PendingUpdate::default())
         .invoke_handler(tauri::generate_handler![
             data::delete_data,
             data::load_data,
@@ -47,6 +68,7 @@ pub fn run() {
             system::set_window_theme,
             system::toggle_maximize_window,
             updater::check_update,
+            updater::install_update,
             webdav::webdav_pull_data,
             webdav::webdav_test_connection,
             webdav::webdav_upload_data,

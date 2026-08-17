@@ -6,6 +6,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
+use tauri_plugin_opener::OpenerExt;
 
 #[derive(Clone, Copy, Deserialize)]
 pub enum DataFileKind {
@@ -251,7 +252,9 @@ pub fn open_data(app: AppHandle, file_type: DataFileKind) -> bool {
         }
     }
 
-    open::that(file_path).is_ok()
+    app.opener()
+        .open_path(file_path.to_string_lossy(), None::<&str>)
+        .is_ok()
 }
 
 #[tauri::command]

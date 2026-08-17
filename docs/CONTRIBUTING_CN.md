@@ -43,6 +43,21 @@ pnpm build
 
 构建产物位于 `src-tauri/target/release` 和 `src-tauri/target/release/bundle`。
 
+## 发布与自动更新
+
+Release 工作流使用 Tauri Updater 签名安装包。首次发布前生成一对签名密钥：
+
+```bash
+pnpm tauri signer generate -- -w ~/.tauri/codenest.key
+```
+
+将私钥内容配置到 GitHub 仓库的 Actions secrets：
+
+- `TAURI_SIGNING_PRIVATE_KEY`：`~/.tauri/codenest.key` 的完整内容
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`：如果生成密钥时设置了密码则填写，否则留空
+
+私钥不能提交到仓库；丢失私钥或密码后，已安装的应用将无法接收后续更新。
+
 ## 贡献
 
 ### 关于分支

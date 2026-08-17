@@ -68,7 +68,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            args: --config src-tauri/tauri.release.conf.json
+          - os: windows-latest
+            args: --bundles msi --config src-tauri/tauri.release.conf.json
+          - os: macos-latest
+            args: --config src-tauri/tauri.release.conf.json
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -104,76 +110,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Windows bundle
-        if: runner.os == 'Windows'
-        run: pnpm exec tauri build --ci --bundles msi
-
-      - name: Build bundle
-        if: runner.os != 'Windows'
-        run: pnpm build
-
-      - name: Collect release artifacts
-        id: artifacts
-        shell: bash
-        run: |
-          files=()
-          while IFS= read -r -d '' file; do
-            files+=("$file")
-          done < <(
-            find src-tauri/target/release/bundle -type f \
-              \( -name '*.AppImage' \
-                -o -name '*.deb' \
-                -o -name '*.rpm' \
-                -o -name '*.dmg' \
-                -o -name '*.app.tar.gz' \
-                -o -name '*.msi' \) \
-              -print0
-          )
-
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No release artifacts found."
-            find src-tauri/target/release/bundle -type f || true
-            exit 1
-          fi
-
-          {
-            echo 'paths<<EOF'
-            printf '%s\n' "${files[@]}"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+      - name: Build and upload release assets
+        id: tauri
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ needs.release.outputs.tag }}
+          releaseDraft: true
+          args: ${{ matrix.args }}
+          uploadUpdaterJson: true
+          uploadUpdaterSignatures: true
 
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
-          subject-path: ${{ steps.artifacts.outputs.paths }}
-
-      - name: Upload bundles
-        shell: bash
-        run: |
-          files=()
-          while IFS= read -r -d '' file; do
-            files+=("$file")
-          done < <(
-            find src-tauri/target/release/bundle -type f \
-              \( -name '*.AppImage' \
-                -o -name '*.deb' \
-                -o -name '*.rpm' \
-                -o -name '*.dmg' \
-                -o -name '*.app.tar.gz' \
-                -o -name '*.app.tar.gz.sig' \
-                -o -name '*.msi' \) \
-              -print0
-          )
-
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No release artifacts found."
-            find src-tauri/target/release/bundle -type f
-            exit 1
-          fi
-
-          gh release upload "${{ needs.release.outputs.tag }}" "${files[@]}" --clobber
-        env:
-          GH_TOKEN: ${{ github.token }}
+          subject-path: src-tauri/target/release/bundle/**/*
 
   publish-release:
     needs: [release, build-and-upload]

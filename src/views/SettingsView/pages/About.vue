@@ -1,78 +1,62 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n'
 
+import { useAppUpdateStore } from '~/stores/appUpdateStore'
+import { useProjectsStore } from '~/stores/projectsStore'
+import { useSettingsStore } from '~/stores/settingsStore'
+
 import { version } from '../../../../package.json'
 import SettingsPage from '../components/SettingsPage.vue'
 import SettingsRow from '../components/SettingsRow.vue'
 
 const { t } = useI18n()
-
-const checking = ref(false)
-const updateInfo = ref<{
-  hasUpdate: boolean
-  currentVersion: string
-  latestVersion?: string
-  url?: string
-  name?: string
-  notes?: string
-  publishedAt?: string
-  error?: string
-} | null>(null)
+const updateStore = useAppUpdateStore()
+const projectsStore = useProjectsStore()
+const settingsStore = useSettingsStore()
 
 const updateStatus = computed(() => {
-  if (checking.value)
+  if (updateStore.checking)
     return ''
-  if (!updateInfo.value)
-    return ''
-  if (updateInfo.value.error)
-    return formatUpdateError(updateInfo.value.error)
-  if (updateInfo.value.hasUpdate)
-    return t('app.settings.about.update.available', { version: updateInfo.value.latestVersion })
-  return t('app.settings.about.update.latest')
+  if (updateStore.status === 'downloading') {
+    return updateStore.downloadProgress === null
+      ? t('app.settings.about.update.downloading')
+      : t('app.settings.about.update.downloading_progress', { progress: updateStore.downloadProgress })
+  }
+  if (updateStore.status === 'installing')
+    return t('app.settings.about.update.installing')
+  if (updateStore.error)
+    return t('app.settings.about.update.failed_detail', { detail: updateStore.error })
+  if (updateStore.updateInfo?.hasUpdate)
+    return t('app.settings.about.update.available', { version: updateStore.updateInfo.latestVersion })
+  if (updateStore.status === 'latest')
+    return t('app.settings.about.update.latest')
+  return ''
 })
 
 const updateStatusTone = computed(() => {
-  if (checking.value)
+  if (updateStore.checking || updateStore.installing)
     return 'neutral'
-  if (updateInfo.value?.error)
+  if (updateStore.error)
     return 'error'
-  if (updateInfo.value?.hasUpdate)
+  if (updateStore.updateInfo?.hasUpdate)
     return 'warning'
-  if (updateInfo.value)
+  if (updateStore.status === 'latest')
     return 'success'
   return 'neutral'
 })
-
-function formatUpdateError(error: string) {
-  const detail = error.trim()
-  const requestMatch = detail.match(/^Request failed: (.+)$/)
-  if (requestMatch)
-    return t('app.settings.about.update.request_failed', { detail: requestMatch[1] })
-  return t('app.settings.about.update.failed_detail', { detail })
-}
 
 function openGithub() {
   window.api.openExternal('https://github.com/MidnightCrowing/CodeNest')
 }
 
-function openRelease(url?: string) {
-  window.api.openExternal(url || 'https://github.com/MidnightCrowing/CodeNest/releases/latest')
+async function onCheckUpdate() {
+  await updateStore.checkUpdate()
 }
 
-async function onCheckUpdate() {
-  if (checking.value)
-    return
-
-  checking.value = true
-  try {
-    updateInfo.value = await window.api.checkUpdate()
-  }
-  catch (error) {
-    updateInfo.value = { hasUpdate: false, currentVersion: version, error: String(error) }
-  }
-  finally {
-    checking.value = false
-  }
+async function onInstallUpdate() {
+  await settingsStore.saveSettings()
+  await projectsStore.saveProjects()
+  await updateStore.installUpdate()
 }
 </script>
 
@@ -85,18 +69,26 @@ async function onCheckUpdate() {
       reserve-status
     >
       <div shrink-0 flex items-center gap-7px>
-        <button class="ghost-button" type="button" :disabled="checking" @click="onCheckUpdate">
-          {{ checking ? t('app.settings.about.update.checking') : t('app.settings.about.update.check') }}
+        <button class="ghost-button" type="button" :disabled="updateStore.checking || updateStore.installing" @click="onCheckUpdate">
+          {{ updateStore.checking ? t('app.settings.about.update.checking') : t('app.settings.about.update.check') }}
         </button>
         <button
-          v-if="updateInfo?.hasUpdate"
+          v-if="updateStore.updateInfo?.hasUpdate"
           class="primary-button"
           type="button"
-          @click="openRelease(updateInfo.url)"
+          :disabled="updateStore.installing"
+          @click="onInstallUpdate"
         >
-          {{ t('app.settings.about.update.open_release') }}
+          {{ updateStore.status === 'downloading'
+            ? t('app.settings.about.update.downloading')
+            : updateStore.status === 'installing'
+              ? t('app.settings.about.update.installing')
+              : t('app.settings.about.update.install') }}
         </button>
       </div>
+      <template #status>
+        <span class="select-text">{{ updateStatus }}</span>
+      </template>
     </SettingsRow>
 
     <SettingsRow

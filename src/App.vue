@@ -4,11 +4,13 @@ import '~/styles'
 import { useI18n } from 'vue-i18n'
 
 import RemoveProjectDialog from '~/components/RemoveProjectDialog/RemoveProjectDialog.vue'
+import { showToast } from '~/components/ui/toast'
 import UiToaster from '~/components/ui/UiToaster.vue'
 import WindowHeader from '~/components/WindowHeader.vue'
 import type { LanguageEnum } from '~/constants/appEnums'
 import { ThemeColorEnum, ThemeEnum, ViewEnum } from '~/constants/appEnums'
 import { addNewProjectsFromScanner, scannerBusy } from '~/services/projectScannerService'
+import { useAppUpdateStore } from '~/stores/appUpdateStore'
 import { useEditorLangGroupsStore } from '~/stores/editorLangGroupsStore'
 import { useProjectsStore } from '~/stores/projectsStore'
 import { useSettingsStore } from '~/stores/settingsStore'
@@ -18,7 +20,8 @@ import Home from '~/views/HomeView/HomeView.vue'
 const settingsStore = useSettingsStore()
 const projectsStore = useProjectsStore()
 const editorLangGroupsStore = useEditorLangGroupsStore()
-const { locale } = useI18n()
+const appUpdateStore = useAppUpdateStore()
+const { locale, t } = useI18n()
 const useNativeTitleBar = navigator.userAgent.includes('Mac OS') || navigator.platform.toLowerCase().includes('mac')
 
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
@@ -33,7 +36,9 @@ const viewComponents: Record<ViewEnum, Component> = {
 }
 const WINDOW_ACTIVATION_DEBOUNCE_MS = 1000
 const FOCUS_AUTO_SCAN_INTERVAL_MS = 15 * 60 * 1000
+const UPDATE_CHECK_DELAY_MS = 4000
 let stopWatchingSystemTheme: (() => void) | null = null
+let updateCheckTimer: number | null = null
 let lastWindowActivationAt = 0
 let lastFocusAutoScanAt = 0
 
@@ -117,6 +122,21 @@ onMounted(async () => {
   window.addEventListener('focus', handleWindowActivation)
   document.addEventListener('visibilitychange', handleVisibilityChange)
 
+  if (!import.meta.env.DEV) {
+    updateCheckTimer = window.setTimeout(() => {
+      void appUpdateStore.checkUpdate().then((update) => {
+        if (!update?.hasUpdate)
+          return
+        showToast({
+          title: t('app.settings.about.update.available', { version: update.latestVersion }),
+          description: t('app.settings.about.update.open_about'),
+          tone: 'info',
+          duration: 8000,
+        })
+      })
+    }, UPDATE_CHECK_DELAY_MS)
+  }
+
   runDeferred(() => {
     void editorLangGroupsStore.loadEditorLangGroupsData()
       .then(() => addNewProjectsFromScanner())
@@ -132,6 +152,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopWatchingSystemTheme?.()
+  if (updateCheckTimer !== null)
+    window.clearTimeout(updateCheckTimer)
   window.removeEventListener('focus', handleWindowActivation)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })

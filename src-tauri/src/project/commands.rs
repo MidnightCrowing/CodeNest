@@ -5,6 +5,7 @@ use std::{
 
 use serde::Serialize;
 use tauri::AppHandle;
+use tauri_plugin_dialog::DialogExt;
 
 use crate::{
     analyzer::{self, LinguistResult},
@@ -121,11 +122,20 @@ pub fn delete_project(project_path: String) -> ProjectMutationResult {
 }
 
 #[tauri::command]
-pub fn import_projects(app: AppHandle) -> ProjectMutationResult {
-    let Some(imported_path) = rfd::FileDialog::new()
-        .add_filter("JSON Files", &["json"])
-        .pick_file()
-    else {
+pub async fn import_projects(app: AppHandle) -> ProjectMutationResult {
+    let dialog_app = app.clone();
+    let imported_path = tauri::async_runtime::spawn_blocking(move || {
+        dialog_app
+            .dialog()
+            .file()
+            .add_filter("JSON Files", &["json"])
+            .blocking_pick_file()
+            .and_then(|path| path.into_path().ok())
+    })
+    .await
+    .ok()
+    .flatten();
+    let Some(imported_path) = imported_path else {
         return ProjectMutationResult {
             success: false,
             message: Some("No file selected for import".to_string()),
@@ -168,12 +178,21 @@ pub fn import_projects(app: AppHandle) -> ProjectMutationResult {
 }
 
 #[tauri::command]
-pub fn export_projects(app: AppHandle) -> ProjectMutationResult {
-    let Some(exported_path) = rfd::FileDialog::new()
-        .set_file_name("projects.json")
-        .add_filter("JSON Files", &["json"])
-        .save_file()
-    else {
+pub async fn export_projects(app: AppHandle) -> ProjectMutationResult {
+    let dialog_app = app.clone();
+    let exported_path = tauri::async_runtime::spawn_blocking(move || {
+        dialog_app
+            .dialog()
+            .file()
+            .set_file_name("projects.json")
+            .add_filter("JSON Files", &["json"])
+            .blocking_save_file()
+            .and_then(|path| path.into_path().ok())
+    })
+    .await
+    .ok()
+    .flatten();
+    let Some(exported_path) = exported_path else {
         return ProjectMutationResult {
             success: false,
             message: Some("No file path selected for export".to_string()),

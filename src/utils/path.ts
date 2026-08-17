@@ -16,14 +16,7 @@ export function isWindowsPlatform(): boolean {
       return true
   }
 
-  // 回退路径特征（import.meta.url 在打包环境可能是自定义协议）
-  try {
-    const testPath = new URL('.', import.meta.url).pathname
-    return testPath.includes('\\') || /^\/[A-Z]:/i.test(testPath)
-  }
-  catch {
-    return false
-  }
+  return false
 }
 
 /** 去除 Windows canonicalize 产生的 verbatim 前缀(`\\?\` / `\\?\UNC\`)。 */

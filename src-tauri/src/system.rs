@@ -1,10 +1,11 @@
 mod accent;
-mod external;
 mod path;
 mod terminal;
 mod window;
 
 use serde::Serialize;
+use tauri::AppHandle;
+use tauri_plugin_opener::OpenerExt;
 
 #[derive(Serialize)]
 pub struct PathExistenceResult {
@@ -24,13 +25,13 @@ pub fn check_path_existence(path: String) -> PathExistenceResult {
 }
 
 #[tauri::command]
-pub fn open_external(url: String) -> bool {
-    external::open_external(url)
+pub fn open_external(app: AppHandle, url: String) -> bool {
+    app.opener().open_url(url, None::<&str>).is_ok()
 }
 
 #[tauri::command]
-pub fn open_in_explorer(path: String) -> bool {
-    external::open_in_explorer(path)
+pub fn open_in_explorer(app: AppHandle, path: String) -> bool {
+    app.opener().reveal_item_in_dir(path).is_ok()
 }
 
 #[tauri::command]

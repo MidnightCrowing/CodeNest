@@ -43,6 +43,21 @@ pnpm build
 
 Build outputs are written to `src-tauri/target/release` and `src-tauri/target/release/bundle`.
 
+## Releases and Automatic Updates
+
+The Release workflow uses Tauri Updater to sign application bundles. Generate a signing key pair before the first release:
+
+```bash
+pnpm tauri signer generate -- -w ~/.tauri/codenest.key
+```
+
+Configure these GitHub Actions secrets with the generated key:
+
+- `TAURI_SIGNING_PRIVATE_KEY`: the complete contents of `~/.tauri/codenest.key`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: the password used when generating the key, or empty if none was set
+
+Never commit the private key. Losing the private key or its password prevents already-installed applications from receiving future updates.
+
 ## Contributions
 
 ### Branch Strategy

@@ -323,9 +323,12 @@ app:
         latest: CodeNest 已是最新版本。
         checking: 检查中
         check: 检查更新
-        open_release: 打开发布页
-        request_failed: '检查更新失败：{detail}'
-        failed_detail: '检查更新失败：{detail}'
+        open_about: 前往“设置 > 关于”即可安装。
+        install: 安装并重启
+        downloading: 正在下载
+        downloading_progress: '正在下载：{progress}%'
+        installing: 正在安装
+        failed_detail: '更新失败：{detail}'
       repository:
         title: GitHub
   project_editor:

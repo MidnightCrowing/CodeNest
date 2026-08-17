@@ -1,8 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const invokeMock = vi.hoisted(() => vi.fn())
+const channels = vi.hoisted(() => [] as Array<{ onmessage: (message: unknown) => void }>)
 
 vi.mock('@tauri-apps/api/core', () => ({
+  Channel: class {
+    onmessage = (_message: unknown) => {}
+
+    constructor() {
+      channels.push(this)
+    }
+  },
   invoke: invokeMock,
 }))
 
@@ -21,6 +29,7 @@ async function flushPromises() {
 describe('desktop api', () => {
   beforeEach(() => {
     invokeMock.mockReset()
+    channels.splice(0)
   })
 
   afterEach(() => {
@@ -76,5 +85,21 @@ describe('desktop api', () => {
       'Tauri command \'open_external\' failed:',
       error,
     )
+  })
+
+  it('passes updater progress through a Tauri channel', async () => {
+    invokeMock.mockResolvedValueOnce(undefined)
+    const onEvent = vi.fn()
+    const api = await loadDesktopApi()
+
+    await api.installUpdate(onEvent)
+
+    expect(invokeMock).toHaveBeenCalledWith('install_update', {
+      onEvent: channels[0],
+    })
+
+    const event = { event: 'Progress', data: { chunkLength: 1024 } }
+    channels[0].onmessage(event)
+    expect(onEvent).toHaveBeenCalledWith(event)
   })
 })

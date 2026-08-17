@@ -61,12 +61,14 @@ export interface UpdateCheckResult {
   hasUpdate: boolean
   currentVersion: string
   latestVersion?: string
-  url?: string
-  name?: string
   notes?: string
   publishedAt?: string
-  error?: string
 }
+
+export type UpdateDownloadEvent
+  = | { event: 'Started', data: { contentLength?: number } }
+    | { event: 'Progress', data: { chunkLength: number } }
+    | { event: 'Finished' }
 
 export interface LangGroupItem {
   text: string
@@ -160,6 +162,7 @@ export interface DesktopApi {
   openInTerminal: (path: string, terminalCommand?: string) => Promise<string>
 
   checkUpdate: () => Promise<UpdateCheckResult>
+  installUpdate: (onEvent: (event: UpdateDownloadEvent) => void) => Promise<void>
 
   scanProjects: (payload: ScanStartPayload) => Promise<ScanResult>
   getSystemAccentColor: (currentTheme?: ThemeEnum) => Promise<HexColor | null>

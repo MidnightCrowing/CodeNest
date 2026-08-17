@@ -97,7 +97,6 @@ export default defineConfig({
     terserOptions: {
       mangle: true, // 是否混淆变量名
       compress: {
-        drop_console: true, // 删除 console 语句
         drop_debugger: true, // 删除 debugger 语句
       },
       format: {

@@ -1,6 +1,6 @@
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 
-import type { DesktopApi } from './types'
+import type { DesktopApi, UpdateDownloadEvent } from './types'
 
 function call<T>(command: string, args?: Record<string, unknown>) {
   return invoke<T>(command, args)
@@ -42,6 +42,11 @@ window.api = {
     call('open_in_terminal', { path, terminalCommand }),
 
   checkUpdate: () => call('check_update'),
+  installUpdate: (onEvent) => {
+    const channel = new Channel<UpdateDownloadEvent>()
+    channel.onmessage = onEvent
+    return call('install_update', { onEvent: channel })
+  },
   scanProjects: payload => call('scan_projects', { payload }),
   getSystemAccentColor: currentTheme => call('get_system_accent_color', { currentTheme }),
   detectJetBrainsConfigRootPath: () => call('detect_jetbrains_config_root_path'),

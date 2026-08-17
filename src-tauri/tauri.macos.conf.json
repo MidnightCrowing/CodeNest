@@ -4,6 +4,7 @@
       {
         "label": "main",
         "title": "CodeNest",
+        "visible": false,
         "width": 1200,
         "height": 650,
         "minWidth": 800,

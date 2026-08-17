@@ -1,4 +1,5 @@
 import './desktop/api'
+import './desktop/logging'
 
 import { createPinia } from 'pinia'
 
