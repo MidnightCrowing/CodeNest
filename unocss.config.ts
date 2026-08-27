@@ -9,6 +9,7 @@ import {
 } from 'unocss'
 
 import { editorIconClasses } from './src/constants/codeEditor'
+import { projectMenuIconClasses } from './src/constants/projectMenu'
 
 export default defineConfig({
   presets: [
@@ -25,7 +26,7 @@ export default defineConfig({
       },
     }),
   ],
-  safelist: editorIconClasses,
+  safelist: [...editorIconClasses, ...projectMenuIconClasses],
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),

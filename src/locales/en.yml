@@ -6,17 +6,13 @@ language_pop:
   other: Other
   overall_label: Languages used in this project
 remove_project_dialog:
-  dialog_title:
-    remove: Remove Project?
-    delete: Delete Project?
-  dialog_desc:
-    remove: 'Remove "{name}" from the project list?'
-    delete: 'Delete "{name}" and its files?'
-    delete_note: This can't be undone.
+  dialog_title: Remove Project?
+  dialog_desc: 'Remove "{name}" from the project list?'
+  delete_files: Also delete local files
+  delete_files_note: Local files go to the trash, or are deleted outright if that fails.
   cancel: Cancel
   remove: Remove
-  remove_from_list: Keep files
-  delete: Delete
+  remove_and_delete: Remove and delete files
 no_ide_path_dialog:
   dialog_title: Launch Command Missing
   dialog_desc: Configure a launch command for this editor in settings.
@@ -125,8 +121,8 @@ app:
       more: More actions
       edit: Edit
       remove: Remove
-      delete: Delete...
     feedback:
+      delete_files_failed: Couldn't delete local files
       open_failed: Couldn't open project
       terminal_failed: Couldn't open Terminal
       scan_completed: Scan complete

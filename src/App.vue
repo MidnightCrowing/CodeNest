@@ -24,6 +24,9 @@ const appUpdateStore = useAppUpdateStore()
 const { locale, t } = useI18n()
 const useNativeTitleBar = navigator.userAgent.includes('Mac OS') || navigator.platform.toLowerCase().includes('mac')
 
+// 挂到根元素上，Portal 到 body 的弹窗才能读到该变量
+document.documentElement.style.setProperty('--window-titlebar-height', useNativeTitleBar ? '0px' : '40px')
+
 const activatedView: Ref<ViewEnum> = ref(ViewEnum.Home)
 const viewComponents: Record<ViewEnum, Component> = {
   [ViewEnum.Home]: Home,
@@ -162,10 +165,7 @@ provide('activatedView', activatedView)
 </script>
 
 <template>
-  <main
-    size-full flex flex-col select-none
-    :style="{ '--window-titlebar-height': useNativeTitleBar ? '0px' : '40px' }"
-  >
+  <main size-full flex flex-col select-none>
     <WindowHeader v-if="!useNativeTitleBar" shrink-0 />
     <KeepAlive include="Home">
       <Component :is="viewComponents[activatedView]" grow />

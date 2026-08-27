@@ -7,6 +7,7 @@ import {
   DEFAULT_EDITOR_AUTO_ACTION,
   OPEN_WITH_ACTION_PREFIX,
 } from '~/constants/projectActions'
+import { projectMenuIcons } from '~/constants/projectMenu'
 import {
   isSourceProject,
   projectSourceUrl,
@@ -71,13 +72,7 @@ export function useProjectMenus(deps: MenuDependencies) {
     ]
   }
 
-  function canDeleteProjectFiles(project: LocalProject) {
-    // 远程项目没有本地文件可删
-    return project.isTemporary && project.isExists !== false && !project.isRemote
-  }
-
   function projectMenuItems(project: LocalProject): UiActionMenuItem[] {
-    const canDeleteFiles = canDeleteProjectFiles(project)
     const sourceUrl = projectSourceUrl(project)
     const defaultEditorVisible = editorCommandOptions().some(option => option.key === project.defaultOpen)
     const canCopyTerminalCommand = !project.isRemote
@@ -109,6 +104,7 @@ export function useProjectMenus(deps: MenuDependencies) {
       {
         id: 'edit',
         label: t('app.home.actions.edit'),
+        icon: projectMenuIcons.edit,
         shortcut: ['mod', 'i'],
       },
       {
@@ -150,8 +146,7 @@ export function useProjectMenus(deps: MenuDependencies) {
         : []),
       {
         id: 'remove',
-        label: canDeleteFiles ? t('app.home.actions.delete') : t('app.home.actions.remove'),
-        icon: 'i-lucide:trash-2',
+        label: t('app.home.actions.remove'),
         shortcut: 'delete',
         danger: true,
         separatorBefore: true,
@@ -163,7 +158,6 @@ export function useProjectMenus(deps: MenuDependencies) {
     projectMenuItems,
     editorMenuItems,
     defaultEditorMenuItems,
-    canDeleteProjectFiles,
     isSourceProject,
     projectSourceUrl,
   }

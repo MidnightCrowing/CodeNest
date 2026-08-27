@@ -6,17 +6,13 @@ language_pop:
   other: 其他
   overall_label: 该项目所用语言
 remove_project_dialog:
-  dialog_title:
-    remove: 移除项目？
-    delete: 删除项目？
-  dialog_desc:
-    remove: '从项目列表中移除“{name}”？'
-    delete: '删除“{name}”及其文件？'
-    delete_note: 此操作无法撤销。
+  dialog_title: 移除项目？
+  dialog_desc: '从项目列表中移除“{name}”？'
+  delete_files: 同时删除本地文件
+  delete_files_note: 本地文件将被移到回收站；移入失败时会直接删除。
   cancel: 取消
   remove: 移除
-  remove_from_list: 保留文件
-  delete: 删除
+  remove_and_delete: 移除并删除文件
 no_ide_path_dialog:
   dialog_title: 缺少启动命令
   dialog_desc: 请在设置中配置这个编辑器的启动命令。
@@ -125,8 +121,8 @@ app:
       more: 更多操作
       edit: 编辑
       remove: 移除
-      delete: 删除...
     feedback:
+      delete_files_failed: 无法删除本地文件
       open_failed: 打开项目失败
       terminal_failed: 打开终端失败
       scan_completed: 扫描完成

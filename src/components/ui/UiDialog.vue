@@ -47,7 +47,7 @@ const contentStyle = computed(() => ({
       <DialogContent
         class="ui-dialog-content left-1/2 -translate-x-1/2 -translate-y-1/2"
         fixed z-50 max-w="[calc(100vw-32px)]"
-        rounded-6px border p-20px outline-none
+        rounded-6px border select-none p-20px outline-none
         bg="$ui-surface-background" color="$ui-foreground"
         :style="contentStyle"
       >
@@ -73,19 +73,38 @@ const contentStyle = computed(() => ({
         <slot />
 
         <div
-          v-if="$slots.actions"
+          v-if="$slots.actions || $slots['actions-start']"
           class="ui-dialog-actions"
-          mt-20px flex flex-wrap gap-8px
-          :data-layout="actionsLayout"
+          mt-20px flex flex-wrap items-center gap-8px
         >
-          <slot name="actions" />
+          <div
+            v-if="$slots['actions-start']"
+            class="ui-dialog-actions-start"
+            min-w-0 flex items-center
+          >
+            <slot name="actions-start" />
+          </div>
+
+          <div
+            v-if="$slots.actions"
+            class="ui-dialog-actions-end"
+            ml-auto flex flex-wrap gap-8px
+            :data-layout="actionsLayout"
+          >
+            <slot name="actions" />
+          </div>
         </div>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>
 </template>
 
-<style lang="scss" scoped>
+<!--
+  这里不能用 scoped：Vue 会把 scoped 块里的 @keyframes 重命名成带 hash 的名字，
+  而 UnoCSS 的 @apply 在其之后才展开，animation 仍指向原名 => 动画不存在，
+  reka-ui 的 Presence 永远等不到 animationend，关闭时弹窗无法卸载。
+-->
+<style lang="scss">
 .ui-dialog-overlay {
   top: var(--window-titlebar-height, 40px);
 }
@@ -103,7 +122,7 @@ const contentStyle = computed(() => ({
   }
 }
 
-.ui-dialog-actions {
+.ui-dialog-actions-end {
   &[data-layout="reverse"] {
     @apply flex-row-reverse;
   }

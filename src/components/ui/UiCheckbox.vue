@@ -39,7 +39,7 @@ function toggleFromField() {
     <CheckboxRoot
       class="ui-checkbox-root"
       :class="{ 'dim-disabled': disabled && !dimDisabled }"
-      mt-1px size-16px shrink-0 rounded-4px border
+      size-16px shrink-0 rounded-4px border
       outline-none
       inline-flex items-center justify-center
       bg="$ui-checkbox-background"
@@ -58,7 +58,8 @@ function toggleFromField() {
       </CheckboxIndicator>
     </CheckboxRoot>
     <div
-      v-if="$slots.default" class="ui-checkbox-label" min-w-0 text-12px break-anywhere
+      v-if="$slots.default" class="ui-checkbox-label" min-w-0 text-12px lh-16px
+      break-anywhere
       @click="toggleFromField"
     >
       <slot />
