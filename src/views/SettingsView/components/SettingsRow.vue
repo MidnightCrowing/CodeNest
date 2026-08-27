@@ -7,6 +7,7 @@ withDefaults(defineProps<{
   status?: string
   statusTone?: 'neutral' | 'info' | 'success' | 'warning' | 'error'
   reserveStatus?: boolean
+  selectableTitle?: boolean
 }>(), {
   description: '',
   align: 'center',
@@ -14,6 +15,7 @@ withDefaults(defineProps<{
   status: '',
   statusTone: 'neutral',
   reserveStatus: false,
+  selectableTitle: false,
 })
 </script>
 
@@ -25,7 +27,10 @@ withDefaults(defineProps<{
     :class="{ 'align-start': align === 'start' }"
   >
     <div min-w-0 flex-1 flex flex-col gap-3px>
-      <strong text-13px font-600 break-anywhere>{{ title }}</strong>
+      <strong
+        text-13px font-600 break-anywhere
+        :class="{ 'select-text': selectableTitle }"
+      >{{ title }}</strong>
       <span
         v-if="description" text-12px break-anywhere
         light:color="$gray-6" dark:color="$gray-8"

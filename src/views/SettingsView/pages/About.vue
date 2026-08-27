@@ -67,6 +67,7 @@ async function onInstallUpdate() {
       :status="updateStatus"
       :status-tone="updateStatusTone"
       reserve-status
+      selectable-title
     >
       <div shrink-0 flex items-center gap-7px>
         <button class="ghost-button" type="button" :disabled="updateStore.checking || updateStore.installing" @click="onCheckUpdate">

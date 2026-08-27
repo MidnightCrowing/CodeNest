@@ -226,7 +226,7 @@ function toastIcon(tone: UiToastTone) {
 }
 
 .ui-toast-title-text {
-  @apply min-w-0;
+  @apply min-w-0 select-text;
 }
 
 .ui-toast-count {
@@ -237,7 +237,7 @@ function toastIcon(tone: UiToastTone) {
 
 .ui-toast-description {
   @apply text-12px lh-17px tracking-0 color-$ui-muted-foreground;
-  @apply break-anywhere;
+  @apply break-anywhere select-text;
 }
 
 .ui-toast-action {

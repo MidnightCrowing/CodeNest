@@ -34,13 +34,15 @@ const { t } = useI18n()
         class="i-lucide:pin"
       />
       <span
-        v-if="project.group" min-w-0 max-w="[45cqw]" truncate text-12px
+        v-if="project.group" min-w-0 max-w="[45cqw]" truncate select-text
+        text-12px
         font-600 light:color="$gray-7" dark:color="$gray-8" :title="project.group"
       >{{ project.group }}</span><span
         v-if="project.group" shrink-0 text-12px font-600
         light:color="$gray-7" dark:color="$gray-8"
       >/</span><span
-        min-w-0 flex-1 truncate text-13px font-600
+        min-w-0 flex-1 truncate select-text text-13px
+        font-600
         light:color="$gray-1" dark:color="$gray-13" :title="project.name"
       >{{ project.name }}</span>
     </strong>

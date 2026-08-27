@@ -69,7 +69,10 @@ const { t } = useI18n()
     >
       <div min-w-0 flex flex-col gap-3px>
         <ProjectTitle :project="project" />
-        <div truncate text-11px light:color="$gray-7" dark:color="$gray-8" :title="project.path">
+        <div
+          truncate select-text text-11px light:color="$gray-7" dark:color="$gray-8"
+          :title="project.path"
+        >
           {{ displayPath }}
         </div>
         <ProjectSource :project="project" @open="emit('openSource', project)" />

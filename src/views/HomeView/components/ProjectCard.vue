@@ -67,7 +67,8 @@ const { t } = useI18n()
       </header>
 
       <div
-        my-9px truncate text-11px light:color="$gray-6" dark:color="$gray-8"
+        my-9px truncate select-text text-11px light:color="$gray-6"
+        dark:color="$gray-8"
         :title="project.path"
       >
         {{ displayPath }}
