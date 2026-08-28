@@ -85,12 +85,27 @@ pub async fn install_update(
     pending_update: State<'_, PendingUpdate>,
     on_event: Channel<DownloadEvent>,
 ) -> Result<(), String> {
-    let update = pending_update
+    // Keep the cached update in place: a failed download must stay retryable.
+    let cached = pending_update
         .0
         .lock()
         .map_err(|_| "Update state is unavailable".to_string())?
-        .take()
-        .ok_or_else(|| "There is no pending update".to_string())?;
+        .clone();
+
+    let update = match cached {
+        Some(update) => update,
+        None => {
+            let update = app
+                .updater()
+                .map_err(|error| error.to_string())?
+                .check()
+                .await
+                .map_err(|error| error.to_string())?
+                .ok_or_else(|| "There is no pending update".to_string())?;
+            store_pending_update(&pending_update, Some(update.clone()))?;
+            update
+        }
+    };
 
     log::info!(
         "Installing CodeNest update from {} to {}",
@@ -114,6 +129,8 @@ pub async fn install_update(
         )
         .await
         .map_err(|error| error.to_string())?;
+
+    store_pending_update(&pending_update, None)?;
 
     log::info!("CodeNest update installed; restarting application");
     app.restart();
