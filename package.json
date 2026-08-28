@@ -31,6 +31,7 @@
     "build:vue": "vue-tsc --build && vite build",
     "icon:build": "node scripts/build-icons.js",
     "version:sync": "node scripts/sync-version.js",
+    "verify:updater": "node scripts/verify-updater-signatures.js",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:rust",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

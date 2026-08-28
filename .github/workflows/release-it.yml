@@ -124,6 +124,10 @@ jobs:
           uploadUpdaterJson: true
           uploadUpdaterSignatures: true
 
+      - name: Verify updater signatures match the configured public key
+        shell: bash
+        run: node scripts/verify-updater-signatures.js
+
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
@@ -136,6 +140,22 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+
+      - name: Point latest.json at public download URLs
+        run: node scripts/rewrite-updater-urls.js
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.release.outputs.tag }}
+
       - name: Publish release
         run: gh release edit "${{ needs.release.outputs.tag }}" --draft=false --latest --repo "${{ github.repository }}"
         env:
